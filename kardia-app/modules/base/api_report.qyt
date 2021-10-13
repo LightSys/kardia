@@ -1,0 +1,84 @@
+$Version=2$
+api_report "system/querytree"
+    {
+
+    ScheduledReportsToBeSent "system/querytree"
+        {
+        text = "ScheduledReportsToBeSent";
+        
+        sched_reports_to_be_sent_list "system/querytree"
+            {
+            sql = " select
+                sched_report_batch_name = :gsr:r_group_name + '|' + :gsr:r_group_sched_id,
+                report_file = :report_group:r_group_module + '/' + :report_group:r_group_file,
+                report_group_name = :gsr:r_group_name,
+                delivery_method = :gsr:r_delivery_method,
+                report_group_sched_id = :gsr:r_group_sched_id,
+                report_id = :gsr:r_report_id,
+                date_to_send = :group_sched:r_group_sched_date,
+                recipient_partner_key = :gsr:p_recipient_partner_key,
+                template_file = :report_group:r_group_template_file,
+                sent_status = :gsr:r_group_sched_status,
+                sent_error = :gsr:r_group_sched_error,
+                sent_date = :gsr:r_group_sched_sent_date,
+                generated_report_path = :gsr:r_group_sched_file
+                from
+                identity /apps/kardia/data/Kardia_DB/r_group_sched_report/rows gsr,
+                /apps/kardia/data/Kardia_DB/r_group/rows report_group,
+                /apps/kardia/data/Kardia_DB/r_group_sched/rows group_sched
+                where
+                :gsr:r_group_sched_status = 'N' and
+                :report_group:r_group_name =* :gsr:r_group_name and
+                :group_sched:r_group_name =* :gsr:r_group_name and
+                :group_sched:r_group_sched_id =* :gsr:r_group_sched_id
+                ";
+
+            Params "system/querytree"
+                {
+                text = "Params";
+
+                params_list "system/querytree"
+                    {
+                        sql = " select
+                        param_name = :gp:r_param_name,
+                        param_value = isnull(:grp:r_param_value, isnull(:gsp:r_param_value, :gp:r_param_default)),
+                        pass_to_report = :gp:r_pass_to_report,
+                        pass_to_template = :gp:r_pass_to_template
+                        from
+                        identity /apps/kardia/data/Kardia_DB/r_group_param/rows gp,
+                        /apps/kardia/data/Kardia_DB/r_group_report_param/rows grp,
+                        /apps/kardia/data/Kardia_DB/r_group_sched_param/rows gsp
+                        where
+                        :gp:r_group_name =* :sched_reports_to_be_sent_list:report_group_name and
+                        :grp:r_group_name =* :sched_reports_to_be_sent_list:report_group_name and
+                        :grp:r_delivery_method =* :sched_reports_to_be_sent_list:delivery_method and
+                        :grp:p_recipient_partner_key =* :sched_reports_to_be_sent_list:recipient_partner_key and
+                        :grp:r_report_id =* :sched_reports_to_be_sent_list:report_id and
+                        :grp:r_param_name =* :gp:r_param_name and
+                        :gsp:r_group_name =* :sched_reports_to_be_sent_list:report_group_name and
+                        :gsp:r_group_sched_id =* :sched_reports_to_be_sent_list:report_group_sched_id and
+                        :gsp:r_param_name =* :gp:r_param_name
+                        ";
+                    } 
+                }
+            }
+        }
+
+    ScheduledReportBatches "system/querytree"
+        {
+        text = "ScheduledReportBatches";
+
+        sched_reports_batches_list "system/querytree"
+            {
+            sql = " select
+                report_group_name = :group_sched:r_group_name,
+                r_group_sched_id = :group_sched:r_group_sched_id,
+                scheduled_date = :group_sched:r_group_sched_date,
+                sent_status = :group_sched:r_group_sched_status,
+                sent_by = :group_sched:r_group_sched_sent_by
+                from
+                identity /apps/kardia/data/Kardia_DB/r_group_sched/rows group_sched
+                ";
+            }
+        }
+    }

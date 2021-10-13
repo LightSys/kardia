@@ -1,0 +1,11 @@
+# Copy and rename config.toml
+kardia_url = "http://example.com/apps/kardia"
+user = "username"
+pw = "password"
+generated_report_osml_dir = "/apps/kardia/files/reports"
+
+[email]
+  # You can include any parameters here that can be passed to Python's smtplib.SMTP():
+  # https://docs.python.org/3/library/smtplib.html#smtplib.SMTP
+  [email.smtp]
+  host = "localhost"
