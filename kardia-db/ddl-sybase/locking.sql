@@ -105,3 +105,12 @@ go
 
 alter table a_subtrx_gift_intent lock datarows
 go
+
+alter table r_group_report lock datarows
+go
+
+alter table r_group_sched_report lock datarows
+go
+
+alter table r_group_report_param lock datarows
+go
