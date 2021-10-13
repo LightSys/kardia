@@ -602,6 +602,18 @@ alter table h_benefits
 	drop primary key;
 
 
+alter table r_group_sched
+	drop primary key;
+
+
+alter table r_group_sched_param
+	drop primary key;
+
+
+alter table r_group_sched_report
+	drop primary key;
+
+
 alter table r_group
 	drop primary key;
 
@@ -831,6 +843,10 @@ alter table a_payroll_item_type
 
 
 alter table a_payroll_item_class
+	drop primary key;
+
+
+alter table a_payroll_item_subclass
 	drop primary key;
 
 

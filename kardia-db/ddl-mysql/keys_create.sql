@@ -259,6 +259,15 @@ alter table h_benefit_type_sched
 alter table h_benefits
 	add constraint h_ben_pk primary key  (h_benefit_type_id, p_partner_key, h_benefit_period_id);
 
+alter table r_group_sched
+	add constraint r_grp_sch_pk primary key  (r_group_name, r_group_sched_id);
+
+alter table r_group_sched_param
+	add constraint r_sparam_pk primary key  (r_group_name, r_group_sched_id, r_param_name);
+
+alter table r_group_sched_report
+	add constraint r_grp_sch_r_pk primary key  (r_group_name, r_delivery_method, r_group_sched_id, p_recipient_partner_key, r_report_id);
+
 alter table r_group
 	add constraint r_grp_pk primary key  (r_group_name);
 
@@ -387,6 +396,9 @@ alter table a_payroll_item_type
 
 alter table a_payroll_item_class
 	add constraint a_payroll_ic_pk primary key  (a_payroll_item_class_code);
+
+alter table a_payroll_item_subclass
+	add constraint a_payroll_isc_pk primary key  (a_payroll_item_class_code, a_payroll_item_subclass_code);
 
 alter table a_payroll_form_group
 	add constraint a_payroll_f_pk primary key  (a_ledger_number, a_payroll_form_group_name, a_payroll_form_sequence);

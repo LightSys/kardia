@@ -335,6 +335,18 @@ drop table h_benefit_type_sched;
 drop table h_benefits;
 
 
+/* r_group_sched */
+drop table r_group_sched;
+
+
+/* r_group_sched_param */
+drop table r_group_sched_param;
+
+
+/* r_group_sched_report */
+drop table r_group_sched_report;
+
+
 /* r_group */
 drop table r_group;
 
@@ -497,6 +509,10 @@ drop table a_payroll_item_type;
 
 /* a_payroll_item_class */
 drop table a_payroll_item_class;
+
+
+/* a_payroll_item_subclass */
+drop table a_payroll_item_subclass;
 
 
 /* a_payroll_form_group */

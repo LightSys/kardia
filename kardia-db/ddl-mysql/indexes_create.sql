@@ -518,6 +518,22 @@ create  index h_ben_period_idx on h_benefits (h_benefit_period_id, h_benefit_typ
 /* go */
 
 
+/* r_group_sched */
+/* create  index r_grp_sch_pk on r_group_sched (r_group_name, r_group_sched_id)*/ 
+/* go */
+
+
+/* r_group_sched_param */
+/* create  index r_sparam_pk on r_group_sched_param (r_group_name, r_group_sched_id, r_param_name)*/ 
+/* go */
+
+
+/* r_group_sched_report */
+/* create  index r_grp_sch_r_pk on r_group_sched_report (r_group_name, r_delivery_method, r_group_sched_id, p_recipient_partner_key, r_report_id)*/ 
+/* go */
+create  index r_schrpt_partner_idx on r_group_sched_report (p_recipient_partner_key, r_group_name, r_delivery_method, r_group_sched_id, r_report_id);
+
+
 /* r_group */
 create  index r_grp_modfile_idx on r_group (r_group_module, r_group_file, r_group_name);
 /* create  index r_grp_pk on r_group (r_group_name)*/ 
@@ -762,6 +778,11 @@ create  index a_payrolli_payee_idx on a_payroll_import (a_ledger_number, p_payee
 
 /* a_payroll_item_class */
 /* create  index a_payroll_ic_pk on a_payroll_item_class (a_payroll_item_class_code)*/ 
+/* go */
+
+
+/* a_payroll_item_subclass */
+/* create  index a_payroll_isc_pk on a_payroll_item_subclass (a_payroll_item_class_code, a_payroll_item_subclass_code)*/ 
 /* go */
 
 

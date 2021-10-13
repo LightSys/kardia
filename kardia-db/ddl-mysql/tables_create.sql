@@ -1691,6 +1691,61 @@ create table h_benefits (
 );
 
 
+/* r_group_sched */
+
+create table r_group_sched (
+        r_group_name                          char(8)  not null,       /* short name of the report group. --  */
+        r_group_sched_id                      int  not null,           /* ID of the scheduled sending --  */
+        r_group_sched_date                    datetime  not null,      /* Date that the group of reports will be sent --  */
+        r_group_sched_status                  char(1)  not null,       /* N = not sent, S = sent, A = archived --  */
+        r_group_sched_sent_by                 varchar(20)  null,       /* What user sent the reports? --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* r_group_sched_param */
+
+create table r_group_sched_param (
+        r_group_name                          char(8)  not null,       /* short name of the report group that this parameter belongs to --  */
+        r_group_sched_id                      int  not null,           /* ID of this scheduled report run --  */
+        r_param_name                          varchar(64)  not null,   /* name of the parameter --  */
+        r_param_value                         varchar(900)  null,      /* value for the parameter (in string format). --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* r_group_sched_report */
+
+create table r_group_sched_report (
+        r_group_name                          char(8)  not null,       /* short name of the report group. --  */
+        r_delivery_method                     varchar(1)  not null,    /* method of delivery - Email/Web/Print --  */
+        r_group_sched_id                      int  not null,           /* ID of the scheduled sending --  */
+        p_recipient_partner_key               char(10)  not null,      /* Recipient of the report --  */
+        r_report_id                           int  not null,           /* ID of the report (a person can receive more than one report of a given type/group, e.g. with different parameters) --  */
+        r_group_sched_address                 varchar(80)  null,       /* The address (e.g. email) that this report was actually sent to, or attempted to be sent to. --  */
+        r_group_sched_status                  char(1)  not null,       /* N = not sent, S = sent, T = temporary error / will be retried, I = invalid email address error, F = other error / failure --  */
+        r_group_sched_error                   varchar(900)  null,      /* Textual error message from email sending facility --  */
+        r_group_sched_sent_date               datetime  null,          /* Date/time that this report was actually sent --  */
+        r_group_sched_file                    varchar(900)  null,      /* OSML pathname where the generated report is stored. --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
 /* r_group */
 
 create table r_group (
@@ -1698,6 +1753,7 @@ create table r_group (
         r_group_description                   varchar(255)  null,      /* description of the report group --  */
         r_group_module                        varchar(20)  not null,   /* directory name of the module containing the report to run (e.g., 'base', 'rcpt', 'disb', etc.) --  */
         r_group_file                          varchar(255)  not null,  /* file name of the .rpt file in the above module. --  */
+        r_group_template_file                 varchar(255)  null,      /* file name of a mail merge / template document (txt file) to be used --  */
         r_is_active                           bit,                     /* Whether or not the group is 'active'. Kardia may come with many preconfigured report groups that are not activated by the user yet. --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
@@ -1733,7 +1789,10 @@ create table r_group_param (
         r_param_description                   varchar(255)  null,      /* description of the report parameter --  */
         r_is_group_param                      bit,                     /* whether this parameter can be supplied by the user running the report group --  */
         r_is_report_param                     bit,                     /* whether this parameter can be supplied by individual reports in the group --  */
+        r_is_sched_param                      bit,                     /* whether this parameter can be supplied by the scheduled report run --  */
         r_is_required                         bit,                     /* whether this parameter MUST be supplied --  */
+        r_pass_to_report                      bit,                     /* whether this parameter will be passed to the .rpt object --  */
+        r_pass_to_template                    bit,                     /* whether this parameter can be used for mail merge / template substitution --  */
         r_param_cmp_module                    varchar(64)  null,       /* component module (directory name) used for getting user input on this parameter. --  */
         r_param_cmp_file                      varchar(256)  null,      /* component file (.cmp) used for getting user input on this parameter. --  */
         r_param_default                       varchar(1536)  null,     /* default value for the parameter (in string format). --  */
@@ -2320,7 +2379,7 @@ create table a_currency_exch_rate (
         a_base_currency_code                  char(3)  not null,       /* The base currency --  */
         a_foreign_currency_code               char(3)  not null,       /* The foreign currency --  */
         a_exch_rate_date                      datetime  not null,      /* The effective date for the exchange rate (date only) --  */
-        a_exch_rate                           double  not null,        /* The exchange rate. --  */
+        a_exch_rate                           float  not null,         /* The exchange rate. --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -2554,6 +2613,39 @@ create table a_payroll_item_class (
         __cx_osml_control                     varchar(255)  null       /*  --  */
 
 );
+insert into a_payroll_item_class (a_payroll_item_class_code,a_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'A' as a_payroll_item_class_code, 'Available Funds' as a_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_payroll_item_class (a_payroll_item_class_code,a_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'R' as a_payroll_item_class_code, 'Pre-Tax Receivables' as a_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_payroll_item_class (a_payroll_item_class_code,a_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'T' as a_payroll_item_class_code, 'Tax Withholding' as a_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_payroll_item_class (a_payroll_item_class_code,a_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'V' as a_payroll_item_class_code, 'Post-Tax Receivables' as a_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_payroll_item_class (a_payroll_item_class_code,a_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'X' as a_payroll_item_class_code, 'Exemption from Tax' as a_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_payroll_item_class (a_payroll_item_class_code,a_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'B' as a_payroll_item_class_code, 'Pre-Tax Benefit' as a_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_payroll_item_class (a_payroll_item_class_code,a_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'D' as a_payroll_item_class_code, 'Post-Tax Deduction' as a_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_payroll_item_class (a_payroll_item_class_code,a_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'E' as a_payroll_item_class_code, 'Employer Tax' as a_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_payroll_item_class (a_payroll_item_class_code,a_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'G' as a_payroll_item_class_code, 'Gross Pay' as a_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_payroll_item_class (a_payroll_item_class_code,a_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'I' as a_payroll_item_class_code, 'Informational' as a_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_payroll_item_class (a_payroll_item_class_code,a_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'M' as a_payroll_item_class_code, 'Non-Tax Payables' as a_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_payroll_item_class (a_payroll_item_class_code,a_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'N' as a_payroll_item_class_code, 'Net Pay' as a_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_payroll_item_class (a_payroll_item_class_code,a_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'P' as a_payroll_item_class_code, 'Pre-Payroll Transaction' as a_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+
+
+/* a_payroll_item_subclass */
+
+create table a_payroll_item_subclass (
+        a_payroll_item_class_code             char(1)  not null,       /* payroll item class code --  */
+        a_payroll_item_subclass_code          char(2)  not null,       /* payroll item subclass code --  */
+        a_desc                                varchar(32)  null,       /* description for this subclass --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+insert into a_payroll_item_subclass (a_payroll_item_class_code,a_payroll_item_subclass_code,a_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'T' as a_payroll_item_class_code, 'TI' as a_payroll_item_subclass_code, 'FICA' as a_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_payroll_item_subclass (a_payroll_item_class_code,a_payroll_item_subclass_code,a_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'T' as a_payroll_item_class_code, 'TF' as a_payroll_item_subclass_code, 'Federal Income' as a_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_payroll_item_subclass (a_payroll_item_class_code,a_payroll_item_subclass_code,a_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'T' as a_payroll_item_class_code, 'TS' as a_payroll_item_subclass_code, 'State Income' as a_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_payroll_item_subclass (a_payroll_item_class_code,a_payroll_item_subclass_code,a_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'T' as a_payroll_item_class_code, 'TL' as a_payroll_item_subclass_code, 'Local' as a_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_payroll_item_subclass (a_payroll_item_class_code,a_payroll_item_subclass_code,a_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'T' as a_payroll_item_class_code, 'TU' as a_payroll_item_subclass_code, 'State Unemployment' as a_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
 
 
 /* a_payroll_form_group */
@@ -2916,8 +3008,8 @@ create table a_subtrx_gift_group (
                                                                       /* Amount of the gift. --  */
         a_foreign_amount                      decimal(14,4)  null,     /* Amount of the gift in the donor's foreign currency --  */
         a_foreign_currency                    char(3)  null,           /* Foreign currency code for this gift. --  */
-        a_foreign_currency_exch_rate          double  null,            /* Foreign currency effective exchange rate --  */
-        a_foreign_currency_date               double  null,            /* Foreign currency effective date for exchange rate --  */
+        a_foreign_currency_exch_rate          float  null,             /* Foreign currency effective exchange rate --  */
+        a_foreign_currency_date               float  null,             /* Foreign currency effective date for exchange rate --  */
         a_posted                              bit  default 0,          /* Has this transaction been posted (in this table)? --  */
         a_posted_to_gl                        bit  default 0,          /* Has this transaction been posted to the GL - yes (1) or no (0)? --  */
         a_gift_type                           char(1)  not null,       /* Type of gift: (C)ash, chec(K), credit car(D), (E)FT --  */
@@ -2961,8 +3053,8 @@ create table a_subtrx_gift_item (
                                                                       /* Amount of the gift. --  */
         a_foreign_amount                      decimal(14,4)  null,     /* Amount of the gift in the donor's foreign currency --  */
         a_foreign_currency                    char(3)  null,           /* Foreign currency code for this gift. --  */
-        a_foreign_currency_exch_rate          double  null,            /* Foreign currency effective exchange rate --  */
-        a_foreign_currency_date               double  null,            /* Foreign currency effective date for exchange rate --  */
+        a_foreign_currency_exch_rate          float  null,             /* Foreign currency effective exchange rate --  */
+        a_foreign_currency_date               float  null,             /* Foreign currency effective date for exchange rate --  */
         a_recv_document_id                    varchar(64)  null,       /* Check number, transaction number, etc., for received gift. --  */
         a_posted                              bit  default 0,          /* Has this transaction been posted (in this table)? --  */
         a_posted_to_gl                        bit  default 0,          /* Has this transaction been posted to the GL - yes (1) or no (0)? --  */
@@ -3220,33 +3312,33 @@ create table a_descriptives (
         a_last_gift_amount                    decimal(14,4)  null,     /* most recent gift amount --  */
         a_ntl_gift                            datetime  null,          /* next to last gift date --  */
         a_ntl_gift_amount                     decimal(14,4)  null,     /* next to last gift amount --  */
-        a_act_lookahead_date                  datetime  null,          /* ending date now or in the future that we're estimating giving by --  */
-        a_act_lookback_date                   datetime  null,          /* starting date in the past that we're estimating giving by --  */
-        a_act_average_amount                  decimal(14,4)  null,     /* actual average giving since first gift or within last 12 months, whichever is shorter --  */
-        a_act_average_months                  integer  null,           /* number of months for the above average. --  */
-        a_act_average_interval                float  null,             /* actual average interval since first gift or within last 12 months, whichever is shorter --  */
-        a_act_count                           integer  null,           /* actual number of gifts within the lookahead/lookback range --  */
-        a_act_total                           decimal(14,4)  null,     /* actual total giving within the lookahead/lookback range --  */
-        a_hist_1_amount                       decimal(14,4)  null,     /* gift histogram most common - amount --  */
-        a_hist_1_count                        integer  null,           /* gift histogram most common - count --  */
-        a_hist_1_first                        datetime  null,          /* gift histogram most common - first occurrence --  */
-        a_hist_1_last                         datetime  null,          /* gift histogram most common - last occurrence --  */
-        a_hist_2_amount                       decimal(14,4)  null,     /* gift histogram 2nd most common - amount --  */
-        a_hist_2_count                        integer  null,           /* gift histogram 2nd most common - count --  */
-        a_hist_2_first                        datetime  null,          /* gift histogram 2nd most common - first occurrence --  */
-        a_hist_2_last                         datetime  null,          /* gift histogram 2nd most common - last occurrence --  */
-        a_hist_3_amount                       decimal(14,4)  null,     /* gift histogram 3nd most common - amount --  */
-        a_hist_3_count                        integer  null,           /* gift histogram 3nd most common - count --  */
-        a_hist_3_first                        datetime  null,          /* gift histogram 3nd most common - first occurrence --  */
-        a_hist_3_last                         datetime  null,          /* gift histogram 3nd most common - last occurrence --  */
+        a_act_lookahead_date                  datetime  null,          /* *ending date now or in the future that we're creating giving averages from --  */
+        a_act_lookback_date                   datetime  null,          /* *starting date in the past that we're creating giving averages from --  */
+        a_act_average_amount                  decimal(14,4)  null,     /* actual average giving since first gift or within last 12 months, whichever is shorter, with an exception for giving that occurs less frequently than every six months --  */
+        a_act_average_months                  integer  null,           /* number of months for the above average --  */
+        a_act_average_interval                float  null,             /* actual average interval since first gift or within last 12 months, whichever is shorter, with an exception for giving that occurs less frequently than every six months --  */
+        a_act_count                           integer  null,           /* total number of gifts within the generated descriptives --  */
+        a_act_total                           decimal(14,4)  null,     /* total giving within the generated descriptives --  */
+        a_hist_1_amount                       decimal(14,4)  null,     /* giving history most recent - amount --  */
+        a_hist_1_count                        integer  null,           /* giving history most recent - count --  */
+        a_hist_1_first                        datetime  null,          /* giving history most recent - first occurrence --  */
+        a_hist_1_last                         datetime  null,          /* giving history most recent - last occurrence --  */
+        a_hist_2_amount                       decimal(14,4)  null,     /* giving history 2nd most recent - amount --  */
+        a_hist_2_count                        integer  null,           /* giving history 2nd most recent - count --  */
+        a_hist_2_first                        datetime  null,          /* giving history 2nd most recent - first occurrence --  */
+        a_hist_2_last                         datetime  null,          /* giving history 2nd most recent - last occurrence --  */
+        a_hist_3_amount                       decimal(14,4)  null,     /* giving history 3rd most recent - amount --  */
+        a_hist_3_count                        integer  null,           /* giving history 3rd most recent - count --  */
+        a_hist_3_first                        datetime  null,          /* giving history 3rd most recent - first occurrence --  */
+        a_hist_3_last                         datetime  null,          /* giving history 3rd most recent - last occurrence --  */
         a_lapsed_days                         int  null,               /* number of days past the expected next gift date (positive) or before that date (negative) --  */
-        a_is_current                          int  null,               /* is this giving pattern current (1) or lapsed/past (0)? --  */
-        a_increase_pct                        float  null,             /* is this giving pattern an increase over the previous one? --  */
-        a_increase_date                       datetime  null,          /* is this giving pattern an increase over the previous one? --  */
-        a_decrease_pct                        float  null,             /* is this giving pattern a decrease over the previous one? --  */
-        a_decrease_date                       datetime  null,          /* is this giving pattern a decrease over the previous one? --  */
-        a_is_extra                            int  null,               /* is this giving pattern a one-time / occasional "extra" amount? --  */
-        a_is_approximate                      int  null,               /* is this giving pattern an average of sporadic/irregular/as-able gifts? --  */
+        a_is_current                          int  null,               /* is this giving pattern current (2), lapsing (1), or lapsed/past (0)? --  */
+        a_increase_pct                        float  null,             /* the percent increase of the most recent increase in monthly giving between two consecutive giving histories --  */
+        a_increase_date                       datetime  null,          /* the date of the most recent increase in monthly giving between two consecutive giving histories --  */
+        a_decrease_pct                        float  null,             /* the percent decrease of the most recent decrease in monthly giving between two consecutive giving histories --  */
+        a_decrease_date                       datetime  null,          /* the date of the most recent decrease in monthly giving between two consecutive giving histories --  */
+        a_is_extra                            int  null,               /* is there an extra gift within the current giving pattern within the past year? --  */
+        a_is_approximate                      int  null,               /* is one of the three most recent giving histories an approximation of sporadic/irregular/as-able gifts? --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -3262,26 +3354,26 @@ create table a_descriptives_hist (
         a_ledger_number                       char(10)  not null,      /* ledger number for the donations --  */
         p_donor_partner_key                   char(10)  not null,      /* Partner ID for the donor --  */
         a_cost_center                         char(20)  not null,      /* fund that this donor is giving toward --  */
-        a_hist_id                             integer  not null,       /* unique id for this histogram entry --  */
+        a_hist_id                             integer  not null,       /* unique id for this history entry --  */
         a_amount                              decimal(14,4)  not null,
                                                                       /* amount given --  */
         a_first_gift                          datetime  null,          /* first gift date --  */
         a_last_gift                           datetime  null,          /* most recent gift date --  */
         a_ntl_gift                            datetime  null,          /* next to last gift date --  */
-        a_count                               integer  null,           /* actual number of gifts of this amount --  */
-        a_total                               decimal(14,4)  null,     /* actual total giving for this gift amount --  */
-        a_act_average_amount                  decimal(14,4)  null,     /* actual monthly average due to this gift amount --  */
-        a_act_average_months                  integer  null,           /* number of months used for the average --  */
-        a_act_average_interval                float  null,             /* actual average giving interval due to this gift amount --  */
-        a_merged_id                           integer  null,           /* if we're doing a merge of catch-up amounts, we indicate it here --  */
+        a_count                               integer  null,           /* actual number of gifts contributing to this giving pattern --  */
+        a_total                               decimal(14,4)  null,     /* actual total giving for this giving pattern --  */
+        a_act_average_amount                  decimal(14,4)  null,     /* actual monthly average due to this giving pattern --  */
+        a_act_average_months                  integer  null,           /* number of months used for the above average --  */
+        a_act_average_interval                float  null,             /* actual average giving interval due to this giving pattern --  */
+        a_merged_id                           integer  null,           /* *if we're doing a merge of giving patterns, we indicate it here --  */
         a_lapsed_days                         int  null,               /* number of days past the expected next gift date (positive) or before that date (negative) --  */
-        a_is_current                          int  null,               /* is this giving pattern current (1) or lapsed/past (0)? --  */
-        a_increase_pct                        float  null,             /* is this giving pattern an increase over the previous one? --  */
-        a_decrease_pct                        float  null,             /* is this giving pattern a decrease over the previous one? --  */
+        a_is_current                          int  null,               /* is this giving pattern current (2), lapsing (1), or lapsed/past (0)? --  */
+        a_increase_pct                        float  null,             /* the percent increase in monthly giving compared to the previous regular giving pattern --  */
+        a_decrease_pct                        float  null,             /* the percent decrease in monthly giving compared to the previous regular giving pattern --  */
         a_is_extra                            int  null,               /* is this giving pattern a one-time / occasional "extra" amount? --  */
         a_is_approximate                      int  null,               /* is this giving pattern an average of sporadic/irregular/as-able gifts? --  */
-        a_prev_end                            datetime  null,          /* date of the last gift in the previous giving interval --  */
-        a_next_start                          datetime  null,          /* date of the first gift in the next giving interval --  */
+        a_prev_end                            datetime  null,          /* *date of the last gift in the previous giving pattern --  */
+        a_next_start                          datetime  null,          /* *date of the first gift in the next giving pattern --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */

@@ -518,6 +518,22 @@ alter table h_benefits drop index h_ben_period_idx;
 /* go */
 
 
+/* r_group_sched */
+/* drop index r_group_sched.r_grp_sch_pk */ 
+/* go */
+
+
+/* r_group_sched_param */
+/* drop index r_group_sched_param.r_sparam_pk */ 
+/* go */
+
+
+/* r_group_sched_report */
+/* drop index r_group_sched_report.r_grp_sch_r_pk */ 
+/* go */
+alter table r_group_sched_report drop index r_schrpt_partner_idx;
+
+
 /* r_group */
 alter table r_group drop index r_grp_modfile_idx;
 /* drop index r_group.r_grp_pk */ 
@@ -762,6 +778,11 @@ alter table a_payroll_import drop index a_payrolli_payee_idx;
 
 /* a_payroll_item_class */
 /* drop index a_payroll_item_class.a_payroll_ic_pk */ 
+/* go */
+
+
+/* a_payroll_item_subclass */
+/* drop index a_payroll_item_subclass.a_payroll_isc_pk */ 
 /* go */
 
 

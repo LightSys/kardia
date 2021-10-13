@@ -252,6 +252,15 @@ revoke select on ra to public;
 /* h_benefits */
 
 
+/* r_group_sched */
+
+
+/* r_group_sched_param */
+
+
+/* r_group_sched_report */
+
+
 /* r_group */
 
 
@@ -373,6 +382,9 @@ revoke select on ra to public;
 
 
 /* a_payroll_item_class */
+
+
+/* a_payroll_item_subclass */
 
 
 /* a_payroll_form_group */
