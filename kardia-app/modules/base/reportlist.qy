@@ -6,6 +6,9 @@ reportlist "system/query"
     recipquery "query/parameter" { type=string; style=strnull; }
 
     sql = " select
+		status = null,
+		error = null,
+		file = null,
 		:p:p_partner_key,
 		email = (   select
 				:ci:p_contact_data
@@ -16,7 +19,8 @@ reportlist "system/query"
 				:ci:p_record_status_code = 'A' and
 				:ci:p_contact_type = 'E'
 			    order by
-				condition(:ci:p_contact_id = :s:p_preferred_email_id, 1, 2)
+				condition(:ci:p_contact_id = :s:p_preferred_email_id, 1, 2),
+				:ci:s_date_created desc
 			    limit
 				1
 			    ),
@@ -50,13 +54,33 @@ reportlist "system/query"
 	    ;
 
 	    select
-		1
+		status = :rsr:r_group_sched_status,
+		error = :rsr:r_group_sched_error,
+		file = :rsr:r_group_sched_file,
+		p_partner_key = :rsr:p_recipient_partner_key,
+		email = :rsr:r_group_sched_address,
+		disp_name = rtrim(condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name + ' ' + condition(char_length(:p:p_given_name + :p:p_surname) > 0, '- ', ''), '') + isnull(:p:p_given_name + ' ','') + isnull(:p:p_surname + ' ','')),
+		params = (  select
+				sum(:rp:r_param_name + '=' + isnull(:rrp:r_param_value, :rp:r_param_default) + ', ') - ', '
+			    from
+				/apps/kardia/data/Kardia_DB/r_group_param/rows rp,
+				/apps/kardia/data/Kardia_DB/r_group_report_param/rows rrp
+			    where
+				:rp:r_group_name = :rrp:r_group_name and
+				:rp:r_param_name = :rrp:r_param_name and
+				:rrp:r_group_name = :rsr:r_group_name and
+				:rrp:r_delivery_method = :rsr:r_delivery_method and
+				:rrp:p_recipient_partner_key = :rsr:p_recipient_partner_key and
+				:rrp:r_report_id = :rsr:r_report_id
+			    )
 	    from
-		/apps/kardia/data/Kardia_DB/r_group_sched_report/rows rsr,
+		identity /apps/kardia/data/Kardia_DB/r_group_sched_report/rows rsr,
 		/apps/kardia/data/Kardia_DB/p_partner/rows p
 	    where
 		:parameters:reciprptname = :rsr:r_group_name and
 		:parameters:reciprptsid = :rsr:r_group_sched_id and
 		:p:p_partner_key = :rsr:p_recipient_partner_key
+	    having
+		:parameters:recipquery is null or :parameters:recipquery = :p_partner_key or charindex(:parameters:recipquery, lower(:disp_name)) > 0 or charindex(:parameters:recipquery, lower(:params)) > 0 or charindex(:parameters:recipquery, lower(:email)) > 0
 	    ";
     }

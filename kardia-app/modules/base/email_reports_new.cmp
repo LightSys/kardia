@@ -177,15 +177,19 @@ email_reports "widget/component-decl"
 				:rs:s_created_by,
 				:rs:s_date_modified,
 				:rs:s_modified_by,
-				cnt = (select count(1) from /apps/kardia/data/Kardia_DB/r_group_sched_report/rows rsr where :rsr:r_group_name = :rs:r_group_name),
-				scnt = (select count(1) from /apps/kardia/data/Kardia_DB/r_group_sched_report/rows rsr where :rsr:r_group_name = :rs:r_group_name and :rsr:r_group_sched_status = 'S'),
-				ecnt = (select count(1) from /apps/kardia/data/Kardia_DB/r_group_sched_report/rows rsr where :rsr:r_group_name = :rs:r_group_name and (:rsr:r_group_sched_status = 'I' or :rsr:r_group_sched_status = 'F'))
+				cnt = count(1),
+				scnt = isnull(sum(condition(:rsr:r_group_sched_status = 'S', 1, 0)), 0),
+				ecnt = isnull(sum(condition(:rsr:r_group_sched_status = 'I' or :rsr:r_group_sched_status = 'F', 1, 0)), 0)
 			    from
-				/apps/kardia/data/Kardia_DB/r_group_sched/rows rs
+				identity /apps/kardia/data/Kardia_DB/r_group_sched/rows rs,
+				/apps/kardia/data/Kardia_DB/r_group_sched_report/rows rsr
 			    where
-				:rs:r_group_name = :parameters:rptname
-			    order by
+				:rs:r_group_name = :parameters:rptname and
+				:rsr:r_group_name = :rs:r_group_name
+			    group by
 				:rs:r_group_sched_date desc
+			    having
+				:rs:r_group_name is not null
 			    ";
 
 		    scheds_link "widget/rule"
@@ -200,7 +204,9 @@ email_reports "widget/component-decl"
 			{
 			height=200;
 
-			t_schdate "widget/table-column" { title="Date"; value=runclient(isnull(:schedsosrc:datetxt, 'Current Recipients')); width=425; style=bold; }
+			t_schdate "widget/table-column" { title="Date"; value=runclient(isnull(:schedsosrc:datetxt, 'Current Recipients')); width=200; style=bold; }
+			t_schnum "widget/table-column" { title="Count"; value=runclient(isnull('' + :schedsosrc:scnt + ' sent, ' + :schedsosrc:ecnt + ' errors', '')); width=225; style=bold; }
+			t_schstat "widget/table-column" { title="Status"; type=progress; padding=0; style=bold; value=runclient(condition(:schedsosrc:scnt is not null, (:schedsosrc:scnt + :schedsosrc:ecnt ) / :schedsosrc:cnt, null)); bar_color="#59b550"; bar_padding=1; bar_textcolor=black; width=100; }
 			t_schcnt "widget/table-column" { title="#"; fieldname="cnt"; width=75; style=bold; align=right; }
 			}
 		    }
@@ -240,11 +246,42 @@ email_reports "widget/component-decl"
 			{
 			height=354;
 			rowcache_size=200;
+			initial_selection=no;
 
+			t_stat "widget/table-column" { title="Status"; type=image; value=runclient(condition(:recipsosrc:status is null, '/sys/images/trans_1.gif', condition(:recipsosrc:status == 'N' or :recipsosrc:status == 'T', '/sys/images/dotted_check.gif', condition(:recipsosrc:status == 'S', '/sys/images/green_check.gif', '/sys/images/red_x.gif')))); width=40; }
 			t_pkey "widget/table-column" { title="Partner"; fieldname=p_partner_key; width=50; }
-			t_pname "widget/table-column" { title="Name"; fieldname=disp_name; width=190; }
-			t_email "widget/table-column" { title="Email"; fieldname=email; width=200;  }
+			t_nameemail "widget/table-column" { title="Name"; value=runclient(:recipsosrc:disp_name + ' <' + isnull(:recipsosrc:email, '') + '>'); width=390; caption_value=runclient(:recipsosrc:error); caption_fgcolor=red; }
+			//t_email "widget/table-column" { title="Email"; fieldname=email; width=200;  }
 			t_params "widget/table-column" { title="Params"; fieldname=params; width=120; }
+
+			recipdetail "widget/table-row-detail"
+			    {
+			    width=610; height=24;
+			    display_for=runclient(:recipsosrc:status is not null and char_length(:recipsosrc:file) > 1);
+
+			    recipdetailhbox "widget/hbox"
+				{
+				x=0; y=4; width=610; height=24;
+				align=center;
+
+				viewrpt_btn "widget/textbutton"
+				    {
+				    height=22; width=130;
+				    text = "View Report";
+
+				    view_cn "widget/connector"
+					{
+					event=Click;
+					target=email_reports;
+					action=Launch;
+					Multi = 1;
+					Source = runclient(:recipsosrc:file);
+					Width=800;
+					Height=600;
+					}
+				    }
+				}
+			    }
 			}
 
 		    ctls_hbox "widget/hbox"

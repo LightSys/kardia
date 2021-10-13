@@ -73,8 +73,8 @@ reportlist "system/report"
 	    {
 	    x=0;
 	    width=80; height=0;
-	    columns=4;
-	    widths=7,20,23,26;
+	    columns=5;
+	    widths=6,18,21,24,7;
 	    colsep=1;
 	    nullformat="";
 	    moneyformat = "-###,###,##0.00";
@@ -92,10 +92,11 @@ reportlist "system/report"
 		topborder=0.3;
 		bottomborder=0.05;
 
-		h_id "report/table-cell" { value='Partner ID'; align=center; }
+		h_id "report/table-cell" { value='Partner'; align=center; }
 		h_name "report/table-cell" { value='Name'; align=center; }
 		h_email "report/table-cell" { value='Email'; align=center; }
 		h_set "report/table-cell" { value='Settings'; align=center; }
+		h_stat "report/table-cell" { value='Status'; align=center; }
 		}
 
 	    one_recip "report/table-row"
@@ -110,6 +111,18 @@ reportlist "system/report"
 		d_name "report/table-cell" { value=runserver(:reportlist_qy:disp_name); }
 		d_email "report/table-cell" { value=runserver(:reportlist_qy:email); }
 		d_set "report/table-cell" { value=runserver(:reportlist_qy:params); }
+		d_stat "report/table-cell" { value=runserver(condition(:reportlist_qy:status = 'E', 'Error', condition(:reportlist_qy:status == 'S', 'Sent', condition(:reportlist_qy:status = 'N', 'Not Sent', condition(:reportlist_qy:status = 'I', 'Bad Email', condition(:reportlist_qy:status == 'F', 'Failed', condition(:reportlist_qy:status = 'T', 'Temp Error', '-'))))))); }
+		}
+
+	    error_msg "report/table-row"
+		{
+		condition=runserver(:reportlist_qy:error is not null and (:reportlist_qy:status = 'F' or :reportlist_qy:status = 'I' or :reportlist_qy:status = 'T'));
+		allowbreak=no;
+		fontsize=9;
+		font=helvetica;
+		margintop = 0.2;
+		marginbottom = 0.2;
+		value=runserver('Error message for ' + :reportlist_qy:email + ': ' + :reportlist_qy:error);
 		}
 	    }
 	}
