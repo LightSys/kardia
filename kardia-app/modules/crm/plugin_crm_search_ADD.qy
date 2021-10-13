@@ -12,6 +12,7 @@ plugin_crm_search_ADD "system/query"
 
     sql = " -- First, we need to get our search stage information and config.
 	    declare collection iresult scope application;
+	    declare collection pcodes;
 	    declare object stage;
 	    select
 		:stage:op = :s:p_stage_op,
@@ -33,8 +34,11 @@ plugin_crm_search_ADD "system/query"
 
 	    -- Find the list of zip codes that match the criteria.  Use
 	    -- haversine formula for calculating great circle distance
+	    insert
+		collection pcodes
 	    select
-		:stage:postal_codes = sum(:g2:p_feature_name + ',') - ','
+		postal_code = :g2:p_feature_name,
+		distance = 2.0 * atan2(sqrt(power(sin((radians(:g1:p_latitude) - radians(:g2:p_latitude)) / 2),2) + cos(radians(:g1:p_latitude)) * cos(radians(:g2:p_latitude)) * power(sin((radians(:g1:p_longitude) - radians(:g2:p_longitude)) / 2),2)), sqrt(1 - power(sin((radians(:g1:p_latitude) - radians(:g2:p_latitude)) / 2),2) + cos(radians(:g1:p_latitude)) * cos(radians(:g2:p_latitude)) * power(sin((radians(:g1:p_longitude) - radians(:g2:p_longitude)) / 2),2))) * 3958.8
 	    from
 		/apps/kardia/data/Kardia_DB/p_gazetteer/rows g1,
 		/apps/kardia/data/Kardia_DB/p_gazetteer/rows g2
@@ -44,6 +48,11 @@ plugin_crm_search_ADD "system/query"
 		:g2:p_feature_type = 'PC' and
 		2.0 * atan2(sqrt(power(sin((radians(:g1:p_latitude) - radians(:g2:p_latitude)) / 2),2) + cos(radians(:g1:p_latitude)) * cos(radians(:g2:p_latitude)) * power(sin((radians(:g1:p_longitude) - radians(:g2:p_longitude)) / 2),2)), sqrt(1 - power(sin((radians(:g1:p_latitude) - radians(:g2:p_latitude)) / 2),2) + cos(radians(:g1:p_latitude)) * cos(radians(:g2:p_latitude)) * power(sin((radians(:g1:p_longitude) - radians(:g2:p_longitude)) / 2),2))) * 3958.8 <= :stage:geo_within
 	    ;
+	    select
+		:stage:postal_codes = sum(:pc:postal_code + ',') -','
+	    from
+		collection pcodes pc
+	    ;
 
 	    -- Get the intermediate results
 	    insert
@@ -51,7 +60,8 @@ plugin_crm_search_ADD "system/query"
 	    select
 		:l:p_partner_key,
 		p_search_session_id = :parameters:search_id,
-		p_search_stage_id = :parameters:cur_stage
+		p_search_stage_id = :parameters:cur_stage,
+		pcode = condition(:l:p_country_code = 'US' or isnull(char_length(:l:p_country_code), 0) < 2, substring(:l:p_postal_code,1,5), :l:p_postal_code)
 	    from
 		/apps/kardia/data/Kardia_DB/p_location/rows l
 	    where
@@ -69,5 +79,16 @@ plugin_crm_search_ADD "system/query"
 		:p_search_stage_id
 	    update set
 		:p_partner_key = :p_partner_key
+	    ;
+
+	    update
+		identity collection iresult ir,
+		collection pcodes pc
+	    set
+		:ir:p_description = '' + condition(:pc:distance = 0.0, 0, round(:pc:distance,1)) + ' mi from ' + :stage:geo_of
+	    where
+		:ir:pcode = :pc:postal_code and
+		:stage:geo_within is not null and
+		:stage:geo_of is not null
 	    ";
     }

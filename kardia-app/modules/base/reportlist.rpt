@@ -1,0 +1,129 @@
+$Version=2$
+reportlist "system/report"
+    {
+    title = "List of Report Recipients";
+
+    document_format="application/pdf";
+
+    resolution = 300;
+    pagewidth=85;
+    pageheight=66;
+    marginleft=2.5;
+    marginright=2.5;
+    margintop=3;
+    marginbottom=3;
+
+    group_name "report/parameter" { type=string; style=strnull; }
+    sched_id "report/parameter" { type=integer; }
+    querytxt "report/parameter" { type=string; style=strnull; }
+
+    reportinfo_qy "report/query"
+	{
+	sql = " select * from /apps/kardia/data/Kardia_DB/r_group/rows r where :r:r_group_name = :this:group_name";
+	}
+
+    // We use aggregates here to force a null row if none match
+    schedinfo_qy "report/query"
+	{
+	sql = "	select
+		    r_group_sched_date = first(:r_group_sched_date),
+		    r_group_sched_status = first(:r_group_sched_status),
+		    r_group_sched_sent_by = first(:r_group_sched_sent_by)
+		from
+		    /apps/kardia/data/Kardia_DB/r_group_sched/rows rs
+		where
+		    :rs:r_group_name = :this:group_name and
+		    :rs:r_group_sched_id = :this:sched_id
+		";
+	}
+
+    reportlist_qy "report/query"
+	{
+	sql = " exec /apps/kardia/modules/base/reportlist.qy
+		    reciprptname = :this:group_name,
+		    reciprptsid = condition(:this:sched_id > 0, :this:sched_id, null),
+		    recipquery = condition(char_length(:this:querytxt) > 0, :this:querytxt, null)
+		";
+	}
+
+    main_form "report/form"
+	{
+	source = reportinfo_qy, schedinfo_qy;
+
+	hdrimg "report/image"
+	    {
+	    x=67.85;y=0;
+	    height=4;
+	    width = 12.15;
+	    source = /apps/kardia/data/Site.struct:site_report_logo;
+	    }
+
+	rpt_title "report/area"
+	    {
+	    x=0; y=0; width=80; height=4;
+	    font=helvetica;
+	    align=left;
+	    t_d0 "report/data" { fontsize=15; style=bold; value = runserver("Report Recipients for " + :reportinfo_qy:r_group_description + "\n"); }
+	    t_d1 "report/data" { fontsize=10; value = runserver(condition(not (:this:sched_id > 0), "Current Recipient List", "Sending Date: " + dateformat(:schedinfo_qy:r_group_sched_date, "dd-MMM-yyyy")) + "\n"); }
+	    t_d2 "report/data" { fontsize=10; value = runserver(condition(char_length(:this:querytxt) = 0, "Including Complete List", "Searching For: " + :this:querytxt) + "\n"); }
+	    t_d15 "report/data" { fontsize=8; value = runserver("Printed by: " + user_name() + " on " + getdate() + "\n\n\n"); dateformat="dd-MMM-yyyy hh:mm:ss"; }
+	    }
+
+	recips_table "report/table"
+	    {
+	    x=0;
+	    width=80; height=0;
+	    columns=5;
+	    widths=6,18,21,24,7;
+	    colsep=1;
+	    nullformat="";
+	    moneyformat = "-###,###,##0.00";
+	    dateformat = "dd-MMM-yyyy";
+	    bottomborder=0.3;
+	    margintop=0;
+	    source=reportlist_qy;
+
+	    hdr "report/table-row"
+		{
+		header = yes;
+		font=helvetica;
+		fontsize=9;
+		style=bold;
+		topborder=0.3;
+		bottomborder=0.05;
+
+		h_id "report/table-cell" { value='Partner'; align=center; }
+		h_name "report/table-cell" { value='Name'; align=center; }
+		h_email "report/table-cell" { value='Email'; align=center; }
+		h_set "report/table-cell" { value='Settings'; align=center; }
+		h_stat "report/table-cell" { value='Status'; align=center; }
+		}
+
+	    one_recip "report/table-row"
+		{
+		allowbreak=no;
+		fontsize=9;
+		font=helvetica;
+		margintop = 0.2;
+		marginbottom = 0.2;
+
+		d_id "report/table-cell" { value=runserver(:reportlist_qy:p_partner_key); }
+		d_name "report/table-cell" { value=runserver(:reportlist_qy:disp_name); }
+		d_email "report/table-cell" { value=runserver(:reportlist_qy:email); }
+		d_set "report/table-cell" { value=runserver(:reportlist_qy:params); }
+		d_stat "report/table-cell" { value=runserver(condition(:reportlist_qy:status = 'E', 'Error', condition(:reportlist_qy:status == 'S', 'Sent', condition(:reportlist_qy:status = 'N', 'Not Sent', condition(:reportlist_qy:status = 'I', 'Bad Email', condition(:reportlist_qy:status == 'F', 'Failed', condition(:reportlist_qy:status = 'T', 'Temp Error', '-'))))))); }
+		}
+
+	    error_msg "report/table-row"
+		{
+		condition=runserver(:reportlist_qy:error is not null and (:reportlist_qy:status = 'F' or :reportlist_qy:status = 'I' or :reportlist_qy:status = 'T'));
+		allowbreak=no;
+		fontsize=9;
+		font=helvetica;
+		margintop = 0.2;
+		marginbottom = 0.2;
+		value=runserver('Error message for ' + :reportlist_qy:email + ': ' + :reportlist_qy:error);
+		}
+	    }
+	}
+    }

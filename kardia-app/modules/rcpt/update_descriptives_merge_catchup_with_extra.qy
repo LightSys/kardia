@@ -14,8 +14,8 @@ update_descriptives_merge_catchup_with_extra "system/query"
 
 	    -- Step One: Locate
 	    update
-		identity /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh1,
-		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2
+		identity collection a_descriptives_hist dh1,
+		collection a_descriptives_hist dh2
 	    set
 		:a_merged_id = isnull(:dh2:a_merged_id, :dh2:a_hist_id),
                 :a_is_extra = 2
@@ -65,8 +65,8 @@ update_descriptives_merge_catchup_with_extra "system/query"
                         0
                         )
             from
-                /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh1,
-                /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2
+                collection a_descriptives_hist dh1,
+                collection a_descriptives_hist dh2
             where
                 (:parameters:fund is null or :parameters:fund = :dh2:a_cost_center) and
 		(:parameters:donor is null or :parameters:donor = :dh2:p_donor_partner_key) and
@@ -78,8 +78,8 @@ update_descriptives_merge_catchup_with_extra "system/query"
 
 	    -- Step Three: Merge
 	    update
-		identity /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2,
-		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh1,
+		identity collection a_descriptives_hist dh2,
+		collection a_descriptives_hist dh1,
                 collection tmp_intermediate_vals t
 	    set
                 :dh2:a_count = :dh2:a_count + :t:count,
@@ -128,7 +128,7 @@ update_descriptives_merge_catchup_with_extra "system/query"
 
             -- Step Four: Update Merged
             update
-		identity /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh1,
+		identity collection a_descriptives_hist dh1,
                 collection tmp_intermediate_vals t
 	    set
 		:dh1:a_total = :dh1:a_total - :t:catchup_amount,
@@ -147,7 +147,7 @@ update_descriptives_merge_catchup_with_extra "system/query"
 
 	    -- Step Five: Delete Merged
 	    delete
-		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh1
+		collection a_descriptives_hist dh1
 	    where
 		(:parameters:fund is null or :parameters:fund = :dh1:a_cost_center) and
 		(:parameters:donor is null or :parameters:donor = :dh1:p_donor_partner_key) and

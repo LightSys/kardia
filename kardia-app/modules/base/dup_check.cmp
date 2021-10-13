@@ -27,7 +27,7 @@ dup_check "widget/component-decl"
     //    - email domain mutual substring check and user part mutual substring
     //      check.
 
-    usethis_button "widget/parameter" { type=integer; default=0; }
+    usethis_button "widget/parameter" { type=integer; default=0; deploy_to_client=yes; }
 
     ScanForDups "widget/component-decl-action" { }
 

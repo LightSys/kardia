@@ -1,11 +1,11 @@
 $Version=2$
-plugin_base_config_gl "widget/component-decl"
+plugin_base_config_payroll "widget/component-decl"
     {
     width=828;
     height=490;
-    title = "GL Currencies";
-    description = "Configure multicurrency accounting for the General Ledger";
-    sequence = 502;
+    title = "Payroll";
+    description = "Configure payroll options";
+    sequence = 750;
 
     vbox "widget/vbox"
 	{
@@ -47,10 +47,12 @@ plugin_base_config_gl "widget/component-decl"
 		{
 		allow_query=no;
 
-		//fund_label_1 "widget/label" { height=15; text="Fund numbering: this specifies the minimum and maximum allowed values for GL fund codes."; }
-		base_lbl "widget/label" { height=16; style=bold; text="Base Currency Selection:"; }
+		pay_lbl "widget/label" { height=16; style=bold; text="Payroll Configuration:"; }
 
-		base_curr "widget/component" { height=24; path="/sys/cmp/smart_field.cmp"; height=24; field="GLCurrBase"; text="Base Currency:"; width=250; label_width=150; ctl_type=editbox; }
+		pay_label_1 "widget/label" { height=30; text="Liabilities Transfer: when payroll is run, liabilities are transferred to the general fund for later payment.  Here you configure which GL liability account balances remain in the individual funds."; }
+		pay_noxfr "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="NoXferLiabs"; text="No Transfer Liab. Accts:"; width=400; label_width=150; ctl_type=editbox; }
+		pay_label_2 "widget/label" { height=30; text="Issue Paychecks: enable this if you write your own paychecks or initiate your own direct deposits (in Cash Disbursements) for any of your payroll groups.  Disable it if a payroll service issues all of your paychecks and you later disburse those funds in one lump sum via check or EFT."; }
+		pay_dochecks "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="PayIssueCks"; text="Issue Checks:"; width=400; label_width=150; ctl_type=dropdown; sql="select 'Yes, issue individual disbursements', 'Y'; select 'No, pay via payroll service', 'N'"; }
 		}
 	    }
 

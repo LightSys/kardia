@@ -232,27 +232,23 @@ fund_gift_list "system/report"
 			changes =
 			condition( isnull( (
 					    select 1
-					    from /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g, /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i
-					    where :g:p_donor_partner_id = :gift_qy:id and :g:a_ledger_number = :this:ledger and :g:a_period < :startperiod_qy:a_period and
-						:i:a_ledger_number = :g:a_ledger_number and :i:a_batch_number = :g:a_batch_number and :i:a_gift_number = :g:a_gift_number and
-						-- charindex(',' + rtrim(:i:a_cost_center) + ',', :cclist_qy:cclist) > 0
+					    from /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i
+					    where :i:p_dn_donor_partner_id = :gift_qy:id and :i:a_ledger_number = :this:ledger and :i:a_period < :gift_qy:period and
 						:i:a_cost_center = :cclist_qy:a_cost_center
 					    limit 1
 					    ), 0) == 0, 'NEW DONOR\n', '') +
 			condition( isnull( (
 					    select 1
-					    from /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g, /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i
-					    where :g:p_donor_partner_id = :gift_qy:id and :g:a_ledger_number = :this:ledger and :g:a_period < :startperiod_qy:a_period and
-						:i:a_ledger_number = :g:a_ledger_number and :i:a_batch_number = :g:a_batch_number and :i:a_gift_number = :g:a_gift_number and
-						-- charindex(',' + rtrim(:i:a_cost_center) + ',', :cclist_qy:cclist) > 0 and :i:a_amount = :gift_qy:amount
+					    from /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i
+					    where :i:p_dn_donor_partner_id = :gift_qy:id and :i:a_ledger_number = :this:ledger and :i:a_period < :gift_qy:period and
+						:i:a_amount = :gift_qy:amount and
 						:i:a_cost_center = :cclist_qy:a_cost_center
 					    limit 1
 					    ), 0) == 0, 'NEW AMOUNT\n', '') +
 			condition( isnull( (
 					    select 1
-					    from /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g, /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i
-					    where :g:p_donor_partner_id = :gift_qy:id and :g:a_ledger_number = :this:ledger and :g:a_period < :startperiod_qy:a_period and
-						:i:a_ledger_number = :g:a_ledger_number and :i:a_batch_number = :g:a_batch_number and :i:a_gift_number = :g:a_gift_number and
+					    from /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i
+					    where :i:p_dn_donor_partner_id = :gift_qy:id and :i:a_ledger_number = :this:ledger and :i:a_period < :startperiod_qy:a_period and
 						:i:a_cost_center = :gift_qy:a_cost_center
 					    limit 1
 					    ), 0) == 0, 'NEW DESIG\n', '') +

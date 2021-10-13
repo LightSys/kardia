@@ -268,6 +268,11 @@ alter table m_list_membership
 go
 
 
+alter table m_list_document
+	drop constraint m_doc_pk
+go
+
+
 alter table e_contact_autorecord
 	drop constraint e_autorec_pk
 go
@@ -748,6 +753,21 @@ alter table h_benefits
 go
 
 
+alter table r_group_sched
+	drop constraint r_grp_sch_pk
+go
+
+
+alter table r_group_sched_param
+	drop constraint r_sparam_pk
+go
+
+
+alter table r_group_sched_report
+	drop constraint r_grp_sch_r_pk
+go
+
+
 alter table r_group
 	drop constraint r_grp_pk
 go
@@ -968,6 +988,16 @@ alter table a_ledger_office
 go
 
 
+alter table a_currency
+	drop constraint a_curr_pk
+go
+
+
+alter table a_currency_exch_rate
+	drop constraint a_curr_pk
+go
+
+
 alter table a_payroll
 	drop constraint a_payroll_pk
 go
@@ -980,6 +1010,11 @@ go
 
 alter table a_payroll_period
 	drop constraint a_payperiod_idx
+go
+
+
+alter table a_payroll_period_payee
+	drop constraint a_payperiodpayee_pk
 go
 
 
@@ -1020,6 +1055,11 @@ go
 
 alter table a_payroll_item_class
 	drop constraint a_payroll_ic_pk
+go
+
+
+alter table a_payroll_item_subclass
+	drop constraint a_payroll_isc_pk
 go
 
 
@@ -1085,6 +1125,16 @@ go
 
 alter table a_receipt_type
 	drop constraint a_rcpttype_pk
+go
+
+
+alter table a_gift_payment_type
+	drop constraint a_gpmttype_pk
+go
+
+
+alter table a_receipt_mailing
+	drop constraint a_giftlist_pk
 go
 
 
@@ -1178,6 +1228,11 @@ alter table a_subtrx_gift_item
 go
 
 
+alter table a_subtrx_gift_intent
+	drop constraint a_gifttrxin_pk
+go
+
+
 alter table a_subtrx_gift_rcptcnt
 	drop constraint a_rcptno_pk
 go
@@ -1260,6 +1315,16 @@ go
 
 alter table a_descriptives_hist
 	drop constraint a_descrhist_pk
+go
+
+
+alter table a_pledge
+	drop constraint a_pledge_pk
+go
+
+
+alter table a_intent_type
+	drop constraint a_intenttype_pk
 go
 
 
@@ -1418,13 +1483,23 @@ alter table t_project
 go
 
 
+alter table t_project
+	drop constraint t_parent_idx
+go
+
+
 alter table t_sprint
 	drop constraint t_sprint_pk
 go
 
 
 alter table t_sprint
-	drop constraint t_sprint_proj_idx
+	drop constraint t_sprint_idx
+go
+
+
+alter table t_sprint_project
+	drop constraint t_sprintproj_pk
 go
 
 

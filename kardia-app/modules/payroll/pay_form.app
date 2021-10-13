@@ -3,7 +3,7 @@ pay_form_app "widget/page"
     {
     title = "Payroll Form";
 
-    width=800; height=630;
+    width=800; height=700;
     widget_template = "/apps/kardia/tpl/kardia-system.tpl", runserver("/apps/kardia/tpl/" + user_name() + ".tpl");
     background="/apps/kardia/images/bg/light_bgnd.jpg";
 
@@ -23,7 +23,7 @@ pay_form_app "widget/page"
     pf_cmp "widget/component"
 	{
 	path = "/apps/kardia/modules/payroll/pay_form.cmp";
-	x=10;y=5;width=780;height=620;
+	x=10;y=5;width=780;height=690;
 
 	ledger=runserver(:this:ledger);
 	payperiod=runserver(:this:payperiod);

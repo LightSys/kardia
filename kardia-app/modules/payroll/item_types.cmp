@@ -21,7 +21,37 @@ item_types_cmp "widget/component-decl"
 	{
 	it_ledger "widget/parameter" { type=string; default=runserver(:this:ledger); }
 
-	sql = "SELECT :it:a_ledger_number, :a_payroll_item_type_code, :a_payroll_item_class_code, :a_ref_account_code, :a_xfer_cost_center, :a_xfer_account_code, :a_state_province, :a_desc, :a_comment, :s_date_created, :s_created_by, :s_date_modified, :s_modified_by, txtit = :a_payroll_item_type_code + ' - ' + :it:a_desc, txtic = :a_payroll_item_class_code + ' - ' + :ic:a_desc, txtac = :a_ref_account_code + ' ' + :a:a_acct_desc  FROM IDENTITY /apps/kardia/data/Kardia_DB/a_payroll_item_type/rows it, /apps/kardia/data/Kardia_DB/a_payroll_item_class/rows ic, /apps/kardia/data/Kardia_DB/a_account/rows a  WHERE :it:a_ledger_number = :parameters:it_ledger and :it:a_payroll_item_class_code = :ic:a_payroll_item_class_code and :it:a_ref_account_code *= :a:a_account_code and :it:a_ledger_number *= :a:a_ledger_number";
+	sql = "	SELECT
+		    :it:a_ledger_number,
+		    :a_payroll_item_type_code,
+		    :a_payroll_item_class_code,
+		    :a_payroll_item_subclass_code,
+		    :a_ref_account_code,
+		    :a_xfer_cost_center,
+		    :a_xfer_account_code,
+		    :a_state_province,
+		    :a_desc,
+		    :a_comment,
+		    :s_date_created,
+		    :s_created_by,
+		    :s_date_modified,
+		    :s_modified_by,
+		    txtit = :a_payroll_item_type_code + ' - ' + :it:a_desc,
+		    txtic = :a_payroll_item_class_code + ' - ' + :ic:a_desc + isnull(', ' + :isc:a_payroll_item_subclass_code + ' - ' + :isc:a_desc, ''),
+		    txtac = :a_ref_account_code + ' ' + :a:a_acct_desc
+		FROM IDENTITY
+		    /apps/kardia/data/Kardia_DB/a_payroll_item_type/rows it,
+		    /apps/kardia/data/Kardia_DB/a_payroll_item_class/rows ic,
+		    /apps/kardia/data/Kardia_DB/a_payroll_item_subclass/rows isc,
+		    /apps/kardia/data/Kardia_DB/a_account/rows a
+		WHERE
+		    :it:a_ledger_number = :parameters:it_ledger
+		    and :it:a_payroll_item_class_code = :ic:a_payroll_item_class_code
+		    and :it:a_ref_account_code *= :a:a_account_code
+		    and :it:a_ledger_number *= :a:a_ledger_number
+		    and :isc:a_payroll_item_class_code =* :it:a_payroll_item_class_code
+		    and :isc:a_payroll_item_subclass_code =* :it:a_payroll_item_subclass_code
+		";
 	baseobj = "/apps/kardia/data/Kardia_DB/a_payroll_item_type/rows";
 
 	replicasize=50;
@@ -49,10 +79,10 @@ item_types_cmp "widget/component-decl"
 		rowheight = 18;
 		mode=dynamicrow;
 
-		t_typ "widget/table-column" { title="Line Item Type"; fieldname="txtit"; width=180; }
-		t_cls "widget/table-column" { title="Class"; fieldname="txtic"; width=180; }
+		t_typ "widget/table-column" { title="Line Item Type"; fieldname="txtit"; width=160; }
+		t_cls "widget/table-column" { title="Class / Subclass"; fieldname="txtic"; width=220; }
 		t_acct "widget/table-column" { title="GL Acct"; fieldname="txtac"; width=180; }
-		t_comm "widget/table-column" { title="Comments"; fieldname="a_comment"; width=180; }
+		t_comm "widget/table-column" { title="Comments"; fieldname="a_comment"; width=160; }
 		}
 	    }
 
@@ -69,11 +99,39 @@ item_types_cmp "widget/component-decl"
 	    it_vbox "widget/vbox"
 		{
 		x=8;y=352;width=300;height=136;
-		spacing=8;
+		spacing=6;
 		cellsize=20;
 
 		f_typ "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_payroll_item_type_code; text="Type Code:"; ctl_type="editbox"; tooltip="Payroll Line Item Type Code (3 letters)"; label_width=100; empty_desc="3 or 4 letter unique code"; }
-		f_cls "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_payroll_item_class_code; text="Class:"; ctl_type="dropdown"; tooltip="Payroll Line Item Class"; label_width=100; sql="select :a_payroll_item_class_code + ' - ' + :a_desc, :a_payroll_item_class_code from /apps/kardia/data/Kardia_DB/a_payroll_item_class/rows order by :a_payroll_item_class_code"; }
+		f_cls "widget/component"
+		    {
+		    path="/sys/cmp/smart_field.cmp";
+		    field=a_payroll_item_class_code;
+		    text="Class:";
+		    ctl_type="dropdown";
+		    tooltip="Payroll Line Item Class";
+		    label_width=100;
+		    sql="select :a_payroll_item_class_code + ' - ' + :a_desc, :a_payroll_item_class_code from /apps/kardia/data/Kardia_DB/a_payroll_item_class/rows order by :a_payroll_item_class_code";
+
+		    class_sel_cn "widget/connector"
+			{
+			event="DataChange";
+			event_condition=runclient(char_length(:Value) > 0);
+			target=f_scls;
+			action=SetGroup;
+			Group = runclient(:Value);
+			}
+		    }
+		f_scls "widget/component"
+		    {
+		    path="/sys/cmp/smart_field.cmp";
+		    field=a_payroll_item_subclass_code;
+		    text="Subclass:";
+		    ctl_type="dropdown";
+		    tooltip="Payroll Line Item Subclass";
+		    label_width=100;
+		    sql="select :isc:a_payroll_item_subclass_code + ' - ' + :ic:a_desc + ': ' + :isc:a_desc, :isc:a_payroll_item_subclass_code, 0, :isc:a_payroll_item_class_code from /apps/kardia/data/Kardia_DB/a_payroll_item_class/rows ic, /apps/kardia/data/Kardia_DB/a_payroll_item_subclass/rows isc where :ic:a_payroll_item_class_code = :isc:a_payroll_item_class_code order by :ic:a_payroll_item_class_code, :isc:a_payroll_item_subclass_code";
+		    }
 		f_desc "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_desc; text="Descrip:"; ctl_type="editbox"; tooltip="Item Type Description (appears on payroll screens & reports)"; label_width=100; }
 		f_comm "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_comment; text="Comment:"; ctl_type="editbox"; tooltip="Item Type Comments (does not appear on reports, screens, etc.)"; label_width=100; }
 		}

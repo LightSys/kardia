@@ -7,6 +7,7 @@ partner_window "widget/page"
     icon = "/apps/kardia/images/icons/ionicons-people.svg";
     widget_template = "/apps/kardia/tpl/kardia-system.tpl", runserver("/apps/kardia/tpl/" + user_name() + ".tpl");
     background="/apps/kardia/images/bg/light_bgnd.jpg";
+    max_requests = 5;
 
     // If needing to pre-load a particular partner record, use this parameter.
     id "widget/parameter" { type=string; default=null; }

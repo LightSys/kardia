@@ -41,6 +41,8 @@ intent_types "widget/component-decl"
 		    group by
 			:it:a_ledger_number,
 			:it:a_intent_type
+		    having
+			:it:a_ledger_number is not null
 		    ";
 	    baseobj = "/apps/kardia/data/Kardia_DB/a_intent_type/rows";
 	    replicasize=50;

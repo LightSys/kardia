@@ -67,6 +67,8 @@ manage_pledges "widget/component-decl"
 		    group by
 			:pl:a_ledger_number,
 			:pl:a_pledge_id
+		    having
+			:pl:a_ledger_number is not null
 		    ";
 	    baseobj = "/apps/kardia/data/Kardia_DB/a_pledge/rows";
 	    replicasize=100;

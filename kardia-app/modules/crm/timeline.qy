@@ -57,6 +57,55 @@ timeline "system/query"
 		:prt:p_relation_type = :pr:p_relation_type
 	    ;
 
+	    -- Donor intent specified - if general gift permission available
+	    insert
+		collection tmp_collection
+	    select
+		p_partner_key = :parameters:partner_key,
+		e_activity_date = isnull(:p:a_pledge_date, :p:s_date_created),
+		e_activity_type = 'GIFT',
+		e_reference_info = :p:name,
+		e_info = :it:a_intent_desc + ': ' + (select sum(condition(has_endorsement('kardia:gift_amt', 'kardia:ledger:' + :p:a_ledger_number), '' + isnull(:p:a_amount, 'total ' + :p:a_total_amount) + ' to ', 'To ') + :cc:a_cost_center + ' - ' + :cc:a_cc_desc + ', ') - ', ' from /apps/kardia/data/Kardia_DB/a_cost_center/rows cc where :cc:a_ledger_number = :p:a_ledger_number and :cc:a_cost_center = :p:a_cost_center) + isnull('\n' + :p:a_comment, ''),
+		e_whom = (select :p_partner_key from /apps/kardia/data/Kardia_DB/p_staff/rows s where :s:p_kardia_login = :p:s_created_by),
+		e_initiation = 'P'
+	    from
+		/apps/kardia/data/Kardia_DB/a_pledge/rows p,
+		/apps/kardia/data/Kardia_DB/a_intent_type/rows it
+	    where
+		:p:p_donor_partner_id = :parameters:partner_key and
+		:p:a_is_active = 1 and
+		:it:a_ledger_number = :p:a_ledger_number and
+		:it:a_intent_type = :p:a_intent_type
+	    having
+		has_endorsement('kardia:gift', 'kardia:ledger:' + substring(:e_reference_info,1,charindex('|',:e_reference_info) - 1)) or
+		has_endorsement('kardia:gift_manage', 'kardia:ledger:' + substring(:e_reference_info,1,charindex('|',:e_reference_info) - 1))
+	    ;
+
+	    -- Donor intent specified - if no general permission, only funds we manage.
+	    insert
+		collection tmp_collection
+	    select
+		p_partner_key = :parameters:partner_key,
+		e_activity_date = isnull(:p:a_pledge_date, :p:s_date_created),
+		e_activity_type = 'GIFT',
+		e_reference_info = :p:name,
+		e_info = :it:a_intent_desc + ': ' + (select sum(condition(has_endorsement('kardia:gift_amt', 'kardia:ledger:' + :p:a_ledger_number), '' + isnull(:p:a_amount, 'total ' + :p:a_total_amount) + ' to ', 'To ') + :cc:a_cost_center + ' - ' + :cc:a_cc_desc + ', ') - ', ' from /apps/kardia/data/Kardia_DB/a_cost_center/rows cc where :cc:a_ledger_number = :p:a_ledger_number and :cc:a_cost_center = :p:a_cost_center) + isnull('\n' + :p:a_comment, ''),
+		e_whom = (select :p_partner_key from /apps/kardia/data/Kardia_DB/p_staff/rows s where :s:p_kardia_login = :p:s_created_by),
+		e_initiation = 'P'
+	    from
+		/apps/kardia/data/Kardia_DB/a_pledge/rows p,
+		/apps/kardia/data/Kardia_DB/a_intent_type/rows it
+	    where
+		:p:p_donor_partner_id = :parameters:partner_key and
+		charindex(',' + rtrim(:p:a_ledger_number) + '|' + rtrim(:p:a_cost_center) + ',', ',' + :parameters:my_cclist + ',') > 0 and
+		:p:a_is_active = 1 and
+		:it:a_ledger_number = :p:a_ledger_number and
+		:it:a_intent_type = :p:a_intent_type
+	    having
+		not has_endorsement('kardia:gift', 'kardia:ledger:' + substring(:e_reference_info,1,charindex('|',:e_reference_info) - 1)) and
+		not has_endorsement('kardia:gift_manage', 'kardia:ledger:' + substring(:e_reference_info,1,charindex('|',:e_reference_info) - 1))
+	    ;
+
 	    -- Donation given - if general gift permission is available.
 	    insert
 		collection tmp_collection

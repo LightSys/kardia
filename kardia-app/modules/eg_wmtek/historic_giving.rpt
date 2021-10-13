@@ -13,15 +13,15 @@ historic_giving "system/report"
     marginbottom=2;
 
     // Give it an intelligent filename
-    filename = runserver("ss_historic_" + isnull(:this:costctr, 'ALLFUNDS') + "_" + :this:period + isnull("s" + :this:startday, "") + isnull("-" + :this:endperiod, "") + isnull("e" + :this:endday, "") + '.csv');
+    filename = runserver("ss_historic_" + condition(charindex(',', :this:include_funds) > 0, 'MULTIPLE', isnull(:this:include_funds, 'ALLFUNDS')) + "_" + :this:start_period + isnull("s" + :this:startday, "") + isnull("-" + :this:end_period, "") + isnull("e" + :this:endday, "") + '.csv');
 
     // Parameters for GL Fund Balance
     ledger "report/parameter" { type=string; default=null; }
-    costctr "report/parameter" { type=string; default=null; }
-    period "report/parameter" { type=string; default=null; }
-    endperiod "report/parameter" { type=string; default=null; }
-    startday "report/parameter" { type=integer; default=null; }
-    endday "report/parameter" { type=integer; default=null; }
+    include_funds "report/parameter" { type=string; default=null; }
+    start_period "report/parameter" { type=string; default=null; }
+    startday "report/parameter" { type=integer; default=null; description="Start Day (1-31):"; }
+    end_period "report/parameter" { type=string; default=null; }
+    endday "report/parameter" { type=integer; default=null; description="End Day (1-31):"; }
 
     // Get name of ledger
     ledger_qy "report/query"
@@ -40,7 +40,7 @@ historic_giving "system/report"
 		FROM
 			/apps/kardia/data/Kardia_DB/a_period/rows p
 		WHERE
-			:p:a_period = :this:period and
+			:p:a_period = :this:start_period and
 			:p:a_ledger_number = :this:ledger
 		";
 	}
@@ -56,29 +56,23 @@ historic_giving "system/report"
 		FROM
 			/apps/kardia/data/Kardia_DB/a_period/rows p
 		WHERE
-			:p:a_period = isnull(:this:endperiod,:this:period) and
+			:p:a_period = isnull(:this:end_period,:this:start_period) and
 			:p:a_ledger_number = :this:ledger
 		";
-	}
-
-    // Get name of supplied cost center.  Use an aggregate to ensure we get a NULL (rather
-    // than no record) in the event a cost center is not supplied.
-    costctr_qy "report/query"
-	{
-	sql = "select a_cc_desc = first(:a_cc_desc) from /apps/kardia/data/Kardia_DB/a_cost_center/rows c where :c:a_ledger_number = :this:ledger and :c:a_cost_center = :this:costctr";
 	}
 
     // What costctrs are we reporting on (get a list of them)?
     cclist_qy "report/query"
 	{
 	sql = "	SELECT
-			cclist = ',' + sum(:c:a_cost_center + ', '),
+			cclisttxt = ',' + sum(:c:a_cost_center + ', '),
+			cclist = ',' + sum(:c:a_cost_center + ','),
 			cnt = count(:c:a_cost_center)
 		FROM
 			/apps/kardia/data/Kardia_DB/a_cost_center/rows c
 		WHERE
 			:c:a_ledger_number = :this:ledger and
-			(:c:a_bal_cost_center = :this:costctr or :c:a_cost_center = :this:costctr)
+			(charindex(',' + rtrim(:c:a_bal_cost_center) + ',', ',' + :this:include_funds + ',') > 0 or charindex(',' + rtrim(:c:a_cost_center) + ',', ',' + :this:include_funds + ',') > 0)
 		ORDER BY
 			:c:a_cost_center asc
 		";
@@ -181,7 +175,7 @@ historic_giving "system/report"
     // Entire report
     form "report/form"
 	{
-	source = ledger_qy,startperiod_qy,endperiod_qy,costctr_qy,cclist_qy;
+	source = ledger_qy,startperiod_qy,endperiod_qy,cclist_qy;
 
 	hdrimg "report/image"
 	    {
@@ -202,7 +196,7 @@ historic_giving "system/report"
 		value = runserver("Statement Period: " + dateformat(:startperiod_qy:my_start_day, 'dd-MMM-yyyy') + ' to ' + dateformat(:endperiod_qy:my_end_day, 'dd-MMM-yyyy') + "\n");
 		}
 	    t_d1 "report/data" { fontsize=8; value = runserver("Historic Data from " + :ledger_qy:a_ledger_desc + "\n"); }
-	    t_d2 "report/data" { condition=runserver(:cclist_qy:cnt > 0); fontsize=8; value = runserver("For Funds: " + substring(:cclist_qy:cclist - ', ', 2) + "\n"); }
+	    t_d2 "report/data" { condition=runserver(:cclist_qy:cnt > 0); fontsize=8; value = runserver("For Funds: " + substring(:cclist_qy:cclisttxt - ', ', 2) + "\n"); }
 	    t_d4 "report/data" { fontsize=8; value = runserver("Printed by: " + user_name() + " on " + getdate() + "\n"); }
 	    }
 	

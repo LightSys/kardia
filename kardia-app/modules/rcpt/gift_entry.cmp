@@ -88,7 +88,7 @@ gift_entry "widget/component-decl"
 	{
 	pr_ledger "widget/parameter" { param_name=ledger; type=string; }
 	pr_receipt "widget/parameter" { param_name=receipt; type=string; }
-	sql = "	select :p_donor_partner_id from /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows where :a_ledger_number = :parameters:ledger and :a_receipt_number = :parameters:receipt";
+	sql = "	select :p_donor_partner_id, :p_ack_partner_id from /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows where :a_ledger_number = :parameters:ledger and :a_receipt_number = :parameters:receipt";
 	autoquery=never;
 	on_found_receipt "widget/connector"
 	    {
@@ -96,6 +96,14 @@ gift_entry "widget/component-decl"
 	    target=f_rcpt_donorid;
 	    action=SetValue;
 	    Value=runclient(:prevrcpt_osrc:p_donor_partner_id);
+	    }
+	on_found_receipt2 "widget/connector"
+	    {
+	    event=EndQuery;
+	    event_condition=runclient(:prevrcpt_osrc:p_ack_partner_id is not null);
+	    target=f_rcpt_ackid;
+	    action=SetValue;
+	    Value=runclient(:prevrcpt_osrc:p_ack_partner_id);
 	    }
 	}
 
@@ -382,7 +390,7 @@ gift_entry "widget/component-decl"
 			    action=QueryText;
 			    cx__case_insensitive = 1;
 			    query=runclient(:srchbox:content);
-			    field_list = runclient("p_partner_key,*p_given_name*,*p_surname*,*p_org_name*,p_legacy_key_1,*p_legacy_key_2*");
+			    field_list = runclient("p_partner_key,*p_given_name*,*p_surname*,*p_org_name*,p_legacy_key_1,p_legacy_key_2*");
 			    }
 			}
 
@@ -587,6 +595,7 @@ gift_entry "widget/component-decl"
 		    allow_modify = runclient(isnull(:receipts_osrc:a_posted, 0) == 0);
 		    allow_new = runclient(isnull(:receipts_osrc:a_posted, 0) == 0);
 		    allow_query = no;
+		    allow_merge = yes;
 
 		    // clear the previous receipt # when a new receipt is viewed
 		    clear_prev_on_view "widget/connector"
@@ -695,6 +704,7 @@ gift_entry "widget/component-decl"
 				path="/apps/kardia/modules/rcpt/field_donor_with_new.cmp";
 				label="Donor";
 				field="p_donor_partner_id";
+				ledger=runserver(:this:ledger);
 
 				donor_hints "widget/hints" { style=strnull; }
 
@@ -727,6 +737,7 @@ gift_entry "widget/component-decl"
 				label="Acknowledgement";
 				object_name="Person";
 				field="p_ack_partner_id";
+				ledger=runserver(:this:ledger);
 
 				ack_hints "widget/hints" { style=strnull; }
 
@@ -759,6 +770,7 @@ gift_entry "widget/component-decl"
 				label="Transferred Via";
 				object_name="Person";
 				field="p_pass_partner_id";
+				ledger=runserver(:this:ledger);
 				}
 
 			    f_rcpt_postdate "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; label_width=120; text='Postmark Date:'; field='a_gift_postmark_date'; ctl_type=datetime; date_only=1; default_time="12:00:00"; }
@@ -885,7 +897,7 @@ gift_entry "widget/component-decl"
 					    :pa:p_partner_key *= :da:p_partner_key and
 					    :da:a_gl_ledger_number = :parameters:a_ledger_number and
 					    -- The below just forces the join into an outer join mode
-					    substring(:p:p_partner_key,1,0) *= substring(:pa:p_partner_key,1,0)
+					    char_length(substring(:p:p_partner_key,1,1)) *= char_length(substring(:pa:p_partner_key,1,1))
 					limit
 					    1
 					";
@@ -1118,7 +1130,7 @@ gift_entry "widget/component-decl"
 			    auto_new_on_view_after_new_rcpt "widget/connector"
 				{
 				event=EndQuery;
-				event_condition=runclient(:Reason != 'Discard' and not (char_length(:line_items_osrc:a_ledger_number) > 0) and :rcpt_form:form_mode == 'View' and :rcpt_form:form_prev_mode == 'New');
+				event_condition=runclient(not (char_length(:line_items_osrc:a_ledger_number) > 0) and :rcpt_form:form_mode == 'View' and :rcpt_form:form_prev_mode == 'New' and :rcpt_form:form_prev_action != 'Discard');
 				event_delay = 0.25;
 				target = desig_form;
 				action = New;
