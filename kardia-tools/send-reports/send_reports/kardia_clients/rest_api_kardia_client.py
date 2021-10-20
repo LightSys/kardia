@@ -49,14 +49,6 @@ class RestAPIKardiaClient(KardiaClient):
         return params
 
 
-    def _get_contact_info_for_partner(self, partnerId: str) -> List[str]:
-        # only handling email for now
-        self.kardia.partner.setParams(res_attrs="basic")
-        preferredEmailRequest = partial(self.kardia.partner.getPartnerPreferredEmail, partnerId)
-        preferredEmailJson = self._make_api_request(preferredEmailRequest)
-        return preferredEmailJson["response"]["email"]
-
-    
     def _get_template(self, template_file: str) -> str:
         # Not using kardia_api for this, since it's trivial to just request a file manually
         template_url = f'{self.kardia_url}/files/{template_file}'
@@ -88,18 +80,18 @@ class RestAPIKardiaClient(KardiaClient):
             hour = schedReportInfo["date_to_send"]["hour"]
             minute = schedReportInfo["date_to_send"]["minute"]
             second = schedReportInfo["date_to_send"]["second"]
+            email = schedReportInfo["recipient_email"]
 
             partnerRequest = partial(self.kardia.partner.getPartner, schedReportInfo["recipient_partner_key"])
             partnerJson = self._make_api_request(partnerRequest)
             recipientName = partnerJson["partner_name"]
 
-            recipientContactInfo = self._get_contact_info_for_partner(schedReportInfo["recipient_partner_key"])
             params = self._get_params_for_sched_report(schedReportId)
 
             template = self._get_template(schedReportInfo["template_file"])
 
             schedReport = ScheduledReport(schedReportId, schedBatchId, reportFile, year, month, day, hour, minute,
-                second, recipientName, recipientContactInfo, template, params)
+                second, recipientName, email, template, params)
             schedReports.append(schedReport)
         
         return schedReports

@@ -25,7 +25,7 @@ class EmailReportSender(ReportSender):
 
     # contact_info is assumed to be a string email
     def send_report(self, report_path, scheduled_report):
-        if scheduled_report.recipient_contact_info is None:
+        if not scheduled_report.recipient_contact_info:
             return SendingInfo(
                 SentStatus.INVALID_EMAIL_ERROR,
                 None,
