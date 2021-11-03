@@ -62,7 +62,7 @@ class RestAPIKardiaClient(KardiaClient):
         return template
 
     
-    def get_scheduled_reports_to_be_sent(self):
+    def get_scheduled_reports_to_be_sent(self, filters):
         self.kardia.report.setParams(res_attrs="basic")
         schedReportJson = self._make_api_request(self.kardia.report.getSchedReportsToBeSent)
         schedReports = []
@@ -70,7 +70,14 @@ class RestAPIKardiaClient(KardiaClient):
         for schedReportId, schedReportInfo in schedReportJson.items():
             if schedReportId.startswith("@id"):
                 continue
-            if schedReportInfo["delivery_method"] != "E":
+            if (filters.report_group_name is not None) and \
+                (schedReportInfo["report_group_name"] != filters.report_group_name):
+                continue
+            if (filters.report_group_sched_id is not None) and \
+                (schedReportInfo["report_group_sched_id"] != filters.report_group_sched_id):
+                continue
+            if (filters.delivery_method is not None) and \
+                (schedReportInfo["delivery_method"] != filters.delivery_method):
                 continue
             schedBatchId = schedReportInfo["sched_report_batch_name"]
             reportFile = schedReportInfo["report_file"]
