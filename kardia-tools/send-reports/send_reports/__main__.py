@@ -1,3 +1,4 @@
+import os
 import re
 import sys
 import syslog
@@ -6,7 +7,7 @@ import traceback
 from collections import defaultdict
 from send_reports.kardia_clients.kardia_client import KardiaClient
 from send_reports.kardia_clients.rest_api_kardia_client import RestAPIKardiaClient
-from send_reports.models import OSMLPath, ScheduledReport, SentStatus
+from send_reports.models import OSMLPath, ScheduledReport, ScheduledReportFilters, SentStatus
 from send_reports.senders.email_report_sender import EmailReportSender
 from send_reports.senders.sender import ReportSender
 from typing import List
@@ -16,6 +17,14 @@ def _handle_error(message, should_exit):
     syslog.syslog(syslog.LOG_ERR, f'{message} {traceback.format_exc()}')
     if should_exit:
         sys.exit(1)
+
+
+def _get_scheduled_report_filters() -> ScheduledReportFilters:
+    return ScheduledReportFilters(
+        os.environ.get("R_GROUP_NAME"),
+        os.environ.get("R_GROUP_SCHED_ID"),
+        os.environ.get("R_DELIVERY_METHOD")
+    )
 
 
 def _get_generated_report_path(generated_report_osml_dir: str) -> OSMLPath:
@@ -82,7 +91,9 @@ batches = None
 try:
     kardia_client = RestAPIKardiaClient(config["kardia_url"], config["user"], config["pw"])
     report_sender = EmailReportSender(config["email"]["smtp"])
-    scheduled_reports = kardia_client.get_scheduled_reports_to_be_sent()
+
+    scheduled_report_filters = _get_scheduled_report_filters()
+    scheduled_reports = kardia_client.get_scheduled_reports_to_be_sent(scheduled_report_filters)
 
     # If there are no scheduled reports to be sent, just exit now
     if not scheduled_reports:
