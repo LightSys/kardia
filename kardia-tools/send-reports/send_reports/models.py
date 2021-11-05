@@ -20,7 +20,7 @@ class ScheduledReportFilters:
         self.report_group_name = report_group_name or None
         try:
             self.report_group_sched_id = int(report_group_sched_id)
-        except ValueError:
+        except:
             self.report_group_sched_id = None
         self.delivery_method = delivery_method or None
 
