@@ -5,7 +5,8 @@ from functools import partial
 from kardia_api import Kardia
 from kardia_api.objects.report_objects import SchedReportBatchStatus, SchedReportStatus, SchedStatusTypes
 from send_reports.kardia_clients.kardia_client import KardiaClient
-from send_reports.models import OSMLPath, ScheduledReport, ScheduledReportParam, SendingInfo, SentStatus
+from send_reports.models import KardiaUserAgent, OSMLPath, ScheduledReport, ScheduledReportParam, SendingInfo, \
+    SentStatus
 from requests.models import Response
 from typing import Callable, Dict, List
 
@@ -61,7 +62,11 @@ class RestAPIKardiaClient(KardiaClient):
             template = template[:-13]
         return template
 
-    
+
+    def get_user_agent(self):
+        app_info_json = self._make_api_request(self.kardia.app_info.getAppInfo)
+        return KardiaUserAgent(app_info_json["app_name"], app_info_json["app_version"])
+
     def get_scheduled_reports_to_be_sent(self, filters):
         self.kardia.report.setParams(res_attrs="basic")
         schedReportJson = self._make_api_request(self.kardia.report.getSchedReportsToBeSent)

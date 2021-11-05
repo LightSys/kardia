@@ -14,6 +14,14 @@ class OSMLPath:
     def __repr__(self) -> str:
         return str(self.__dict__)
 
+class KardiaUserAgent:
+    def __init__(self, app_name: str, app_version: str):
+        self.app_name = app_name
+        self.app_version = app_version
+
+    def get_user_agent_string(self):
+        return f"{self.app_name}/{self.app_version}"
+
 class ScheduledReportFilters:
     def __init__(self, report_group_name: str, report_group_sched_id: str, delivery_method: str):
         # set to None if the filter shouldn't be applied
