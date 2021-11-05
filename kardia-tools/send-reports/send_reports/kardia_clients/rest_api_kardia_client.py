@@ -50,8 +50,13 @@ class RestAPIKardiaClient(KardiaClient):
 
 
     def _get_template(self, template_file: str) -> str:
+        template_url = ""
+        if template_file.startswith("/"):  # absolute path
+            base_url = self.kardia_url.partition("/apps/kardia")[0]
+            template_url = f"{base_url}{template_file}"
+        else:  # relative path
+            template_url = f"{self.kardia_url}/files/{template_file}"
         # Not using kardia_api for this, since it's trivial to just request a file manually
-        template_url = f'{self.kardia_url}/files/{template_file}'
         response = requests.get(template_url, auth=self.auth)
         # Need to strip out HTML wrapping the response
         template = response.text
