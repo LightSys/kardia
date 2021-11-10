@@ -113,7 +113,7 @@ advanced_search "widget/component-decl"
 			    :ss:s_modified_by,
 			    prevcnt = (select count(1) from /apps/kardia/data/Kardia_DB/p_partner_search_stage/rows ss2 where :ss2:p_search_id = :ss:p_search_id and :ss2:p_sequence < :ss:p_sequence),
 			    nextcnt = (select count(1) from /apps/kardia/data/Kardia_DB/p_partner_search_stage/rows ss2 where :ss2:p_search_id = :ss:p_search_id and :ss2:p_sequence > :ss:p_sequence),
-			    stage_description = eval(:p:stage_description_expr),
+			    stage_description = eval(:p:stage_description_expr, 'CPOS'),
 			    :p:icon,
 			    :p:stage_label,
 			    res = (select count(1) from collection advsearch sr where :sr:p_search_session_id = :ss:p_search_id and :sr:p_search_stage_id = :ss:p_search_stage_id)

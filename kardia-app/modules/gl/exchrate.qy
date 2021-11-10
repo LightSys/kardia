@@ -28,7 +28,7 @@ exchrate "system/query"
 	    ;
 
 	    select
-		:exchrate:rate = eval(':io:' + :parameters:foreign)
+		:exchrate:rate = eval(':io:' + :parameters:foreign, 'O')
 	    from
 		object expression ('/apps/kardia/modules/gl/exchangeratesapi.http' + '?base=' + :parameters:base + '/' + dateformat(:exchrate:date, 'yyyy-MM-dd') + '/rates') io
 	    where

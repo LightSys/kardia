@@ -48,7 +48,7 @@ generic_report_format "widget/component-decl"
 
 	cntry_hbox "widget/hbox"
 	    {
-	    condition=runserver(isnull(eval("(select :outer_type from " + :this:report_path + "?ls__type=system%2fstructure where :name = 'cntry_fmt')"), "") == 'report/parameter');
+	    condition=runserver(isnull(eval("(select :outer_type from " + :this:report_path + "?ls__type=system%2fstructure where :name = 'cntry_fmt')", 'CPOS'), "") == 'report/parameter');
 	    height=24;
 	    spacing=4;
 
