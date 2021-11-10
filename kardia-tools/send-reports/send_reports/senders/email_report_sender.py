@@ -54,6 +54,7 @@ class EmailReportSender(ReportSender):
             smtp = smtplib.SMTP(**self.smtp_params)
             smtp.send_message(msg)
             smtp.quit()
+            print( f"Sent to: {scheduled_report.recipient_contact_info}" )
         except smtplib.SMTPResponseException as se:
             return SendingInfo(
                 SentStatus.FAILURE_OTHER_ERROR,
