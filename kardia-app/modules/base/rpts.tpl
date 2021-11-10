@@ -37,4 +37,18 @@ rpts_new "widget/template"
 	height=26;
 	fl_height=0;
 	}
+    window "widget/childwindow"
+	{
+	titlebar=no;
+	visible=no;
+	border_style=solid;
+	border_color="#f8f8f8";
+	background=null;
+	bgcolor="#f8f8f8";
+	border_radius=12;
+	shadow_radius=4;
+	shadow_offset=2;
+	shadow_color="#808080";
+	shadow_angle=135;
+	}
     }

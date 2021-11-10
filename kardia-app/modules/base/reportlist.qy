@@ -4,12 +4,18 @@ reportlist "system/query"
     reciprptname "query/parameter" { type=string; }
     reciprptsid "query/parameter" { type=integer; }
     recipquery "query/parameter" { type=string; style=strnull; }
+    name "query/parameter" { type=string; style=strnull; }
+    recipstatus "query/parameter" { type=string; default='IFNST'; }
 
     sql = " select
+		name = :rr:name,
 		status = null,
 		error = null,
 		file = null,
 		:p:p_partner_key,
+		:rr:r_is_active,
+		:rr:r_delivery_method,
+		:rr:r_report_id,
 		email = (   select
 				:ci:p_contact_data
 			    from
@@ -45,19 +51,24 @@ reportlist "system/query"
 	    where
 		:parameters:reciprptname = :rr:r_group_name and
 		:parameters:reciprptsid is null and
+		(:parameters:name is null or :rr:name = :parameters:name) and
 		:rr:r_is_active = 1 and
 		:s:p_partner_key = :rr:p_recipient_partner_key and
 		:s:p_is_staff = 1 and
 		:p:p_partner_key = :s:p_partner_key
 	    having
-		:parameters:recipquery is null or :parameters:recipquery = :p_partner_key or charindex(:parameters:recipquery, lower(:disp_name)) > 0 or charindex(:parameters:recipquery, lower(:params)) > 0 or charindex(:parameters:recipquery, lower(:email)) > 0
+		(:parameters:recipquery is null or :parameters:recipquery = :p_partner_key or charindex(:parameters:recipquery, lower(:disp_name)) > 0 or charindex(:parameters:recipquery, lower(:params)) > 0 or charindex(:parameters:recipquery, lower(:email)) > 0)
 	    ;
 
 	    select
+		name = :rsr:name,
 		status = :rsr:r_group_sched_status,
 		error = :rsr:r_group_sched_error,
 		file = :rsr:r_group_sched_file,
 		p_partner_key = :rsr:p_recipient_partner_key,
+		r_is_active = null,
+		:rsr:r_delivery_method,
+		:rsr:r_report_id,
 		email = :rsr:r_group_sched_address,
 		disp_name = rtrim(condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name + ' ' + condition(char_length(:p:p_given_name + :p:p_surname) > 0, '- ', ''), '') + isnull(:p:p_given_name + ' ','') + isnull(:p:p_surname + ' ','')),
 		params = (  select
@@ -79,8 +90,10 @@ reportlist "system/query"
 	    where
 		:parameters:reciprptname = :rsr:r_group_name and
 		:parameters:reciprptsid = :rsr:r_group_sched_id and
-		:p:p_partner_key = :rsr:p_recipient_partner_key
+		:p:p_partner_key = :rsr:p_recipient_partner_key and
+		(:parameters:name is null or :rsr:name = :parameters:name) and
+		charindex(:rsr:r_group_sched_status, :parameters:recipstatus) > 0
 	    having
-		:parameters:recipquery is null or :parameters:recipquery = :p_partner_key or charindex(:parameters:recipquery, lower(:disp_name)) > 0 or charindex(:parameters:recipquery, lower(:params)) > 0 or charindex(:parameters:recipquery, lower(:email)) > 0
+		(:parameters:recipquery is null or :parameters:recipquery = :p_partner_key or charindex(:parameters:recipquery, lower(:disp_name)) > 0 or charindex(:parameters:recipquery, lower(:params)) > 0 or charindex(:parameters:recipquery, lower(:email)) > 0)
 	    ";
     }

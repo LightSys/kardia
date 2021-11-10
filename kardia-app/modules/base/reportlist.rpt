@@ -16,6 +16,7 @@ reportlist "system/report"
     group_name "report/parameter" { type=string; style=strnull; }
     sched_id "report/parameter" { type=integer; }
     querytxt "report/parameter" { type=string; style=strnull; }
+    status "report/parameter" { type=string; style=strnull; }
 
     reportinfo_qy "report/query"
 	{
@@ -42,7 +43,8 @@ reportlist "system/report"
 	sql = " exec /apps/kardia/modules/base/reportlist.qy
 		    reciprptname = :this:group_name,
 		    reciprptsid = condition(:this:sched_id > 0, :this:sched_id, null),
-		    recipquery = condition(char_length(:this:querytxt) > 0, :this:querytxt, null)
+		    recipquery = condition(char_length(:this:querytxt) > 0, :this:querytxt, null),
+		    recipstatus = :this:status
 		";
 	}
 
@@ -65,7 +67,7 @@ reportlist "system/report"
 	    align=left;
 	    t_d0 "report/data" { fontsize=15; style=bold; value = runserver("Report Recipients for " + :reportinfo_qy:r_group_description + "\n"); }
 	    t_d1 "report/data" { fontsize=10; value = runserver(condition(not (:this:sched_id > 0), "Current Recipient List", "Sending Date: " + dateformat(:schedinfo_qy:r_group_sched_date, "dd-MMM-yyyy")) + "\n"); }
-	    t_d2 "report/data" { fontsize=10; value = runserver(condition(char_length(:this:querytxt) = 0, "Including Complete List", "Searching For: " + :this:querytxt) + "\n"); }
+	    t_d2 "report/data" { fontsize=10; value = runserver(condition(char_length(:this:querytxt) = 0 and :this:status = 'IFNST', "Including Complete List\n", condition(char_length(:this:querytxt) > 0, "Searching For: " + :this:querytxt + "\n", "") + condition(:this:status == 'IF', "Status: Only Errors\n", "") + condition(:this:status == 'S', "Status: Only Sent\n", "") + condition(:this:status == 'NT', "Status: Not Sent or Retrying\n", ""))); }
 	    t_d15 "report/data" { fontsize=8; value = runserver("Printed by: " + user_name() + " on " + getdate() + "\n\n\n"); dateformat="dd-MMM-yyyy hh:mm:ss"; }
 	    }
 

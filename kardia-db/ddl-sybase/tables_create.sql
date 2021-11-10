@@ -2083,7 +2083,9 @@ create table r_group_param (
         r_pass_to_template                    bit,                     /* whether this parameter can be used for mail merge / template substitution --  */
         r_param_cmp_module                    varchar(64)  null,       /* component module (directory name) used for getting user input on this parameter. --  */
         r_param_cmp_file                      varchar(256)  null,      /* component file (.cmp) used for getting user input on this parameter. --  */
+        r_param_ui_sequence                   integer  null,           /* sequence the parameter comes in when presented to the user in the UI. --  */
         r_param_default                       varchar(1536)  null,     /* default value for the parameter (in string format). --  */
+        r_param_default_expr                  varchar(1536)  null,     /* expression to determine default value of the parameter --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
