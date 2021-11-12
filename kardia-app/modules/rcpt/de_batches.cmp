@@ -337,7 +337,8 @@ de_batches "widget/component-decl"
 			{
 			width=100; height=24;
 			text = "Save";
-			enabled = runclient(:dep_osrc:is_client_savable and char_length(:f_amt:content) > 0 and char_length(:f_cash_amt:content) > 0 and char_length(:f_checks:content) > 0 and char_length(:f_a_batch_desc:content) > 0 and not (:deposit_batch_form:form_mode == 'New' and :details_form:form_mode != 'New') and not (:deposit_batch_form:form_mode != 'New' and :details_form:form_mode == 'New'));
+			//enabled = runclient(:dep_osrc:is_client_savable and char_length(:f_amt:content) > 0 and char_length(:f_cash_amt:content) > 0 and char_length(:f_checks:content) > 0 and char_length(:f_a_batch_desc:content) > 0 and not (:deposit_batch_form:form_mode == 'New' and :details_form:form_mode != 'New') and not (:deposit_batch_form:form_mode != 'New' and :details_form:form_mode == 'New'));
+			enabled = runclient(:dep_osrc:is_client_savable and char_length(:f_amt:content) > 0 and char_length(:f_cash_amt:content) > 0 and char_length(:f_checks:content) > 0 and char_length(:f_a_batch_desc:content) > 0 and not (:deposit_batch_form:form_mode == 'New' and :details_form:form_mode != 'New') and not (:deposit_batch_form:form_mode != 'View' and :deposit_batch_form:form_mode != 'Modify' and :deposit_batch_form:form_mode != 'New' and :details_form:form_mode == 'New'));
 
 			bsave_cn "widget/connector" { event=Click; target=dep_osrc; action=SaveClients; }
 			}
