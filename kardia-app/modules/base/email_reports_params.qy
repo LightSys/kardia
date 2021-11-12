@@ -1,0 +1,33 @@
+$Version=2$
+email_reports_params "system/query"
+    {
+    r_group_name "query/parameter" { type=string; style=strnull; }
+    r_group_sched_id "query/parameter" { type=integer; }
+
+    sql = " select
+		:rgp:r_group_name,
+		r_group_sched_id = isnull(:rgsp:r_group_sched_id, :parameters:r_group_sched_id),
+		:rgp:r_param_name,
+		:rgp:r_param_description,
+		:rgp:r_param_cmp_module,
+		:rgp:r_param_cmp_file,
+		:rgp:r_param_ui_sequence,
+		:rgp:r_param_default,
+		:rgp:r_param_default_expr,
+		:rgp:r_is_required,
+		r_param_value = isnull(:rgsp:r_param_value, :rgp:r_param_default),
+		:rgp:r_is_sched_param,
+		s_date_created = isnull(:rgsp:s_date_created, :rgp:s_date_created),
+		s_created_by = isnull(:rgsp:s_created_by, :rgp:s_created_by),
+		s_date_modified = isnull(:rgsp:s_date_modified, :rgp:s_date_modified),
+		s_modified_by = isnull(:rgsp:s_modified_by, :rgp:s_modified_by)
+	    from
+		identity /apps/kardia/data/Kardia_DB/r_group_sched_param/rows rgsp,
+		/apps/kardia/data/Kardia_DB/r_group_param/rows rgp
+	    where
+		(:parameters:r_group_name is null or :rgsp:r_group_name = :parameters:r_group_name) and
+		(:parameters:r_group_sched_id is null or :rgsp:r_group_sched_id = :parameters:r_group_sched_id) and
+		:rgp:r_group_name = :rgsp:r_group_name and
+		:rgp:r_param_name = :rgsp:r_param_name
+	    ";
+    }

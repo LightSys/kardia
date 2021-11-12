@@ -1,11 +1,16 @@
 import abc
-from send_reports.models import OSMLPath, ScheduledReport, ScheduledReportParam, SendingInfo, SentStatus
+from send_reports.models import KardiaUserAgent, OSMLPath, ScheduledReport, ScheduledReportFilters, \
+    ScheduledReportParam, SendingInfo, SentStatus
 from typing import Dict, List
 
 class KardiaClient(abc.ABC):
 
     @abc.abstractmethod
-    def get_scheduled_reports_to_be_sent(self) -> List[ScheduledReport]:
+    def get_user_agent(self) -> KardiaUserAgent:
+        pass
+
+    @abc.abstractmethod
+    def get_scheduled_reports_to_be_sent(self, filters: ScheduledReportFilters) -> List[ScheduledReport]:
         pass
 
     @abc.abstractmethod

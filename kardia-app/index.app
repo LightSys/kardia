@@ -422,7 +422,7 @@ index "widget/page"
 						    from
 							object wildcard '/apps/kardia/modules/*/plugin_" + :tabpages:modname + "_app_*.app' a
 						    having
-							eval(isnull(:a:func_enable, '1')) != 0
+							eval(isnull(:a:func_enable, '1'), 'CPOS') != 0
 						    ;
 
 						    -- Return the list to the user
@@ -538,7 +538,7 @@ index "widget/page"
 						    from
 							object wildcard '/apps/kardia/modules/*/plugin_" + :tabpages:modname + "_report_*.app' r
 						    having
-							eval(isnull(:r:func_enable, '1')) != 0
+							eval(isnull(:r:func_enable, '1'), 'CPOS') != 0
 						    ;
 
 						    -- Return the list to the user

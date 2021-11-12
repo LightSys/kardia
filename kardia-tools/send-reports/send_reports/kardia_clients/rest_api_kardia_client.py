@@ -5,7 +5,8 @@ from functools import partial
 from kardia_api import Kardia
 from kardia_api.objects.report_objects import SchedReportBatchStatus, SchedReportStatus, SchedStatusTypes
 from send_reports.kardia_clients.kardia_client import KardiaClient
-from send_reports.models import OSMLPath, ScheduledReport, ScheduledReportParam, SendingInfo, SentStatus
+from send_reports.models import KardiaUserAgent, OSMLPath, ScheduledReport, ScheduledReportParam, SendingInfo, \
+    SentStatus
 from requests.models import Response
 from typing import Callable, Dict, List
 
@@ -49,17 +50,14 @@ class RestAPIKardiaClient(KardiaClient):
         return params
 
 
-    def _get_contact_info_for_partner(self, partnerId: str) -> List[str]:
-        # only handling email for now
-        self.kardia.partner.setParams(res_attrs="basic")
-        preferredEmailRequest = partial(self.kardia.partner.getPartnerPreferredEmail, partnerId)
-        preferredEmailJson = self._make_api_request(preferredEmailRequest)
-        return preferredEmailJson["response"]["email"]
-
-    
     def _get_template(self, template_file: str) -> str:
+        template_url = ""
+        if template_file.startswith("/"):  # absolute path
+            base_url = self.kardia_url.partition("/apps/kardia")[0]
+            template_url = f"{base_url}{template_file}"
+        else:  # relative path
+            template_url = f"{self.kardia_url}/files/{template_file}"
         # Not using kardia_api for this, since it's trivial to just request a file manually
-        template_url = f'{self.kardia_url}/files/{template_file}'
         response = requests.get(template_url, auth=self.auth)
         # Need to strip out HTML wrapping the response
         template = response.text
@@ -69,8 +67,12 @@ class RestAPIKardiaClient(KardiaClient):
             template = template[:-13]
         return template
 
-    
-    def get_scheduled_reports_to_be_sent(self):
+
+    def get_user_agent(self):
+        app_info_json = self._make_api_request(self.kardia.app_info.getAppInfo)
+        return KardiaUserAgent(app_info_json["app_name"], app_info_json["app_version"])
+
+    def get_scheduled_reports_to_be_sent(self, filters):
         self.kardia.report.setParams(res_attrs="basic")
         schedReportJson = self._make_api_request(self.kardia.report.getSchedReportsToBeSent)
         schedReports = []
@@ -78,7 +80,14 @@ class RestAPIKardiaClient(KardiaClient):
         for schedReportId, schedReportInfo in schedReportJson.items():
             if schedReportId.startswith("@id"):
                 continue
-            if schedReportInfo["delivery_method"] != "E":
+            if (filters.report_group_name is not None) and \
+                (schedReportInfo["report_group_name"] != filters.report_group_name):
+                continue
+            if (filters.report_group_sched_id is not None) and \
+                (schedReportInfo["report_group_sched_id"] != filters.report_group_sched_id):
+                continue
+            if (filters.delivery_method is not None) and \
+                (schedReportInfo["delivery_method"] != filters.delivery_method):
                 continue
             schedBatchId = schedReportInfo["sched_report_batch_name"]
             reportFile = schedReportInfo["report_file"]
@@ -88,18 +97,18 @@ class RestAPIKardiaClient(KardiaClient):
             hour = schedReportInfo["date_to_send"]["hour"]
             minute = schedReportInfo["date_to_send"]["minute"]
             second = schedReportInfo["date_to_send"]["second"]
+            email = schedReportInfo["recipient_email"]
 
             partnerRequest = partial(self.kardia.partner.getPartner, schedReportInfo["recipient_partner_key"])
             partnerJson = self._make_api_request(partnerRequest)
             recipientName = partnerJson["partner_name"]
 
-            recipientContactInfo = self._get_contact_info_for_partner(schedReportInfo["recipient_partner_key"])
             params = self._get_params_for_sched_report(schedReportId)
 
             template = self._get_template(schedReportInfo["template_file"])
 
             schedReport = ScheduledReport(schedReportId, schedBatchId, reportFile, year, month, day, hour, minute,
-                second, recipientName, recipientContactInfo, template, params)
+                second, recipientName, email, template, params)
             schedReports.append(schedReport)
         
         return schedReports

@@ -154,42 +154,6 @@ api_partner "system/querytree"
 		    }
 		}
 
-        PreferredEmail "system/querytree"
-        {
-        text = "PreferredEmail";
-
-        preferred_email "system/querytree"
-            {
-            sql = " declare object email_choices;
-
-                select
-                :email_choices:newest_email = first(:contact_info:p_contact_data)
-                from
-                /apps/kardia/data/Kardia_DB/p_contact_info/rows contact_info
-                where
-                :contact_info:p_contact_type = 'E' and
-                :contact_info:p_partner_key = :partner_list:partner_id
-                order by
-                :contact_info:s_date_created DESC
-                ;
-
-                select
-                :email_choices:staff_preferred_email = :contact_info:p_contact_data
-                from
-                /apps/kardia/data/Kardia_DB/p_staff/rows staff,
-                /apps/kardia/data/Kardia_DB/p_contact_info/rows contact_info
-                where
-                :partner_list:partner_id = :staff:p_partner_key and
-                :contact_info:p_contact_id = :staff:p_preferred_email_id
-                ;
-
-                select
-                name = 'response',
-                email = isnull(:email_choices:staff_preferred_email, :email_choices:newest_email)
-                ";
-            }
-        }
-
 	    Subscriptions "system/querytree"
 		{
 		text = "Subscriptions";

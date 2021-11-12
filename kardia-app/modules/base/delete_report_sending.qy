@@ -1,0 +1,37 @@
+$Version=2$
+delete_report_sending "system/query"
+    {
+    rptname "query/parameter" { type=string; badchars="/"; }
+    rptsid "query/parameter" { type=integer; }
+
+    sql = " -- Scheduled run
+	    delete
+		/apps/kardia/data/Kardia_DB/r_group_sched/rows
+	    where
+		:r_group_name = :parameters:rptname and
+		:r_group_sched_id = :parameters:rptsid
+	    ;
+
+	    -- Recipients
+	    delete
+		/apps/kardia/data/Kardia_DB/r_group_sched_report/rows
+	    where
+		:r_group_name = :parameters:rptname and
+		:r_group_sched_id = :parameters:rptsid
+	    ;
+
+	    -- Parameters
+	    delete
+		/apps/kardia/data/Kardia_DB/r_group_sched_param/rows
+	    where
+		:r_group_name = :parameters:rptname and
+		:r_group_sched_id = :parameters:rptsid
+	    ;
+
+	    -- Return data to caller
+	    select
+		name = 'Deleted',
+		r_group_name = :parameters:rptname,
+		r_group_sched_id = :parameters:rptsid
+	    ";
+    }

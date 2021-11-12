@@ -58,7 +58,7 @@ plugin_crm_searchreport_donor "system/report"
 		    :ss:s_date_modified,
 		    :ss:s_modified_by,
 		    prevcnt = (select count(1) from /apps/kardia/data/Kardia_DB/p_partner_search_stage/rows ss2 where :ss2:p_search_id = :ss:p_search_id and :ss2:p_sequence < :ss:p_sequence),
-		    stage_description = eval(:p:stage_description_expr),
+		    stage_description = eval(:p:stage_description_expr, 'CPOS'),
 		    :p:icon,
 		    :p:stage_label
 		from

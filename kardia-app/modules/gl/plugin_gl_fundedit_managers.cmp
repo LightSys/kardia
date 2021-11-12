@@ -251,7 +251,7 @@ plugin_gl_fundedit_managers "widget/component-decl"
 	    spacing=6;
 	    cellsize=20;
 
-	    info_lbl "widget/label" { height=32; value=runclient("Click the checkboxes for the reports that " + :mgr_osrc:disp_name + " should receive for " + :fund_osrc:a_cost_center + ", and click Close."); }
+	    info_lbl "widget/label" { height=32; value=runclient("Click the checkboxes for the reports that " + :mgr_osrc:disp_name + " should receive for fund " + :fund_osrc:a_cost_center + ", and click Close."); }
 
 	    reports_osrc "widget/osrc"
 		{
@@ -261,6 +261,7 @@ plugin_gl_fundedit_managers "widget/component-decl"
 			    rpt_ck = condition(isnull(:r:r_is_active,0),'/sys/images/checkbox_checked.png','/sys/images/checkbox_unchecked.png')
 			from
 			    /apps/kardia/data/Kardia_DB/r_group/rows g,
+			    /apps/kardia/data/Kardia_DB/r_group_param/rows gp,
 			    /apps/kardia/data/Kardia_DB/r_group_report/rows r,
 			    /apps/kardia/data/Kardia_DB/r_group_report_param/rows rp
 			where
@@ -270,7 +271,9 @@ plugin_gl_fundedit_managers "widget/component-decl"
 			    :r:p_recipient_partner_key = :rp:p_recipient_partner_key and
 			    :r:r_delivery_method = :rp:r_delivery_method and
 			    :r:r_report_id = :rp:r_report_id and
-			    :rp:r_param_name = 'costctr' 
+			    :gp:r_group_name = :g:r_group_name and
+			    :gp:r_param_name = 'costctr' and
+			    :gp:r_is_report_param = 1
 			group by
 			    :g:r_group_name
 			";

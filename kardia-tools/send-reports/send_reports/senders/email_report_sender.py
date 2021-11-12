@@ -24,8 +24,8 @@ class EmailReportSender(ReportSender):
         return replaceable_params
 
     # contact_info is assumed to be a string email
-    def send_report(self, report_path, scheduled_report):
-        if scheduled_report.recipient_contact_info is None:
+    def send_report(self, report_path, scheduled_report, kardia_user_agent):
+        if not scheduled_report.recipient_contact_info:
             return SendingInfo(
                 SentStatus.INVALID_EMAIL_ERROR,
                 None,
@@ -39,6 +39,7 @@ class EmailReportSender(ReportSender):
 
         # Create an email message and attach the report file
         msg = email.message_from_string(email_text, policy=email.policy.EmailPolicy())
+        msg["User-Agent"] = kardia_user_agent.get_user_agent_string()
         # These headers necessary for add_attachment to notice there's an existing email body and not just overwrite it
         msg["Content-Type"] = 'text/plain; charset="utf-8"'
         msg["Content-Transfer-Encoding"] = "7bit"
@@ -53,6 +54,7 @@ class EmailReportSender(ReportSender):
             smtp = smtplib.SMTP(**self.smtp_params)
             smtp.send_message(msg)
             smtp.quit()
+            print( f"Sent to: {scheduled_report.recipient_contact_info}" )
         except smtplib.SMTPResponseException as se:
             return SendingInfo(
                 SentStatus.FAILURE_OTHER_ERROR,

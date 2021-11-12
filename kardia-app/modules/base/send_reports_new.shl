@@ -1,0 +1,11 @@
+$Version=2$
+send_reports_new "system/shell"
+{
+    program = "/usr/bin/sudo";
+    arg="sudo","/usr/local/sbin/helper_send_email_reports_new.sh";
+    changeable="R_GROUP_NAME","R_GROUP_SCHED_ID","R_DELIVERY_METHOD";
+    R_GROUP_NAME="";
+    R_GROUP_SCHED_ID="";
+    R_DELIVERY_METHOD="E";
+    require_endorsements = "system:from_application";
+}

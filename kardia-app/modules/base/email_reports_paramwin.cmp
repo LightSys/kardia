@@ -1,0 +1,139 @@
+$Version=2$
+email_reports_paramwin "widget/component-decl"
+    {
+    width = 980;
+    height = 680;
+    visible = yes;
+    widget_template = "/apps/kardia/tpl/kardia-system.tpl", runserver("/apps/kardia/tpl/" + user_name() + ".tpl"), "/apps/kardia/modules/base/rpts.tpl";
+
+    rptname "widget/parameter" { type=string; badchars=" /;,'\"|"; }
+    rptsid "widget/parameter" { type=integer; }
+    numparams "widget/parameter" { type=integer; default=runserver( (select count(1) from expression ( '/apps/kardia/modules/base/email_reports_params.qy?r_group_name=' + :this:rptname + '&r_group_sched_id=' + :this:rptsid ) where :r_is_sched_param = 1 and :r_param_default_expr is null ) ); deploy_to_client=yes; }
+    rptdesc "widget/parameter" { type=string; default=runserver( (select :r_group_description from /apps/kardia/data/Kardia_DB/r_group/rows rg where :rg:r_group_name = :this:rptname) ); deploy_to_client=yes; }
+    ledger "widget/parameter" { type=string; default=runserver( (select :r_param_default from /apps/kardia/data/Kardia_DB/r_group_param/rows rgp where :rgp:r_group_name = :this:rptname and :rgp:r_param_name = 'ledger') ); deploy_to_client=yes; }
+
+    Save "widget/component-decl-event" { }
+    Cancel "widget/component-decl-event" { }
+
+    open_on_load "widget/connector" { event=LoadComplete; target=newsched_win; action=Open; }
+
+    newsched_win "widget/childwindow"
+	{
+	width=450;
+	height=runserver(100 + :this:numparams * 32);
+	x=265;
+	y=runserver((680 - (100 + :this:numparams * 32)) / 2);
+	modal=yes;
+
+	newsched_osrc "widget/osrc"
+	    {
+	    sql = runserver("
+		    select
+			*
+		    from
+			object /apps/kardia/modules/base/email_reports_params.qyp/" + :this:rptname + "|" + :this:rptsid + "
+		    ");
+	    replicasize=2;
+	    readahead=2;
+
+	    newsched_form "widget/form"
+		{
+		on_saved_1 "widget/connector" { event=DataSaved; target=newsched_win; action=Close; }
+		on_saved_2 "widget/connector" { event=DataSaved; target=email_reports_paramwin; action=Save; }
+
+		newsched_vbox "widget/vbox"
+		    {
+		    x=10; y=10;
+		    width=428;
+		    height=runserver(100 + :this:numparams * 32 - 22);
+		    spacing=8;
+
+		    newsched_title "widget/label" { height=16; style=bold; font_size=16; text=runserver("Setup Sending" + isnull(" for " + :this:rptdesc, "")); align=center; }
+
+		    newsched_titlesep "widget/autolayoutspacer" { height=2; }
+
+		    newsched_repeat "widget/repeat"
+			{
+			sql = runserver("
+				select
+				    :r_param_name,
+				    :r_param_description,
+				    :r_param_default
+				from
+				    /apps/kardia/modules/base/email_reports_params.qy?r_group_name=" + :this:rptname + "&r_group_sched_id=" + :this:rptsid + "
+				where
+				    :r_is_sched_param = 1 and
+				    :r_param_default_expr is null
+				order by
+				    :r_param_ui_sequence
+				");
+
+			get_cmp "widget/repeat"
+			    {
+			    sql = runserver("
+				    select
+					    path = isnull(first(:rf:cx__pathname), '/apps/kardia/modules/base/report_field_generic.cmp')
+				    from
+					    object wildcard '/apps/kardia/modules/*/report_field_*.cmp' rf
+				    where
+					    :rf:report_param = " + quote(:newsched_repeat:r_param_name) + "
+				    ");
+
+			    one_criteria "widget/component"
+				{
+				height=24;
+				label_width=120;
+				path=runserver(:get_cmp:path);
+				ledger=runserver(:this:ledger);
+				rpt_form=newsched_form;
+				datatype=runserver('string');
+				text = runserver(:newsched_repeat:r_param_description + isnull(" (default: " + :newsched_repeat:r_param_default + ")", ""));
+				field = runserver(:newsched_repeat:r_param_name);
+				}
+			    }
+			}
+
+		    newsched_sep "widget/autolayoutspacer" { height=2; }
+
+		    newsched_ctls "widget/hbox"
+			{
+			height=24;
+			spacing=10;
+			align=center;
+
+			newsched_save "widget/textbutton"
+			    {
+			    width=110;
+			    text="Save";
+			    enabled=runclient(:newsched_form:is_savable);
+			    on_save_1 "widget/connector" { event=Click; event_condition=runclient(:newsched_form:is_savable); target=newsched_form; action=Save; }
+			    }
+			newsched_send "widget/textbutton"
+			    {
+			    condition=0;
+			    width=110;
+			    text="Send Now";
+			    //enabled=runclient(:newsched_form:is_savable);
+
+			    on_send_1 "widget/connector" { event=Click; event_condition=runclient(not :newsched_form:is_savable); target=newsched_win; action=Close; }
+			    on_send_2 "widget/connector" { event=Click; event_condition=runclient(not :newsched_form:is_savable); target=email_reports_paramwin; action=Send; }
+			    on_send_3 "widget/connector" { event=Click; event_condition=runclient(:newsched_form:is_savable); target=newsched_form; action=Save; }
+			    }
+			newsched_cancel "widget/textbutton"
+			    {
+			    width=110;
+			    text="Cancel";
+			    //enabled=runclient(:newsched_form:is_discardable);
+
+			    on_cancel_1 "widget/connector" { event=Click; event_condition=runclient(:newsched_form:is_discardable); target=newsched_form; action=Discard; }
+			    on_cancel_2 "widget/connector" { event=Click; target=newsched_win; action=Close; }
+			    on_cancel_3 "widget/connector" { event=Click; target=email_reports_paramwin; action=Cancel; }
+			    }
+			}
+
+		    //meta "widget/component" { path="record_metadata_hidden.cmp"; visual=no; }
+		    }
+		}
+	    }
+	}
+    }

@@ -1,0 +1,73 @@
+$Version=2$
+init_report_sending "system/query"
+    {
+    rptname "query/parameter" { type=string; badchars="/"; }
+    rptdate "query/parameter" { type=datetime; }
+    rptledger "query/parameter" { type=string; }
+
+    sql = " declare object info;
+   
+	    -- Scheduled run
+	    insert 
+		/apps/kardia/data/Kardia_DB/r_group_sched/rows
+	    select
+		r_group_name = :parameters:rptname,
+		r_group_sched_date = isnull(:parameters:rptdate, getdate()),
+		r_group_sched_status = 'C',
+		r_group_sched_sent_by = user_name(),
+		s_date_created = getdate(),
+		s_created_by = user_name(),
+		s_date_modified = getdate(),
+		s_modified_by = user_name()
+	    ;
+
+	    -- New scheduled run ID
+	    select
+		:info:sched_id = :__inserted:r_group_sched_id
+	    ;
+
+	    -- Recipients
+	    insert
+		/apps/kardia/data/Kardia_DB/r_group_sched_report/rows
+	    select
+		r_group_name = :parameters:rptname,
+		r_group_sched_id = :info:sched_id,
+		:r_delivery_method,
+		p_recipient_partner_key = :p_partner_key,
+		:r_report_id,
+		r_group_sched_address = :email,
+		r_group_sched_status = 'N',
+		s_date_created = getdate(),
+		s_created_by = user_name(),
+		s_date_modified = getdate(),
+		s_modified_by = user_name()
+	    from
+		expression ('/apps/kardia/modules/base/reportlist.qy?reciprptname=' + :parameters:rptname)
+	    ;
+
+	    -- Parameters
+	    insert
+		/apps/kardia/data/Kardia_DB/r_group_sched_param/rows
+	    select
+		:r_group_name,
+		r_group_sched_id = :info:sched_id,
+		:r_param_name,
+		r_param_value = isnull(:r_param_default, condition(:r_param_name = 'ledger', :parameters:rptledger, null)),
+		s_date_created = getdate(),
+		s_created_by = user_name(),
+		s_date_modified = getdate(),
+		s_modified_by = user_name()
+	    from
+		/apps/kardia/data/Kardia_DB/r_group_param/rows
+	    where
+		:r_group_name = :parameters:rptname and
+		:r_is_sched_param = 1
+	    ;
+
+	    -- Return data to caller
+	    select
+		name = 'Results',
+		r_group_name = :parameters:rptname,
+		r_group_sched_id = :info:sched_id
+	    ";
+    }
