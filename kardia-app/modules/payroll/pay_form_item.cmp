@@ -184,7 +184,7 @@ pay_form_item "widget/component-decl"
 			width=80;
 			align=right;
 			//fieldname = a_target_amount;
-			value = runclient("" + :item_form:a_target_amount);
+			value = runclient("" + :item_osrc:a_target_amount);
 			cnUseTarget "widget/connector" { event="Click"; target=item_amt; action="SetValue"; Value = runclient(:item_form:a_target_amount); }
 			}
 		    item_target_edit "widget/imagebutton"
