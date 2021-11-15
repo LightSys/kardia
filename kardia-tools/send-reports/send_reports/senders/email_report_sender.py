@@ -2,6 +2,7 @@ import email
 import email.policy
 import mimetypes
 import os
+import re
 import smtplib
 from datetime import datetime
 from send_reports.models import ScheduledReport, SendingInfo, SentStatus
@@ -36,6 +37,14 @@ class EmailReportSender(ReportSender):
         email_text = scheduled_report.template
         for param_name, param_value in replaceable_params.items():
             email_text = email_text.replace(f'[:{param_name}]', param_value)
+
+        # If there are remaining parameters in the template that haven't been substituted, flag this as an error
+        if re.search(r"\[:.+\]", email_text):
+            return SendingInfo(
+                SentStatus.FAILURE_OTHER_ERROR,
+                None,
+                error_message="Not all parameters were able to be substituted"
+            )
 
         # Create an email message and attach the report file
         msg = email.message_from_string(email_text, policy=email.policy.EmailPolicy())
