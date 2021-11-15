@@ -70,9 +70,8 @@ def _process_scheduled_report(scheduled_report: ScheduledReport, generated_repor
     kardia_user_agent: KardiaUserAgent, kardia_client: KardiaClient, report_sender: ReportSender,
     dry_run: bool) -> bool:
     try:
-        print(f"Dry run? {dry_run}")
         generated_filepath = kardia_client.generate_report(scheduled_report, generated_report_path)
-        sending_info = report_sender.send_report(generated_filepath, scheduled_report, kardia_user_agent)
+        sending_info = report_sender.send_report(generated_filepath, scheduled_report, kardia_user_agent, dry_run)
         kardia_client.update_scheduled_report_status(scheduled_report, sending_info, generated_filepath)
         return sending_info.sent_status == SentStatus.SENT
     except Exception:

@@ -4,8 +4,7 @@ user = "username"
 pw = "password"
 generated_report_osml_dir = "/apps/kardia/files/reports"
 
-# If set to true, everything will be done except sending the email and updating the database with its sent status.
-# The email will be logged to stdout instead.
+# If set to true, everything will be done except sending the email. It will be logged to stdout instead.
 dry_run = false
 
 [email]
