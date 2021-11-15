@@ -24,7 +24,7 @@ class EmailReportSender(ReportSender):
         return replaceable_params
 
     # contact_info is assumed to be a string email
-    def send_report(self, report_path, scheduled_report, kardia_user_agent):
+    def send_report(self, report_path, scheduled_report, kardia_user_agent, dry_run):
         if not scheduled_report.recipient_contact_info:
             return SendingInfo(
                 SentStatus.INVALID_EMAIL_ERROR,
@@ -36,6 +36,10 @@ class EmailReportSender(ReportSender):
         email_text = scheduled_report.template
         for param_name, param_value in replaceable_params.items():
             email_text = email_text.replace(f'[:{param_name}]', param_value)
+
+        if dry_run:
+            print(f"{email_text}\n")
+            return None
 
         # Create an email message and attach the report file
         msg = email.message_from_string(email_text, policy=email.policy.EmailPolicy())

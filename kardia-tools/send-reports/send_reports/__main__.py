@@ -39,7 +39,7 @@ def _get_generated_report_path(generated_report_osml_dir: str) -> OSMLPath:
 
 
 def _process_batch(batch_id: str, batch_reports: List[ScheduledReport], generated_report_path: OSMLPath,
-    kardia_user_agent: KardiaUserAgent, kardia_client: KardiaClient, report_sender: ReportSender):
+    kardia_user_agent: KardiaUserAgent, kardia_client: KardiaClient, report_sender: ReportSender, dry_run: bool):
     try:
         kardia_client.update_sent_by_for_scheduled_batch(batch_id)
     except Exception:
@@ -49,7 +49,7 @@ def _process_batch(batch_id: str, batch_reports: List[ScheduledReport], generate
     one_report_succeeded = False
     for scheduled_report in batch_reports:
         succeeded = _process_scheduled_report(scheduled_report, generated_report_path, kardia_user_agent,
-            kardia_client, report_sender)
+            kardia_client, report_sender, dry_run)
         if succeeded:
             one_report_succeeded = True
 
@@ -67,8 +67,10 @@ def _process_batch(batch_id: str, batch_reports: List[ScheduledReport], generate
 
 
 def _process_scheduled_report(scheduled_report: ScheduledReport, generated_report_path: OSMLPath,
-    kardia_user_agent: KardiaUserAgent, kardia_client: KardiaClient, report_sender: ReportSender) -> bool:
+    kardia_user_agent: KardiaUserAgent, kardia_client: KardiaClient, report_sender: ReportSender,
+    dry_run: bool) -> bool:
     try:
+        print(f"Dry run? {dry_run}")
         generated_filepath = kardia_client.generate_report(scheduled_report, generated_report_path)
         sending_info = report_sender.send_report(generated_filepath, scheduled_report, kardia_user_agent)
         kardia_client.update_scheduled_report_status(scheduled_report, sending_info, generated_filepath)
@@ -110,4 +112,5 @@ generated_report_path = _get_generated_report_path(config["generated_report_osml
 kardia_user_agent = kardia_client.get_user_agent()
 
 for batch_id, batch_reports in batches.items():
-    _process_batch(batch_id, batch_reports, generated_report_path, kardia_user_agent, kardia_client, report_sender)
+    _process_batch(batch_id, batch_reports, generated_report_path, kardia_user_agent, kardia_client, report_sender,
+        config["dry_run"])

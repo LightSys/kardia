@@ -4,6 +4,10 @@ user = "username"
 pw = "password"
 generated_report_osml_dir = "/apps/kardia/files/reports"
 
+# If set to true, everything will be done except sending the email and updating the database with its sent status.
+# The email will be logged to stdout instead.
+dry_run = false
+
 [email]
   # You can include any parameters here that can be passed to Python's smtplib.SMTP():
   # https://docs.python.org/3/library/smtplib.html#smtplib.SMTP
