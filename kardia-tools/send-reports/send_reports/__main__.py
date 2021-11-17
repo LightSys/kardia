@@ -86,6 +86,12 @@ try:
 except Exception:
     _handle_error("Error opening log or configuration, quitting", True)
 
+# Set defaults for new config items that might not be set in config.toml
+config = {
+    "dry_run": False,
+    **config
+}
+
 kardia_client = None
 report_sender = None
 batches = None
