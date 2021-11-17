@@ -23,11 +23,14 @@ class RestAPIKardiaClient(KardiaClient):
         self.batch_sent_by_already_updated = {}
 
 
-    def _make_api_request(self, request_func: Callable[[], Response]) -> Dict[str, str]:
+    def _make_api_request(self, request_func: Callable[[], Response], json=True):
         # other error handling can go here if needed in the future
         response = request_func()
         response.raise_for_status()
-        return response.json()
+        if json:
+            return response.json()
+        else:
+            return response
 
 
     def _get_params_for_sched_report(self, schedReportId: str) -> Dict[str, str]:
@@ -154,10 +157,8 @@ class RestAPIKardiaClient(KardiaClient):
             if param.pass_to_report
         }
 
-        # Not using kardia_api for this, since it's not really set up for getting arbitrary .rpts and a manual request
-        # is pretty simple
-        report_url = f'{self.kardia_url}/modules/{scheduled_report.report_file}'
-        response = requests.get(report_url, auth=self.auth, params=report_params)
+        reportRequest = partial(self.kardia.report.getReport, scheduled_report.report_file, report_params)
+        response = self._make_api_request(reportRequest, json=False)
 
         filename = self._get_report_filename(response, scheduled_report, report_params)
         file_path = OSMLPath(generated_file_dir.path_to_rootnode, f'{generated_file_dir.osml_path}/{filename}')
