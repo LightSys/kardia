@@ -45,9 +45,10 @@ class ScheduledReportParam:
         return str(self.__dict__)
 
 class ScheduledReport:
-    def __init__(self, sched_report_id: str, sched_batch_id: str, report_file: str, year: int, month: int, day: int,
-            hour: int, minute: int, second: int, recipient_name: str, recipient_contact_info, template: str,
-            params: Dict[str, ScheduledReportParam]):
+    def __init__(self, report_group_name: str, sched_report_id: str, sched_batch_id: str, report_file: str, year: int,
+            month: int, day: int, hour: int, minute: int, second: int, recipient_name: str, recipient_contact_info,
+            template: str, params: Dict[str, ScheduledReportParam]):
+        self.report_group_name = report_group_name
         self.sched_report_id = sched_report_id
         self.sched_batch_id = sched_batch_id
         self.report_file = report_file
