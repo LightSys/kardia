@@ -76,3 +76,6 @@ class SendingInfo:
 
     def __repr__(self) -> str:
         return str(self.__dict__)
+
+class InvalidPathElementException(Exception):
+    pass

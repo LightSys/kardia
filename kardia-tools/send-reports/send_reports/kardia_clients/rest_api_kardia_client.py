@@ -6,8 +6,8 @@ from functools import partial
 from kardia_api import Kardia
 from kardia_api.objects.report_objects import SchedReportBatchStatus, SchedReportStatus, SchedStatusTypes
 from send_reports.kardia_clients.kardia_client import KardiaClient
-from send_reports.models import KardiaUserAgent, OSMLPath, ScheduledReport, ScheduledReportParam, SendingInfo, \
-    SentStatus
+from send_reports.models import InvalidPathElementException, KardiaUserAgent, OSMLPath, ScheduledReport, \
+    ScheduledReportParam, SendingInfo, SentStatus
 from requests.models import Response
 from typing import Callable, Dict, List
 
@@ -127,6 +127,13 @@ class RestAPIKardiaClient(KardiaClient):
         self._make_api_request(update_request)
         self.batch_sent_by_already_updated[sched_batch_id] = True
 
+
+    def _validate_path_element(self, path_element: str):
+        if path_element == "." or path_element == ".." or "/" in path_element or "\0" in path_element:
+            raise InvalidPathElementException(f"Path element contains invalid metacharacter")
+
+        return path_element
+
     
     def _get_report_filepath(self, response: Response, scheduled_report: ScheduledReport, params: Dict[str, str]):
         path_prefix = f"{scheduled_report.report_group_name}/{scheduled_report.sched_report_id}"
@@ -153,7 +160,10 @@ class RestAPIKardiaClient(KardiaClient):
                     extension = guessed_extension
             filename += extension
 
-        return f"{path_prefix}/{filename}"
+        path = (f"{self._validate_path_element(scheduled_report.report_group_name)}/"
+            f"{self._validate_path_element(scheduled_report.sched_report_id)}/"
+            f"{self._validate_path_element(filename)}")
+        return path
 
 
     def generate_report(self, scheduled_report, generated_file_dir):
