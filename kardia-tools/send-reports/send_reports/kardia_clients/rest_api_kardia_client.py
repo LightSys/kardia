@@ -56,18 +56,13 @@ class RestAPIKardiaClient(KardiaClient):
     def _get_template(self, template_file: str) -> str:
         template_url = ""
         if template_file.startswith("/"):  # absolute path
-            base_url = self.kardia_url.partition("/apps/kardia")[0]
+            base_url = self.kardia_url.partition("/apps/kardia")[0]  # get the bit of the kardia_url before /apps/kardia
             template_url = f"{base_url}{template_file}"
         else:  # relative path
             template_url = f"{self.kardia_url}/files/{template_file}"
-        # Not using kardia_api for this, since it's trivial to just request a file manually
-        response = requests.get(template_url, auth=self.auth)
-        # Need to strip out HTML wrapping the response
+
+        response = self.kardia.report.session.get(template_url, auth=self.auth, params={"cx__mode": "rest"})
         template = response.text
-        if template.startswith("<HTML><PRE>"):
-            template = template[11:]
-        if template.endswith("</HTML></PRE>"):
-            template = template[:-13]
         return template
 
 
