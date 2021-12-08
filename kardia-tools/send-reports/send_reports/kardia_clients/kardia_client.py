@@ -1,7 +1,7 @@
 import abc
 from send_reports.models import KardiaUserAgent, OSMLPath, ScheduledReport, ScheduledReportFilters, \
     ScheduledReportParam, SendingInfo, SentStatus
-from typing import Dict, List
+from typing import Callable, Dict, List
 
 class KardiaClient(abc.ABC):
 
@@ -10,7 +10,8 @@ class KardiaClient(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def get_scheduled_reports_to_be_sent(self, filters: ScheduledReportFilters) -> List[ScheduledReport]:
+    def get_scheduled_reports_to_be_sent(self, filters: ScheduledReportFilters,
+        on_individual_report_error: Callable[[str], None]) -> List[ScheduledReport]:
         pass
 
     @abc.abstractmethod

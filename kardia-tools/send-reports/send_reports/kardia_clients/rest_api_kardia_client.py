@@ -75,44 +75,48 @@ class RestAPIKardiaClient(KardiaClient):
         app_info_json = self._make_api_request(self.kardia.app_info.getAppInfo)
         return KardiaUserAgent(app_info_json["app_name"], app_info_json["app_version"])
 
-    def get_scheduled_reports_to_be_sent(self, filters):
+    def get_scheduled_reports_to_be_sent(self, filters, on_individual_report_error):
         self.kardia.report.setParams(res_attrs="basic")
         schedReportJson = self._make_api_request(self.kardia.report.getSchedReportsToBeSent)
         schedReports = []
 
         for schedReportId, schedReportInfo in schedReportJson.items():
-            if schedReportId.startswith("@id"):
-                continue
-            if (filters.report_group_name is not None) and \
-                (schedReportInfo["report_group_name"] != filters.report_group_name):
-                continue
-            if (filters.report_group_sched_id is not None) and \
-                (schedReportInfo["report_group_sched_id"] != filters.report_group_sched_id):
-                continue
-            if (filters.delivery_method is not None) and \
-                (schedReportInfo["delivery_method"] != filters.delivery_method):
-                continue
-            schedBatchId = schedReportInfo["sched_report_batch_name"]
-            reportFile = schedReportInfo["report_file"]
-            year = schedReportInfo["date_to_send"]["year"]
-            month = schedReportInfo["date_to_send"]["month"]
-            day = schedReportInfo["date_to_send"]["day"]
-            hour = schedReportInfo["date_to_send"]["hour"]
-            minute = schedReportInfo["date_to_send"]["minute"]
-            second = schedReportInfo["date_to_send"]["second"]
-            email = schedReportInfo["recipient_email"]
+            try:
+                if schedReportId.startswith("@id"):
+                    continue
+                if (filters.report_group_name is not None) and \
+                    (schedReportInfo["report_group_name"] != filters.report_group_name):
+                    continue
+                if (filters.report_group_sched_id is not None) and \
+                    (schedReportInfo["report_group_sched_id"] != filters.report_group_sched_id):
+                    continue
+                if (filters.delivery_method is not None) and \
+                    (schedReportInfo["delivery_method"] != filters.delivery_method):
+                    continue
+                schedBatchId = schedReportInfo["sched_report_batch_name"]
+                reportFile = schedReportInfo["report_file"]
+                year = schedReportInfo["date_to_send"]["year"]
+                month = schedReportInfo["date_to_send"]["month"]
+                day = schedReportInfo["date_to_send"]["day"]
+                hour = schedReportInfo["date_to_send"]["hour"]
+                minute = schedReportInfo["date_to_send"]["minute"]
+                second = schedReportInfo["date_to_send"]["second"]
+                email = schedReportInfo["recipient_email"]
 
-            partnerRequest = partial(self.kardia.partner.getPartner, schedReportInfo["recipient_partner_key"])
-            partnerJson = self._make_api_request(partnerRequest)
-            recipientName = partnerJson["partner_name"]
+                partnerRequest = partial(self.kardia.partner.getPartner, schedReportInfo["recipient_partner_key"])
+                partnerJson = self._make_api_request(partnerRequest)
+                recipientName = partnerJson["partner_name"]
 
-            params = self._get_params_for_sched_report(schedReportId)
+                params = self._get_params_for_sched_report(schedReportId)
 
-            template = self._get_template(schedReportInfo["template_file"])
+                template = self._get_template(schedReportInfo["template_file"])
 
-            schedReport = ScheduledReport(schedReportId, schedBatchId, reportFile, year, month, day, hour, minute,
-                second, recipientName, email, template, params)
-            schedReports.append(schedReport)
+                schedReport = ScheduledReport(schedReportId, schedBatchId, reportFile, year, month, day, hour, minute,
+                    second, recipientName, email, template, params)
+                schedReports.append(schedReport)
+            except Exception:
+                # if there was a problem, raise an error but move on to processing the next report
+                on_individual_report_error(schedReportId)
         
         return schedReports
 
