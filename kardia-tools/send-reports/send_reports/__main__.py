@@ -101,7 +101,11 @@ try:
     report_sender = EmailReportSender(config["email"]["smtp"])
 
     scheduled_report_filters = _get_scheduled_report_filters()
-    scheduled_reports = kardia_client.get_scheduled_reports_to_be_sent(scheduled_report_filters)
+
+    on_individual_report_error = lambda report_id: _handle_error((f"Error getting information for scheduled report "
+        f"{report_id} from Kardia, continuing on to next scheduled report..."), False)
+    scheduled_reports = kardia_client.get_scheduled_reports_to_be_sent(scheduled_report_filters,
+        on_individual_report_error)
 
     # If there are no scheduled reports to be sent, just exit now
     if not scheduled_reports:
