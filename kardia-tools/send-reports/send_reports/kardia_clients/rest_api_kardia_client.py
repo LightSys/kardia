@@ -1,12 +1,13 @@
 import mimetypes
+import os
 import re
 import requests
 from functools import partial
 from kardia_api import Kardia
 from kardia_api.objects.report_objects import SchedReportBatchStatus, SchedReportStatus, SchedStatusTypes
 from send_reports.kardia_clients.kardia_client import KardiaClient
-from send_reports.models import KardiaUserAgent, OSMLPath, ScheduledReport, ScheduledReportParam, SendingInfo, \
-    SentStatus
+from send_reports.models import InvalidPathElementException, KardiaUserAgent, OSMLPath, ScheduledReport, \
+    ScheduledReportParam, SendingInfo, SentStatus
 from requests.models import Response
 from typing import Callable, Dict, List
 
@@ -88,6 +89,7 @@ class RestAPIKardiaClient(KardiaClient):
                 if (filters.delivery_method is not None) and \
                     (schedReportInfo["delivery_method"] != filters.delivery_method):
                     continue
+                reportGroupName = schedReportInfo["report_group_name"]
                 schedBatchId = schedReportInfo["sched_report_batch_name"]
                 reportFile = schedReportInfo["report_file"]
                 year = schedReportInfo["date_to_send"]["year"]
@@ -106,8 +108,8 @@ class RestAPIKardiaClient(KardiaClient):
 
                 template = self._get_template(schedReportInfo["template_file"])
 
-                schedReport = ScheduledReport(schedReportId, schedBatchId, reportFile, year, month, day, hour, minute,
-                    second, recipientName, email, template, params)
+                schedReport = ScheduledReport(reportGroupName, schedReportId, schedBatchId, reportFile, year, month, day,
+                    hour, minute, second, recipientName, email, template, params)
                 schedReports.append(schedReport)
             except Exception:
                 # if there was a problem, raise an error but move on to processing the next report
@@ -124,29 +126,43 @@ class RestAPIKardiaClient(KardiaClient):
         self._make_api_request(update_request)
         self.batch_sent_by_already_updated[sched_batch_id] = True
 
+
+    def _validate_path_element(self, path_element: str):
+        if path_element == "." or path_element == ".." or "/" in path_element or "\0" in path_element:
+            raise InvalidPathElementException(f"Path element contains invalid metacharacter")
+
+        return path_element
+
     
-    def _get_report_filename(self, response: Response, scheduled_report: ScheduledReport, params: Dict[str, str]):
+    def _get_report_filepath(self, response: Response, scheduled_report: ScheduledReport, params: Dict[str, str]):
+        path_prefix = f"{scheduled_report.report_group_name}/{scheduled_report.sched_report_id}"
+
+        filename = ""
         # First try to get Content-Disposition filename from response header
         content_disposition = response.headers["Content-Disposition"]
         filename_match = re.search(r'filename="(.+?)"', content_disposition)
         if filename_match is not None:
-            return filename_match.group(1)
+            filename = filename_match.group(1)
+        else:
+            # If one isn't found, generate a filename from params
+            # Prefix with report path minus / and .rpt
+            filename = scheduled_report.report_file.replace("/", "_").replace(".rpt", "")
+            for key, value in params.items():
+                filename += f'_{key}_{value}'
+            # Strip out any non-alphanumeric characters
+            filename = re.sub(r'[^\w\s]', '', filename)
+            # Try to guess the correct extension based on the response, but if there isn't one, default to pdf
+            extension = ".pdf"
+            if response.headers["Content-Type"] is not None:
+                guessed_extension = mimetypes.guess_extension(response.headers["Content-Type"])
+                if guessed_extension is not None:
+                    extension = guessed_extension
+            filename += extension
 
-        # If one isn't found, generate a filename from params
-        # Prefix with report path minus / and .rpt
-        filename = scheduled_report.report_file.replace("/", "_").replace(".rpt", "")
-        for key, value in params.items():
-            filename += f'_{key}_{value}'
-        # Strip out any non-alphanumeric characters
-        filename = re.sub(r'[^\w\s]', '', filename)
-        # Try to guess the correct extension based on the response, but if there isn't one, default to pdf
-        extension = ".pdf"
-        if response.headers["Content-Type"] is not None:
-            guessed_extension = mimetypes.guess_extension(response.headers["Content-Type"])
-            if guessed_extension is not None:
-                extension = guessed_extension
-        filename += extension
-        return filename
+        path = (f"{self._validate_path_element(scheduled_report.report_group_name)}/"
+            f"{self._validate_path_element(scheduled_report.sched_report_id)}/"
+            f"{self._validate_path_element(filename)}")
+        return path
 
 
     def generate_report(self, scheduled_report, generated_file_dir):
@@ -159,13 +175,14 @@ class RestAPIKardiaClient(KardiaClient):
         reportRequest = partial(self.kardia.report.getReport, scheduled_report.report_file, report_params)
         response = self._make_api_request(reportRequest, json=False)
 
-        filename = self._get_report_filename(response, scheduled_report, report_params)
-        file_path = OSMLPath(generated_file_dir.path_to_rootnode, f'{generated_file_dir.osml_path}/{filename}')
-
-        with open(file_path.get_full_path(), "wb") as file:
+        filepath = self._get_report_filepath(response, scheduled_report, report_params)
+        osml_filepath = OSMLPath(generated_file_dir.path_to_rootnode, f'{generated_file_dir.osml_path}/{filepath}')
+        # Create directories for report file if they don't already exist
+        os.makedirs(os.path.dirname(osml_filepath.get_full_path()), exist_ok=True)
+        with open(osml_filepath.get_full_path(), "wb") as file:
             file.write(response.content)
 
-        return file_path
+        return osml_filepath
 
     
     def update_scheduled_report_status(self, scheduled_report, sending_info, report_path):
