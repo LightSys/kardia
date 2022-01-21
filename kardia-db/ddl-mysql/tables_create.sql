@@ -1755,6 +1755,7 @@ create table r_group (
         r_group_file                          varchar(255)  not null,  /* file name of the .rpt file in the above module. --  */
         r_group_template_file                 varchar(255)  null,      /* file name of a mail merge / template document (txt file) to be used --  */
         r_is_active                           bit,                     /* Whether or not the group is 'active'. Kardia may come with many preconfigured report groups that are not activated by the user yet. --  */
+        r_send_empty                          bit,                     /* Whether or not to send an "empty" report with no data internally. Only supported for reports that have an is_empty out parameter. --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -3058,6 +3059,9 @@ create table a_subtrx_gift_item (
         a_foreign_currency_exch_rate          float  null,             /* Foreign currency effective exchange rate --  */
         a_foreign_currency_date               float  null,             /* Foreign currency effective date for exchange rate --  */
         a_recv_document_id                    varchar(64)  null,       /* Check number, transaction number, etc., for received gift. --  */
+        a_account_hash                        varchar(256)  null,      /* Argon2id hash of the routing number and account number. --  */
+        a_check_front_image                   varchar(256)  null,      /* Image of the front of the check (relative to /apps/kardia/files/rcpt/check_images) --  */
+        a_check_back_image                    varchar(256)  null,      /* Image of the back of the check (relative to /apps/kardia/files/rcpt/check_images) --  */
         a_posted                              bit  default 0,          /* Has this transaction been posted (in this table)? --  */
         a_posted_to_gl                        bit  default 0,          /* Has this transaction been posted to the GL - yes (1) or no (0)? --  */
         a_gift_admin_fee                      float  null,             /* Total administration fee percent to use (optionally specified by user) --  */
