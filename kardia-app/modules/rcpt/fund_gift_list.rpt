@@ -15,7 +15,7 @@ fund_gift_list "system/report"
     // Give it an intelligent filename
     filename = runserver("gifts_" + :this:costctr + "_" + :this:period + "_day" + :this:startday + "-" + :this:endday + condition(:this:document_format2 == 'text/csv', '.csv', '.pdf') );
 
-    // Parameters for GL Fund Balance
+    // Parameters for Fund Gift List
     ledger "report/parameter" { type=string; default=null; }
     costctr "report/parameter" { type=string; default=null; }
     period "report/parameter" { type=string; default=null; }
@@ -24,6 +24,9 @@ fund_gift_list "system/report"
     endday "report/parameter" { type=integer; default=31; }
     document_format2 "report/parameter" { type=string; default="application/pdf"; }
 
+    // Out parameters
+    rowcount "report/parameter" { type=integer; direction=out; default=runserver(isnull(:gift_qy:all_cnt, 0)); }
+    is_empty "report/parameter" { type=integer; direction=out; default=runserver(condition(isnull(:gift_qy:all_cnt, 0) == 0, 1, 0)); }
 
     // Get name of ledger
     ledger_qy "report/query"
