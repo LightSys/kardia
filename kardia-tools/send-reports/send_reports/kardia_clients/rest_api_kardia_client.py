@@ -1,12 +1,13 @@
 import mimetypes
+import os
 import re
 import requests
 from functools import partial
 from kardia_api import Kardia
 from kardia_api.objects.report_objects import SchedReportBatchStatus, SchedReportStatus, SchedStatusTypes
 from send_reports.kardia_clients.kardia_client import KardiaClient
-from send_reports.models import KardiaUserAgent, OSMLPath, ScheduledReport, ScheduledReportParam, SendingInfo, \
-    SentStatus
+from send_reports.models import InvalidPathElementException, KardiaUserAgent, OSMLPath, ScheduledReport, \
+    ScheduledReportParam, SendingInfo, SentStatus
 from requests.models import Response
 from typing import Callable, Dict, List
 
@@ -23,11 +24,14 @@ class RestAPIKardiaClient(KardiaClient):
         self.batch_sent_by_already_updated = {}
 
 
-    def _make_api_request(self, request_func: Callable[[], Response]) -> Dict[str, str]:
+    def _make_api_request(self, request_func: Callable[[], Response], json=True):
         # other error handling can go here if needed in the future
         response = request_func()
         response.raise_for_status()
-        return response.json()
+        if json:
+            return response.json()
+        else:
+            return response
 
 
     def _get_params_for_sched_report(self, schedReportId: str) -> Dict[str, str]:
@@ -53,18 +57,13 @@ class RestAPIKardiaClient(KardiaClient):
     def _get_template(self, template_file: str) -> str:
         template_url = ""
         if template_file.startswith("/"):  # absolute path
-            base_url = self.kardia_url.partition("/apps/kardia")[0]
+            base_url = self.kardia_url.partition("/apps/kardia")[0]  # get the bit of the kardia_url before /apps/kardia
             template_url = f"{base_url}{template_file}"
         else:  # relative path
             template_url = f"{self.kardia_url}/files/{template_file}"
-        # Not using kardia_api for this, since it's trivial to just request a file manually
-        response = requests.get(template_url, auth=self.auth)
-        # Need to strip out HTML wrapping the response
+
+        response = self.kardia.report.session.get(template_url, auth=self.auth, params={"cx__mode": "rest"})
         template = response.text
-        if template.startswith("<HTML><PRE>"):
-            template = template[11:]
-        if template.endswith("</HTML></PRE>"):
-            template = template[:-13]
         return template
 
 
@@ -72,44 +71,49 @@ class RestAPIKardiaClient(KardiaClient):
         app_info_json = self._make_api_request(self.kardia.app_info.getAppInfo)
         return KardiaUserAgent(app_info_json["app_name"], app_info_json["app_version"])
 
-    def get_scheduled_reports_to_be_sent(self, filters):
+    def get_scheduled_reports_to_be_sent(self, filters, on_individual_report_error):
         self.kardia.report.setParams(res_attrs="basic")
         schedReportJson = self._make_api_request(self.kardia.report.getSchedReportsToBeSent)
         schedReports = []
 
         for schedReportId, schedReportInfo in schedReportJson.items():
-            if schedReportId.startswith("@id"):
-                continue
-            if (filters.report_group_name is not None) and \
-                (schedReportInfo["report_group_name"] != filters.report_group_name):
-                continue
-            if (filters.report_group_sched_id is not None) and \
-                (schedReportInfo["report_group_sched_id"] != filters.report_group_sched_id):
-                continue
-            if (filters.delivery_method is not None) and \
-                (schedReportInfo["delivery_method"] != filters.delivery_method):
-                continue
-            schedBatchId = schedReportInfo["sched_report_batch_name"]
-            reportFile = schedReportInfo["report_file"]
-            year = schedReportInfo["date_to_send"]["year"]
-            month = schedReportInfo["date_to_send"]["month"]
-            day = schedReportInfo["date_to_send"]["day"]
-            hour = schedReportInfo["date_to_send"]["hour"]
-            minute = schedReportInfo["date_to_send"]["minute"]
-            second = schedReportInfo["date_to_send"]["second"]
-            email = schedReportInfo["recipient_email"]
+            try:
+                if schedReportId.startswith("@id"):
+                    continue
+                if (filters.report_group_name is not None) and \
+                    (schedReportInfo["report_group_name"] != filters.report_group_name):
+                    continue
+                if (filters.report_group_sched_id is not None) and \
+                    (schedReportInfo["report_group_sched_id"] != filters.report_group_sched_id):
+                    continue
+                if (filters.delivery_method is not None) and \
+                    (schedReportInfo["delivery_method"] != filters.delivery_method):
+                    continue
+                reportGroupName = schedReportInfo["report_group_name"]
+                schedBatchId = schedReportInfo["sched_report_batch_name"]
+                reportFile = schedReportInfo["report_file"]
+                year = schedReportInfo["date_to_send"]["year"]
+                month = schedReportInfo["date_to_send"]["month"]
+                day = schedReportInfo["date_to_send"]["day"]
+                hour = schedReportInfo["date_to_send"]["hour"]
+                minute = schedReportInfo["date_to_send"]["minute"]
+                second = schedReportInfo["date_to_send"]["second"]
+                email = schedReportInfo["recipient_email"]
 
-            partnerRequest = partial(self.kardia.partner.getPartner, schedReportInfo["recipient_partner_key"])
-            partnerJson = self._make_api_request(partnerRequest)
-            recipientName = partnerJson["partner_name"]
+                partnerRequest = partial(self.kardia.partner.getPartner, schedReportInfo["recipient_partner_key"])
+                partnerJson = self._make_api_request(partnerRequest)
+                recipientName = partnerJson["partner_name"]
 
-            params = self._get_params_for_sched_report(schedReportId)
+                params = self._get_params_for_sched_report(schedReportId)
 
-            template = self._get_template(schedReportInfo["template_file"])
+                template = self._get_template(schedReportInfo["template_file"])
 
-            schedReport = ScheduledReport(schedReportId, schedBatchId, reportFile, year, month, day, hour, minute,
-                second, recipientName, email, template, params)
-            schedReports.append(schedReport)
+                schedReport = ScheduledReport(reportGroupName, schedReportId, schedBatchId, reportFile, year, month, day,
+                    hour, minute, second, recipientName, email, template, params)
+                schedReports.append(schedReport)
+            except Exception:
+                # if there was a problem, raise an error but move on to processing the next report
+                on_individual_report_error(schedReportId)
         
         return schedReports
 
@@ -122,29 +126,43 @@ class RestAPIKardiaClient(KardiaClient):
         self._make_api_request(update_request)
         self.batch_sent_by_already_updated[sched_batch_id] = True
 
+
+    def _validate_path_element(self, path_element: str):
+        if path_element == "." or path_element == ".." or "/" in path_element or "\0" in path_element:
+            raise InvalidPathElementException(f"Path element contains invalid metacharacter")
+
+        return path_element
+
     
-    def _get_report_filename(self, response: Response, scheduled_report: ScheduledReport, params: Dict[str, str]):
+    def _get_report_filepath(self, response: Response, scheduled_report: ScheduledReport, params: Dict[str, str]):
+        path_prefix = f"{scheduled_report.report_group_name}/{scheduled_report.sched_report_id}"
+
+        filename = ""
         # First try to get Content-Disposition filename from response header
         content_disposition = response.headers["Content-Disposition"]
         filename_match = re.search(r'filename="(.+?)"', content_disposition)
         if filename_match is not None:
-            return filename_match.group(1)
+            filename = filename_match.group(1)
+        else:
+            # If one isn't found, generate a filename from params
+            # Prefix with report path minus / and .rpt
+            filename = scheduled_report.report_file.replace("/", "_").replace(".rpt", "")
+            for key, value in params.items():
+                filename += f'_{key}_{value}'
+            # Strip out any non-alphanumeric characters
+            filename = re.sub(r'[^\w\s]', '', filename)
+            # Try to guess the correct extension based on the response, but if there isn't one, default to pdf
+            extension = ".pdf"
+            if response.headers["Content-Type"] is not None:
+                guessed_extension = mimetypes.guess_extension(response.headers["Content-Type"])
+                if guessed_extension is not None:
+                    extension = guessed_extension
+            filename += extension
 
-        # If one isn't found, generate a filename from params
-        # Prefix with report path minus / and .rpt
-        filename = scheduled_report.report_file.replace("/", "_").replace(".rpt", "")
-        for key, value in params.items():
-            filename += f'_{key}_{value}'
-        # Strip out any non-alphanumeric characters
-        filename = re.sub(r'[^\w\s]', '', filename)
-        # Try to guess the correct extension based on the response, but if there isn't one, default to pdf
-        extension = ".pdf"
-        if response.headers["Content-Type"] is not None:
-            guessed_extension = mimetypes.guess_extension(response.headers["Content-Type"])
-            if guessed_extension is not None:
-                extension = guessed_extension
-        filename += extension
-        return filename
+        path = (f"{self._validate_path_element(scheduled_report.report_group_name)}/"
+            f"{self._validate_path_element(scheduled_report.sched_report_id)}/"
+            f"{self._validate_path_element(filename)}")
+        return path
 
 
     def generate_report(self, scheduled_report, generated_file_dir):
@@ -154,18 +172,17 @@ class RestAPIKardiaClient(KardiaClient):
             if param.pass_to_report
         }
 
-        # Not using kardia_api for this, since it's not really set up for getting arbitrary .rpts and a manual request
-        # is pretty simple
-        report_url = f'{self.kardia_url}/modules/{scheduled_report.report_file}'
-        response = requests.get(report_url, auth=self.auth, params=report_params)
+        reportRequest = partial(self.kardia.report.getReport, scheduled_report.report_file, report_params)
+        response = self._make_api_request(reportRequest, json=False)
 
-        filename = self._get_report_filename(response, scheduled_report, report_params)
-        file_path = OSMLPath(generated_file_dir.path_to_rootnode, f'{generated_file_dir.osml_path}/{filename}')
-
-        with open(file_path.get_full_path(), "wb") as file:
+        filepath = self._get_report_filepath(response, scheduled_report, report_params)
+        osml_filepath = OSMLPath(generated_file_dir.path_to_rootnode, f'{generated_file_dir.osml_path}/{filepath}')
+        # Create directories for report file if they don't already exist
+        os.makedirs(os.path.dirname(osml_filepath.get_full_path()), exist_ok=True)
+        with open(osml_filepath.get_full_path(), "wb") as file:
             file.write(response.content)
 
-        return file_path
+        return osml_filepath
 
     
     def update_scheduled_report_status(self, scheduled_report, sending_info, report_path):

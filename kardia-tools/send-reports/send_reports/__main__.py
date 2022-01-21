@@ -39,7 +39,7 @@ def _get_generated_report_path(generated_report_osml_dir: str) -> OSMLPath:
 
 
 def _process_batch(batch_id: str, batch_reports: List[ScheduledReport], generated_report_path: OSMLPath,
-    kardia_user_agent: KardiaUserAgent, kardia_client: KardiaClient, report_sender: ReportSender):
+    kardia_user_agent: KardiaUserAgent, kardia_client: KardiaClient, report_sender: ReportSender, dry_run: bool):
     try:
         kardia_client.update_sent_by_for_scheduled_batch(batch_id)
     except Exception:
@@ -49,7 +49,7 @@ def _process_batch(batch_id: str, batch_reports: List[ScheduledReport], generate
     one_report_succeeded = False
     for scheduled_report in batch_reports:
         succeeded = _process_scheduled_report(scheduled_report, generated_report_path, kardia_user_agent,
-            kardia_client, report_sender)
+            kardia_client, report_sender, dry_run)
         if succeeded:
             one_report_succeeded = True
 
@@ -67,10 +67,11 @@ def _process_batch(batch_id: str, batch_reports: List[ScheduledReport], generate
 
 
 def _process_scheduled_report(scheduled_report: ScheduledReport, generated_report_path: OSMLPath,
-    kardia_user_agent: KardiaUserAgent, kardia_client: KardiaClient, report_sender: ReportSender) -> bool:
+    kardia_user_agent: KardiaUserAgent, kardia_client: KardiaClient, report_sender: ReportSender,
+    dry_run: bool) -> bool:
     try:
         generated_filepath = kardia_client.generate_report(scheduled_report, generated_report_path)
-        sending_info = report_sender.send_report(generated_filepath, scheduled_report, kardia_user_agent)
+        sending_info = report_sender.send_report(generated_filepath, scheduled_report, kardia_user_agent, dry_run)
         kardia_client.update_scheduled_report_status(scheduled_report, sending_info, generated_filepath)
         return sending_info.sent_status == SentStatus.SENT
     except Exception:
@@ -85,6 +86,12 @@ try:
 except Exception:
     _handle_error("Error opening log or configuration, quitting", True)
 
+# Set defaults for new config items that might not be set in config.toml
+config = {
+    "dry_run": False,
+    **config
+}
+
 kardia_client = None
 report_sender = None
 batches = None
@@ -94,7 +101,11 @@ try:
     report_sender = EmailReportSender(config["email"]["smtp"])
 
     scheduled_report_filters = _get_scheduled_report_filters()
-    scheduled_reports = kardia_client.get_scheduled_reports_to_be_sent(scheduled_report_filters)
+
+    on_individual_report_error = lambda report_id: _handle_error((f"Error getting information for scheduled report "
+        f"{report_id} from Kardia, continuing on to next scheduled report..."), False)
+    scheduled_reports = kardia_client.get_scheduled_reports_to_be_sent(scheduled_report_filters,
+        on_individual_report_error)
 
     # If there are no scheduled reports to be sent, just exit now
     if not scheduled_reports:
@@ -110,4 +121,5 @@ generated_report_path = _get_generated_report_path(config["generated_report_osml
 kardia_user_agent = kardia_client.get_user_agent()
 
 for batch_id, batch_reports in batches.items():
-    _process_batch(batch_id, batch_reports, generated_report_path, kardia_user_agent, kardia_client, report_sender)
+    _process_batch(batch_id, batch_reports, generated_report_path, kardia_user_agent, kardia_client, report_sender,
+        config["dry_run"])
