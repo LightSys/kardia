@@ -35,6 +35,16 @@ class RestAPIKardiaClient(KardiaClient):
             return response
 
 
+    def _get_centrallix_bool(self, value) -> bool:
+        # Centrallix JSON just uses 0 for false, 1 for true, None for null
+        if value is None:
+            return None
+        elif value == 0:
+            return False
+        else:
+            return True
+
+
     def _get_params_for_sched_report(self, schedReportId: str) -> Dict[str, str]:
         params = {}
         self.kardia.report.setParams(res_attrs="basic")
@@ -46,9 +56,8 @@ class RestAPIKardiaClient(KardiaClient):
             # Don't include null parameters
             if paramInfo["param_value"] is None:
                 continue
-            # Centrallix JSON just uses 0 for false, 1 for true
-            pass_to_report = paramInfo["pass_to_report"] != 0
-            pass_to_template = paramInfo["pass_to_template"] != 0
+            pass_to_report = self._get_centrallix_bool(paramInfo["pass_to_report"])
+            pass_to_template = self._get_centrallix_bool(paramInfo["pass_to_template"])
             param = ScheduledReportParam(paramInfo["param_value"], pass_to_report, pass_to_template)
 
             params[paramInfo["param_name"]] = param
@@ -101,6 +110,11 @@ class RestAPIKardiaClient(KardiaClient):
                 second = schedReportInfo["date_to_send"]["second"]
                 email = schedReportInfo["recipient_email"]
 
+                sendIfEmpty = self._get_centrallix_bool(schedReportInfo["send_if_empty"])
+                # If send_empty isn't defined, then the report can just be sent without checking if it's empty
+                if sendIfEmpty is None:
+                    sendIfEmpty = True
+
                 partnerRequest = partial(self.kardia.partner.getPartner, schedReportInfo["recipient_partner_key"])
                 partnerJson = self._make_api_request(partnerRequest)
                 recipientName = partnerJson["partner_name"]
@@ -109,8 +123,8 @@ class RestAPIKardiaClient(KardiaClient):
 
                 template = self._get_template(schedReportInfo["template_file"])
 
-                schedReport = ScheduledReport(reportGroupName, schedReportId, schedBatchId, reportFile, year, month, day,
-                    hour, minute, second, recipientName, email, template, params)
+                schedReport = ScheduledReport(reportGroupName, schedReportId, schedBatchId, reportFile, sendIfEmpty,
+                    year, month, day, hour, minute, second, recipientName, email, template, params)
                 schedReports.append(schedReport)
             except Exception:
                 # if there was a problem, raise an error but move on to processing the next report
@@ -176,8 +190,15 @@ class RestAPIKardiaClient(KardiaClient):
 
         reportRequest = partial(self.kardia.report.getReport, scheduled_report.report_file, report_params)
         response = self._make_api_request(reportRequest, json=False)
-        content = base64.b64decode(response.json()["cx__objcontent"])
+        json = response.json()
 
+        # If we're skipping empty reports and this report is empty...
+        if (not scheduled_report.send_if_empty
+            and "is_empty" in json
+            and self._get_centrallix_bool(json["is_empty"])):
+            return None
+
+        content = base64.b64decode(json["cx__objcontent"])
         filepath = self._get_report_filepath(response, scheduled_report, report_params)
         osml_filepath = OSMLPath(generated_file_dir.path_to_rootnode, f'{generated_file_dir.osml_path}/{filepath}')
         # Create directories for report file if they don't already exist
@@ -190,11 +211,12 @@ class RestAPIKardiaClient(KardiaClient):
     
     def update_scheduled_report_status(self, scheduled_report, sending_info, report_path):
         sent_status = SchedStatusTypes(sending_info.sent_status.value)
+        osml_path = report_path.osml_path if report_path else None
         report_status = SchedReportStatus(
             sent_status,
             sending_info.error_message,
             sending_info.time_sent,
-            report_path.osml_path)
+            osml_path)
         updateRequest = partial(self.kardia.report.updateSchedReportStatus, scheduled_report.sched_report_id,
             report_status)
         self._make_api_request(updateRequest)
