@@ -1,3 +1,4 @@
+import base64
 import mimetypes
 import os
 import re
@@ -134,7 +135,8 @@ class RestAPIKardiaClient(KardiaClient):
         return path_element
 
     
-    def _get_report_filepath(self, response: Response, scheduled_report: ScheduledReport, params: Dict[str, str]):
+    def _get_report_filepath(self, response: Response, scheduled_report: ScheduledReport,
+        params: Dict[str, str]) -> str:
         path_prefix = f"{scheduled_report.report_group_name}/{scheduled_report.sched_report_id}"
 
         filename = ""
@@ -153,10 +155,10 @@ class RestAPIKardiaClient(KardiaClient):
             filename = re.sub(r'[^\w\s]', '', filename)
             # Try to guess the correct extension based on the response, but if there isn't one, default to pdf
             extension = ".pdf"
-            if response.headers["Content-Type"] is not None:
-                guessed_extension = mimetypes.guess_extension(response.headers["Content-Type"])
-                if guessed_extension is not None:
-                    extension = guessed_extension
+            content_type = response.json()["inner_type"]
+            guessed_extension = mimetypes.guess_extension(content_type)
+            if guessed_extension is not None:
+                extension = guessed_extension
             filename += extension
 
         path = (f"{self._validate_path_element(scheduled_report.report_group_name)}/"
@@ -174,13 +176,14 @@ class RestAPIKardiaClient(KardiaClient):
 
         reportRequest = partial(self.kardia.report.getReport, scheduled_report.report_file, report_params)
         response = self._make_api_request(reportRequest, json=False)
+        content = base64.b64decode(response.json()["cx__objcontent"])
 
         filepath = self._get_report_filepath(response, scheduled_report, report_params)
         osml_filepath = OSMLPath(generated_file_dir.path_to_rootnode, f'{generated_file_dir.osml_path}/{filepath}')
         # Create directories for report file if they don't already exist
         os.makedirs(os.path.dirname(osml_filepath.get_full_path()), exist_ok=True)
         with open(osml_filepath.get_full_path(), "wb") as file:
-            file.write(response.content)
+            file.write(content)
 
         return osml_filepath
 
