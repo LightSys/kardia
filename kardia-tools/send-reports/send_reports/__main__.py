@@ -7,7 +7,7 @@ import traceback
 from collections import defaultdict
 from send_reports.kardia_clients.kardia_client import KardiaClient
 from send_reports.kardia_clients.rest_api_kardia_client import RestAPIKardiaClient
-from send_reports.models import KardiaUserAgent, OSMLPath, ScheduledReport, ScheduledReportFilters, SentStatus
+from send_reports.models import KardiaUserAgent, OSMLPath, ScheduledReport, ScheduledReportFilters, SendingInfo, SentStatus
 from send_reports.senders.email_report_sender import EmailReportSender
 from send_reports.senders.sender import ReportSender
 from typing import List
@@ -71,7 +71,10 @@ def _process_scheduled_report(scheduled_report: ScheduledReport, generated_repor
     dry_run: bool) -> bool:
     try:
         generated_filepath = kardia_client.generate_report(scheduled_report, generated_report_path)
-        sending_info = report_sender.send_report(generated_filepath, scheduled_report, kardia_user_agent, dry_run)
+        if generated_filepath is None:
+           sending_info = SendingInfo(SentStatus.SKIPPED, None, error_message="Empty report not sent")
+        else: 
+            sending_info = report_sender.send_report(generated_filepath, scheduled_report, kardia_user_agent, dry_run)
         kardia_client.update_scheduled_report_status(scheduled_report, sending_info, generated_filepath)
         return sending_info.sent_status == SentStatus.SENT
     except Exception:
