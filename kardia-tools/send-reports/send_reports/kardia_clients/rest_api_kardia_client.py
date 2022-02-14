@@ -25,14 +25,11 @@ class RestAPIKardiaClient(KardiaClient):
         self.batch_sent_by_already_updated = {}
 
 
-    def _make_api_request(self, request_func: Callable[[], Response], json=True):
+    def _make_api_request(self, request_func: Callable[[], Response]):
         # other error handling can go here if needed in the future
         response = request_func()
         response.raise_for_status()
-        if json:
-            return response.json()
-        else:
-            return response
+        return response.json()
 
 
     def _get_centrallix_bool(self, value) -> bool:
@@ -149,17 +146,13 @@ class RestAPIKardiaClient(KardiaClient):
         return path_element
 
     
-    def _get_report_filepath(self, response: Response, scheduled_report: ScheduledReport,
+    def _get_report_filepath(self, json: Dict[str, str], scheduled_report: ScheduledReport,
         params: Dict[str, str]) -> str:
         path_prefix = f"{scheduled_report.report_group_name}/{scheduled_report.sched_report_id}"
 
-        filename = ""
-        # First try to get Content-Disposition filename from response header
-        content_disposition = response.headers["Content-Disposition"]
-        filename_match = re.search(r'filename="(.+?)"', content_disposition)
-        if filename_match is not None:
-            filename = filename_match.group(1)
-        else:
+        # First try to get filename from cx__download_as metadata
+        filename = json.get("cx__download_as")
+        if not filename:
             # If one isn't found, generate a filename from params
             # Prefix with report path minus / and .rpt
             filename = scheduled_report.report_file.replace("/", "_").replace(".rpt", "")
@@ -167,12 +160,12 @@ class RestAPIKardiaClient(KardiaClient):
                 filename += f'_{key}_{value}'
             # Strip out any non-alphanumeric characters
             filename = re.sub(r'[^\w\s]', '', filename)
-            # Try to guess the correct extension based on the response, but if there isn't one, default to pdf
+            # Try to guess the correct extension based on the response metadata, but if there isn't one, default to pdf
             extension = ".pdf"
-            content_type = response.json()["inner_type"]
-            guessed_extension = mimetypes.guess_extension(content_type)
-            if guessed_extension is not None:
-                extension = guessed_extension
+            content_type = json.get("inner_type")
+            if content_type is not None:
+                guessed_extension = mimetypes.guess_extension(content_type)
+                extension = guessed_extension or extension
             filename += extension
 
         path = (f"{self._validate_path_element(scheduled_report.report_group_name)}/"
@@ -189,8 +182,7 @@ class RestAPIKardiaClient(KardiaClient):
         }
 
         reportRequest = partial(self.kardia.report.getReport, scheduled_report.report_file, report_params)
-        response = self._make_api_request(reportRequest, json=False)
-        json = response.json()
+        json = self._make_api_request(reportRequest)
 
         # If we're skipping empty reports and this report is empty...
         if (not scheduled_report.send_if_empty
@@ -199,7 +191,7 @@ class RestAPIKardiaClient(KardiaClient):
             return None
 
         content = base64.b64decode(json["cx__objcontent"])
-        filepath = self._get_report_filepath(response, scheduled_report, report_params)
+        filepath = self._get_report_filepath(json, scheduled_report, report_params)
         osml_filepath = OSMLPath(generated_file_dir.path_to_rootnode, f'{generated_file_dir.osml_path}/{filepath}')
         # Create directories for report file if they don't already exist
         os.makedirs(os.path.dirname(osml_filepath.get_full_path()), exist_ok=True)
