@@ -3,6 +3,7 @@ import mimetypes
 import os
 import re
 import requests
+from datetime import datetime
 from functools import partial
 from kardia_api import Kardia
 from kardia_api.objects.report_objects import SchedReportBatchStatus, SchedReportStatus, SchedStatusTypes
@@ -80,54 +81,66 @@ class RestAPIKardiaClient(KardiaClient):
 
     def get_scheduled_reports_to_be_sent(self, filters, on_individual_report_error):
         self.kardia.report.setParams(res_attrs="basic")
-        schedReportJson = self._make_api_request(self.kardia.report.getSchedReportsToBeSent)
-        schedReports = []
+        sched_report_json = self._make_api_request(self.kardia.report.getSchedReportsToBeSent)
+        sched_reports = []
 
-        for schedReportId, schedReportInfo in schedReportJson.items():
+        for sched_report_id, sched_report_info in sched_report_json.items():
             try:
-                if schedReportId.startswith("@id"):
+                if sched_report_id.startswith("@id"):
                     continue
                 if (filters.report_group_name is not None) and \
-                    (schedReportInfo["report_group_name"] != filters.report_group_name):
+                    (sched_report_info["report_group_name"] != filters.report_group_name):
                     continue
                 if (filters.report_group_sched_id is not None) and \
-                    (schedReportInfo["report_group_sched_id"] != filters.report_group_sched_id):
+                    (sched_report_info["report_group_sched_id"] != filters.report_group_sched_id):
                     continue
                 if (filters.delivery_method is not None) and \
-                    (schedReportInfo["delivery_method"] != filters.delivery_method):
+                    (sched_report_info["delivery_method"] != filters.delivery_method):
                     continue
-                reportGroupName = schedReportInfo["report_group_name"]
-                schedBatchId = schedReportInfo["sched_report_batch_name"]
-                reportFile = schedReportInfo["report_file"]
-                year = schedReportInfo["date_to_send"]["year"]
-                month = schedReportInfo["date_to_send"]["month"]
-                day = schedReportInfo["date_to_send"]["day"]
-                hour = schedReportInfo["date_to_send"]["hour"]
-                minute = schedReportInfo["date_to_send"]["minute"]
-                second = schedReportInfo["date_to_send"]["second"]
-                email = schedReportInfo["recipient_email"]
 
-                sendIfEmpty = self._get_centrallix_bool(schedReportInfo["send_if_empty"])
+                report_group_name = sched_report_info["report_group_name"]
+                sched_batch_id = sched_report_info["sched_report_batch_name"]
+                report_file = sched_report_info["report_file"]
+                email = sched_report_info["recipient_email"]
+
+                year = sched_report_info["date_to_send"]["year"]
+                month = sched_report_info["date_to_send"]["month"]
+                day = sched_report_info["date_to_send"]["day"]
+                hour = sched_report_info["date_to_send"]["hour"]
+                minute = sched_report_info["date_to_send"]["minute"]
+                second = sched_report_info["date_to_send"]["second"]
+                date_to_send = datetime(year, month, day, hour=hour, minute=minute, second=second)
+
+                send_if_empty = self._get_centrallix_bool(sched_report_info["send_if_empty"])
                 # If send_empty isn't defined, then the report can just be sent without checking if it's empty
-                if sendIfEmpty is None:
-                    sendIfEmpty = True
+                if send_if_empty is None:
+                    send_if_empty = True
 
-                partnerRequest = partial(self.kardia.partner.getPartner, schedReportInfo["recipient_partner_key"])
-                partnerJson = self._make_api_request(partnerRequest)
-                recipientName = partnerJson["partner_name"]
+                partner_request = partial(self.kardia.partner.getPartner, sched_report_info["recipient_partner_key"])
+                partner_json = self._make_api_request(partner_request)
+                recipient_name = partner_json["partner_name"]
 
-                params = self._get_params_for_sched_report(schedReportId)
+                params = self._get_params_for_sched_report(sched_report_id)
+                template = self._get_template(sched_report_info["template_file"])
 
-                template = self._get_template(schedReportInfo["template_file"])
-
-                schedReport = ScheduledReport(reportGroupName, schedReportId, schedBatchId, reportFile, sendIfEmpty,
-                    year, month, day, hour, minute, second, recipientName, email, template, params)
-                schedReports.append(schedReport)
+                sched_report = ScheduledReport(
+                    report_group_name=report_group_name,
+                    sched_report_id=sched_report_id,
+                    sched_batch_id=sched_batch_id,
+                    report_file=report_file,
+                    send_if_empty=send_if_empty,
+                    date_to_send=date_to_send,
+                    recipient_name=recipient_name,
+                    recipient_contact_info=email,
+                    template=template,
+                    params=params
+                )
+                sched_reports.append(sched_report)
             except Exception:
                 # if there was a problem, raise an error but move on to processing the next report
-                on_individual_report_error(schedReportId)
+                on_individual_report_error(sched_report_id)
         
-        return schedReports
+        return sched_reports
 
 
     def update_sent_by_for_scheduled_batch(self, sched_batch_id: str):
