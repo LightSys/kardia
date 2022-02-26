@@ -1,0 +1,189 @@
+$Version=2$
+gl "system/querytree"
+    {
+    ledgers "system/querytree"
+	{
+	sql = "	select
+		    *
+		from
+		    identity /apps/kardia/data/Kardia_DB/a_ledger/rows
+		";
+
+	acctstxt "system/querytree"
+	    {
+	    text = "Accounts";
+
+	    accts "system/querytree"
+		{
+		sql = "	select
+			    *
+			from
+			    identity /apps/kardia/data/Kardia_DB/a_account/rows a
+			where
+			    :a:a_ledger_number = :ledgers:a_ledger_number
+			order by
+			    :a:a_account_code asc
+			";
+		}
+	    }
+
+	allfundstxt "system/querytree"
+	    {
+	    text = "AllFunds";
+
+	    allfunds "system/querytree"
+		{
+		sql = "	select
+			    *
+			from
+			    identity /apps/kardia/data/Kardia_DB/a_cost_center/rows c
+			where
+			    :c:a_ledger_number = :ledgers:a_ledger_number
+			order by
+			    :c:a_cost_center asc
+			";
+		}
+	    }
+
+	fundstxt "system/querytree"
+	    {
+	    text = "Funds";
+
+	    funds "system/querytree"
+		{
+		sql = "	select
+			    *
+			from
+			    identity /apps/kardia/data/Kardia_DB/a_cost_center/rows c
+			where
+			    :c:a_ledger_number = :ledgers:a_ledger_number and
+			    :c:a_bal_cost_center = :c:a_cost_center
+			order by
+			    :c:a_cost_center asc
+			";
+
+		subfundstxt "system/querytree"
+		    {
+		    text = "SubFunds";
+
+		    subfunds "system/querytree"
+			{
+			sql = "	select
+				    *
+				from
+				    identity /apps/kardia/data/Kardia_DB/a_cost_center/rows c
+				where
+				    :c:a_ledger_number = :ledgers:a_ledger_number and
+				    :c:a_bal_cost_center = :funds:a_cost_center and
+				    :c:a_bal_cost_center != :c:a_cost_center
+				order by
+				    :c:a_cost_center asc
+				";
+			}
+		    }
+		}
+	    }
+
+	nextbatchtxt "system/querytree"
+	    {
+	    text = "NextBatch";
+
+	    nextbatch "system/querytree"
+		{
+		sql = "	declare object info;
+		
+			select
+				:info:batch_number = :a_next_batch_number
+			from
+				/apps/kardia/data/Kardia_DB/a_ledger/rows
+			where
+				:a_ledger_number = :ledgers:a_ledger_number
+			;
+
+			update
+				/apps/kardia/data/Kardia_DB/a_ledger/rows
+			set
+				:a_next_batch_number = :a_next_batch_number + 1
+			where
+				:a_ledger_number = :ledgers:a_ledger_number
+			;
+
+			select
+				name='response',
+				:info:batch_number
+			";
+		use_having=yes;
+		}
+	    }
+
+	periodstxt "system/querytree"
+	    {
+	    text = "Periods";
+
+	    years "system/querytree"
+		{
+		sql = "	select
+			    *
+			from
+			    identity /apps/kardia/data/Kardia_DB/a_period/rows p
+			where
+			    :p:a_ledger_number = :ledgers:a_ledger_number and
+			    :p:a_summary_only = 1
+			order by
+			    :p:a_start_date asc
+			";
+
+		months "system/querytree"
+		    {
+		    sql = " select
+				*
+			    from
+				identity /apps/kardia/data/Kardia_DB/a_period/rows p
+			    where
+				:p:a_ledger_number = :ledgers:a_ledger_number and
+				:p:a_summary_only = 0 and
+				:p:a_parent_period = :years:a_period
+			    order by
+				:p:a_start_date asc
+			    ";
+
+		    batchestxt "system/querytree"
+			{
+			text = "Batches";
+
+			batches "system/querytree"
+			    {
+			    sql = " select
+					*
+				    from
+					identity /apps/kardia/data/Kardia_DB/a_batch/rows b
+				    where
+					:b:a_ledger_number = :ledgers:a_ledger_number and
+					:b:a_period = :months:a_period
+				    order by
+					:b:a_batch_number asc
+				    ";
+
+			    trxtxt "system/querytree"
+				{
+				text = "Transactions";
+
+				trx "system/querytree"
+				    {
+				    sql = " select
+						*
+					    from
+						identity /apps/kardia/data/Kardia_DB/a_transaction/rows t
+					    where
+						:t:a_ledger_number = :batches:a_ledger_number and
+						:t:a_batch_number = :batches:a_batch_number
+					    ";
+				    }
+				}
+			    }
+			}
+		    }
+		}
+	    }
+	}
+    }

@@ -15,6 +15,7 @@ generic_report "widget/component-decl"
     report_path_sep_csv "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
     combine_criteria_format "widget/parameter" { type=integer; default=0; }
     show_preview "widget/parameter" { type=integer; default=0; }
+    default_format "widget/parameter" { type=string; default="application/pdf"; deploy_to_client=yes; }
 
     last_restored_paramset_id "widget/variable" { type = integer; value = -1; }
 
@@ -215,7 +216,7 @@ generic_report "widget/component-decl"
 			mlist_tabpage "widget/tabpage"
 			    {
 			    condition=runserver(:this:mlist_tab);
-			    title = "Mailing List";
+			    title = "Add to Mailing List";
 
 			    mlist_img "widget/image" { source="/apps/kardia/images/tango/internet-mail.png"; x=706; y=10; width=32; height=32; }
 
@@ -226,12 +227,12 @@ generic_report "widget/component-decl"
 				spacing=4;
 				lbl1a "widget/label" { x=120; height=18; text="Create or add report results to a mailing list:"; style=bold; }
 
-				f_list_code "widget/component" { width=350; height=24; path="/apps/kardia/modules/base/editbox_tree.cmp"; field="list_code"; popup_source=runserver("/apps/kardia/modules/base/mlists.qyt/"); popup_text="Choose List to Add To:"; text="List Code:"; attach_point=editbox; empty_desc = "list to create or add to"; label_width=120; popup_height=250; lists_hints2 "widget/hints" { badchars=" ,"; length=20; } }
+				f_list_code "widget/component" { width=350; height=24; path="/apps/kardia/modules/base/editbox_tree.cmp"; field="list_code"; popup_source=runserver("/apps/kardia/modules/base/mlists.qyt/"); popup_text="Choose List to Add To:"; text="Add to List Code:"; attach_point=editbox; empty_desc = "list to create or add to"; label_width=120; popup_height=250; lists_hints2 "widget/hints" { badchars=" ,"; length=20; } }
 				//f_list_code "widget/component" { height=24; path="/sys/cmp/smart_field.cmp"; field="list_code"; text="List Code:"; empty_desc = "to create or add, type list code"; ctl_type=editbox; label_width=120; }
 				sep1b "widget/autolayoutspacer" { height=8; }
 				lbl1b "widget/label" { x=120; height=18; text="For a new list, please specify the following:"; style=bold; }
-				f_list_desc "widget/component" { width=350; height=24; path="/sys/cmp/smart_field.cmp"; field="list_desc"; text="List Description:"; empty_desc = "optional"; ctl_type=editbox; label_width=120; }
-				f_list_type "widget/component" { width=350; height=24; path="/sys/cmp/smart_field.cmp"; field="list_type"; text="List Type:"; ctl_type=dropdown; label_width=120; sql = "select :text, :tag from /apps/kardia/data/Kardia_DB/_m_list_type/rows where :tag != 'I'"; }
+				f_list_desc "widget/component" { width=350; height=24; path="/sys/cmp/smart_field.cmp"; field="list_desc"; text="New List Description:"; empty_desc = "optional"; ctl_type=editbox; label_width=120; }
+				f_list_type "widget/component" { width=350; height=24; path="/sys/cmp/smart_field.cmp"; field="list_type"; text="New List Type:"; ctl_type=dropdown; label_width=120; sql = "select :text, :tag from /apps/kardia/data/Kardia_DB/_m_list_type/rows where :tag != 'I'"; }
 				}
 			    }
 
@@ -581,6 +582,7 @@ generic_report "widget/component-decl"
 		    {
 		    event="Click";
 		    event_condition=runclient(not (:format_fields:value = 'sep_csv'));
+		    event_confirm=runclient(condition(char_length(:f_list_code:value) > 0, "Add report results to mailing list " + :f_list_code:value + "?", null));
 		    target="report_form";
 		    action="Submit";
 		    Target=runclient("generic_report");
@@ -588,7 +590,7 @@ generic_report "widget/component-decl"
 		    Source=runclient(:generic_report:report_path);
 		    Width=800;
 		    Height=600;
-		    document_format=runclient(isnull(:format_fields:value, 'application/pdf'));
+		    document_format=runclient(isnull(:format_fields:value, :default_format:value));
 		    }
 
 		rpt_print_cn2 "widget/connector"

@@ -225,6 +225,11 @@ drop index m_list_membership.m_lists_by_partner
 go
 
 
+/* m_list_document */
+/* drop index m_list_document.m_doc_pk */ 
+/* go */
+
+
 /* e_contact_autorecord */
 drop index e_contact_autorecord.e_autorec_collab_idx
 go
@@ -609,6 +614,23 @@ go
 /* go */
 
 
+/* r_group_sched */
+/* drop index r_group_sched.r_grp_sch_pk */ 
+/* go */
+
+
+/* r_group_sched_param */
+/* drop index r_group_sched_param.r_sparam_pk */ 
+/* go */
+
+
+/* r_group_sched_report */
+/* drop index r_group_sched_report.r_grp_sch_r_pk */ 
+/* go */
+drop index r_group_sched_report.r_schrpt_partner_idx
+go
+
+
 /* r_group */
 drop index r_group.r_grp_modfile_idx
 go
@@ -829,6 +851,16 @@ go
 /* go */
 
 
+/* a_currency */
+/* drop index a_currency.a_curr_pk */ 
+/* go */
+
+
+/* a_currency_exch_rate */
+/* drop index a_currency_exch_rate.a_curr_pk */ 
+/* go */
+
+
 /* a_payroll */
 drop index a_payroll.a_payroll_cc_idx
 go
@@ -842,6 +874,11 @@ go
 drop index a_payroll_period.a_payperiod_idx
 go
 /* drop index a_payroll_period.a_payperiod_pk */ 
+/* go */
+
+
+/* a_payroll_period_payee */
+/* drop index a_payroll_period_payee.a_payperiodpayee_pk */ 
 /* go */
 
 
@@ -876,6 +913,11 @@ go
 
 /* a_payroll_item_class */
 /* drop index a_payroll_item_class.a_payroll_ic_pk */ 
+/* go */
+
+
+/* a_payroll_item_subclass */
+/* drop index a_payroll_item_subclass.a_payroll_isc_pk */ 
 /* go */
 
 
@@ -958,6 +1000,16 @@ go
 /* go */
 
 
+/* a_gift_payment_type */
+/* drop index a_gift_payment_type.a_gpmttype_pk */ 
+/* go */
+
+
+/* a_receipt_mailing */
+/* drop index a_receipt_mailing.a_giftlist_pk */ 
+/* go */
+
+
 /* a_subtrx_gift */
 drop index a_subtrx_gift.a_gifttrx_batch_idx
 go
@@ -1010,6 +1062,15 @@ go
 drop index a_subtrx_gift_item.a_gifttrxi_recip_id_idx
 go
 drop index a_subtrx_gift_item.a_gifttrxi_src_idx
+go
+
+
+/* a_subtrx_gift_intent */
+drop index a_subtrx_gift_intent.a_gifttrxin_gift_idx
+go
+/* drop index a_subtrx_gift_intent.a_gifttrxin_pk */ 
+/* go */
+drop index a_subtrx_gift_intent.a_gifttrxin_pledge_idx
 go
 
 
@@ -1107,6 +1168,20 @@ go
 drop index a_descriptives_hist.a_descrhist_par_idx
 go
 /* drop index a_descriptives_hist.a_descrhist_pk */ 
+/* go */
+
+
+/* a_pledge */
+drop index a_pledge.a_pledge_donor_idx
+go
+drop index a_pledge.a_pledge_fund_idx
+go
+/* drop index a_pledge.a_pledge_pk */ 
+/* go */
+
+
+/* a_intent_type */
+/* drop index a_intent_type.a_intenttype_pk */ 
 /* go */
 
 
@@ -1235,15 +1310,22 @@ go
 
 
 /* t_project */
+drop index t_project.t_parent_idx
+go
 /* drop index t_project.t_project_pk */ 
 /* go */
 
 
 /* t_sprint */
+drop index t_sprint.t_sprint_idx
+go
 /* drop index t_sprint.t_sprint_pk */ 
 /* go */
-drop index t_sprint.t_sprint_proj_idx
-go
+
+
+/* t_sprint_project */
+/* drop index t_sprint_project.t_sprintproj_pk */ 
+/* go */
 
 
 /* t_sprint_time */
@@ -1295,6 +1377,8 @@ go
 /* t_task_history */
 /* drop index t_task_history.t_history_pk */ 
 /* go */
+drop index t_task_history.t_taskhist_idx
+go
 
 
 /* s_config */

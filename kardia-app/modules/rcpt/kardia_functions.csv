@@ -1,8 +1,7 @@
 func_name,func_type,func_file,func_description,func_icon
 Donation Summary,RPT,donation_summary.app,Summary of Donations for a Period,
 Admin Fee Summary,RPT,admin_fee_summary.app,Summary of Admin Fees for a Period,
-Admin Fees for Funds,APP,cc_admin_fee.app,Manage Admin Fees for Specific Funds,                                 
-Admin Fee Types,APP,admin_types.app,Maintain Admin Fee Types and Schedules,                                 
+Admin Fees,APP,admin_fees.app,Manage Admin Fees,                                 
 Receipts Batches,APP,cr_batches.app,Manage and Post Cash Receipts Batches,                                 
 Donation Detail,RPT,donation_detail.app,Donation Detail by Batch or Period,                                 
 Gift History Search,APP,gift_history.app,Lookup a donor's gift history,""                               
@@ -17,3 +16,5 @@ Deposits Summary,RPT,deposit_summary.app,Summary of Deposits for a Period,
 Gift Import Report,RPT,gift_import_report.app,Detail report of gift import data for a period,                                 
 Gifts by Month (Gift Matrix),RPT,gift_matrix.app,Report of Gifts by Month and Donor,                                 
 Manual Gift Transaction Fees,APP,manual_trx_fee.app,Create calculated electronic gift transaction fees,                                                    
+Pledges and Intents,APP,pledges.app,Manage Donor Pledges and Intents,                                                                            
+Gift/Payment Types,APP,gift_types.app,Manage Gift/Payment Types for Receipts,                                                                             

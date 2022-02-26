@@ -256,7 +256,7 @@ liabilities "system/report"
 		hp_desc "report/table-cell" { value='Liab Description'; align=center; style=bold; }
 		hp_period "report/table-cell" { value=runserver('When'); align=center; style=bold; }
 		hp_origin "report/table-cell" { value=runserver('Via'); align=center; style=bold; }
-		hp_amount "report/table-cell" { value=runserver('Accrued'); align=center; style=bold; }
+		hp_amount "report/table-cell" { value=runserver('Paid'); align=center; style=bold; }
 		}
 
 	    ptbl_row "report/table-row"

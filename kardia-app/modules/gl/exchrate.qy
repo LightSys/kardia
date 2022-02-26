@@ -1,0 +1,62 @@
+$Version=2$
+exchrate "system/query"
+    {
+    ledger "query/parameter" { type=string; }
+    base "query/parameter" { type=string; default="USD"; allowchars="ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
+    foreign "query/parameter" { type=string; default="USD"; allowchars="ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
+    date "query/parameter" { type=datetime; }
+
+    sql = " declare object exchrate;
+
+	    select
+		:exchrate:date = isnull(:parameters:date,getdate()),
+		:exchrate:stored = 0
+	    ;
+
+	    select
+		:exchrate:rate = :a_exch_rate,
+		:exchrate:stored = 1
+	    from
+		/apps/kardia/data/Kardia_DB/a_currency_exch_rate/rows
+	    where
+		:a_ledger_number = :parameters:ledger and
+		:a_base_currency_code = :parameters:base and
+		:a_foreign_currency_code = :parameters:foreign and
+		datepart(year, :a_exch_rate_date) = datepart(year, :exchrate:date) and
+		datepart(month, :a_exch_rate_date) = datepart(month, :exchrate:date) and
+		datepart(day, :a_exch_rate_date) = datepart(day, :exchrate:date)
+	    ;
+
+	    select
+		:exchrate:rate = eval(':io:' + :parameters:foreign, 'O')
+	    from
+		object expression ('/apps/kardia/modules/gl/exchangeratesapi.http' + '?base=' + :parameters:base + '/' + dateformat(:exchrate:date, 'yyyy-MM-dd') + '/rates') io
+	    where
+		:exchrate:stored = 0
+	    ;
+
+	    insert
+		/apps/kardia/data/Kardia_DB/a_currency_exch_rate/rows
+	    select
+		a_ledger_number = :parameters:ledger,
+		a_base_currency_code = :parameters:base,
+		a_foreign_currency_code = :parameters:foreign,
+		a_exch_rate_date = :exchrate:date,
+		a_exch_rate = :exchrate:rate,
+		s_date_created = getdate(),
+		s_created_by = user_name(),
+		s_date_modified = getdate(),
+		s_modified_by = user_name()
+	    where
+		:exchrate:stored = 0
+	    ;
+
+	    select
+		name = 'ExchRate',
+		base = :parameters:base,
+		foreign = :parameters:foreign,
+		date = :exchrate:date,
+		rate = :exchrate:rate,
+		stored = :exchrate:stored
+	    ";
+    }

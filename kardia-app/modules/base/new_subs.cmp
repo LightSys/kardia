@@ -211,8 +211,7 @@ new_subs "widget/component-decl"
 				    -- :ls:tag =* :m:m_list_status and
 				    -- :l:m_reason_cancel *= :cr:tag and
 				    :l:m_reason_member *= :mr:tag and
-				    (:l:m_membership_status != 'D' or dateadd(hour, 24, :l:s_date_modified) > getdate()) and
-				    :m:m_list_type = 'P'
+				    (:l:m_membership_status != 'D' or dateadd(hour, 24, :l:s_date_modified) > getdate())
 			    ";
 		    replicasize=20;
 		    readahead=20;

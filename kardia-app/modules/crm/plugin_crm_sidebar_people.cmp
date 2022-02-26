@@ -109,15 +109,15 @@ people_list "widget/component-decl"
 			collaborator_id = :c:e_collaborator,
 			collab_me = sum(condition(:c2:e_collaborator is not null, 1, 0)),
 			collab_one = condition(:parameters:search_all != 'M' and :parameters:search_all != 'C' and :parameters:search_all != :info:collab, 1, 0),
-			collaborator_name = (select condition(char_length(isnull(:p_org_name,'')) > 1, :p_org_name, :p_given_name + ' ' + :p_surname) from /apps/kardia/data/Kardia_DB/p_partner/rows where :p_partner_key = :c:e_collaborator),
-			collaborator_firstname = (select condition(char_length(isnull(:p_org_name,'')) > 1, :p_org_name, :p_given_name) from /apps/kardia/data/Kardia_DB/p_partner/rows where :p_partner_key = :c:e_collaborator),
+			collaborator_name = condition(char_length(isnull(:pc:p_org_name,'')) > 1, :pc:p_org_name, :pc:p_given_name + ' ' + :pc:p_surname),
+			collaborator_firstname = condition(char_length(isnull(:pc:p_org_name,'')) > 1, :pc:p_org_name, :pc:p_given_name),
 			collaborator_type_id = :c:e_collab_type_id, 
 			collaborator_me_type_id = :c2:e_collab_type_id, 
-			collaborator_type = (select :e_collab_type_label from /apps/kardia/data/Kardia_DB/e_collaborator_type/rows where :e_collab_type_id = :c:e_collab_type_id),
+			collaborator_type = :ct:e_collab_type_label,
 			collaborator_status = :c:e_collaborator_status,
 			collaborator_me_status = :c2:e_collaborator_status,
 			partner_id = :c:p_partner_key,
-			partner_name = (select condition(char_length(isnull(:p_org_name,'')) > 1, :p_org_name, :p_given_name + ' ' + :p_surname) from /apps/kardia/data/Kardia_DB/p_partner/rows where :p_partner_key = :c:p_partner_key),
+			partner_name = condition(char_length(isnull(:pp:p_org_name,'')) > 1, :pp:p_org_name, :pp:p_given_name + ' ' + :pp:p_surname),
 			role_id = :c:e_collab_type_id,
 			role_name = :ct:e_collab_type_desc,
 			my_role_name = :ct2:e_collab_type_desc,
@@ -140,20 +140,24 @@ people_list "widget/component-decl"
 				limit
 				    1
 				), '/apps/kardia/images/artwork/persona.png'),
-			last_date = substring(convert(string, (select max(:e_contact_date) from /apps/kardia/data/Kardia_DB/e_contact_history/rows ch where :ch:p_partner_key = :c:p_partner_key) ),1,11),
+			last_date = substring(convert(string, (select :e_contact_date from /apps/kardia/data/Kardia_DB/e_contact_history/rows ch where :ch:p_partner_key = :c:p_partner_key order by :e_contact_date desc limit 1) ),1,11),
 			is_new = condition(datediff(hour,isnull((select :a:s_date_created from /apps/kardia/data/Kardia_DB/e_ack/rows a where :a:e_object_type = 'e_collaborator' and :a:e_object_id = :c:name and :a:e_whom = :c:e_collaborator and :a:e_ack_type = 4), getdate()),getdate()) <= 24, 1, 0)
 		    from
 			identity /apps/kardia/data/Kardia_DB/e_collaborator/rows c,
 			/apps/kardia/data/Kardia_DB/e_collaborator/rows c2,
 			/apps/kardia/data/Kardia_DB/e_collaborator_type/rows ct,
-			/apps/kardia/data/Kardia_DB/e_collaborator_type/rows ct2
+			/apps/kardia/data/Kardia_DB/e_collaborator_type/rows ct2,
+			/apps/kardia/data/Kardia_DB/p_partner/rows pc,
+			/apps/kardia/data/Kardia_DB/p_partner/rows pp
 		    where
 			(:c:e_collaborator = :info:partner or :info:partner = '*') and
 			:ct:e_collab_type_id = :c:e_collab_type_id and
 			charindex(:c:e_collaborator_status, isnull(:parameters:search_stat, 'AP')) > 0 and
 			:c2:p_partner_key =* :c:p_partner_key and
 			:c2:e_collaborator = :info:collab and
-			:ct2:e_collab_type_id = :c2:e_collab_type_id
+			:ct2:e_collab_type_id = :c2:e_collab_type_id and
+			:pc:p_partner_key = :c:e_collaborator and
+			:pp:p_partner_key = :c:p_partner_key
 		    group by
 			:c:p_partner_key
 		    having
@@ -161,7 +165,8 @@ people_list "widget/component-decl"
 			(:parameters:search_tag2 is null or charindex('X' + :parameters:search_tag2 + 'X', :tag_ids) > 0) and
 			(:parameters:search_track is null or charindex('X' + :parameters:search_track + 'X', :track_ids) > 0) and
 			(:parameters:search_role is null or :parameters:search_role = :role_id) and
-			(:parameters:search_newonly is null or :parameters:search_newonly = 0 or :parameters:search_newonly = :is_new)
+			(:parameters:search_newonly is null or :parameters:search_newonly = 0 or :parameters:search_newonly = :is_new) and
+			:p_partner_key is not null
 		    ";
 	    readahead=600;
 	    replicasize=600;
@@ -386,7 +391,7 @@ people_list "widget/component-decl"
 			on_add "widget/connector"
 			    {
 			    event=Click;
-			    target=search;
+			    target=people_list;
 			    action=AddPerson;
 			    Origin=add_btn;
 			    partner=runclient(:active_collab_osrc:p_partner_key);

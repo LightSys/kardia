@@ -1,0 +1,31 @@
+$Version=2$
+p_donor_fields "widget/component-decl"
+    {
+    width=536;
+    height=44;
+
+    form "widget/parameter" { type=object; find_container="widget/form"; }
+    osrc "widget/parameter" { type=object; find_container="widget/osrc"; }
+
+    donor_form_hbox "widget/hbox"
+	{
+	height = 44;
+	spacing=6;
+
+	donor_form_vbox1 "widget/vbox"
+	    {
+	    width = 536;
+	    cellsize = 20;
+	    spacing = 4;
+
+	    receipt_type "widget/component" { width=536; path="/sys/cmp/smart_field.cmp"; field=p_receipt_desired; text="Receipt Type:"; ctl_type=dropdown; tooltip=""; form=form; sql="select :a_receipt_type_desc, :a_receipt_type from /apps/kardia/data/Kardia_DB/a_receipt_type/rows where :a_is_enabled = 1"; }
+	    is_daf "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='p_is_daf'; ctl_type=checkbox; text='Donor Adv Fund?'; daf_hints "widget/hints" { default=runclient(0); style=notnull; } form=form; } 
+
+	    // Invisible create/modify metadata fields
+	    d_dt_c "widget/variable" { fieldname="s_date_created"; d_dt_c_hints "widget/hints" { default=runclient(getdate()); } form=form; }
+	    d_us_c "widget/variable" { fieldname="s_created_by"; d_us_c_hints "widget/hints" { default=runclient(user_name()); } form=form; }
+	    d_dt_m "widget/variable" { fieldname="s_date_modified"; d_dt_m_hints "widget/hints" { default=runclient(getdate()); style=alwaysdef; } form=form; }
+	    d_us_m "widget/variable" { fieldname="s_modified_by"; d_us_m_hints "widget/hints" { default=runclient(user_name()); style=alwaysdef; } form=form; }
+	    }
+	}
+    }

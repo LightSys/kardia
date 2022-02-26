@@ -18,6 +18,7 @@ disbursements_detail "system/report"
     ledger "report/parameter" { type=string; default=null; }
     costctr "report/parameter" { type=string; default=null; }
     acct "report/parameter" { type=string; default=null; }
+    cashacct "report/parameter" { type=string; default=null; }
     payee "report/parameter" { type=string; default=null; }
     start_period "report/parameter" { type=string; default=runserver( (select first(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_summary_only = 0 and datepart(year, :a_end_date) = datepart(year, getdate()) order by :a_start_date) ); }
     end_period "report/parameter" { type=string; default=runserver( (select first(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_summary_only = 0 and datepart(year, :a_end_date) = datepart(year, getdate()) order by :a_start_date) ); }
@@ -37,6 +38,17 @@ disbursements_detail "system/report"
     disb_batch_qy "report/query"
 	{
 	sql = runserver("
+		declare object disbinfo;
+		
+		select
+			:disbinfo:cashaccts = :a_config_value
+		from
+			/apps/kardia/data/Kardia_DB/a_config/rows
+		where
+			:a_ledger_number = :this:ledger and
+			:a_config_name = 'DisbCashAccts'
+		;
+
 		select
 			dcnt = count(:d:a_amount),
 			dtotal = isnull(sum(:d:a_amount), $0.00),
@@ -47,10 +59,11 @@ disbursements_detail "system/report"
 				    where
 					:t:a_ledger_number = :d:a_ledger_number and
 					:t:a_batch_number = :d:a_batch_number and
-					:t:a_account_code != :d:a_cash_account_code
+					charindex(',' + rtrim(:t:a_account_code) + ',', ',' + isnull(:disbinfo:cashaccts, :d:a_cash_account_code) + ',') = 0
 					" + condition(:this:unposted, "", " and :t:a_posted = 1") + "
 					" + condition(:this:costctr is null, "", " and :t:a_cost_center = :this:costctr") + "
 					" + condition(:this:acct is null, "", " and :t:a_account_code = :this:acct") + "
+					" + condition(:this:cashacct is null, "", " and :t:a_cash_account_code = :this:cashacct") + "
 					" + condition(:this:payee is null, "", " and :t:p_ext_partner_id = :this:payee") + "),
 			batch = :d:a_batch_number,
 			period = :d:a_period
@@ -63,6 +76,7 @@ disbursements_detail "system/report"
 			" + condition(:this:payee is null, "", "and :d:a_payee_partner_key = :this:payee") + "
 			" + condition(:this:costctr is null, "", "and :d:a_cost_center = :this:costctr") + "
 			" + condition(:this:acct is null, "", "and :d:a_account_code = :this:acct") + "
+			" + condition(:this:cashacct is null, "", "and :d:a_cash_account_code = :this:cashacct") + "
 		group by
 			-- :d:a_period, :d:a_check_number, :d:a_batch_number
 			-- :d:a_period, :d:a_check_number, :d:a_disbursement_id, :d:a_batch_number
@@ -108,6 +122,7 @@ disbursements_detail "system/report"
 			" + condition(:this:payee is null, "", "and :d:a_payee_partner_key = :this:payee") + "
 			" + condition(:this:costctr is null, "", "and :d:a_cost_center = :this:costctr") + "
 			" + condition(:this:acct is null, "", "and :d:a_account_code = :this:acct") + "
+			" + condition(:this:cashacct is null, "", "and :d:a_cash_account_code = :this:cashacct") + "
 		group by
 			-- :d:a_period, :d:a_check_number, :d:a_batch_number
 			-- :d:a_period, :d:a_check_number, :d:a_disbursement_id, :d:a_batch_number
@@ -157,6 +172,7 @@ disbursements_detail "system/report"
 			:c:a_cost_center = :d:a_cost_center
 			" + condition(:this:costctr is null, "", "and :d:a_cost_center = :this:costctr") + "
 			" + condition(:this:acct is null, "", "and :d:a_account_code = :this:acct") + "
+			" + condition(:this:cashacct is null, "", "and :d:a_cash_account_code = :this:cashacct") + "
 		order by
 			:d:a_line_item
 		;
@@ -179,7 +195,7 @@ disbursements_detail "system/report"
 			:d:a_batch_number = :disb_qy:batch and
 			:d:a_check_number = :disb_qy:check and
 			:d:a_disbursement_id = :disb_qy:disbid and
-			(:d:a_cost_center != :this:costctr or :d:a_account_code != :this:acct)
+			(:d:a_cost_center != :this:costctr or :d:a_account_code != :this:acct or :d:a_cash_account_code != :this:cashacct)
 		having
 			:cnt > 0
 		");
@@ -200,9 +216,10 @@ disbursements_detail "system/report"
 	    t_d2b "report/data" { condition=runserver(:this:costctr is not null); value = runserver("For Fund " + :this:costctr + "\n"); }
 	    t_d2c "report/data" { condition=runserver(:this:payee is not null); value = runserver("For Payee " + :this:payee + "\n"); }
 	    t_d2d "report/data" { condition=runserver(:this:acct is not null); value = runserver("For GL Account " + :this:acct + "\n"); }
+	    t_d2e "report/data" { condition=runserver(:this:cashacct is not null); value = runserver("For GL Cash Account " + :this:cashacct + "\n"); }
 	    t_d3 "report/data" { value = runserver("Requested by " + user_name() + " on " + getdate() + "\n"); }
 	    t_d4 "report/data" { condition=runserver(:this:unposted); value = runserver("*** WARNING:  GL DATA INCLUDES UNPOSTED TRANSACTIONS ***\n"); }
-	    t_d5 "report/data" { condition=runserver(:this:costctr is not null or :this:acct is not null); value = runserver("\nNotice: this report contains data only for a specific fund and/or account.  A given disbursement (check) may be split between multiple funds or accounts.  Such disbursements below only show the total for the requested fund, but include a note indicating the additional amount attributable to other fund(s) or account(s).\n"); align=left; fontsize=8; }
+	    t_d5 "report/data" { condition=runserver(:this:costctr is not null or :this:acct is not null or :this:cashacct is not null); value = runserver("\nNotice: this report contains data only for a specific fund and/or account.  A given disbursement (check) may be split between multiple funds or accounts.  Such disbursements below only show the total for the requested fund, but include a note indicating the additional amount attributable to other fund(s) or account(s).\n"); align=left; fontsize=8; }
 	    }
 
 	table "report/table"

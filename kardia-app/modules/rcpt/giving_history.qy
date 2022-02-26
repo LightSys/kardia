@@ -1,0 +1,46 @@
+$Version=2$
+giving_history "system/query"
+    {
+    partner "query/parameter" { type=string; style=strnull; }
+    ackpartner "query/parameter" { type=string; style=strnull; }
+    ledger "query/parameter" { type=string; }
+    name "query/parameter" { type=string; }
+
+    sql = " select
+		name = :g:name,
+		date = dateformat(isnull(:g:a_gift_postmark_date, :g:a_gift_received_date), 'dd-MMM-yyyy'),
+		amount = :g:a_amount,
+		itemdesig = nth(:i:a_cost_center + ' ' + :c:a_cc_desc + '\n', 1) + isnull(nth(:i:a_cost_center + ' ' + :c:a_cc_desc + '\n', 2), '') + condition(nth(:i:a_cost_center, 4) is not null, '(and ' + (count(1) - 2) + ' more desig.)', isnull(nth(:i:a_cost_center + ' ' + :c:a_cc_desc + '\n', 3), '')), 
+		itemamt = nth('' + :i:a_amount + '\n', 1) + isnull(nth('' + :i:a_amount + '\n', 2), '') + condition(nth(:i:a_amount, 4) is not null, '' + (sum(:i:a_amount) - nth(:i:a_amount, 1) - nth(:i:a_amount, 2)), isnull(nth('' + :i:a_amount + '\n', 3), '')),
+		receipt = :g:a_receipt_number,
+		ledger = :g:a_ledger_number,
+		batch = :g:a_batch_number,
+		gift = :g:a_gift_number,
+		donor = :g:p_donor_partner_id,
+		donortxt = (select condition(char_length(rtrim(:p:p_org_name)) > 1, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname) from /apps/kardia/data/Kardia_DB/p_partner/rows p where :p:p_partner_key = :g:p_donor_partner_id),
+		ackdonor = :g:p_ack_partner_id,
+		ackdonortxt = (select condition(char_length(rtrim(:p:p_org_name)) > 1, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname) from /apps/kardia/data/Kardia_DB/p_partner/rows p where :p:p_partner_key = :g:p_ack_partner_id),
+		comment = :g:a_comment,
+		gift_type = (select :gt:a_gift_payment_type_desc from /apps/kardia/data/Kardia_DB/a_gift_payment_type/rows gt where :gt:a_ledger_number = :g:a_ledger_number and :gt:a_gift_payment_type = :g:a_gift_type)
+	    from
+		/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g,
+		/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i,
+		/apps/kardia/data/Kardia_DB/a_cost_center/rows c
+	    where
+		(:g:p_donor_partner_id = :parameters:partner or :g:p_donor_partner_id = :parameters:ackpartner or :g:p_ack_partner_id = :parameters:partner or :g:p_ack_partner_id = :parameters:ackpartner) and
+		:g:a_ledger_number = :parameters:ledger and
+		:i:a_ledger_number = :g:a_ledger_number and
+		:i:a_batch_number = :g:a_batch_number and
+		:i:a_gift_number = :g:a_gift_number and
+		:g:a_posted = 1 and
+		:c:a_ledger_number = :i:a_ledger_number and
+		:c:a_cost_center = :i:a_cost_center
+	    group by
+		:g:a_batch_number desc,
+		:g:a_gift_number desc
+	    having
+		(:donor = :parameters:partner and char_length(isnull(:parameters:ackpartner, '')) <= 1 and char_length(isnull(:ackdonor, '')) <= 1) or
+		(:donor = :parameters:ackpartner and char_length(isnull(:ackdonor, '')) <= 1) or
+		(:donor = :parameters:partner and :ackdonor = :parameters:ackpartner)
+	    ";
+    }

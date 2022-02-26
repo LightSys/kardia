@@ -5,7 +5,19 @@ edit_file "widget/component-decl"
     height=580;
 
     EditFile "widget/component-decl-action" { }
-    on_EditFile "widget/connector"
+    on_EditFile1 "widget/connector"
+	{
+	event=EditFile;
+	target=file_form;
+	action=Discard;
+	}
+    on_EditFile2 "widget/connector"
+	{
+	event=EditFile;
+	target=autosave_timer;
+	action=CancelTimer;
+	}
+    on_EditFile3 "widget/connector"
 	{
 	event=EditFile;
 	target=fi_osrc;
@@ -17,6 +29,10 @@ edit_file "widget/component-decl"
     collaborator_osrc "widget/parameter" { type=object; }
     profile_osrc "widget/parameter" { type=object; }
     profile "widget/parameter" { type=object; }
+    profile_context "widget/parameter" { type=integer; default=1; }
+    titlebar "widget/parameter" { type=integer; default=1; }
+
+    filesavecontent "widget/variable" { type=string; default=""; }
 
     autosave_timer "widget/timer"
 	{
@@ -35,6 +51,14 @@ edit_file "widget/component-decl"
 	onExpire2 "widget/connector"
 	    {
 	    event=Expire;
+	    event_condition=runclient(:file_form:is_savable or :file_form:file_content != :file_content:content);
+	    target=filesavecontent;
+	    action=SetValue;
+	    Value=runclient(:file_content:content);
+	    }
+	onExpire3 "widget/connector"
+	    {
+	    event=Expire;
 	    event_condition=runclient(:file_form:is_savable);
 	    target=file_form;
 	    action=Save;
@@ -48,6 +72,7 @@ edit_file "widget/component-decl"
 
 	file_title_hbox "widget/hbox"
 	    {
+	    condition=runserver(:this:titlebar = 1);
 	    height=36;
 	    spacing=10;
 
@@ -56,12 +81,22 @@ edit_file "widget/component-decl"
 		width=560;
 		spacing=8;
 
-		file_title_label "widget/label"
+		file_title_label_fileonly "widget/label"
 		    {
+		    condition=runserver(:this:profile_context = 0);
 		    height=16;
 		    font_size=16;
 		    style=bold;
-		    value=runclient(:profile_osrc:partnername + ': ' + :fi_osrc:e_title);
+		    value=runclient(:fi_osrc:e_title);
+		    }
+
+		file_title_label "widget/label"
+		    {
+		    condition=runserver(:this:profile_context = 1);
+		    height=16;
+		    font_size=16;
+		    style=bold;
+		    value=runclient(isnull(:profile_osrc:partnername + ': ', '') + :fi_osrc:e_title);
 		    }
 
 		file_subtitle_label "widget/label"
@@ -74,6 +109,7 @@ edit_file "widget/component-decl"
 
 	    back_to_profile "widget/textbutton"
 		{
+		condition=runserver(:this:profile_context = 1);
 		width=130;
 		fl_width=0;
 		height=24;
@@ -118,8 +154,25 @@ edit_file "widget/component-decl"
 
 	    file_form "widget/form"
 		{
-
-		on_view_populate_edit "widget/connector" { event=DataLoaded; target=file_content; action=SetValue; Value=runclient(:file_form:file_content); }
+		on_view_populate_edit "widget/connector"
+		    {
+		    event=DataLoaded;
+		    event_condition=runclient(:filesavecontent:value != :file_form:file_content);
+		    target=file_content;
+		    action=SetValue;
+		    Value=runclient(:file_form:file_content);
+		    }
+		on_view_update_tmp "widget/connector"
+		    {
+		    event=DataLoaded;
+		    event_condition=runclient(:filesavecontent:value != :file_form:file_content);
+		    target=filesavecontent;
+		    action=SetValue;
+		    Value=runclient(:file_form:file_content);
+		    }
+		on_nodata_erase_edit "widget/connector" { event=NoData; target=file_content; action=SetValue; Value=runclient(""); }
+		on_nodata_cancel_timer "widget/connector" { event=NoData; target=autosave_timer; action=CancelTimer; }
+		on_nodata_clear_tmp "widget/connector" { event=NoData; target=filesavecontent; action=SetValue; Value=runclient(""); }
 
 		file_settings_pane "widget/pane"
 		    {
@@ -135,7 +188,7 @@ edit_file "widget/component-decl"
 			spacing=8;
 
 			doctitle "widget/component" { path="/sys/cmp/smart_field.cmp"; field=e_title; ctl_type=editbox; text="Title:"; label_width=70; width=300; fl_width=30; }
-			docstatus "widget/label" { width=300; style=italic; value=runclient('Auto-Save enabled; ' + condition(:file_form:is_savable or :file_form:file_content != :file_content:content, 'editing...', 'all changes saved.')); fl_width=30; }
+			docstatus "widget/label" { width=300; y=3; style=italic; value=runclient(condition(:file_form:is_savable or isnull(:file_form:file_content,"") != :file_content:content, 'editing...', 'all changes saved.')); fl_width=30; }
 			doccontent "widget/variable" { type=string; fieldname=file_content; }
 			}
 		    }
@@ -144,7 +197,7 @@ edit_file "widget/component-decl"
 
 	file_content_pane "widget/pane"
 	    {
-	    height=492;
+	    height=runserver(condition(:this:titlebar, 492, 492 + 36 + 8));
 	    style=bordered;
 	    border_radius=10;
 	    border_color="#6080c0";
@@ -152,7 +205,8 @@ edit_file "widget/component-decl"
 
 	    file_content "widget/textarea"
 		{
-		x=8; y=8; height=472; width=680;
+		x=8; y=8; width=680;
+		height=runserver(condition(:this:titlebar, 472, 472 + 36 + 8));
 
 		setTimer1 "widget/connector"
 		    {

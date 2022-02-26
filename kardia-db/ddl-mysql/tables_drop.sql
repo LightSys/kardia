@@ -131,6 +131,10 @@ drop table m_list;
 drop table m_list_membership;
 
 
+/* m_list_document */
+drop table m_list_document;
+
+
 /* e_contact_autorecord */
 drop table e_contact_autorecord;
 
@@ -331,6 +335,18 @@ drop table h_benefit_type_sched;
 drop table h_benefits;
 
 
+/* r_group_sched */
+drop table r_group_sched;
+
+
+/* r_group_sched_param */
+drop table r_group_sched_param;
+
+
+/* r_group_sched_report */
+drop table r_group_sched_report;
+
+
 /* r_group */
 drop table r_group;
 
@@ -451,6 +467,14 @@ drop table a_cc_staff;
 drop table a_ledger_office;
 
 
+/* a_currency */
+drop table a_currency;
+
+
+/* a_currency_exch_rate */
+drop table a_currency_exch_rate;
+
+
 /* a_payroll */
 drop table a_payroll;
 
@@ -485,6 +509,10 @@ drop table a_payroll_item_type;
 
 /* a_payroll_item_class */
 drop table a_payroll_item_class;
+
+
+/* a_payroll_item_subclass */
+drop table a_payroll_item_subclass;
 
 
 /* a_payroll_form_group */
@@ -539,6 +567,14 @@ drop table a_cc_receipting_accts;
 drop table a_receipt_type;
 
 
+/* a_gift_payment_type */
+drop table a_gift_payment_type;
+
+
+/* a_receipt_mailing */
+drop table a_receipt_mailing;
+
+
 /* a_subtrx_gift */
 drop table a_subtrx_gift;
 
@@ -549,6 +585,10 @@ drop table a_subtrx_gift_group;
 
 /* a_subtrx_gift_item */
 drop table a_subtrx_gift_item;
+
+
+/* a_subtrx_gift_intent */
+drop table a_subtrx_gift_intent;
 
 
 /* a_subtrx_gift_rcptcnt */
@@ -593,6 +633,14 @@ drop table a_descriptives;
 
 /* a_descriptives_hist */
 drop table a_descriptives_hist;
+
+
+/* a_pledge */
+drop table a_pledge;
+
+
+/* a_intent_type */
+drop table a_intent_type;
 
 
 /* a_subtrx_cashdisb */

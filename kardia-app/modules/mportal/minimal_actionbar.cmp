@@ -1,0 +1,88 @@
+$Version=2$
+minimal_actionbar "widget/component-decl"
+    {
+    width=1200;
+    height=30;
+    
+    TabSelected "widget/component-decl-event" { }
+    DisableTabButtons "widget/component-decl-action" { }
+
+    disable_all_buttons "widget/connector"
+	{
+	event=DisableTabButtons;
+	target=one_tabbutton;
+	action=SetBackground;
+	Image=runclient("/sys/images/trans_1.gif");
+	}
+
+    // Title/Action bar
+    action_bar "widget/pane"
+	{
+	x=0; y=0; width=1200;
+	height=30;
+	//background="/apps/kardia/images/bg/charcoal_gradient.png";
+	//background="/apps/kardia/images/bg/horiz-bar-world-dark-96.png";
+	bgcolor="#f0f0f0";
+	background=null;
+	shadow_color=null;
+	shadow_radius=null;
+	shadow_offset=null;
+	shadow_angle=null;
+	border_radius=10;
+	style=flat;
+	widget_class = crm_iconbar;
+	fl_height=0;
+
+	action_bar_hbox "widget/hbox"
+	    {
+	    x=10; y=0;
+	    width=1180; height=30;
+	    spacing=10;
+
+	    tabicon_bar "widget/hbox"
+		{
+		width=1180;
+		align=right;
+		spacing=0;
+
+		tabicons "widget/repeat"
+		    {
+		    sql = "select :cx__rowid, :icon, :title from object wildcard '/apps/kardia/modules/*/plugin_mportal_manage_*.cmp' where :sequence is not null and isnull(:enabled,1) = 1 order by :sequence";
+
+		    one_tabbutton "widget/component"
+			{
+			fl_width=0;
+			width=76;
+			active=runserver(:tabicons:cx__rowid == 0);
+			path="/apps/kardia/modules/mportal/button_tab_small.cmp";
+			text=runserver(:tabicons:title);
+
+			tabbutton_click0 "widget/connector"
+			    {
+			    event=Click;
+			    target=minimal_actionbar;
+			    action=TriggerEvent;
+			    EventName=runclient("DisableTabButtons");
+			    }
+
+			tabbutton_click "widget/connector"
+			    {
+			    event=Click;
+			    target=minimal_actionbar;
+			    action=TabSelected;
+			    TabIndex=runserver(:tabicons:cx__rowid + 1);
+			    }
+
+			tabbutton_click3 "widget/connector"
+			    {
+			    event=Click;
+			    target=one_tabbutton;
+			    action=SetBackground;
+			    Image=runclient("/apps/kardia/images/bg/lsblue_gradient.png");
+			    }
+			}
+		    }
+		}
+	    }
+	}
+    }

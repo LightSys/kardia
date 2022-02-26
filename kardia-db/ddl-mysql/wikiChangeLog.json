@@ -1,9 +1,9 @@
 { "databaseChangeLog": [
     {
     "changeSet": {
-    "id": "202002191455-1",
+    "id": "202201202336-1",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-2" } ,
+    "tagDatabase": { "tag": "tag-202201202336-2" } ,
     "changes": [
         {
         "createTable": {
@@ -242,9 +242,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-2",
+    "id": "202201202336-2",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-3" } ,
+    "tagDatabase": { "tag": "tag-202201202336-3" } ,
     "changes": [
         {
         "createIndex": {
@@ -269,9 +269,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-3",
+    "id": "202201202336-3",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-4" } ,
+    "tagDatabase": { "tag": "tag-202201202336-4" } ,
     "changes": [
         {
         "createIndex": {
@@ -296,9 +296,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-4",
+    "id": "202201202336-4",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-5" } ,
+    "tagDatabase": { "tag": "tag-202201202336-5" } ,
     "changes": [
         {
         "createIndex": {
@@ -323,9 +323,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-5",
+    "id": "202201202336-5",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-6" } ,
+    "tagDatabase": { "tag": "tag-202201202336-6" } ,
     "changes": [
         {
         "createIndex": {
@@ -350,9 +350,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-6",
+    "id": "202201202336-6",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-7" } ,
+    "tagDatabase": { "tag": "tag-202201202336-7" } ,
     "changes": [
         {
         "createIndex": {
@@ -392,9 +392,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-7",
+    "id": "202201202336-7",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-8" } ,
+    "tagDatabase": { "tag": "tag-202201202336-8" } ,
     "changes": [
         {
         "createIndex": {
@@ -419,9 +419,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-8",
+    "id": "202201202336-8",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-9" } ,
+    "tagDatabase": { "tag": "tag-202201202336-9" } ,
     "changes": [
         {
         "createIndex": {
@@ -446,9 +446,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-9",
+    "id": "202201202336-9",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-10" } ,
+    "tagDatabase": { "tag": "tag-202201202336-10" } ,
     "changes": [
         {
         "createIndex": {
@@ -473,9 +473,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-10",
+    "id": "202201202336-10",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-11" } ,
+    "tagDatabase": { "tag": "tag-202201202336-11" } ,
     "changes": [
         {
         "createTable": {
@@ -498,9 +498,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-11",
+    "id": "202201202336-11",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-12" } ,
+    "tagDatabase": { "tag": "tag-202201202336-12" } ,
     "changes": [
         {
         "createTable": {
@@ -592,9 +592,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-12",
+    "id": "202201202336-12",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-13" } ,
+    "tagDatabase": { "tag": "tag-202201202336-13" } ,
     "changes": [
         {
         "createTable": {
@@ -794,9 +794,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-13",
+    "id": "202201202336-13",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-14" } ,
+    "tagDatabase": { "tag": "tag-202201202336-14" } ,
     "changes": [
         {
         "createIndex": {
@@ -826,9 +826,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-14",
+    "id": "202201202336-14",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-15" } ,
+    "tagDatabase": { "tag": "tag-202201202336-15" } ,
     "changes": [
         {
         "createIndex": {
@@ -873,9 +873,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-15",
+    "id": "202201202336-15",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-16" } ,
+    "tagDatabase": { "tag": "tag-202201202336-16" } ,
     "changes": [
         {
         "createIndex": {
@@ -920,9 +920,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-16",
+    "id": "202201202336-16",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-17" } ,
+    "tagDatabase": { "tag": "tag-202201202336-17" } ,
     "changes": [
         {
         "createIndex": {
@@ -962,9 +962,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-17",
+    "id": "202201202336-17",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-18" } ,
+    "tagDatabase": { "tag": "tag-202201202336-18" } ,
     "changes": [
         {
         "createIndex": {
@@ -1004,9 +1004,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-18",
+    "id": "202201202336-18",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-19" } ,
+    "tagDatabase": { "tag": "tag-202201202336-19" } ,
     "changes": [
         {
         "createTable": {
@@ -1089,9 +1089,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-19",
+    "id": "202201202336-19",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-20" } ,
+    "tagDatabase": { "tag": "tag-202201202336-20" } ,
     "changes": [
         {
         "createIndex": {
@@ -1116,9 +1116,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-20",
+    "id": "202201202336-20",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-21" } ,
+    "tagDatabase": { "tag": "tag-202201202336-21" } ,
     "changes": [
         {
         "createTable": {
@@ -1201,9 +1201,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-21",
+    "id": "202201202336-21",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-22" } ,
+    "tagDatabase": { "tag": "tag-202201202336-22" } ,
     "changes": [
         {
         "createTable": {
@@ -1325,9 +1325,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-22",
+    "id": "202201202336-22",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-23" } ,
+    "tagDatabase": { "tag": "tag-202201202336-23" } ,
     "changes": [
         {
         "createIndex": {
@@ -1367,9 +1367,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-23",
+    "id": "202201202336-23",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-24" } ,
+    "tagDatabase": { "tag": "tag-202201202336-24" } ,
     "changes": [
         {
         "createTable": {
@@ -1482,9 +1482,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-24",
+    "id": "202201202336-24",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-25" } ,
+    "tagDatabase": { "tag": "tag-202201202336-25" } ,
     "changes": [
         {
         "createTable": {
@@ -1594,9 +1594,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-25",
+    "id": "202201202336-25",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-26" } ,
+    "tagDatabase": { "tag": "tag-202201202336-26" } ,
     "changes": [
         {
         "createTable": {
@@ -1697,9 +1697,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-26",
+    "id": "202201202336-26",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-27" } ,
+    "tagDatabase": { "tag": "tag-202201202336-27" } ,
     "changes": [
         {
         "createIndex": {
@@ -1729,9 +1729,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-27",
+    "id": "202201202336-27",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-28" } ,
+    "tagDatabase": { "tag": "tag-202201202336-28" } ,
     "changes": [
         {
         "createTable": {
@@ -1826,9 +1826,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-28",
+    "id": "202201202336-28",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-29" } ,
+    "tagDatabase": { "tag": "tag-202201202336-29" } ,
     "changes": [
         {
         "createTable": {
@@ -1905,9 +1905,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-29",
+    "id": "202201202336-29",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-30" } ,
+    "tagDatabase": { "tag": "tag-202201202336-30" } ,
     "changes": [
         {
         "createTable": {
@@ -1981,6 +1981,13 @@
             },
         {
             "column": {
+                "defaultValueBoolean": false,
+                "name": "p_is_daf",
+                "type": "bit"
+            }
+            },
+        {
+            "column": {
                 "name": "s_date_created",
                 "type": "datetime",
                 "constraints": {
@@ -2029,9 +2036,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-30",
+    "id": "202201202336-30",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-31" } ,
+    "tagDatabase": { "tag": "tag-202201202336-31" } ,
     "changes": [
         {
         "createIndex": {
@@ -2061,9 +2068,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-31",
+    "id": "202201202336-31",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-32" } ,
+    "tagDatabase": { "tag": "tag-202201202336-32" } ,
     "changes": [
         {
         "createTable": {
@@ -2170,9 +2177,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-32",
+    "id": "202201202336-32",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-33" } ,
+    "tagDatabase": { "tag": "tag-202201202336-33" } ,
     "changes": [
         {
         "createIndex": {
@@ -2202,9 +2209,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-33",
+    "id": "202201202336-33",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-34" } ,
+    "tagDatabase": { "tag": "tag-202201202336-34" } ,
     "changes": [
         {
         "createTable": {
@@ -2299,9 +2306,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-34",
+    "id": "202201202336-34",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-35" } ,
+    "tagDatabase": { "tag": "tag-202201202336-35" } ,
     "changes": [
         {
         "createIndex": {
@@ -2326,9 +2333,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-35",
+    "id": "202201202336-35",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-36" } ,
+    "tagDatabase": { "tag": "tag-202201202336-36" } ,
     "changes": [
         {
         "createIndex": {
@@ -2353,9 +2360,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-36",
+    "id": "202201202336-36",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-37" } ,
+    "tagDatabase": { "tag": "tag-202201202336-37" } ,
     "changes": [
         {
         "createTable": {
@@ -2456,9 +2463,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-37",
+    "id": "202201202336-37",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-38" } ,
+    "tagDatabase": { "tag": "tag-202201202336-38" } ,
     "changes": [
         {
         "createTable": {
@@ -2550,9 +2557,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-38",
+    "id": "202201202336-38",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-39" } ,
+    "tagDatabase": { "tag": "tag-202201202336-39" } ,
     "changes": [
         {
         "createTable": {
@@ -2698,9 +2705,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-39",
+    "id": "202201202336-39",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-40" } ,
+    "tagDatabase": { "tag": "tag-202201202336-40" } ,
     "changes": [
         {
         "createTable": {
@@ -2804,9 +2811,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-40",
+    "id": "202201202336-40",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-41" } ,
+    "tagDatabase": { "tag": "tag-202201202336-41" } ,
     "changes": [
         {
         "createTable": {
@@ -2949,9 +2956,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-41",
+    "id": "202201202336-41",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-42" } ,
+    "tagDatabase": { "tag": "tag-202201202336-42" } ,
     "changes": [
         {
         "createIndex": {
@@ -2976,9 +2983,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-42",
+    "id": "202201202336-42",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-43" } ,
+    "tagDatabase": { "tag": "tag-202201202336-43" } ,
     "changes": [
         {
         "createIndex": {
@@ -3008,9 +3015,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-43",
+    "id": "202201202336-43",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-44" } ,
+    "tagDatabase": { "tag": "tag-202201202336-44" } ,
     "changes": [
         {
         "createIndex": {
@@ -3035,9 +3042,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-44",
+    "id": "202201202336-44",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-45" } ,
+    "tagDatabase": { "tag": "tag-202201202336-45" } ,
     "changes": [
         {
         "createTable": {
@@ -3108,9 +3115,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-45",
+    "id": "202201202336-45",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-46" } ,
+    "tagDatabase": { "tag": "tag-202201202336-46" } ,
     "changes": [
         {
         "createTable": {
@@ -3184,9 +3191,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-46",
+    "id": "202201202336-46",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-47" } ,
+    "tagDatabase": { "tag": "tag-202201202336-47" } ,
     "changes": [
         {
         "createTable": {
@@ -3335,9 +3342,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-47",
+    "id": "202201202336-47",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-48" } ,
+    "tagDatabase": { "tag": "tag-202201202336-48" } ,
     "changes": [
         {
         "createIndex": {
@@ -3372,9 +3379,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-48",
+    "id": "202201202336-48",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-49" } ,
+    "tagDatabase": { "tag": "tag-202201202336-49" } ,
     "changes": [
         {
         "createIndex": {
@@ -3404,9 +3411,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-49",
+    "id": "202201202336-49",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-50" } ,
+    "tagDatabase": { "tag": "tag-202201202336-50" } ,
     "changes": [
         {
         "createIndex": {
@@ -3436,9 +3443,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-50",
+    "id": "202201202336-50",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-51" } ,
+    "tagDatabase": { "tag": "tag-202201202336-51" } ,
     "changes": [
         {
         "createIndex": {
@@ -3473,9 +3480,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-51",
+    "id": "202201202336-51",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-52" } ,
+    "tagDatabase": { "tag": "tag-202201202336-52" } ,
     "changes": [
         {
         "createIndex": {
@@ -3510,9 +3517,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-52",
+    "id": "202201202336-52",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-53" } ,
+    "tagDatabase": { "tag": "tag-202201202336-53" } ,
     "changes": [
         {
         "createTable": {
@@ -3604,9 +3611,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-53",
+    "id": "202201202336-53",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-54" } ,
+    "tagDatabase": { "tag": "tag-202201202336-54" } ,
     "changes": [
         {
         "createIndex": {
@@ -3631,9 +3638,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-54",
+    "id": "202201202336-54",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-55" } ,
+    "tagDatabase": { "tag": "tag-202201202336-55" } ,
     "changes": [
         {
         "createTable": {
@@ -3737,9 +3744,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-55",
+    "id": "202201202336-55",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-56" } ,
+    "tagDatabase": { "tag": "tag-202201202336-56" } ,
     "changes": [
         {
         "createTable": {
@@ -3813,9 +3820,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-56",
+    "id": "202201202336-56",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-57" } ,
+    "tagDatabase": { "tag": "tag-202201202336-57" } ,
     "changes": [
         {
         "createTable": {
@@ -3907,9 +3914,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-57",
+    "id": "202201202336-57",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-58" } ,
+    "tagDatabase": { "tag": "tag-202201202336-58" } ,
     "changes": [
         {
         "createTable": {
@@ -4016,9 +4023,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-58",
+    "id": "202201202336-58",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-59" } ,
+    "tagDatabase": { "tag": "tag-202201202336-59" } ,
     "changes": [
         {
         "createTable": {
@@ -4131,9 +4138,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-59",
+    "id": "202201202336-59",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-60" } ,
+    "tagDatabase": { "tag": "tag-202201202336-60" } ,
     "changes": [
         {
         "createIndex": {
@@ -4168,9 +4175,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-60",
+    "id": "202201202336-60",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-61" } ,
+    "tagDatabase": { "tag": "tag-202201202336-61" } ,
     "changes": [
         {
         "createTable": {
@@ -4259,9 +4266,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-61",
+    "id": "202201202336-61",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-62" } ,
+    "tagDatabase": { "tag": "tag-202201202336-62" } ,
     "changes": [
         {
         "createTable": {
@@ -4401,9 +4408,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-62",
+    "id": "202201202336-62",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-63" } ,
+    "tagDatabase": { "tag": "tag-202201202336-63" } ,
     "changes": [
         {
         "createTable": {
@@ -4627,9 +4634,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-63",
+    "id": "202201202336-63",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-64" } ,
+    "tagDatabase": { "tag": "tag-202201202336-64" } ,
     "changes": [
         {
         "createIndex": {
@@ -4659,9 +4666,85 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-64",
+    "id": "202201202336-64",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-65" } ,
+    "tagDatabase": { "tag": "tag-202201202336-65" } ,
+    "changes": [
+        {
+        "createTable": {
+            "tableName": "m_list_document",
+            "columns": [
+        {
+            "column": {
+                "name": "m_list_code",
+                "type": "varchar(20)",
+                "constraints": {
+        "primaryKey": true
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "e_document_id",
+                "type": "integer",
+                "constraints": {
+        "primaryKey": true
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "s_date_created",
+                "type": "datetime",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "s_created_by",
+                "type": "varchar(20)",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "s_date_modified",
+                "type": "datetime",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "s_modified_by",
+                "type": "varchar(20)",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "__cx_osml_control",
+                "type": "varchar(255)"
+            }
+            }
+        ]}
+        }
+        ]
+    }
+    }
+        ,
+    {
+    "changeSet": {
+    "id": "202201202336-65",
+    "author": "parse_ddl.pl",
+    "tagDatabase": { "tag": "tag-202201202336-66" } ,
     "changes": [
         {
         "createTable": {
@@ -4783,9 +4866,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-65",
+    "id": "202201202336-66",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-66" } ,
+    "tagDatabase": { "tag": "tag-202201202336-67" } ,
     "changes": [
         {
         "createIndex": {
@@ -4820,9 +4903,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-66",
+    "id": "202201202336-67",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-67" } ,
+    "tagDatabase": { "tag": "tag-202201202336-68" } ,
     "changes": [
         {
         "createIndex": {
@@ -4857,9 +4940,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-67",
+    "id": "202201202336-68",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-68" } ,
+    "tagDatabase": { "tag": "tag-202201202336-69" } ,
     "changes": [
         {
         "createIndex": {
@@ -4894,9 +4977,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-68",
+    "id": "202201202336-69",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-69" } ,
+    "tagDatabase": { "tag": "tag-202201202336-70" } ,
     "changes": [
         {
         "createTable": {
@@ -5006,9 +5089,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-69",
+    "id": "202201202336-70",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-70" } ,
+    "tagDatabase": { "tag": "tag-202201202336-71" } ,
     "changes": [
         {
         "createTable": {
@@ -5154,9 +5237,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-70",
+    "id": "202201202336-71",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-71" } ,
+    "tagDatabase": { "tag": "tag-202201202336-72" } ,
     "changes": [
         {
         "createIndex": {
@@ -5191,9 +5274,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-71",
+    "id": "202201202336-72",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-72" } ,
+    "tagDatabase": { "tag": "tag-202201202336-73" } ,
     "changes": [
         {
         "createIndex": {
@@ -5223,9 +5306,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-72",
+    "id": "202201202336-73",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-73" } ,
+    "tagDatabase": { "tag": "tag-202201202336-74" } ,
     "changes": [
         {
         "createIndex": {
@@ -5255,9 +5338,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-73",
+    "id": "202201202336-74",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-74" } ,
+    "tagDatabase": { "tag": "tag-202201202336-75" } ,
     "changes": [
         {
         "createIndex": {
@@ -5287,9 +5370,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-74",
+    "id": "202201202336-75",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-75" } ,
+    "tagDatabase": { "tag": "tag-202201202336-76" } ,
     "changes": [
         {
         "createTable": {
@@ -5420,9 +5503,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-75",
+    "id": "202201202336-76",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-76" } ,
+    "tagDatabase": { "tag": "tag-202201202336-77" } ,
     "changes": [
         {
         "createIndex": {
@@ -5452,9 +5535,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-76",
+    "id": "202201202336-77",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-77" } ,
+    "tagDatabase": { "tag": "tag-202201202336-78" } ,
     "changes": [
         {
         "createIndex": {
@@ -5484,9 +5567,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-77",
+    "id": "202201202336-78",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-78" } ,
+    "tagDatabase": { "tag": "tag-202201202336-79" } ,
     "changes": [
         {
         "createIndex": {
@@ -5516,9 +5599,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-78",
+    "id": "202201202336-79",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-79" } ,
+    "tagDatabase": { "tag": "tag-202201202336-80" } ,
     "changes": [
         {
         "createTable": {
@@ -5616,9 +5699,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-79",
+    "id": "202201202336-80",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-80" } ,
+    "tagDatabase": { "tag": "tag-202201202336-81" } ,
     "changes": [
         {
         "createIndex": {
@@ -5643,9 +5726,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-80",
+    "id": "202201202336-81",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-81" } ,
+    "tagDatabase": { "tag": "tag-202201202336-82" } ,
     "changes": [
         {
         "createTable": {
@@ -5734,9 +5817,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-81",
+    "id": "202201202336-82",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-82" } ,
+    "tagDatabase": { "tag": "tag-202201202336-83" } ,
     "changes": [
         {
         "createIndex": {
@@ -5761,9 +5844,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-82",
+    "id": "202201202336-83",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-83" } ,
+    "tagDatabase": { "tag": "tag-202201202336-84" } ,
     "changes": [
         {
         "createTable": {
@@ -5864,9 +5947,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-83",
+    "id": "202201202336-84",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-84" } ,
+    "tagDatabase": { "tag": "tag-202201202336-85" } ,
     "changes": [
         {
         "createIndex": {
@@ -5896,9 +5979,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-84",
+    "id": "202201202336-85",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-85" } ,
+    "tagDatabase": { "tag": "tag-202201202336-86" } ,
     "changes": [
         {
         "createTable": {
@@ -5996,9 +6079,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-85",
+    "id": "202201202336-86",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-86" } ,
+    "tagDatabase": { "tag": "tag-202201202336-87" } ,
     "changes": [
         {
         "createIndex": {
@@ -6028,9 +6111,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-86",
+    "id": "202201202336-87",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-87" } ,
+    "tagDatabase": { "tag": "tag-202201202336-88" } ,
     "changes": [
         {
         "createTable": {
@@ -6116,6 +6199,24 @@
             },
         {
             "column": {
+                "name": "e_req_sequence",
+                "type": "integer",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "e_is_active",
+                "type": "bit",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
                 "name": "s_date_created",
                 "type": "datetime",
                 "constraints": {
@@ -6164,9 +6265,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-87",
+    "id": "202201202336-88",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-88" } ,
+    "tagDatabase": { "tag": "tag-202201202336-89" } ,
     "changes": [
         {
         "createTable": {
@@ -6342,9 +6443,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-88",
+    "id": "202201202336-89",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-89" } ,
+    "tagDatabase": { "tag": "tag-202201202336-90" } ,
     "changes": [
         {
         "createIndex": {
@@ -6384,9 +6485,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-89",
+    "id": "202201202336-90",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-90" } ,
+    "tagDatabase": { "tag": "tag-202201202336-91" } ,
     "changes": [
         {
         "createIndex": {
@@ -6421,9 +6522,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-90",
+    "id": "202201202336-91",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-91" } ,
+    "tagDatabase": { "tag": "tag-202201202336-92" } ,
     "changes": [
         {
         "createTable": {
@@ -6581,6 +6682,24 @@
             },
         {
             "column": {
+                "name": "e_req_sequence",
+                "type": "integer",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "e_is_active",
+                "type": "bit",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
                 "name": "s_date_created",
                 "type": "datetime",
                 "constraints": {
@@ -6629,9 +6748,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-91",
+    "id": "202201202336-92",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-92" } ,
+    "tagDatabase": { "tag": "tag-202201202336-93" } ,
     "changes": [
         {
         "createTable": {
@@ -6732,9 +6851,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-92",
+    "id": "202201202336-93",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-93" } ,
+    "tagDatabase": { "tag": "tag-202201202336-94" } ,
     "changes": [
         {
         "createTable": {
@@ -6826,9 +6945,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-93",
+    "id": "202201202336-94",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-94" } ,
+    "tagDatabase": { "tag": "tag-202201202336-95" } ,
     "changes": [
         {
         "createTable": {
@@ -6941,9 +7060,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-94",
+    "id": "202201202336-95",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-95" } ,
+    "tagDatabase": { "tag": "tag-202201202336-96" } ,
     "changes": [
         {
         "createIndex": {
@@ -6968,9 +7087,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-95",
+    "id": "202201202336-96",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-96" } ,
+    "tagDatabase": { "tag": "tag-202201202336-97" } ,
     "changes": [
         {
         "createIndex": {
@@ -6995,9 +7114,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-96",
+    "id": "202201202336-97",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-97" } ,
+    "tagDatabase": { "tag": "tag-202201202336-98" } ,
     "changes": [
         {
         "createTable": {
@@ -7122,9 +7241,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-97",
+    "id": "202201202336-98",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-98" } ,
+    "tagDatabase": { "tag": "tag-202201202336-99" } ,
     "changes": [
         {
         "createIndex": {
@@ -7159,9 +7278,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-98",
+    "id": "202201202336-99",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-99" } ,
+    "tagDatabase": { "tag": "tag-202201202336-100" } ,
     "changes": [
         {
         "createIndex": {
@@ -7196,9 +7315,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-99",
+    "id": "202201202336-100",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-100" } ,
+    "tagDatabase": { "tag": "tag-202201202336-101" } ,
     "changes": [
         {
         "createIndex": {
@@ -7233,9 +7352,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-100",
+    "id": "202201202336-101",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-101" } ,
+    "tagDatabase": { "tag": "tag-202201202336-102" } ,
     "changes": [
         {
         "createIndex": {
@@ -7270,9 +7389,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-101",
+    "id": "202201202336-102",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-102" } ,
+    "tagDatabase": { "tag": "tag-202201202336-103" } ,
     "changes": [
         {
         "createTable": {
@@ -7382,9 +7501,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-102",
+    "id": "202201202336-103",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-103" } ,
+    "tagDatabase": { "tag": "tag-202201202336-104" } ,
     "changes": [
         {
         "createIndex": {
@@ -7414,9 +7533,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-103",
+    "id": "202201202336-104",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-104" } ,
+    "tagDatabase": { "tag": "tag-202201202336-105" } ,
     "changes": [
         {
         "createTable": {
@@ -7502,9 +7621,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-104",
+    "id": "202201202336-105",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-105" } ,
+    "tagDatabase": { "tag": "tag-202201202336-106" } ,
     "changes": [
         {
         "createIndex": {
@@ -7529,9 +7648,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-105",
+    "id": "202201202336-106",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-106" } ,
+    "tagDatabase": { "tag": "tag-202201202336-107" } ,
     "changes": [
         {
         "createIndex": {
@@ -7556,9 +7675,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-106",
+    "id": "202201202336-107",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-107" } ,
+    "tagDatabase": { "tag": "tag-202201202336-108" } ,
     "changes": [
         {
         "createTable": {
@@ -7695,9 +7814,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-107",
+    "id": "202201202336-108",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-108" } ,
+    "tagDatabase": { "tag": "tag-202201202336-109" } ,
     "changes": [
         {
         "createIndex": {
@@ -7727,9 +7846,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-108",
+    "id": "202201202336-109",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-109" } ,
+    "tagDatabase": { "tag": "tag-202201202336-110" } ,
     "changes": [
         {
         "createIndex": {
@@ -7754,9 +7873,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-109",
+    "id": "202201202336-110",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-110" } ,
+    "tagDatabase": { "tag": "tag-202201202336-111" } ,
     "changes": [
         {
         "createIndex": {
@@ -7781,9 +7900,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-110",
+    "id": "202201202336-111",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-111" } ,
+    "tagDatabase": { "tag": "tag-202201202336-112" } ,
     "changes": [
         {
         "createTable": {
@@ -7893,9 +8012,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-111",
+    "id": "202201202336-112",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-112" } ,
+    "tagDatabase": { "tag": "tag-202201202336-113" } ,
     "changes": [
         {
         "createIndex": {
@@ -7925,9 +8044,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-112",
+    "id": "202201202336-113",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-113" } ,
+    "tagDatabase": { "tag": "tag-202201202336-114" } ,
     "changes": [
         {
         "createIndex": {
@@ -7957,9 +8076,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-113",
+    "id": "202201202336-114",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-114" } ,
+    "tagDatabase": { "tag": "tag-202201202336-115" } ,
     "changes": [
         {
         "createIndex": {
@@ -7989,9 +8108,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-114",
+    "id": "202201202336-115",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-115" } ,
+    "tagDatabase": { "tag": "tag-202201202336-116" } ,
     "changes": [
         {
         "createTable": {
@@ -8104,9 +8223,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-115",
+    "id": "202201202336-116",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-116" } ,
+    "tagDatabase": { "tag": "tag-202201202336-117" } ,
     "changes": [
         {
         "createIndex": {
@@ -8141,9 +8260,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-116",
+    "id": "202201202336-117",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-117" } ,
+    "tagDatabase": { "tag": "tag-202201202336-118" } ,
     "changes": [
         {
         "createIndex": {
@@ -8173,9 +8292,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-117",
+    "id": "202201202336-118",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-118" } ,
+    "tagDatabase": { "tag": "tag-202201202336-119" } ,
     "changes": [
         {
         "createIndex": {
@@ -8210,9 +8329,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-118",
+    "id": "202201202336-119",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-119" } ,
+    "tagDatabase": { "tag": "tag-202201202336-120" } ,
     "changes": [
         {
         "createTable": {
@@ -8292,9 +8411,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-119",
+    "id": "202201202336-120",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-120" } ,
+    "tagDatabase": { "tag": "tag-202201202336-121" } ,
     "changes": [
         {
         "createTable": {
@@ -8410,9 +8529,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-120",
+    "id": "202201202336-121",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-121" } ,
+    "tagDatabase": { "tag": "tag-202201202336-122" } ,
     "changes": [
         {
         "createIndex": {
@@ -8442,9 +8561,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-121",
+    "id": "202201202336-122",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-122" } ,
+    "tagDatabase": { "tag": "tag-202201202336-123" } ,
     "changes": [
         {
         "createIndex": {
@@ -8469,9 +8588,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-122",
+    "id": "202201202336-123",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-123" } ,
+    "tagDatabase": { "tag": "tag-202201202336-124" } ,
     "changes": [
         {
         "createTable": {
@@ -8590,9 +8709,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-123",
+    "id": "202201202336-124",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-124" } ,
+    "tagDatabase": { "tag": "tag-202201202336-125" } ,
     "changes": [
         {
         "createIndex": {
@@ -8617,9 +8736,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-124",
+    "id": "202201202336-125",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-125" } ,
+    "tagDatabase": { "tag": "tag-202201202336-126" } ,
     "changes": [
         {
         "createIndex": {
@@ -8644,9 +8763,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-125",
+    "id": "202201202336-126",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-126" } ,
+    "tagDatabase": { "tag": "tag-202201202336-127" } ,
     "changes": [
         {
         "createIndex": {
@@ -8676,9 +8795,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-126",
+    "id": "202201202336-127",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-127" } ,
+    "tagDatabase": { "tag": "tag-202201202336-128" } ,
     "changes": [
         {
         "createTable": {
@@ -8758,9 +8877,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-127",
+    "id": "202201202336-128",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-128" } ,
+    "tagDatabase": { "tag": "tag-202201202336-129" } ,
     "changes": [
         {
         "createTable": {
@@ -8873,9 +8992,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-128",
+    "id": "202201202336-129",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-129" } ,
+    "tagDatabase": { "tag": "tag-202201202336-130" } ,
     "changes": [
         {
         "createIndex": {
@@ -8905,9 +9024,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-129",
+    "id": "202201202336-130",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-130" } ,
+    "tagDatabase": { "tag": "tag-202201202336-131" } ,
     "changes": [
         {
         "createIndex": {
@@ -8932,9 +9051,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-130",
+    "id": "202201202336-131",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-131" } ,
+    "tagDatabase": { "tag": "tag-202201202336-132" } ,
     "changes": [
         {
         "createTable": {
@@ -9014,9 +9133,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-131",
+    "id": "202201202336-132",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-132" } ,
+    "tagDatabase": { "tag": "tag-202201202336-133" } ,
     "changes": [
         {
         "createTable": {
@@ -9165,9 +9284,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-132",
+    "id": "202201202336-133",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-133" } ,
+    "tagDatabase": { "tag": "tag-202201202336-134" } ,
     "changes": [
         {
         "createIndex": {
@@ -9192,9 +9311,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-133",
+    "id": "202201202336-134",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-134" } ,
+    "tagDatabase": { "tag": "tag-202201202336-135" } ,
     "changes": [
         {
         "createIndex": {
@@ -9219,9 +9338,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-134",
+    "id": "202201202336-135",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-135" } ,
+    "tagDatabase": { "tag": "tag-202201202336-136" } ,
     "changes": [
         {
         "createIndex": {
@@ -9246,9 +9365,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-135",
+    "id": "202201202336-136",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-136" } ,
+    "tagDatabase": { "tag": "tag-202201202336-137" } ,
     "changes": [
         {
         "createIndex": {
@@ -9273,9 +9392,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-136",
+    "id": "202201202336-137",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-137" } ,
+    "tagDatabase": { "tag": "tag-202201202336-138" } ,
     "changes": [
         {
         "createIndex": {
@@ -9300,9 +9419,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-137",
+    "id": "202201202336-138",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-138" } ,
+    "tagDatabase": { "tag": "tag-202201202336-139" } ,
     "changes": [
         {
         "createIndex": {
@@ -9327,9 +9446,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-138",
+    "id": "202201202336-139",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-139" } ,
+    "tagDatabase": { "tag": "tag-202201202336-140" } ,
     "changes": [
         {
         "createTable": {
@@ -9433,9 +9552,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-139",
+    "id": "202201202336-140",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-140" } ,
+    "tagDatabase": { "tag": "tag-202201202336-141" } ,
     "changes": [
         {
         "createIndex": {
@@ -9460,9 +9579,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-140",
+    "id": "202201202336-141",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-141" } ,
+    "tagDatabase": { "tag": "tag-202201202336-142" } ,
     "changes": [
         {
         "createTable": {
@@ -9575,9 +9694,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-141",
+    "id": "202201202336-142",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-142" } ,
+    "tagDatabase": { "tag": "tag-202201202336-143" } ,
     "changes": [
         {
         "createTable": {
@@ -9672,9 +9791,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-142",
+    "id": "202201202336-143",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-143" } ,
+    "tagDatabase": { "tag": "tag-202201202336-144" } ,
     "changes": [
         {
         "createIndex": {
@@ -9699,9 +9818,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-143",
+    "id": "202201202336-144",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-144" } ,
+    "tagDatabase": { "tag": "tag-202201202336-145" } ,
     "changes": [
         {
         "createTable": {
@@ -9826,9 +9945,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-144",
+    "id": "202201202336-145",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-145" } ,
+    "tagDatabase": { "tag": "tag-202201202336-146" } ,
     "changes": [
         {
         "createIndex": {
@@ -9853,9 +9972,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-145",
+    "id": "202201202336-146",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-146" } ,
+    "tagDatabase": { "tag": "tag-202201202336-147" } ,
     "changes": [
         {
         "createIndex": {
@@ -9880,9 +9999,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-146",
+    "id": "202201202336-147",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-147" } ,
+    "tagDatabase": { "tag": "tag-202201202336-148" } ,
     "changes": [
         {
         "createTable": {
@@ -10025,9 +10144,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-147",
+    "id": "202201202336-148",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-148" } ,
+    "tagDatabase": { "tag": "tag-202201202336-149" } ,
     "changes": [
         {
         "createIndex": {
@@ -10062,9 +10181,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-148",
+    "id": "202201202336-149",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-149" } ,
+    "tagDatabase": { "tag": "tag-202201202336-150" } ,
     "changes": [
         {
         "createIndex": {
@@ -10104,9 +10223,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-149",
+    "id": "202201202336-150",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-150" } ,
+    "tagDatabase": { "tag": "tag-202201202336-151" } ,
     "changes": [
         {
         "createTable": {
@@ -10198,9 +10317,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-150",
+    "id": "202201202336-151",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-151" } ,
+    "tagDatabase": { "tag": "tag-202201202336-152" } ,
     "changes": [
         {
         "createIndex": {
@@ -10230,9 +10349,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-151",
+    "id": "202201202336-152",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-152" } ,
+    "tagDatabase": { "tag": "tag-202201202336-153" } ,
     "changes": [
         {
         "createTable": {
@@ -10345,9 +10464,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-152",
+    "id": "202201202336-153",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-153" } ,
+    "tagDatabase": { "tag": "tag-202201202336-154" } ,
     "changes": [
         {
         "createIndex": {
@@ -10387,9 +10506,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-153",
+    "id": "202201202336-154",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-154" } ,
+    "tagDatabase": { "tag": "tag-202201202336-155" } ,
     "changes": [
         {
         "createIndex": {
@@ -10429,9 +10548,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-154",
+    "id": "202201202336-155",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-155" } ,
+    "tagDatabase": { "tag": "tag-202201202336-156" } ,
     "changes": [
         {
         "createIndex": {
@@ -10461,9 +10580,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-155",
+    "id": "202201202336-156",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-156" } ,
+    "tagDatabase": { "tag": "tag-202201202336-157" } ,
     "changes": [
         {
         "createIndex": {
@@ -10503,9 +10622,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-156",
+    "id": "202201202336-157",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-157" } ,
+    "tagDatabase": { "tag": "tag-202201202336-158" } ,
     "changes": [
         {
         "createTable": {
@@ -10588,9 +10707,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-157",
+    "id": "202201202336-158",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-158" } ,
+    "tagDatabase": { "tag": "tag-202201202336-159" } ,
     "changes": [
         {
         "createTable": {
@@ -10742,9 +10861,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-158",
+    "id": "202201202336-159",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-159" } ,
+    "tagDatabase": { "tag": "tag-202201202336-160" } ,
     "changes": [
         {
         "createTable": {
@@ -10827,9 +10946,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-159",
+    "id": "202201202336-160",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-160" } ,
+    "tagDatabase": { "tag": "tag-202201202336-161" } ,
     "changes": [
         {
         "createTable": {
@@ -10918,9 +11037,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-160",
+    "id": "202201202336-161",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-161" } ,
+    "tagDatabase": { "tag": "tag-202201202336-162" } ,
     "changes": [
         {
         "createIndex": {
@@ -10945,9 +11064,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-161",
+    "id": "202201202336-162",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-162" } ,
+    "tagDatabase": { "tag": "tag-202201202336-163" } ,
     "changes": [
         {
         "createTable": {
@@ -11030,9 +11149,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-162",
+    "id": "202201202336-163",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-163" } ,
+    "tagDatabase": { "tag": "tag-202201202336-164" } ,
     "changes": [
         {
         "createIndex": {
@@ -11057,9 +11176,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-163",
+    "id": "202201202336-164",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-164" } ,
+    "tagDatabase": { "tag": "tag-202201202336-165" } ,
     "changes": [
         {
         "createTable": {
@@ -11115,9 +11234,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-164",
+    "id": "202201202336-165",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-165" } ,
+    "tagDatabase": { "tag": "tag-202201202336-166" } ,
     "changes": [
         {
         "createIndex": {
@@ -11147,9 +11266,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-165",
+    "id": "202201202336-166",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-166" } ,
+    "tagDatabase": { "tag": "tag-202201202336-167" } ,
     "changes": [
         {
         "createTable": {
@@ -11244,9 +11363,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-166",
+    "id": "202201202336-167",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-167" } ,
+    "tagDatabase": { "tag": "tag-202201202336-168" } ,
     "changes": [
         {
         "createTable": {
@@ -11326,9 +11445,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-167",
+    "id": "202201202336-168",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-168" } ,
+    "tagDatabase": { "tag": "tag-202201202336-169" } ,
     "changes": [
         {
         "createTable": {
@@ -11402,9 +11521,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-168",
+    "id": "202201202336-169",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-169" } ,
+    "tagDatabase": { "tag": "tag-202201202336-170" } ,
     "changes": [
         {
         "createIndex": {
@@ -11429,9 +11548,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-169",
+    "id": "202201202336-170",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-170" } ,
+    "tagDatabase": { "tag": "tag-202201202336-171" } ,
     "changes": [
         {
         "createTable": {
@@ -11526,9 +11645,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-170",
+    "id": "202201202336-171",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-171" } ,
+    "tagDatabase": { "tag": "tag-202201202336-172" } ,
     "changes": [
         {
         "createTable": {
@@ -11632,9 +11751,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-171",
+    "id": "202201202336-172",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-172" } ,
+    "tagDatabase": { "tag": "tag-202201202336-173" } ,
     "changes": [
         {
         "createIndex": {
@@ -11664,9 +11783,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-172",
+    "id": "202201202336-173",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-173" } ,
+    "tagDatabase": { "tag": "tag-202201202336-174" } ,
     "changes": [
         {
         "createTable": {
@@ -11764,9 +11883,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-173",
+    "id": "202201202336-174",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-174" } ,
+    "tagDatabase": { "tag": "tag-202201202336-175" } ,
     "changes": [
         {
         "createTable": {
@@ -11858,9 +11977,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-174",
+    "id": "202201202336-175",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-175" } ,
+    "tagDatabase": { "tag": "tag-202201202336-176" } ,
     "changes": [
         {
         "createTable": {
@@ -11952,9 +12071,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-175",
+    "id": "202201202336-176",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-176" } ,
+    "tagDatabase": { "tag": "tag-202201202336-177" } ,
     "changes": [
         {
         "createTable": {
@@ -12097,9 +12216,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-176",
+    "id": "202201202336-177",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-177" } ,
+    "tagDatabase": { "tag": "tag-202201202336-178" } ,
     "changes": [
         {
         "createIndex": {
@@ -12129,9 +12248,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-177",
+    "id": "202201202336-178",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-178" } ,
+    "tagDatabase": { "tag": "tag-202201202336-179" } ,
     "changes": [
         {
         "createIndex": {
@@ -12161,9 +12280,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-178",
+    "id": "202201202336-179",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-179" } ,
+    "tagDatabase": { "tag": "tag-202201202336-180" } ,
     "changes": [
         {
         "createTable": {
@@ -12270,9 +12389,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-179",
+    "id": "202201202336-180",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-180" } ,
+    "tagDatabase": { "tag": "tag-202201202336-181" } ,
     "changes": [
         {
         "createIndex": {
@@ -12302,9 +12421,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-180",
+    "id": "202201202336-181",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-181" } ,
+    "tagDatabase": { "tag": "tag-202201202336-182" } ,
     "changes": [
         {
         "createIndex": {
@@ -12334,9 +12453,378 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-181",
+    "id": "202201202336-182",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-182" } ,
+    "tagDatabase": { "tag": "tag-202201202336-183" } ,
+    "changes": [
+        {
+        "createTable": {
+            "tableName": "r_group_sched",
+            "columns": [
+        {
+            "column": {
+                "name": "r_group_name",
+                "type": "char(8)",
+                "constraints": {
+        "primaryKey": true
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "r_group_sched_id",
+                "type": "int",
+                "constraints": {
+        "primaryKey": true
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "r_group_sched_date",
+                "type": "datetime",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "r_group_sched_status",
+                "type": "char(1)",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "r_group_sched_sent_by",
+                "type": "varchar(20)"
+            }
+            },
+        {
+            "column": {
+                "name": "s_date_created",
+                "type": "datetime",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "s_created_by",
+                "type": "varchar(20)",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "s_date_modified",
+                "type": "datetime",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "s_modified_by",
+                "type": "varchar(20)",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "__cx_osml_control",
+                "type": "varchar(255)"
+            }
+            }
+        ]}
+        }
+        ]
+    }
+    }
+        ,
+    {
+    "changeSet": {
+    "id": "202201202336-183",
+    "author": "parse_ddl.pl",
+    "tagDatabase": { "tag": "tag-202201202336-184" } ,
+    "changes": [
+        {
+        "createTable": {
+            "tableName": "r_group_sched_param",
+            "columns": [
+        {
+            "column": {
+                "name": "r_group_name",
+                "type": "char(8)",
+                "constraints": {
+        "primaryKey": true
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "r_group_sched_id",
+                "type": "int",
+                "constraints": {
+        "primaryKey": true
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "r_param_name",
+                "type": "varchar(64)",
+                "constraints": {
+        "primaryKey": true
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "r_param_value",
+                "type": "varchar(900)"
+            }
+            },
+        {
+            "column": {
+                "name": "s_date_created",
+                "type": "datetime",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "s_created_by",
+                "type": "varchar(20)",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "s_date_modified",
+                "type": "datetime",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "s_modified_by",
+                "type": "varchar(20)",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "__cx_osml_control",
+                "type": "varchar(255)"
+            }
+            }
+        ]}
+        }
+        ]
+    }
+    }
+        ,
+    {
+    "changeSet": {
+    "id": "202201202336-184",
+    "author": "parse_ddl.pl",
+    "tagDatabase": { "tag": "tag-202201202336-185" } ,
+    "changes": [
+        {
+        "createTable": {
+            "tableName": "r_group_sched_report",
+            "columns": [
+        {
+            "column": {
+                "name": "r_group_name",
+                "type": "char(8)",
+                "constraints": {
+        "primaryKey": true
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "r_delivery_method",
+                "type": "varchar(1)",
+                "constraints": {
+        "primaryKey": true
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "r_group_sched_id",
+                "type": "int",
+                "constraints": {
+        "primaryKey": true
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "p_recipient_partner_key",
+                "type": "char(10)",
+                "constraints": {
+        "primaryKey": true
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "r_report_id",
+                "type": "int",
+                "constraints": {
+        "primaryKey": true
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "r_group_sched_address",
+                "type": "varchar(80)"
+            }
+            },
+        {
+            "column": {
+                "name": "r_group_sched_status",
+                "type": "char(1)",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "r_group_sched_error",
+                "type": "varchar(900)"
+            }
+            },
+        {
+            "column": {
+                "name": "r_group_sched_sent_date",
+                "type": "datetime"
+            }
+            },
+        {
+            "column": {
+                "name": "r_group_sched_file",
+                "type": "varchar(900)"
+            }
+            },
+        {
+            "column": {
+                "name": "s_date_created",
+                "type": "datetime",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "s_created_by",
+                "type": "varchar(20)",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "s_date_modified",
+                "type": "datetime",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "s_modified_by",
+                "type": "varchar(20)",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "__cx_osml_control",
+                "type": "varchar(255)"
+            }
+            }
+        ]}
+        }
+        ]
+    }
+    }
+,
+    {
+    "changeSet": {
+    "id": "202201202336-185",
+    "author": "parse_ddl.pl",
+    "tagDatabase": { "tag": "tag-202201202336-186" } ,
+    "changes": [
+        {
+        "createIndex": {
+            "tableName": "r_group_sched_report",
+            "indexName": "r_schrpt_partner_idx",
+            "columns": [
+                {
+                    "column":{
+                        "name":"p_recipient_partner_key"
+                    }
+                },
+                {
+                    "column":{
+                        "name":"r_group_name"
+                    }
+                },
+                {
+                    "column":{
+                        "name":"r_delivery_method"
+                    }
+                },
+                {
+                    "column":{
+                        "name":"r_group_sched_id"
+                    }
+                },
+                {
+                    "column":{
+                        "name":"r_report_id"
+                    }
+                }
+            ]
+}
+}
+]
+}
+}        ,
+    {
+    "changeSet": {
+    "id": "202201202336-186",
+    "author": "parse_ddl.pl",
+    "tagDatabase": { "tag": "tag-202201202336-187" } ,
     "changes": [
         {
         "createTable": {
@@ -12377,7 +12865,19 @@
             },
         {
             "column": {
+                "name": "r_group_template_file",
+                "type": "varchar(255)"
+            }
+            },
+        {
+            "column": {
                 "name": "r_is_active",
+                "type": "bit"
+            }
+            },
+        {
+            "column": {
+                "name": "r_send_empty",
                 "type": "bit"
             }
             },
@@ -12431,9 +12931,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-182",
+    "id": "202201202336-187",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-183" } ,
+    "tagDatabase": { "tag": "tag-202201202336-188" } ,
     "changes": [
         {
         "createIndex": {
@@ -12463,9 +12963,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-183",
+    "id": "202201202336-188",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-184" } ,
+    "tagDatabase": { "tag": "tag-202201202336-189" } ,
     "changes": [
         {
         "createTable": {
@@ -12563,9 +13063,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-184",
+    "id": "202201202336-189",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-185" } ,
+    "tagDatabase": { "tag": "tag-202201202336-190" } ,
     "changes": [
         {
         "createIndex": {
@@ -12600,9 +13100,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-185",
+    "id": "202201202336-190",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-186" } ,
+    "tagDatabase": { "tag": "tag-202201202336-191" } ,
     "changes": [
         {
         "createTable": {
@@ -12646,7 +13146,25 @@
             },
         {
             "column": {
+                "name": "r_is_sched_param",
+                "type": "bit"
+            }
+            },
+        {
+            "column": {
                 "name": "r_is_required",
+                "type": "bit"
+            }
+            },
+        {
+            "column": {
+                "name": "r_pass_to_report",
+                "type": "bit"
+            }
+            },
+        {
+            "column": {
+                "name": "r_pass_to_template",
                 "type": "bit"
             }
             },
@@ -12664,7 +13182,19 @@
             },
         {
             "column": {
+                "name": "r_param_ui_sequence",
+                "type": "integer"
+            }
+            },
+        {
+            "column": {
                 "name": "r_param_default",
+                "type": "varchar(1536)"
+            }
+            },
+        {
+            "column": {
+                "name": "r_param_default_expr",
                 "type": "varchar(1536)"
             }
             },
@@ -12718,9 +13248,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-186",
+    "id": "202201202336-191",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-187" } ,
+    "tagDatabase": { "tag": "tag-202201202336-192" } ,
     "changes": [
         {
         "createIndex": {
@@ -12755,9 +13285,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-187",
+    "id": "202201202336-192",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-188" } ,
+    "tagDatabase": { "tag": "tag-202201202336-193" } ,
     "changes": [
         {
         "createTable": {
@@ -12864,9 +13394,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-188",
+    "id": "202201202336-193",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-189" } ,
+    "tagDatabase": { "tag": "tag-202201202336-194" } ,
     "changes": [
         {
         "createIndex": {
@@ -12906,9 +13436,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-189",
+    "id": "202201202336-194",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-190" } ,
+    "tagDatabase": { "tag": "tag-202201202336-195" } ,
     "changes": [
         {
         "createIndex": {
@@ -12948,9 +13478,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-190",
+    "id": "202201202336-195",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-191" } ,
+    "tagDatabase": { "tag": "tag-202201202336-196" } ,
     "changes": [
         {
         "createIndex": {
@@ -12995,9 +13525,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-191",
+    "id": "202201202336-196",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-192" } ,
+    "tagDatabase": { "tag": "tag-202201202336-197" } ,
     "changes": [
         {
         "createTable": {
@@ -13092,9 +13622,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-192",
+    "id": "202201202336-197",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-193" } ,
+    "tagDatabase": { "tag": "tag-202201202336-198" } ,
     "changes": [
         {
         "createIndex": {
@@ -13124,9 +13654,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-193",
+    "id": "202201202336-198",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-194" } ,
+    "tagDatabase": { "tag": "tag-202201202336-199" } ,
     "changes": [
         {
         "createTable": {
@@ -13206,9 +13736,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-194",
+    "id": "202201202336-199",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-195" } ,
+    "tagDatabase": { "tag": "tag-202201202336-200" } ,
     "changes": [
         {
         "createTable": {
@@ -13288,9 +13818,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-195",
+    "id": "202201202336-200",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-196" } ,
+    "tagDatabase": { "tag": "tag-202201202336-201" } ,
     "changes": [
         {
         "createTable": {
@@ -13391,9 +13921,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-196",
+    "id": "202201202336-201",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-197" } ,
+    "tagDatabase": { "tag": "tag-202201202336-202" } ,
     "changes": [
         {
         "createTable": {
@@ -13482,9 +14012,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-197",
+    "id": "202201202336-202",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-198" } ,
+    "tagDatabase": { "tag": "tag-202201202336-203" } ,
     "changes": [
         {
         "createTable": {
@@ -13573,9 +14103,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-198",
+    "id": "202201202336-203",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-199" } ,
+    "tagDatabase": { "tag": "tag-202201202336-204" } ,
     "changes": [
         {
         "createTable": {
@@ -13664,9 +14194,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-199",
+    "id": "202201202336-204",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-200" } ,
+    "tagDatabase": { "tag": "tag-202201202336-205" } ,
     "changes": [
         {
         "createTable": {
@@ -13815,9 +14345,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-200",
+    "id": "202201202336-205",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-201" } ,
+    "tagDatabase": { "tag": "tag-202201202336-206" } ,
     "changes": [
         {
         "createIndex": {
@@ -13847,9 +14377,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-201",
+    "id": "202201202336-206",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-202" } ,
+    "tagDatabase": { "tag": "tag-202201202336-207" } ,
     "changes": [
         {
         "createIndex": {
@@ -13879,9 +14409,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-202",
+    "id": "202201202336-207",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-203" } ,
+    "tagDatabase": { "tag": "tag-202201202336-208" } ,
     "changes": [
         {
         "createIndex": {
@@ -13906,9 +14436,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-203",
+    "id": "202201202336-208",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-204" } ,
+    "tagDatabase": { "tag": "tag-202201202336-209" } ,
     "changes": [
         {
         "createIndex": {
@@ -13938,9 +14468,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-204",
+    "id": "202201202336-209",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-205" } ,
+    "tagDatabase": { "tag": "tag-202201202336-210" } ,
     "changes": [
         {
         "createTable": {
@@ -14107,9 +14637,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-205",
+    "id": "202201202336-210",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-206" } ,
+    "tagDatabase": { "tag": "tag-202201202336-211" } ,
     "changes": [
         {
         "createIndex": {
@@ -14139,9 +14669,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-206",
+    "id": "202201202336-211",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-207" } ,
+    "tagDatabase": { "tag": "tag-202201202336-212" } ,
     "changes": [
         {
         "createIndex": {
@@ -14171,9 +14701,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-207",
+    "id": "202201202336-212",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-208" } ,
+    "tagDatabase": { "tag": "tag-202201202336-213" } ,
     "changes": [
         {
         "createIndex": {
@@ -14198,9 +14728,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-208",
+    "id": "202201202336-213",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-209" } ,
+    "tagDatabase": { "tag": "tag-202201202336-214" } ,
     "changes": [
         {
         "createTable": {
@@ -14283,9 +14813,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-209",
+    "id": "202201202336-214",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-210" } ,
+    "tagDatabase": { "tag": "tag-202201202336-215" } ,
     "changes": [
         {
         "createIndex": {
@@ -14315,9 +14845,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-210",
+    "id": "202201202336-215",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-211" } ,
+    "tagDatabase": { "tag": "tag-202201202336-216" } ,
     "changes": [
         {
         "createIndex": {
@@ -14347,9 +14877,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-211",
+    "id": "202201202336-216",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-212" } ,
+    "tagDatabase": { "tag": "tag-202201202336-217" } ,
     "changes": [
         {
         "createTable": {
@@ -14438,9 +14968,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-212",
+    "id": "202201202336-217",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-213" } ,
+    "tagDatabase": { "tag": "tag-202201202336-218" } ,
     "changes": [
         {
         "createTable": {
@@ -14550,9 +15080,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-213",
+    "id": "202201202336-218",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-214" } ,
+    "tagDatabase": { "tag": "tag-202201202336-219" } ,
     "changes": [
         {
         "createTable": {
@@ -14668,9 +15198,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-214",
+    "id": "202201202336-219",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-215" } ,
+    "tagDatabase": { "tag": "tag-202201202336-220" } ,
     "changes": [
         {
         "createTable": {
@@ -14813,9 +15343,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-215",
+    "id": "202201202336-220",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-216" } ,
+    "tagDatabase": { "tag": "tag-202201202336-221" } ,
     "changes": [
         {
         "createTable": {
@@ -14898,9 +15428,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-216",
+    "id": "202201202336-221",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-217" } ,
+    "tagDatabase": { "tag": "tag-202201202336-222" } ,
     "changes": [
         {
         "createTable": {
@@ -14980,9 +15510,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-217",
+    "id": "202201202336-222",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-218" } ,
+    "tagDatabase": { "tag": "tag-202201202336-223" } ,
     "changes": [
         {
         "createTable": {
@@ -15071,9 +15601,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-218",
+    "id": "202201202336-223",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-219" } ,
+    "tagDatabase": { "tag": "tag-202201202336-224" } ,
     "changes": [
         {
         "createTable": {
@@ -15206,9 +15736,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-219",
+    "id": "202201202336-224",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-220" } ,
+    "tagDatabase": { "tag": "tag-202201202336-225" } ,
     "changes": [
         {
         "createIndex": {
@@ -15238,9 +15768,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-220",
+    "id": "202201202336-225",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-221" } ,
+    "tagDatabase": { "tag": "tag-202201202336-226" } ,
     "changes": [
         {
         "createIndex": {
@@ -15265,9 +15795,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-221",
+    "id": "202201202336-226",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-222" } ,
+    "tagDatabase": { "tag": "tag-202201202336-227" } ,
     "changes": [
         {
         "createTable": {
@@ -15582,9 +16112,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-222",
+    "id": "202201202336-227",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-223" } ,
+    "tagDatabase": { "tag": "tag-202201202336-228" } ,
     "changes": [
         {
         "createIndex": {
@@ -15629,9 +16159,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-223",
+    "id": "202201202336-228",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-224" } ,
+    "tagDatabase": { "tag": "tag-202201202336-229" } ,
     "changes": [
         {
         "createIndex": {
@@ -15666,9 +16196,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-224",
+    "id": "202201202336-229",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-225" } ,
+    "tagDatabase": { "tag": "tag-202201202336-230" } ,
     "changes": [
         {
         "createIndex": {
@@ -15724,9 +16254,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-225",
+    "id": "202201202336-230",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-226" } ,
+    "tagDatabase": { "tag": "tag-202201202336-231" } ,
     "changes": [
         {
         "createIndex": {
@@ -15761,9 +16291,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-226",
+    "id": "202201202336-231",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-227" } ,
+    "tagDatabase": { "tag": "tag-202201202336-232" } ,
     "changes": [
         {
         "createIndex": {
@@ -15803,9 +16333,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-227",
+    "id": "202201202336-232",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-228" } ,
+    "tagDatabase": { "tag": "tag-202201202336-233" } ,
     "changes": [
         {
         "createIndex": {
@@ -15845,9 +16375,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-228",
+    "id": "202201202336-233",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-229" } ,
+    "tagDatabase": { "tag": "tag-202201202336-234" } ,
     "changes": [
         {
         "createIndex": {
@@ -15882,9 +16412,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-229",
+    "id": "202201202336-234",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-230" } ,
+    "tagDatabase": { "tag": "tag-202201202336-235" } ,
     "changes": [
         {
         "createIndex": {
@@ -15929,9 +16459,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-230",
+    "id": "202201202336-235",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-231" } ,
+    "tagDatabase": { "tag": "tag-202201202336-236" } ,
     "changes": [
         {
         "createIndex": {
@@ -15976,9 +16506,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-231",
+    "id": "202201202336-236",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-232" } ,
+    "tagDatabase": { "tag": "tag-202201202336-237" } ,
     "changes": [
         {
         "createTable": {
@@ -16293,9 +16823,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-232",
+    "id": "202201202336-237",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-233" } ,
+    "tagDatabase": { "tag": "tag-202201202336-238" } ,
     "changes": [
         {
         "createIndex": {
@@ -16335,9 +16865,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-233",
+    "id": "202201202336-238",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-234" } ,
+    "tagDatabase": { "tag": "tag-202201202336-239" } ,
     "changes": [
         {
         "createIndex": {
@@ -16372,9 +16902,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-234",
+    "id": "202201202336-239",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-235" } ,
+    "tagDatabase": { "tag": "tag-202201202336-240" } ,
     "changes": [
         {
         "createIndex": {
@@ -16419,9 +16949,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-235",
+    "id": "202201202336-240",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-236" } ,
+    "tagDatabase": { "tag": "tag-202201202336-241" } ,
     "changes": [
         {
         "createIndex": {
@@ -16477,9 +17007,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-236",
+    "id": "202201202336-241",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-237" } ,
+    "tagDatabase": { "tag": "tag-202201202336-242" } ,
     "changes": [
         {
         "createIndex": {
@@ -16519,9 +17049,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-237",
+    "id": "202201202336-242",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-238" } ,
+    "tagDatabase": { "tag": "tag-202201202336-243" } ,
     "changes": [
         {
         "createIndex": {
@@ -16556,9 +17086,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-238",
+    "id": "202201202336-243",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-239" } ,
+    "tagDatabase": { "tag": "tag-202201202336-244" } ,
     "changes": [
         {
         "createIndex": {
@@ -16593,9 +17123,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-239",
+    "id": "202201202336-244",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-240" } ,
+    "tagDatabase": { "tag": "tag-202201202336-245" } ,
     "changes": [
         {
         "createTable": {
@@ -16678,9 +17208,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-240",
+    "id": "202201202336-245",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-241" } ,
+    "tagDatabase": { "tag": "tag-202201202336-246" } ,
     "changes": [
         {
         "createTable": {
@@ -16763,9 +17293,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-241",
+    "id": "202201202336-246",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-242" } ,
+    "tagDatabase": { "tag": "tag-202201202336-247" } ,
     "changes": [
         {
         "createTable": {
@@ -16863,9 +17393,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-242",
+    "id": "202201202336-247",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-243" } ,
+    "tagDatabase": { "tag": "tag-202201202336-248" } ,
     "changes": [
         {
         "createTable": {
@@ -16951,9 +17481,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-243",
+    "id": "202201202336-248",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-244" } ,
+    "tagDatabase": { "tag": "tag-202201202336-249" } ,
     "changes": [
         {
         "createIndex": {
@@ -16978,9 +17508,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-244",
+    "id": "202201202336-249",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-245" } ,
+    "tagDatabase": { "tag": "tag-202201202336-250" } ,
     "changes": [
         {
         "createTable": {
@@ -17075,9 +17605,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-245",
+    "id": "202201202336-250",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-246" } ,
+    "tagDatabase": { "tag": "tag-202201202336-251" } ,
     "changes": [
         {
         "createTable": {
@@ -17151,9 +17681,206 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-246",
+    "id": "202201202336-251",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-247" } ,
+    "tagDatabase": { "tag": "tag-202201202336-252" } ,
+    "changes": [
+        {
+        "createTable": {
+            "tableName": "a_currency",
+            "columns": [
+        {
+            "column": {
+                "name": "a_ledger_number",
+                "type": "char(10)",
+                "constraints": {
+        "primaryKey": true
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "a_currency_code",
+                "type": "char(3)",
+                "constraints": {
+        "primaryKey": true
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "a_currency_desc",
+                "type": "varchar(64)",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "a_enabled",
+                "type": "bit",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "s_date_created",
+                "type": "datetime",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "s_created_by",
+                "type": "varchar(20)",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "s_date_modified",
+                "type": "datetime",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "s_modified_by",
+                "type": "varchar(20)",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "__cx_osml_control",
+                "type": "varchar(255)"
+            }
+            }
+        ]}
+        }
+        ]
+    }
+    }
+        ,
+    {
+    "changeSet": {
+    "id": "202201202336-252",
+    "author": "parse_ddl.pl",
+    "tagDatabase": { "tag": "tag-202201202336-253" } ,
+    "changes": [
+        {
+        "createTable": {
+            "tableName": "a_currency_exch_rate",
+            "columns": [
+        {
+            "column": {
+                "name": "a_ledger_number",
+                "type": "char(10)",
+                "constraints": {
+        "primaryKey": true
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "a_base_currency_code",
+                "type": "char(3)",
+                "constraints": {
+        "primaryKey": true
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "a_foreign_currency_code",
+                "type": "char(3)",
+                "constraints": {
+        "primaryKey": true
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "a_exch_rate_date",
+                "type": "datetime",
+                "constraints": {
+        "primaryKey": true
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "a_exch_rate",
+                "type": "float",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "s_date_created",
+                "type": "datetime",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "s_created_by",
+                "type": "varchar(20)",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "s_date_modified",
+                "type": "datetime",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "s_modified_by",
+                "type": "varchar(20)",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "__cx_osml_control",
+                "type": "varchar(255)"
+            }
+            }
+        ]}
+        }
+        ]
+    }
+    }
+        ,
+    {
+    "changeSet": {
+    "id": "202201202336-253",
+    "author": "parse_ddl.pl",
+    "tagDatabase": { "tag": "tag-202201202336-254" } ,
     "changes": [
         {
         "createTable": {
@@ -17287,9 +18014,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-247",
+    "id": "202201202336-254",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-248" } ,
+    "tagDatabase": { "tag": "tag-202201202336-255" } ,
     "changes": [
         {
         "createIndex": {
@@ -17324,9 +18051,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-248",
+    "id": "202201202336-255",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-249" } ,
+    "tagDatabase": { "tag": "tag-202201202336-256" } ,
     "changes": [
         {
         "createIndex": {
@@ -17361,9 +18088,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-249",
+    "id": "202201202336-256",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-250" } ,
+    "tagDatabase": { "tag": "tag-202201202336-257" } ,
     "changes": [
         {
         "createTable": {
@@ -17530,9 +18257,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-250",
+    "id": "202201202336-257",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-251" } ,
+    "tagDatabase": { "tag": "tag-202201202336-258" } ,
     "changes": [
         {
         "createIndex": {
@@ -17567,9 +18294,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-251",
+    "id": "202201202336-258",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-252" } ,
+    "tagDatabase": { "tag": "tag-202201202336-259" } ,
     "changes": [
         {
         "createTable": {
@@ -17751,9 +18478,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-252",
+    "id": "202201202336-259",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-253" } ,
+    "tagDatabase": { "tag": "tag-202201202336-260" } ,
     "changes": [
         {
         "createTable": {
@@ -17914,9 +18641,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-253",
+    "id": "202201202336-260",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-254" } ,
+    "tagDatabase": { "tag": "tag-202201202336-261" } ,
     "changes": [
         {
         "createTable": {
@@ -18041,9 +18768,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-254",
+    "id": "202201202336-261",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-255" } ,
+    "tagDatabase": { "tag": "tag-202201202336-262" } ,
     "changes": [
         {
         "createIndex": {
@@ -18073,9 +18800,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-255",
+    "id": "202201202336-262",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-256" } ,
+    "tagDatabase": { "tag": "tag-202201202336-263" } ,
     "changes": [
         {
         "createIndex": {
@@ -18105,9 +18832,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-256",
+    "id": "202201202336-263",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-257" } ,
+    "tagDatabase": { "tag": "tag-202201202336-264" } ,
     "changes": [
         {
         "createTable": {
@@ -18305,9 +19032,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-257",
+    "id": "202201202336-264",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-258" } ,
+    "tagDatabase": { "tag": "tag-202201202336-265" } ,
     "changes": [
         {
         "createTable": {
@@ -18487,9 +19214,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-258",
+    "id": "202201202336-265",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-259" } ,
+    "tagDatabase": { "tag": "tag-202201202336-266" } ,
     "changes": [
         {
         "createTable": {
@@ -18626,9 +19353,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-259",
+    "id": "202201202336-266",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-260" } ,
+    "tagDatabase": { "tag": "tag-202201202336-267" } ,
     "changes": [
         {
         "createTable": {
@@ -18699,9 +19426,91 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-260",
+    "id": "202201202336-267",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-261" } ,
+    "tagDatabase": { "tag": "tag-202201202336-268" } ,
+    "changes": [
+        {
+        "createTable": {
+            "tableName": "a_payroll_item_subclass",
+            "columns": [
+        {
+            "column": {
+                "name": "a_payroll_item_class_code",
+                "type": "char(1)",
+                "constraints": {
+        "primaryKey": true
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "a_payroll_item_subclass_code",
+                "type": "char(2)",
+                "constraints": {
+        "primaryKey": true
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "a_desc",
+                "type": "varchar(32)"
+            }
+            },
+        {
+            "column": {
+                "name": "s_date_created",
+                "type": "datetime",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "s_created_by",
+                "type": "varchar(20)",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "s_date_modified",
+                "type": "datetime",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "s_modified_by",
+                "type": "varchar(20)",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "__cx_osml_control",
+                "type": "varchar(255)"
+            }
+            }
+        ]}
+        }
+        ]
+    }
+    }
+        ,
+    {
+    "changeSet": {
+    "id": "202201202336-268",
+    "author": "parse_ddl.pl",
+    "tagDatabase": { "tag": "tag-202201202336-269" } ,
     "changes": [
         {
         "createTable": {
@@ -18799,9 +19608,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-261",
+    "id": "202201202336-269",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-262" } ,
+    "tagDatabase": { "tag": "tag-202201202336-270" } ,
     "changes": [
         {
         "createTable": {
@@ -18893,9 +19702,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-262",
+    "id": "202201202336-270",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-263" } ,
+    "tagDatabase": { "tag": "tag-202201202336-271" } ,
     "changes": [
         {
         "createTable": {
@@ -19059,9 +19868,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-263",
+    "id": "202201202336-271",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-264" } ,
+    "tagDatabase": { "tag": "tag-202201202336-272" } ,
     "changes": [
         {
         "createIndex": {
@@ -19106,9 +19915,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-264",
+    "id": "202201202336-272",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-265" } ,
+    "tagDatabase": { "tag": "tag-202201202336-273" } ,
     "changes": [
         {
         "createTable": {
@@ -19254,9 +20063,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-265",
+    "id": "202201202336-273",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-266" } ,
+    "tagDatabase": { "tag": "tag-202201202336-274" } ,
     "changes": [
         {
         "createTable": {
@@ -19381,9 +20190,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-266",
+    "id": "202201202336-274",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-267" } ,
+    "tagDatabase": { "tag": "tag-202201202336-275" } ,
     "changes": [
         {
         "createIndex": {
@@ -19413,9 +20222,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-267",
+    "id": "202201202336-275",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-268" } ,
+    "tagDatabase": { "tag": "tag-202201202336-276" } ,
     "changes": [
         {
         "createTable": {
@@ -19510,9 +20319,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-268",
+    "id": "202201202336-276",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-269" } ,
+    "tagDatabase": { "tag": "tag-202201202336-277" } ,
     "changes": [
         {
         "createTable": {
@@ -19638,9 +20447,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-269",
+    "id": "202201202336-277",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-270" } ,
+    "tagDatabase": { "tag": "tag-202201202336-278" } ,
     "changes": [
         {
         "createTable": {
@@ -19766,9 +20575,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-270",
+    "id": "202201202336-278",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-271" } ,
+    "tagDatabase": { "tag": "tag-202201202336-279" } ,
     "changes": [
         {
         "createTable": {
@@ -19882,9 +20691,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-271",
+    "id": "202201202336-279",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-272" } ,
+    "tagDatabase": { "tag": "tag-202201202336-280" } ,
     "changes": [
         {
         "createIndex": {
@@ -19919,9 +20728,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-272",
+    "id": "202201202336-280",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-273" } ,
+    "tagDatabase": { "tag": "tag-202201202336-281" } ,
     "changes": [
         {
         "createTable": {
@@ -20035,9 +20844,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-273",
+    "id": "202201202336-281",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-274" } ,
+    "tagDatabase": { "tag": "tag-202201202336-282" } ,
     "changes": [
         {
         "createIndex": {
@@ -20072,9 +20881,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-274",
+    "id": "202201202336-282",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-275" } ,
+    "tagDatabase": { "tag": "tag-202201202336-283" } ,
     "changes": [
         {
         "createTable": {
@@ -20161,9 +20970,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-275",
+    "id": "202201202336-283",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-276" } ,
+    "tagDatabase": { "tag": "tag-202201202336-284" } ,
     "changes": [
         {
         "createIndex": {
@@ -20188,9 +20997,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-276",
+    "id": "202201202336-284",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-277" } ,
+    "tagDatabase": { "tag": "tag-202201202336-285" } ,
     "changes": [
         {
         "createTable": {
@@ -20293,9 +21102,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-277",
+    "id": "202201202336-285",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-278" } ,
+    "tagDatabase": { "tag": "tag-202201202336-286" } ,
     "changes": [
         {
         "createIndex": {
@@ -20325,9 +21134,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-278",
+    "id": "202201202336-286",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-279" } ,
+    "tagDatabase": { "tag": "tag-202201202336-287" } ,
     "changes": [
         {
         "createIndex": {
@@ -20357,9 +21166,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-279",
+    "id": "202201202336-287",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-280" } ,
+    "tagDatabase": { "tag": "tag-202201202336-288" } ,
     "changes": [
         {
         "createTable": {
@@ -20447,9 +21256,239 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-280",
+    "id": "202201202336-288",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-281" } ,
+    "tagDatabase": { "tag": "tag-202201202336-289" } ,
+    "changes": [
+        {
+        "createTable": {
+            "tableName": "a_gift_payment_type",
+            "columns": [
+        {
+            "column": {
+                "name": "a_ledger_number",
+                "type": "char(10)",
+                "constraints": {
+        "primaryKey": true
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "a_gift_payment_type",
+                "type": "char(1)",
+                "constraints": {
+        "primaryKey": true
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "a_gift_payment_type_desc",
+                "type": "varchar(64)",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "defaultValueBoolean": false,
+                "name": "a_is_default",
+                "type": "bit"
+            }
+            },
+        {
+            "column": {
+                "defaultValueBoolean": true,
+                "name": "a_is_enabled",
+                "type": "bit"
+            }
+            },
+        {
+            "column": {
+                "defaultValueBoolean": true,
+                "name": "a_is_cash",
+                "type": "bit"
+            }
+            },
+        {
+            "column": {
+                "name": "a_payment_cost_center",
+                "type": "char(20)"
+            }
+            },
+        {
+            "column": {
+                "name": "a_payment_account_code",
+                "type": "char(16)"
+            }
+            },
+        {
+            "column": {
+                "name": "a_desig_account_code",
+                "type": "char(16)"
+            }
+            },
+        {
+            "column": {
+                "name": "a_min_gift",
+                "type": "decimal(14,4)"
+            }
+            },
+        {
+            "column": {
+                "name": "a_max_gift",
+                "type": "decimal(14,4)"
+            }
+            },
+        {
+            "column": {
+                "name": "s_date_created",
+                "type": "datetime",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "s_created_by",
+                "type": "varchar(20)",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "s_date_modified",
+                "type": "datetime",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "s_modified_by",
+                "type": "varchar(20)",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "__cx_osml_control",
+                "type": "varchar(255)"
+            }
+            }
+        ]}
+        }
+        ]
+    }
+    }
+        ,
+    {
+    "changeSet": {
+    "id": "202201202336-289",
+    "author": "parse_ddl.pl",
+    "tagDatabase": { "tag": "tag-202201202336-290" } ,
+    "changes": [
+        {
+        "createTable": {
+            "tableName": "a_receipt_mailing",
+            "columns": [
+        {
+            "column": {
+                "name": "a_ledger_number",
+                "type": "char(10)",
+                "constraints": {
+        "primaryKey": true
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "m_list_code",
+                "type": "varchar(20)",
+                "constraints": {
+        "primaryKey": true
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "a_prev_issue_lookback",
+                "type": "integer"
+            }
+            },
+        {
+            "column": {
+                "name": "a_prev_issue_max_interval",
+                "type": "float"
+            }
+            },
+        {
+            "column": {
+                "name": "a_comment",
+                "type": "varchar(255)"
+            }
+            },
+        {
+            "column": {
+                "name": "s_date_created",
+                "type": "datetime",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "s_created_by",
+                "type": "varchar(20)",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "s_date_modified",
+                "type": "datetime",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "s_modified_by",
+                "type": "varchar(20)",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "__cx_osml_control",
+                "type": "varchar(255)"
+            }
+            }
+        ]}
+        }
+        ]
+    }
+    }
+        ,
+    {
+    "changeSet": {
+    "id": "202201202336-290",
+    "author": "parse_ddl.pl",
+    "tagDatabase": { "tag": "tag-202201202336-291" } ,
     "changes": [
         {
         "createTable": {
@@ -20711,9 +21750,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-281",
+    "id": "202201202336-291",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-282" } ,
+    "tagDatabase": { "tag": "tag-202201202336-292" } ,
     "changes": [
         {
         "createIndex": {
@@ -20743,9 +21782,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-282",
+    "id": "202201202336-292",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-283" } ,
+    "tagDatabase": { "tag": "tag-202201202336-293" } ,
     "changes": [
         {
         "createIndex": {
@@ -20775,9 +21814,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-283",
+    "id": "202201202336-293",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-284" } ,
+    "tagDatabase": { "tag": "tag-202201202336-294" } ,
     "changes": [
         {
         "createIndex": {
@@ -20812,9 +21851,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-284",
+    "id": "202201202336-294",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-285" } ,
+    "tagDatabase": { "tag": "tag-202201202336-295" } ,
     "changes": [
         {
         "createIndex": {
@@ -20854,9 +21893,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-285",
+    "id": "202201202336-295",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-286" } ,
+    "tagDatabase": { "tag": "tag-202201202336-296" } ,
     "changes": [
         {
         "createIndex": {
@@ -20891,9 +21930,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-286",
+    "id": "202201202336-296",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-287" } ,
+    "tagDatabase": { "tag": "tag-202201202336-297" } ,
     "changes": [
         {
         "createTable": {
@@ -20942,6 +21981,30 @@
                 "constraints": {
         "nullable": false
                 }
+            }
+            },
+        {
+            "column": {
+                "name": "a_foreign_amount",
+                "type": "decimal(14,4)"
+            }
+            },
+        {
+            "column": {
+                "name": "a_foreign_currency",
+                "type": "char(3)"
+            }
+            },
+        {
+            "column": {
+                "name": "a_foreign_currency_exch_rate",
+                "type": "float"
+            }
+            },
+        {
+            "column": {
+                "name": "a_foreign_currency_date",
+                "type": "float"
             }
             },
         {
@@ -21000,8 +22063,21 @@
             },
         {
             "column": {
+                "defaultValueBoolean": false,
+                "name": "a_ack_receipt_sent",
+                "type": "bit"
+            }
+            },
+        {
+            "column": {
                 "defaultValue": "I",
                 "name": "a_receipt_desired",
+                "type": "char(1)"
+            }
+            },
+        {
+            "column": {
+                "name": "a_ack_receipt_desired",
                 "type": "char(1)"
             }
             },
@@ -21039,8 +22115,14 @@
             },
         {
             "column": {
+                "name": "a_ack_receipt_sent_date",
+                "type": "datetime"
+            }
+            },
+        {
+            "column": {
                 "name": "a_comment",
-                "type": "varchar(255)"
+                "type": "varchar(900)"
             }
             },
         {
@@ -21093,9 +22175,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-287",
+    "id": "202201202336-297",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-288" } ,
+    "tagDatabase": { "tag": "tag-202201202336-298" } ,
     "changes": [
         {
         "createIndex": {
@@ -21130,9 +22212,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-288",
+    "id": "202201202336-298",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-289" } ,
+    "tagDatabase": { "tag": "tag-202201202336-299" } ,
     "changes": [
         {
         "createIndex": {
@@ -21162,9 +22244,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-289",
+    "id": "202201202336-299",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-290" } ,
+    "tagDatabase": { "tag": "tag-202201202336-300" } ,
     "changes": [
         {
         "createIndex": {
@@ -21194,9 +22276,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-290",
+    "id": "202201202336-300",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-291" } ,
+    "tagDatabase": { "tag": "tag-202201202336-301" } ,
     "changes": [
         {
         "createIndex": {
@@ -21231,9 +22313,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-291",
+    "id": "202201202336-301",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-292" } ,
+    "tagDatabase": { "tag": "tag-202201202336-302" } ,
     "changes": [
         {
         "createIndex": {
@@ -21268,9 +22350,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-292",
+    "id": "202201202336-302",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-293" } ,
+    "tagDatabase": { "tag": "tag-202201202336-303" } ,
     "changes": [
         {
         "createTable": {
@@ -21350,8 +22432,50 @@
             },
         {
             "column": {
+                "name": "a_foreign_amount",
+                "type": "decimal(14,4)"
+            }
+            },
+        {
+            "column": {
+                "name": "a_foreign_currency",
+                "type": "char(3)"
+            }
+            },
+        {
+            "column": {
+                "name": "a_foreign_currency_exch_rate",
+                "type": "float"
+            }
+            },
+        {
+            "column": {
+                "name": "a_foreign_currency_date",
+                "type": "float"
+            }
+            },
+        {
+            "column": {
                 "name": "a_recv_document_id",
                 "type": "varchar(64)"
+            }
+            },
+        {
+            "column": {
+                "name": "a_account_hash",
+                "type": "varchar(256)"
+            }
+            },
+        {
+            "column": {
+                "name": "a_check_front_image",
+                "type": "varchar(256)"
+            }
+            },
+        {
+            "column": {
+                "name": "a_check_back_image",
+                "type": "varchar(256)"
             }
             },
         {
@@ -21422,6 +22546,12 @@
             "column": {
                 "name": "a_motivational_code",
                 "type": "varchar(16)"
+            }
+            },
+        {
+            "column": {
+                "name": "a_item_intent_code",
+                "type": "char(1)"
             }
             },
         {
@@ -21528,9 +22658,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-293",
+    "id": "202201202336-303",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-294" } ,
+    "tagDatabase": { "tag": "tag-202201202336-304" } ,
     "changes": [
         {
         "createIndex": {
@@ -21570,9 +22700,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-294",
+    "id": "202201202336-304",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-295" } ,
+    "tagDatabase": { "tag": "tag-202201202336-305" } ,
     "changes": [
         {
         "createIndex": {
@@ -21612,9 +22742,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-295",
+    "id": "202201202336-305",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-296" } ,
+    "tagDatabase": { "tag": "tag-202201202336-306" } ,
     "changes": [
         {
         "createIndex": {
@@ -21654,9 +22784,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-296",
+    "id": "202201202336-306",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-297" } ,
+    "tagDatabase": { "tag": "tag-202201202336-307" } ,
     "changes": [
         {
         "createIndex": {
@@ -21696,9 +22826,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-297",
+    "id": "202201202336-307",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-298" } ,
+    "tagDatabase": { "tag": "tag-202201202336-308" } ,
     "changes": [
         {
         "createIndex": {
@@ -21738,9 +22868,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-298",
+    "id": "202201202336-308",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-299" } ,
+    "tagDatabase": { "tag": "tag-202201202336-309" } ,
     "changes": [
         {
         "createIndex": {
@@ -21780,9 +22910,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-299",
+    "id": "202201202336-309",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-300" } ,
+    "tagDatabase": { "tag": "tag-202201202336-310" } ,
     "changes": [
         {
         "createIndex": {
@@ -21832,9 +22962,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-300",
+    "id": "202201202336-310",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-301" } ,
+    "tagDatabase": { "tag": "tag-202201202336-311" } ,
     "changes": [
         {
         "createIndex": {
@@ -21879,9 +23009,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-301",
+    "id": "202201202336-311",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-302" } ,
+    "tagDatabase": { "tag": "tag-202201202336-312" } ,
     "changes": [
         {
         "createIndex": {
@@ -21916,9 +23046,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-302",
+    "id": "202201202336-312",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-303" } ,
+    "tagDatabase": { "tag": "tag-202201202336-313" } ,
     "changes": [
         {
         "createIndex": {
@@ -21958,9 +23088,280 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-303",
+    "id": "202201202336-313",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-304" } ,
+    "tagDatabase": { "tag": "tag-202201202336-314" } ,
+    "changes": [
+        {
+        "createTable": {
+            "tableName": "a_subtrx_gift_intent",
+            "columns": [
+        {
+            "column": {
+                "name": "a_ledger_number",
+                "type": "char(10)",
+                "constraints": {
+        "primaryKey": true
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "a_batch_number",
+                "type": "integer",
+                "constraints": {
+        "primaryKey": true
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "a_gift_number",
+                "type": "integer",
+                "constraints": {
+        "primaryKey": true
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "a_intent_number",
+                "type": "integer",
+                "constraints": {
+        "primaryKey": true
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "a_split_number",
+                "type": "integer"
+            }
+            },
+        {
+            "column": {
+                "name": "a_pledge_id",
+                "type": "integer"
+            }
+            },
+        {
+            "column": {
+                "name": "p_dn_donor_partner_id",
+                "type": "char(10)",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "p_dn_ack_partner_id",
+                "type": "char(10)"
+            }
+            },
+        {
+            "column": {
+                "name": "a_cost_center",
+                "type": "char(20)"
+            }
+            },
+        {
+            "column": {
+                "name": "a_intent_type",
+                "type": "varchar(1)",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "a_amount",
+                "type": "decimal(14,4)"
+            }
+            },
+        {
+            "column": {
+                "name": "a_total_amount",
+                "type": "decimal(14,4)"
+            }
+            },
+        {
+            "column": {
+                "name": "a_start_date",
+                "type": "datetime"
+            }
+            },
+        {
+            "column": {
+                "name": "a_end_date",
+                "type": "datetime"
+            }
+            },
+        {
+            "column": {
+                "name": "a_giving_interval",
+                "type": "integer"
+            }
+            },
+        {
+            "column": {
+                "name": "a_gift_count",
+                "type": "integer"
+            }
+            },
+        {
+            "column": {
+                "name": "a_comment",
+                "type": "varchar(255)"
+            }
+            },
+        {
+            "column": {
+                "name": "a_autogen",
+                "type": "bit",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "s_date_created",
+                "type": "datetime",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "s_created_by",
+                "type": "varchar(20)",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "s_date_modified",
+                "type": "datetime",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "s_modified_by",
+                "type": "varchar(20)",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "__cx_osml_control",
+                "type": "varchar(255)"
+            }
+            }
+        ]}
+        }
+        ]
+    }
+    }
+,
+    {
+    "changeSet": {
+    "id": "202201202336-314",
+    "author": "parse_ddl.pl",
+    "tagDatabase": { "tag": "tag-202201202336-315" } ,
+    "changes": [
+        {
+        "createIndex": {
+            "tableName": "a_subtrx_gift_intent",
+            "indexName": "a_gifttrxin_pledge_idx",
+            "columns": [
+                {
+                    "column":{
+                        "name":"a_ledger_number"
+                    }
+                },
+                {
+                    "column":{
+                        "name":"a_pledge_id"
+                    }
+                },
+                {
+                    "column":{
+                        "name":"a_batch_number"
+                    }
+                },
+                {
+                    "column":{
+                        "name":"a_gift_number"
+                    }
+                },
+                {
+                    "column":{
+                        "name":"a_intent_number"
+                    }
+                }
+            ]
+}
+}
+]
+}
+},
+    {
+    "changeSet": {
+    "id": "202201202336-315",
+    "author": "parse_ddl.pl",
+    "tagDatabase": { "tag": "tag-202201202336-316" } ,
+    "changes": [
+        {
+        "createIndex": {
+            "tableName": "a_subtrx_gift_intent",
+            "indexName": "a_gifttrxin_gift_idx",
+            "columns": [
+                {
+                    "column":{
+                        "name":"a_ledger_number"
+                    }
+                },
+                {
+                    "column":{
+                        "name":"a_batch_number"
+                    }
+                },
+                {
+                    "column":{
+                        "name":"a_gift_number"
+                    }
+                },
+                {
+                    "column":{
+                        "name":"a_split_number"
+                    }
+                },
+                {
+                    "column":{
+                        "name":"a_intent_number"
+                    }
+                }
+            ]
+}
+}
+]
+}
+}        ,
+    {
+    "changeSet": {
+    "id": "202201202336-316",
+    "author": "parse_ddl.pl",
+    "tagDatabase": { "tag": "tag-202201202336-317" } ,
     "changes": [
         {
         "createTable": {
@@ -21998,9 +23399,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-304",
+    "id": "202201202336-317",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-305" } ,
+    "tagDatabase": { "tag": "tag-202201202336-318" } ,
     "changes": [
         {
         "createTable": {
@@ -22101,9 +23502,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-305",
+    "id": "202201202336-318",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-306" } ,
+    "tagDatabase": { "tag": "tag-202201202336-319" } ,
     "changes": [
         {
         "createIndex": {
@@ -22133,9 +23534,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-306",
+    "id": "202201202336-319",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-307" } ,
+    "tagDatabase": { "tag": "tag-202201202336-320" } ,
     "changes": [
         {
         "createIndex": {
@@ -22165,9 +23566,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-307",
+    "id": "202201202336-320",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-308" } ,
+    "tagDatabase": { "tag": "tag-202201202336-321" } ,
     "changes": [
         {
         "createTable": {
@@ -22298,9 +23699,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-308",
+    "id": "202201202336-321",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-309" } ,
+    "tagDatabase": { "tag": "tag-202201202336-322" } ,
     "changes": [
         {
         "createIndex": {
@@ -22335,9 +23736,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-309",
+    "id": "202201202336-322",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-310" } ,
+    "tagDatabase": { "tag": "tag-202201202336-323" } ,
     "changes": [
         {
         "createIndex": {
@@ -22367,9 +23768,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-310",
+    "id": "202201202336-323",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-311" } ,
+    "tagDatabase": { "tag": "tag-202201202336-324" } ,
     "changes": [
         {
         "createIndex": {
@@ -22399,9 +23800,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-311",
+    "id": "202201202336-324",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-312" } ,
+    "tagDatabase": { "tag": "tag-202201202336-325" } ,
     "changes": [
         {
         "createTable": {
@@ -22572,9 +23973,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-312",
+    "id": "202201202336-325",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-313" } ,
+    "tagDatabase": { "tag": "tag-202201202336-326" } ,
     "changes": [
         {
         "createIndex": {
@@ -22614,9 +24015,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-313",
+    "id": "202201202336-326",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-314" } ,
+    "tagDatabase": { "tag": "tag-202201202336-327" } ,
     "changes": [
         {
         "createIndex": {
@@ -22661,9 +24062,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-314",
+    "id": "202201202336-327",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-315" } ,
+    "tagDatabase": { "tag": "tag-202201202336-328" } ,
     "changes": [
         {
         "createIndex": {
@@ -22708,9 +24109,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-315",
+    "id": "202201202336-328",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-316" } ,
+    "tagDatabase": { "tag": "tag-202201202336-329" } ,
     "changes": [
         {
         "createIndex": {
@@ -22750,9 +24151,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-316",
+    "id": "202201202336-329",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-317" } ,
+    "tagDatabase": { "tag": "tag-202201202336-330" } ,
     "changes": [
         {
         "createTable": {
@@ -22883,9 +24284,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-317",
+    "id": "202201202336-330",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-318" } ,
+    "tagDatabase": { "tag": "tag-202201202336-331" } ,
     "changes": [
         {
         "createIndex": {
@@ -22925,9 +24326,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-318",
+    "id": "202201202336-331",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-319" } ,
+    "tagDatabase": { "tag": "tag-202201202336-332" } ,
     "changes": [
         {
         "createIndex": {
@@ -22972,9 +24373,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-319",
+    "id": "202201202336-332",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-320" } ,
+    "tagDatabase": { "tag": "tag-202201202336-333" } ,
     "changes": [
         {
         "createIndex": {
@@ -23019,9 +24420,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-320",
+    "id": "202201202336-333",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-321" } ,
+    "tagDatabase": { "tag": "tag-202201202336-334" } ,
     "changes": [
         {
         "createIndex": {
@@ -23061,9 +24462,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-321",
+    "id": "202201202336-334",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-322" } ,
+    "tagDatabase": { "tag": "tag-202201202336-335" } ,
     "changes": [
         {
         "createTable": {
@@ -23215,9 +24616,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-322",
+    "id": "202201202336-335",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-323" } ,
+    "tagDatabase": { "tag": "tag-202201202336-336" } ,
     "changes": [
         {
         "createIndex": {
@@ -23262,9 +24663,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-323",
+    "id": "202201202336-336",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-324" } ,
+    "tagDatabase": { "tag": "tag-202201202336-337" } ,
     "changes": [
         {
         "createTable": {
@@ -23395,9 +24796,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-324",
+    "id": "202201202336-337",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-325" } ,
+    "tagDatabase": { "tag": "tag-202201202336-338" } ,
     "changes": [
         {
         "createTable": {
@@ -23489,9 +24890,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-325",
+    "id": "202201202336-338",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-326" } ,
+    "tagDatabase": { "tag": "tag-202201202336-339" } ,
     "changes": [
         {
         "createTable": {
@@ -23607,9 +25008,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-326",
+    "id": "202201202336-339",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-327" } ,
+    "tagDatabase": { "tag": "tag-202201202336-340" } ,
     "changes": [
         {
         "createIndex": {
@@ -23644,9 +25045,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-327",
+    "id": "202201202336-340",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-328" } ,
+    "tagDatabase": { "tag": "tag-202201202336-341" } ,
     "changes": [
         {
         "createIndex": {
@@ -23681,9 +25082,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-328",
+    "id": "202201202336-341",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-329" } ,
+    "tagDatabase": { "tag": "tag-202201202336-342" } ,
     "changes": [
         {
         "createTable": {
@@ -23964,9 +25365,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-329",
+    "id": "202201202336-342",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-330" } ,
+    "tagDatabase": { "tag": "tag-202201202336-343" } ,
     "changes": [
         {
         "createIndex": {
@@ -23996,9 +25397,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-330",
+    "id": "202201202336-343",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-331" } ,
+    "tagDatabase": { "tag": "tag-202201202336-344" } ,
     "changes": [
         {
         "createIndex": {
@@ -24028,9 +25429,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-331",
+    "id": "202201202336-344",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-332" } ,
+    "tagDatabase": { "tag": "tag-202201202336-345" } ,
     "changes": [
         {
         "createTable": {
@@ -24233,9 +25634,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-332",
+    "id": "202201202336-345",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-333" } ,
+    "tagDatabase": { "tag": "tag-202201202336-346" } ,
     "changes": [
         {
         "createIndex": {
@@ -24275,9 +25676,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-333",
+    "id": "202201202336-346",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-334" } ,
+    "tagDatabase": { "tag": "tag-202201202336-347" } ,
     "changes": [
         {
         "createIndex": {
@@ -24312,9 +25713,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-334",
+    "id": "202201202336-347",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-335" } ,
+    "tagDatabase": { "tag": "tag-202201202336-348" } ,
     "changes": [
         {
         "createIndex": {
@@ -24349,9 +25750,354 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-335",
+    "id": "202201202336-348",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-336" } ,
+    "tagDatabase": { "tag": "tag-202201202336-349" } ,
+    "changes": [
+        {
+        "createTable": {
+            "tableName": "a_pledge",
+            "columns": [
+        {
+            "column": {
+                "name": "a_ledger_number",
+                "type": "char(10)",
+                "constraints": {
+        "primaryKey": true
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "a_pledge_id",
+                "type": "integer",
+                "constraints": {
+        "primaryKey": true
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "a_is_active",
+                "type": "bit",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "p_donor_partner_id",
+                "type": "char(10)",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "a_cost_center",
+                "type": "char(20)"
+            }
+            },
+        {
+            "column": {
+                "name": "a_intent_type",
+                "type": "varchar(1)",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "a_amount",
+                "type": "decimal(14,4)"
+            }
+            },
+        {
+            "column": {
+                "name": "a_total_amount",
+                "type": "decimal(14,4)"
+            }
+            },
+        {
+            "column": {
+                "name": "a_pledge_date",
+                "type": "datetime"
+            }
+            },
+        {
+            "column": {
+                "name": "a_start_date",
+                "type": "datetime"
+            }
+            },
+        {
+            "column": {
+                "name": "a_end_date",
+                "type": "datetime"
+            }
+            },
+        {
+            "column": {
+                "name": "a_giving_interval",
+                "type": "integer"
+            }
+            },
+        {
+            "column": {
+                "name": "a_gift_count",
+                "type": "integer"
+            }
+            },
+        {
+            "column": {
+                "name": "a_comment",
+                "type": "varchar(255)"
+            }
+            },
+        {
+            "column": {
+                "name": "s_date_created",
+                "type": "datetime",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "s_created_by",
+                "type": "varchar(20)",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "s_date_modified",
+                "type": "datetime",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "s_modified_by",
+                "type": "varchar(20)",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "__cx_osml_control",
+                "type": "varchar(255)"
+            }
+            }
+        ]}
+        }
+        ]
+    }
+    }
+,
+    {
+    "changeSet": {
+    "id": "202201202336-349",
+    "author": "parse_ddl.pl",
+    "tagDatabase": { "tag": "tag-202201202336-350" } ,
+    "changes": [
+        {
+        "createIndex": {
+            "tableName": "a_pledge",
+            "indexName": "a_pledge_fund_idx",
+            "columns": [
+                {
+                    "column":{
+                        "name":"a_ledger_number"
+                    }
+                },
+                {
+                    "column":{
+                        "name":"a_cost_center"
+                    }
+                },
+                {
+                    "column":{
+                        "name":"a_pledge_id"
+                    }
+                }
+            ]
+}
+}
+]
+}
+},
+    {
+    "changeSet": {
+    "id": "202201202336-350",
+    "author": "parse_ddl.pl",
+    "tagDatabase": { "tag": "tag-202201202336-351" } ,
+    "changes": [
+        {
+        "createIndex": {
+            "tableName": "a_pledge",
+            "indexName": "a_pledge_donor_idx",
+            "columns": [
+                {
+                    "column":{
+                        "name":"a_ledger_number"
+                    }
+                },
+                {
+                    "column":{
+                        "name":"p_donor_partner_id"
+                    }
+                },
+                {
+                    "column":{
+                        "name":"a_pledge_id"
+                    }
+                }
+            ]
+}
+}
+]
+}
+}        ,
+    {
+    "changeSet": {
+    "id": "202201202336-351",
+    "author": "parse_ddl.pl",
+    "tagDatabase": { "tag": "tag-202201202336-352" } ,
+    "changes": [
+        {
+        "createTable": {
+            "tableName": "a_intent_type",
+            "columns": [
+        {
+            "column": {
+                "name": "a_ledger_number",
+                "type": "char(10)",
+                "constraints": {
+        "primaryKey": true
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "a_intent_type",
+                "type": "varchar(1)",
+                "constraints": {
+        "primaryKey": true
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "a_intent_desc",
+                "type": "varchar(80)",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "a_is_active",
+                "type": "bit",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "a_create_receivable",
+                "type": "bit",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "a_recv_account_code",
+                "type": "char(16)"
+            }
+            },
+        {
+            "column": {
+                "name": "a_allow_daf",
+                "type": "bit",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "a_comment",
+                "type": "varchar(255)"
+            }
+            },
+        {
+            "column": {
+                "name": "s_date_created",
+                "type": "datetime",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "s_created_by",
+                "type": "varchar(20)",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "s_date_modified",
+                "type": "datetime",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "s_modified_by",
+                "type": "varchar(20)",
+                "constraints": {
+        "nullable": false
+                }
+            }
+            },
+        {
+            "column": {
+                "name": "__cx_osml_control",
+                "type": "varchar(255)"
+            }
+            }
+        ]}
+        }
+        ]
+    }
+    }
+        ,
+    {
+    "changeSet": {
+    "id": "202201202336-352",
+    "author": "parse_ddl.pl",
+    "tagDatabase": { "tag": "tag-202201202336-353" } ,
     "changes": [
         {
         "createTable": {
@@ -24570,9 +26316,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-336",
+    "id": "202201202336-353",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-337" } ,
+    "tagDatabase": { "tag": "tag-202201202336-354" } ,
     "changes": [
         {
         "createIndex": {
@@ -24607,9 +26353,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-337",
+    "id": "202201202336-354",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-338" } ,
+    "tagDatabase": { "tag": "tag-202201202336-355" } ,
     "changes": [
         {
         "createIndex": {
@@ -24649,9 +26395,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-338",
+    "id": "202201202336-355",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-339" } ,
+    "tagDatabase": { "tag": "tag-202201202336-356" } ,
     "changes": [
         {
         "createTable": {
@@ -24863,9 +26609,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-339",
+    "id": "202201202336-356",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-340" } ,
+    "tagDatabase": { "tag": "tag-202201202336-357" } ,
     "changes": [
         {
         "createTable": {
@@ -25026,9 +26772,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-340",
+    "id": "202201202336-357",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-341" } ,
+    "tagDatabase": { "tag": "tag-202201202336-358" } ,
     "changes": [
         {
         "createTable": {
@@ -25169,9 +26915,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-341",
+    "id": "202201202336-358",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-342" } ,
+    "tagDatabase": { "tag": "tag-202201202336-359" } ,
     "changes": [
         {
         "createTable": {
@@ -25211,6 +26957,12 @@
                 "constraints": {
         "nullable": false
                 }
+            }
+            },
+        {
+            "column": {
+                "name": "a_from_account_code",
+                "type": "char(10)"
             }
             },
         {
@@ -25319,9 +27071,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-342",
+    "id": "202201202336-359",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-343" } ,
+    "tagDatabase": { "tag": "tag-202201202336-360" } ,
     "changes": [
         {
         "createIndex": {
@@ -25346,9 +27098,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-343",
+    "id": "202201202336-360",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-344" } ,
+    "tagDatabase": { "tag": "tag-202201202336-361" } ,
     "changes": [
         {
         "createIndex": {
@@ -25378,9 +27130,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-344",
+    "id": "202201202336-361",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-345" } ,
+    "tagDatabase": { "tag": "tag-202201202336-362" } ,
     "changes": [
         {
         "createTable": {
@@ -25530,9 +27282,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-345",
+    "id": "202201202336-362",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-346" } ,
+    "tagDatabase": { "tag": "tag-202201202336-363" } ,
     "changes": [
         {
         "createTable": {
@@ -25966,9 +27718,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-346",
+    "id": "202201202336-363",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-347" } ,
+    "tagDatabase": { "tag": "tag-202201202336-364" } ,
     "changes": [
         {
         "createIndex": {
@@ -26008,9 +27760,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-347",
+    "id": "202201202336-364",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-348" } ,
+    "tagDatabase": { "tag": "tag-202201202336-365" } ,
     "changes": [
         {
         "createIndex": {
@@ -26050,9 +27802,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-348",
+    "id": "202201202336-365",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-349" } ,
+    "tagDatabase": { "tag": "tag-202201202336-366" } ,
     "changes": [
         {
         "createIndex": {
@@ -26087,9 +27839,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-349",
+    "id": "202201202336-366",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-350" } ,
+    "tagDatabase": { "tag": "tag-202201202336-367" } ,
     "changes": [
         {
         "createIndex": {
@@ -26124,9 +27876,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-350",
+    "id": "202201202336-367",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-351" } ,
+    "tagDatabase": { "tag": "tag-202201202336-368" } ,
     "changes": [
         {
         "createIndex": {
@@ -26161,9 +27913,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-351",
+    "id": "202201202336-368",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-352" } ,
+    "tagDatabase": { "tag": "tag-202201202336-369" } ,
     "changes": [
         {
         "createIndex": {
@@ -26198,9 +27950,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-352",
+    "id": "202201202336-369",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-353" } ,
+    "tagDatabase": { "tag": "tag-202201202336-370" } ,
     "changes": [
         {
         "createIndex": {
@@ -26235,9 +27987,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-353",
+    "id": "202201202336-370",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-354" } ,
+    "tagDatabase": { "tag": "tag-202201202336-371" } ,
     "changes": [
         {
         "createIndex": {
@@ -26272,9 +28024,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-354",
+    "id": "202201202336-371",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-355" } ,
+    "tagDatabase": { "tag": "tag-202201202336-372" } ,
     "changes": [
         {
         "createIndex": {
@@ -26309,9 +28061,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-355",
+    "id": "202201202336-372",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-356" } ,
+    "tagDatabase": { "tag": "tag-202201202336-373" } ,
     "changes": [
         {
         "createIndex": {
@@ -26346,9 +28098,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-356",
+    "id": "202201202336-373",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-357" } ,
+    "tagDatabase": { "tag": "tag-202201202336-374" } ,
     "changes": [
         {
         "createTable": {
@@ -26458,9 +28210,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-357",
+    "id": "202201202336-374",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-358" } ,
+    "tagDatabase": { "tag": "tag-202201202336-375" } ,
     "changes": [
         {
         "createTable": {
@@ -26543,9 +28295,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-358",
+    "id": "202201202336-375",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-359" } ,
+    "tagDatabase": { "tag": "tag-202201202336-376" } ,
     "changes": [
         {
         "createIndex": {
@@ -26570,9 +28322,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-359",
+    "id": "202201202336-376",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-360" } ,
+    "tagDatabase": { "tag": "tag-202201202336-377" } ,
     "changes": [
         {
         "createTable": {
@@ -26697,9 +28449,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-360",
+    "id": "202201202336-377",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-361" } ,
+    "tagDatabase": { "tag": "tag-202201202336-378" } ,
     "changes": [
         {
         "createTable": {
@@ -26827,9 +28579,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-361",
+    "id": "202201202336-378",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-362" } ,
+    "tagDatabase": { "tag": "tag-202201202336-379" } ,
     "changes": [
         {
         "createTable": {
@@ -27002,9 +28754,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-362",
+    "id": "202201202336-379",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-363" } ,
+    "tagDatabase": { "tag": "tag-202201202336-380" } ,
     "changes": [
         {
         "createTable": {
@@ -27126,9 +28878,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-363",
+    "id": "202201202336-380",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-364" } ,
+    "tagDatabase": { "tag": "tag-202201202336-381" } ,
     "changes": [
         {
         "createTable": {
@@ -27274,9 +29026,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-364",
+    "id": "202201202336-381",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-365" } ,
+    "tagDatabase": { "tag": "tag-202201202336-382" } ,
     "changes": [
         {
         "createTable": {
@@ -27431,9 +29183,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-365",
+    "id": "202201202336-382",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-366" } ,
+    "tagDatabase": { "tag": "tag-202201202336-383" } ,
     "changes": [
         {
         "createTable": {
@@ -27516,9 +29268,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-366",
+    "id": "202201202336-383",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-367" } ,
+    "tagDatabase": { "tag": "tag-202201202336-384" } ,
     "changes": [
         {
         "createTable": {
@@ -27619,9 +29371,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-367",
+    "id": "202201202336-384",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-368" } ,
+    "tagDatabase": { "tag": "tag-202201202336-385" } ,
     "changes": [
         {
         "createIndex": {
@@ -27646,9 +29398,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-368",
+    "id": "202201202336-385",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-369" } ,
+    "tagDatabase": { "tag": "tag-202201202336-386" } ,
     "changes": [
         {
         "createTable": {
@@ -27737,9 +29489,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-369",
+    "id": "202201202336-386",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-370" } ,
+    "tagDatabase": { "tag": "tag-202201202336-387" } ,
     "changes": [
         {
         "createIndex": {
@@ -27764,9 +29516,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-370",
+    "id": "202201202336-387",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-371" } ,
+    "tagDatabase": { "tag": "tag-202201202336-388" } ,
     "changes": [
         {
         "createTable": {
@@ -27779,6 +29531,12 @@
                 "constraints": {
         "primaryKey": true
                 }
+            }
+            },
+        {
+            "column": {
+                "name": "t_parent_project_id",
+                "type": "integer"
             }
             },
         {
@@ -27867,12 +29625,39 @@
         ]
     }
     }
-        ,
+,
     {
     "changeSet": {
-    "id": "202002191455-371",
+    "id": "202201202336-388",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-372" } ,
+    "tagDatabase": { "tag": "tag-202201202336-389" } ,
+    "changes": [
+        {
+        "createIndex": {
+            "tableName": "t_project",
+            "indexName": "t_parent_idx",
+            "columns": [
+                {
+                    "column":{
+                        "name":"t_parent_project_id"
+                    }
+                },
+                {
+                    "column":{
+                        "name":"t_project_id"
+                    }
+                }
+            ]
+}
+}
+]
+}
+}        ,
+    {
+    "changeSet": {
+    "id": "202201202336-389",
+    "author": "parse_ddl.pl",
+    "tagDatabase": { "tag": "tag-202201202336-390" } ,
     "changes": [
         {
         "createTable": {
@@ -27958,9 +29743,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-372",
+    "id": "202201202336-390",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-373" } ,
+    "tagDatabase": { "tag": "tag-202201202336-391" } ,
     "changes": [
         {
         "createIndex": {
@@ -27980,9 +29765,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-373",
+    "id": "202201202336-391",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-374" } ,
+    "tagDatabase": { "tag": "tag-202201202336-392" } ,
     "changes": [
         {
         "createTable": {
@@ -28056,9 +29841,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-374",
+    "id": "202201202336-392",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-375" } ,
+    "tagDatabase": { "tag": "tag-202201202336-393" } ,
     "changes": [
         {
         "createTable": {
@@ -28156,9 +29941,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-375",
+    "id": "202201202336-393",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-376" } ,
+    "tagDatabase": { "tag": "tag-202201202336-394" } ,
     "changes": [
         {
         "createIndex": {
@@ -28188,9 +29973,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-376",
+    "id": "202201202336-394",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-377" } ,
+    "tagDatabase": { "tag": "tag-202201202336-395" } ,
     "changes": [
         {
         "createIndex": {
@@ -28215,9 +30000,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-377",
+    "id": "202201202336-395",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-378" } ,
+    "tagDatabase": { "tag": "tag-202201202336-396" } ,
     "changes": [
         {
         "createTable": {
@@ -28330,9 +30115,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-378",
+    "id": "202201202336-396",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-379" } ,
+    "tagDatabase": { "tag": "tag-202201202336-397" } ,
     "changes": [
         {
         "createIndex": {
@@ -28362,9 +30147,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-379",
+    "id": "202201202336-397",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-380" } ,
+    "tagDatabase": { "tag": "tag-202201202336-398" } ,
     "changes": [
         {
         "createIndex": {
@@ -28389,9 +30174,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-380",
+    "id": "202201202336-398",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-381" } ,
+    "tagDatabase": { "tag": "tag-202201202336-399" } ,
     "changes": [
         {
         "createTable": {
@@ -28471,9 +30256,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-381",
+    "id": "202201202336-399",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-382" } ,
+    "tagDatabase": { "tag": "tag-202201202336-400" } ,
     "changes": [
         {
         "createIndex": {
@@ -28498,9 +30283,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-382",
+    "id": "202201202336-400",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-383" } ,
+    "tagDatabase": { "tag": "tag-202201202336-401" } ,
     "changes": [
         {
         "createTable": {
@@ -28529,7 +30314,7 @@
                 "name": "t_project_id",
                 "type": "integer",
                 "constraints": {
-        "nullable": false
+        "primaryKey": true
                 }
             }
             },
@@ -28589,9 +30374,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-383",
+    "id": "202201202336-401",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-384" } ,
+    "tagDatabase": { "tag": "tag-202201202336-402" } ,
     "changes": [
         {
         "createIndex": {
@@ -28607,6 +30392,11 @@
                     "column":{
                         "name":"p_partner_key"
                     }
+                },
+                {
+                    "column":{
+                        "name":"t_project_id"
+                    }
                 }
             ]
 }
@@ -28616,9 +30406,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-384",
+    "id": "202201202336-402",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-385" } ,
+    "tagDatabase": { "tag": "tag-202201202336-403" } ,
     "changes": [
         {
         "createIndex": {
@@ -28648,9 +30438,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-385",
+    "id": "202201202336-403",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-386" } ,
+    "tagDatabase": { "tag": "tag-202201202336-404" } ,
     "changes": [
         {
         "createTable": {
@@ -28724,9 +30514,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-386",
+    "id": "202201202336-404",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-387" } ,
+    "tagDatabase": { "tag": "tag-202201202336-405" } ,
     "changes": [
         {
         "createIndex": {
@@ -28751,9 +30541,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-387",
+    "id": "202201202336-405",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-388" } ,
+    "tagDatabase": { "tag": "tag-202201202336-406" } ,
     "changes": [
         {
         "createTable": {
@@ -28845,9 +30635,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-388",
+    "id": "202201202336-406",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-389" } ,
+    "tagDatabase": { "tag": "tag-202201202336-407" } ,
     "changes": [
         {
         "createTable": {
@@ -28945,12 +30735,44 @@
         ]
     }
     }
-        ,
+,
     {
     "changeSet": {
-    "id": "202002191455-389",
+    "id": "202201202336-407",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-390" } ,
+    "tagDatabase": { "tag": "tag-202201202336-408" } ,
+    "changes": [
+        {
+        "createIndex": {
+            "tableName": "t_task_history",
+            "indexName": "t_taskhist_idx",
+            "columns": [
+                {
+                    "column":{
+                        "name":"t_task_id"
+                    }
+                },
+                {
+                    "column":{
+                        "name":"t_transition_date"
+                    }
+                },
+                {
+                    "column":{
+                        "name":"t_history_id"
+                    }
+                }
+            ]
+}
+}
+]
+}
+}        ,
+    {
+    "changeSet": {
+    "id": "202201202336-408",
+    "author": "parse_ddl.pl",
+    "tagDatabase": { "tag": "tag-202201202336-409" } ,
     "changes": [
         {
         "createTable": {
@@ -29021,9 +30843,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-390",
+    "id": "202201202336-409",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-391" } ,
+    "tagDatabase": { "tag": "tag-202201202336-410" } ,
     "changes": [
         {
         "createTable": {
@@ -29097,9 +30919,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-391",
+    "id": "202201202336-410",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-392" } ,
+    "tagDatabase": { "tag": "tag-202201202336-411" } ,
     "changes": [
         {
         "createTable": {
@@ -29191,9 +31013,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-392",
+    "id": "202201202336-411",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-393" } ,
+    "tagDatabase": { "tag": "tag-202201202336-412" } ,
     "changes": [
         {
         "createTable": {
@@ -29276,9 +31098,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-393",
+    "id": "202201202336-412",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-394" } ,
+    "tagDatabase": { "tag": "tag-202201202336-413" } ,
     "changes": [
         {
         "createTable": {
@@ -29361,9 +31183,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-394",
+    "id": "202201202336-413",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-395" } ,
+    "tagDatabase": { "tag": "tag-202201202336-414" } ,
     "changes": [
         {
         "createTable": {
@@ -29455,9 +31277,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-395",
+    "id": "202201202336-414",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-396" } ,
+    "tagDatabase": { "tag": "tag-202201202336-415" } ,
     "changes": [
         {
         "createTable": {
@@ -29552,9 +31374,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-396",
+    "id": "202201202336-415",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-397" } ,
+    "tagDatabase": { "tag": "tag-202201202336-416" } ,
     "changes": [
         {
         "createTable": {
@@ -29637,9 +31459,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-397",
+    "id": "202201202336-416",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-398" } ,
+    "tagDatabase": { "tag": "tag-202201202336-417" } ,
     "changes": [
         {
         "createIndex": {
@@ -29664,9 +31486,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-398",
+    "id": "202201202336-417",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-399" } ,
+    "tagDatabase": { "tag": "tag-202201202336-418" } ,
     "changes": [
         {
         "createTable": {
@@ -29749,9 +31571,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-399",
+    "id": "202201202336-418",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-400" } ,
+    "tagDatabase": { "tag": "tag-202201202336-419" } ,
     "changes": [
         {
         "createTable": {
@@ -29834,9 +31656,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-400",
+    "id": "202201202336-419",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-401" } ,
+    "tagDatabase": { "tag": "tag-202201202336-420" } ,
     "changes": [
         {
         "createTable": {
@@ -29910,9 +31732,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-401",
+    "id": "202201202336-420",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-402" } ,
+    "tagDatabase": { "tag": "tag-202201202336-421" } ,
     "changes": [
         {
         "createTable": {
@@ -30019,9 +31841,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-402",
+    "id": "202201202336-421",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-403" } ,
+    "tagDatabase": { "tag": "tag-202201202336-422" } ,
     "changes": [
         {
         "createTable": {
@@ -30224,9 +32046,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-403",
+    "id": "202201202336-422",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-404" } ,
+    "tagDatabase": { "tag": "tag-202201202336-423" } ,
     "changes": [
         {
         "createIndex": {
@@ -30256,9 +32078,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-404",
+    "id": "202201202336-423",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-405" } ,
+    "tagDatabase": { "tag": "tag-202201202336-424" } ,
     "changes": [
         {
         "createIndex": {
@@ -30288,9 +32110,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-405",
+    "id": "202201202336-424",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-406" } ,
+    "tagDatabase": { "tag": "tag-202201202336-425" } ,
     "changes": [
         {
         "createTable": {
@@ -30373,9 +32195,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-406",
+    "id": "202201202336-425",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-407" } ,
+    "tagDatabase": { "tag": "tag-202201202336-426" } ,
     "changes": [
         {
         "createTable": {
@@ -30488,9 +32310,9 @@
 ,
     {
     "changeSet": {
-    "id": "202002191455-407",
+    "id": "202201202336-426",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-408" } ,
+    "tagDatabase": { "tag": "tag-202201202336-427" } ,
     "changes": [
         {
         "createIndex": {
@@ -30525,9 +32347,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-408",
+    "id": "202201202336-427",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-409" } ,
+    "tagDatabase": { "tag": "tag-202201202336-428" } ,
     "changes": [
         {
         "createIndex": {
@@ -30567,9 +32389,9 @@
 },
     {
     "changeSet": {
-    "id": "202002191455-409",
+    "id": "202201202336-428",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-410" } ,
+    "tagDatabase": { "tag": "tag-202201202336-429" } ,
     "changes": [
         {
         "createIndex": {
@@ -30609,9 +32431,9 @@
 }        ,
     {
     "changeSet": {
-    "id": "202002191455-410",
+    "id": "202201202336-429",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-411" } ,
+    "tagDatabase": { "tag": "tag-202201202336-430" } ,
     "changes": [
         {
         "createTable": {
@@ -30691,9 +32513,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-411",
+    "id": "202201202336-430",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-412" } ,
+    "tagDatabase": { "tag": "tag-202201202336-431" } ,
     "changes": [
         {
         "createTable": {
@@ -30773,9 +32595,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-412",
+    "id": "202201202336-431",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-413" } ,
+    "tagDatabase": { "tag": "tag-202201202336-432" } ,
     "changes": [
         {
         "createTable": {
@@ -30855,9 +32677,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-413",
+    "id": "202201202336-432",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-414" } ,
+    "tagDatabase": { "tag": "tag-202201202336-433" } ,
     "changes": [
         {
         "createTable": {
@@ -31030,9 +32852,9 @@
         ,
     {
     "changeSet": {
-    "id": "202002191455-414",
+    "id": "202201202336-433",
     "author": "parse_ddl.pl",
-    "tagDatabase": { "tag": "tag-202002191455-415" } ,
+    "tagDatabase": { "tag": "tag-202201202336-434" } ,
     "changes": [
         {
         "createTable": {

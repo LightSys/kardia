@@ -1,0 +1,297 @@
+Current Project Status:
+
+Initial implementation is mostly complete, with some possible cleanup to do before it is deployed with any sending offices. 
+Statistics fields being added in for certainty's sake have been discussed and will be a likely next step for the project.
+Most descriptives I have personally looked at look great. For some giving histories there is a clearer way to represent the donor's intent, but the data is always workable, especially the overall descriptives statistics.
+
+
+Notes on possible issues to resolve in the future:
+
+*Note: These donor and Fund ID's are using the obfruscated LightSys Gift Item Tables
+
+Donor	Fund	Issue
+100628 	4361	Gifts are being merged down to every half a month
+102909	5386.Xxuo	approx'd 2 gifts 11 months apart
+105884	5280	History got split apart when they were previously combined. This is good, but it leads to another problem with predicting when the next gift will be. This donor is giving about once every two years and the default lapsed date of a single gift is a year ahead
+111793	5109 	An extra gift was left out but it would've been better to be included in the regular giving
+99839	6409	extra gift left hanging out front
+113406	5109	two $75 gifts grouped together that would do better as two extra $25 gifts
+113751	4361	Gifts are being merged down to every half a month
+114955	4361	NTL gift isn't correct for oldest giving pattern
+122614	5109	Gifts are being merged down to every half a month
+122783	5280	May 7th gift history is not marked as extra
+125879	5677	$375 extra gift is being approx'd with the $1200 regular giving. The regular giving falls just shy of being considered 'regular' by the merge logic
+127276	5280	possible candidate for a merge_approx
+65792	6409	$60 extra merged with regular giving when it would be better separate
+
+
+kardia-app/modules/crm/plugin_crm_search_DON.qy
+        In the where clause of the insertion into iresult, there are five places (in the statements related to changes)
+        where the arithmetic equivalent of boolean algebra is used instead of boolean expressions.
+        This is due to a bug in the picking apart of the where clause that prevents higher levels of nesting.
+
+        The alternative to using the arithmetic equivalent would be a lengthy boolean expansion, provided here for your edification:
+            
+            insert
+		collection iresult
+	    select
+		p_partner_key = :dh:p_donor_partner_key,
+		p_search_session_id = :parameters:search_id,
+		p_search_stage_id = :parameters:cur_stage
+	    from
+		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh,
+		/apps/kardia/data/Kardia_DB/a_descriptives/rows d
+	    where
+		:dh:a_ledger_number = :d:a_ledger_number and
+		:dh:a_cost_center = :d:a_cost_center and
+		:dh:p_donor_partner_key = :d:p_donor_partner_key and
+                (:stage:startdate is null or :stage:startdate <= :dh:a_last_gift ) and
+		(:stage:enddate is null or :dh:a_first_gift <= :stage:enddate) and
+                (:stage:mintamt is null or :d:a_act_total >= convert(money, :stage:mintamt)) and
+		(:stage:maxtamt is null or :d:a_act_total <= convert(money, :stage:maxtamt)) and
+                (:stage:minamt is null or :dh:a_amount >= convert(money, :stage:minamt)) and
+		(:stage:maxamt is null or :dh:a_amount <= convert(money, :stage:maxamt)) and
+                (:stage:minavg is null or :d:a_act_average_amount >= convert(money, :stage:minavg)) and
+		(:stage:maxavg is null or :d:a_act_average_amount <= convert(money, :stage:maxavg)) and
+                -- allows for 15% error
+                (:stage:minfreq is null or :dh:a_act_average_interval <= convert(double, :stage:minfreq) * 1.15) and
+		(:stage:maxfreq is null or :dh:a_act_average_interval >= convert(double, :stage:maxfreq) * 0.85) and
+                (:stage:mincnt is null or :d:a_act_count >= convert(integer, :stage:mincnt)) and
+		(:stage:maxcnt is null or :d:a_act_count <= convert(integer, :stage:maxcnt)) and
+		(:stage:funds is null or charindex(',' + :d:a_cost_center + ',', ',' + :stage:funds + ',') > 0) and
+		-- (:stage:notfunds is null or charindex(',' + :d:a_cost_center + ',', ',' + :stage:notfunds + ',') = 0) and
+                
+                -- For changes, if the start or the end date is null
+                -- no time restriction occurs
+
+                -- A decrease change means that a new giving history
+                -- began within the time interval with a decrease in giving
+                (:stage:changes is null
+                        or condition(charindex(',DCR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_decrease_pct is not null)
+                        or condition(charindex(',ICR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_first_gift >= isnull(:stage:startdate, :dh:a_first_gift))
+                        or condition(charindex(',EAM,', ',' + :stage:changes + ',') = 0, 0, :dh:a_is_extra = 1)
+                        or condition(charindex(',LGT,', ',' + :stage:changes + ',') = 0, 0, :dh:a_is_current = 0)
+                        or condition(charindex(',FGT,', ',' + :stage:changes + ',') = 0, 0, :dh:a_decrease_pct is null))
+                and (:stage:changes is null
+                        or condition(charindex(',DCR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_decrease_pct is not null)
+                        or condition(charindex(',ICR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_first_gift >= isnull(:stage:startdate, :dh:a_first_gift))
+                        or condition(charindex(',EAM,', ',' + :stage:changes + ',') = 0, 0, :dh:a_is_extra = 1)
+                        or condition(charindex(',LGT,', ',' + :stage:changes + ',') = 0, 0, :dh:a_is_current = 0)
+                        or condition(charindex(',FGT,', ',' + :stage:changes + ',') = 0, 0, :dh:a_first_gift >= :stage:startdate))
+                and (:stage:changes is null
+                        or condition(charindex(',DCR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_decrease_pct is not null)
+                        or condition(charindex(',ICR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_first_gift >= isnull(:stage:startdate, :dh:a_first_gift))
+                        or condition(charindex(',EAM,', ',' + :stage:changes + ',') = 0, 0, :dh:a_is_extra = 1)
+                        or condition(charindex(',LGT,', ',' + :stage:changes + ',') = 0, 0, :dh:a_is_current = 0)
+                        or condition(charindex(',FGT,', ',' + :stage:changes + ',') = 0, 0, :dh:a_is_extra = 0))
+                and (:stage:changes is null
+                        or condition(charindex(',DCR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_decrease_pct is not null)
+                        or condition(charindex(',ICR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_first_gift >= isnull(:stage:startdate, :dh:a_first_gift))
+                        or condition(charindex(',EAM,', ',' + :stage:changes + ',') = 0, 0, :dh:a_is_extra = 1)
+                        or condition(charindex(',LGT,', ',' + :stage:changes + ',') = 0, 0, :dh:a_last_gift <= isnull(:stage:enddate, :dh:a_last_gift))
+                        or condition(charindex(',FGT,', ',' + :stage:changes + ',') = 0, 0, :dh:a_decrease_pct is null))
+                and (:stage:changes is null
+                        or condition(charindex(',DCR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_decrease_pct is not null)
+                        or condition(charindex(',ICR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_first_gift >= isnull(:stage:startdate, :dh:a_first_gift))
+                        or condition(charindex(',EAM,', ',' + :stage:changes + ',') = 0, 0, :dh:a_is_extra = 1)
+                        or condition(charindex(',LGT,', ',' + :stage:changes + ',') = 0, 0, :dh:a_last_gift <= isnull(:stage:enddate, :dh:a_last_gift))
+                        or condition(charindex(',FGT,', ',' + :stage:changes + ',') = 0, 0, :dh:a_first_gift >= :stage:startdate))
+                and (:stage:changes is null
+                        or condition(charindex(',DCR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_decrease_pct is not null)
+                        or condition(charindex(',ICR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_first_gift >= isnull(:stage:startdate, :dh:a_first_gift))
+                        or condition(charindex(',EAM,', ',' + :stage:changes + ',') = 0, 0, :dh:a_is_extra = 1)
+                        or condition(charindex(',LGT,', ',' + :stage:changes + ',') = 0, 0, :dh:a_last_gift <= isnull(:stage:enddate, :dh:a_last_gift))
+                        or condition(charindex(',FGT,', ',' + :stage:changes + ',') = 0, 0, :dh:a_is_extra = 0))
+                and (:stage:changes is null
+                        or condition(charindex(',DCR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_decrease_pct is not null)
+                        or condition(charindex(',ICR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_first_gift >= isnull(:stage:startdate, :dh:a_first_gift))
+                        or condition(charindex(',EAM,', ',' + :stage:changes + ',') = 0, 0, :dh:a_is_extra = 1)
+                        or condition(charindex(',LGT,', ',' + :stage:changes + ',') = 0, 0, :d:a_act_count > 1)
+                        or condition(charindex(',FGT,', ',' + :stage:changes + ',') = 0, 0, :dh:a_decrease_pct is null))
+                and (:stage:changes is null
+                        or condition(charindex(',DCR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_decrease_pct is not null)
+                        or condition(charindex(',ICR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_first_gift >= isnull(:stage:startdate, :dh:a_first_gift))
+                        or condition(charindex(',EAM,', ',' + :stage:changes + ',') = 0, 0, :dh:a_is_extra = 1)
+                        or condition(charindex(',LGT,', ',' + :stage:changes + ',') = 0, 0, :d:a_act_count > 1)
+                        or condition(charindex(',FGT,', ',' + :stage:changes + ',') = 0, 0, :dh:a_first_gift >= :stage:startdate))
+                and (:stage:changes is null
+                        or condition(charindex(',DCR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_decrease_pct is not null)
+                        or condition(charindex(',ICR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_first_gift >= isnull(:stage:startdate, :dh:a_first_gift))
+                        or condition(charindex(',EAM,', ',' + :stage:changes + ',') = 0, 0, :dh:a_is_extra = 1)
+                        or condition(charindex(',LGT,', ',' + :stage:changes + ',') = 0, 0, :d:a_act_count > 1)
+                        or condition(charindex(',FGT,', ',' + :stage:changes + ',') = 0, 0, :dh:a_is_extra = 0))
+                and (:stage:changes is null
+                        or condition(charindex(',DCR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_decrease_pct is not null)
+                        or condition(charindex(',ICR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_increase_pct is not null)
+                        or condition(charindex(',EAM,', ',' + :stage:changes + ',') = 0, 0, :dh:a_is_extra = 1)
+                        or condition(charindex(',LGT,', ',' + :stage:changes + ',') = 0, 0, :dh:a_is_current = 0)
+                        or condition(charindex(',FGT,', ',' + :stage:changes + ',') = 0, 0, :dh:a_decrease_pct is null))
+                and (:stage:changes is null
+                        or condition(charindex(',DCR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_decrease_pct is not null)
+                        or condition(charindex(',ICR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_increase_pct is not null)
+                        or condition(charindex(',EAM,', ',' + :stage:changes + ',') = 0, 0, :dh:a_is_extra = 1)
+                        or condition(charindex(',LGT,', ',' + :stage:changes + ',') = 0, 0, :dh:a_is_current = 0)
+                        or condition(charindex(',FGT,', ',' + :stage:changes + ',') = 0, 0, :dh:a_first_gift >= :stage:startdate))
+                and (:stage:changes is null
+                        or condition(charindex(',DCR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_decrease_pct is not null)
+                        or condition(charindex(',ICR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_increase_pct is not null)
+                        or condition(charindex(',EAM,', ',' + :stage:changes + ',') = 0, 0, :dh:a_is_extra = 1)
+                        or condition(charindex(',LGT,', ',' + :stage:changes + ',') = 0, 0, :dh:a_is_current = 0)
+                        or condition(charindex(',FGT,', ',' + :stage:changes + ',') = 0, 0, :dh:a_is_extra = 0))
+                and (:stage:changes is null
+                        or condition(charindex(',DCR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_decrease_pct is not null)
+                        or condition(charindex(',ICR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_increase_pct is not null)
+                        or condition(charindex(',EAM,', ',' + :stage:changes + ',') = 0, 0, :dh:a_is_extra = 1)
+                        or condition(charindex(',LGT,', ',' + :stage:changes + ',') = 0, 0, :dh:a_last_gift <= isnull(:stage:enddate, :dh:a_last_gift))
+                        or condition(charindex(',FGT,', ',' + :stage:changes + ',') = 0, 0, :dh:a_decrease_pct is null))
+                and (:stage:changes is null
+                        or condition(charindex(',DCR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_decrease_pct is not null)
+                        or condition(charindex(',ICR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_increase_pct is not null)
+                        or condition(charindex(',EAM,', ',' + :stage:changes + ',') = 0, 0, :dh:a_is_extra = 1)
+                        or condition(charindex(',LGT,', ',' + :stage:changes + ',') = 0, 0, :dh:a_last_gift <= isnull(:stage:enddate, :dh:a_last_gift))
+                        or condition(charindex(',FGT,', ',' + :stage:changes + ',') = 0, 0, :dh:a_first_gift >= :stage:startdate))
+                and (:stage:changes is null
+                        or condition(charindex(',DCR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_decrease_pct is not null)
+                        or condition(charindex(',ICR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_increase_pct is not null)
+                        or condition(charindex(',EAM,', ',' + :stage:changes + ',') = 0, 0, :dh:a_is_extra = 1)
+                        or condition(charindex(',LGT,', ',' + :stage:changes + ',') = 0, 0, :dh:a_last_gift <= isnull(:stage:enddate, :dh:a_last_gift))
+                        or condition(charindex(',FGT,', ',' + :stage:changes + ',') = 0, 0, :dh:a_is_extra = 0))
+                and (:stage:changes is null
+			or condition(charindex(',DCR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_decrease_pct is not null)
+			or condition(charindex(',ICR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_increase_pct is not null)
+			or condition(charindex(',EAM,', ',' + :stage:changes + ',') = 0, 0, :dh:a_is_extra = 1)
+			or condition(charindex(',LGT,', ',' + :stage:changes + ',') = 0, 0, :d:a_act_count > 1)
+			or condition(charindex(',FGT,', ',' + :stage:changes + ',') = 0, 0, :dh:a_decrease_pct is null))
+		and (:stage:changes is null
+			or condition(charindex(',DCR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_decrease_pct is not null)
+			or condition(charindex(',ICR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_increase_pct is not null)
+			or condition(charindex(',EAM,', ',' + :stage:changes + ',') = 0, 0, :dh:a_is_extra = 1)
+			or condition(charindex(',LGT,', ',' + :stage:changes + ',') = 0, 0, :d:a_act_count > 1)
+			or condition(charindex(',FGT,', ',' + :stage:changes + ',') = 0, 0, :dh:a_first_gift >= :stage:startdate))
+		and (:stage:changes is null
+			or condition(charindex(',DCR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_decrease_pct is not null)
+			or condition(charindex(',ICR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_increase_pct is not null)
+			or condition(charindex(',EAM,', ',' + :stage:changes + ',') = 0, 0, :dh:a_is_extra = 1)
+			or condition(charindex(',LGT,', ',' + :stage:changes + ',') = 0, 0, :d:a_act_count > 1)
+			or condition(charindex(',FGT,', ',' + :stage:changes + ',') = 0, 0, :dh:a_is_extra = 0))
+		and (:stage:changes is null
+			or condition(charindex(',DCR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_first_gift >= isnull(:stage:startdate, :dh:a_first_gift))
+			or condition(charindex(',ICR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_first_gift >= isnull(:stage:startdate, :dh:a_first_gift))
+			or condition(charindex(',EAM,', ',' + :stage:changes + ',') = 0, 0, :dh:a_is_extra = 1)
+			or condition(charindex(',LGT,', ',' + :stage:changes + ',') = 0, 0, :dh:a_is_current = 0)
+			or condition(charindex(',FGT,', ',' + :stage:changes + ',') = 0, 0, :dh:a_decrease_pct is null))
+		and (:stage:changes is null
+			or condition(charindex(',DCR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_first_gift >= isnull(:stage:startdate, :dh:a_first_gift))
+			or condition(charindex(',ICR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_first_gift >= isnull(:stage:startdate, :dh:a_first_gift))
+			or condition(charindex(',EAM,', ',' + :stage:changes + ',') = 0, 0, :dh:a_is_extra = 1)
+			or condition(charindex(',LGT,', ',' + :stage:changes + ',') = 0, 0, :dh:a_is_current = 0)
+			or condition(charindex(',FGT,', ',' + :stage:changes + ',') = 0, 0, :dh:a_first_gift >= :stage:startdate))
+		and (:stage:changes is null
+			or condition(charindex(',DCR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_first_gift >= isnull(:stage:startdate, :dh:a_first_gift))
+			or condition(charindex(',ICR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_first_gift >= isnull(:stage:startdate, :dh:a_first_gift))
+			or condition(charindex(',EAM,', ',' + :stage:changes + ',') = 0, 0, :dh:a_is_extra = 1)
+			or condition(charindex(',LGT,', ',' + :stage:changes + ',') = 0, 0, :dh:a_is_current = 0)
+			or condition(charindex(',FGT,', ',' + :stage:changes + ',') = 0, 0, :dh:a_is_extra = 0))
+		and (:stage:changes is null
+			or condition(charindex(',DCR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_first_gift >= isnull(:stage:startdate, :dh:a_first_gift))
+			or condition(charindex(',ICR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_first_gift >= isnull(:stage:startdate, :dh:a_first_gift))
+			or condition(charindex(',EAM,', ',' + :stage:changes + ',') = 0, 0, :dh:a_is_extra = 1)
+			or condition(charindex(',LGT,', ',' + :stage:changes + ',') = 0, 0, :dh:a_last_gift <= isnull(:stage:enddate, :dh:a_last_gift))
+			or condition(charindex(',FGT,', ',' + :stage:changes + ',') = 0, 0, :dh:a_decrease_pct is null))
+		and (:stage:changes is null
+			or condition(charindex(',DCR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_first_gift >= isnull(:stage:startdate, :dh:a_first_gift))
+			or condition(charindex(',ICR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_first_gift >= isnull(:stage:startdate, :dh:a_first_gift))
+			or condition(charindex(',EAM,', ',' + :stage:changes + ',') = 0, 0, :dh:a_is_extra = 1)
+			or condition(charindex(',LGT,', ',' + :stage:changes + ',') = 0, 0, :dh:a_last_gift <= isnull(:stage:enddate, :dh:a_last_gift))
+			or condition(charindex(',FGT,', ',' + :stage:changes + ',') = 0, 0, :dh:a_first_gift >= :stage:startdate))
+		and (:stage:changes is null
+			or condition(charindex(',DCR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_first_gift >= isnull(:stage:startdate, :dh:a_first_gift))
+			or condition(charindex(',ICR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_first_gift >= isnull(:stage:startdate, :dh:a_first_gift))
+			or condition(charindex(',EAM,', ',' + :stage:changes + ',') = 0, 0, :dh:a_is_extra = 1)
+			or condition(charindex(',LGT,', ',' + :stage:changes + ',') = 0, 0, :dh:a_last_gift <= isnull(:stage:enddate, :dh:a_last_gift))
+			or condition(charindex(',FGT,', ',' + :stage:changes + ',') = 0, 0, :dh:a_is_extra = 0))
+		and (:stage:changes is null
+			or condition(charindex(',DCR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_first_gift >= isnull(:stage:startdate, :dh:a_first_gift))
+			or condition(charindex(',ICR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_first_gift >= isnull(:stage:startdate, :dh:a_first_gift))
+			or condition(charindex(',EAM,', ',' + :stage:changes + ',') = 0, 0, :dh:a_is_extra = 1)
+			or condition(charindex(',LGT,', ',' + :stage:changes + ',') = 0, 0, :d:a_act_count > 1)
+			or condition(charindex(',FGT,', ',' + :stage:changes + ',') = 0, 0, :dh:a_decrease_pct is null))
+		and (:stage:changes is null
+			or condition(charindex(',DCR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_first_gift >= isnull(:stage:startdate, :dh:a_first_gift))
+			or condition(charindex(',ICR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_first_gift >= isnull(:stage:startdate, :dh:a_first_gift))
+			or condition(charindex(',EAM,', ',' + :stage:changes + ',') = 0, 0, :dh:a_is_extra = 1)
+			or condition(charindex(',LGT,', ',' + :stage:changes + ',') = 0, 0, :d:a_act_count > 1)
+			or condition(charindex(',FGT,', ',' + :stage:changes + ',') = 0, 0, :dh:a_first_gift >= :stage:startdate))
+		and (:stage:changes is null
+			or condition(charindex(',DCR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_first_gift >= isnull(:stage:startdate, :dh:a_first_gift))
+			or condition(charindex(',ICR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_first_gift >= isnull(:stage:startdate, :dh:a_first_gift))
+			or condition(charindex(',EAM,', ',' + :stage:changes + ',') = 0, 0, :dh:a_is_extra = 1)
+			or condition(charindex(',LGT,', ',' + :stage:changes + ',') = 0, 0, :d:a_act_count > 1)
+			or condition(charindex(',FGT,', ',' + :stage:changes + ',') = 0, 0, :dh:a_is_extra = 0))
+		and (:stage:changes is null
+			or condition(charindex(',DCR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_first_gift >= isnull(:stage:startdate, :dh:a_first_gift))
+			or condition(charindex(',ICR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_increase_pct is not null)
+			or condition(charindex(',EAM,', ',' + :stage:changes + ',') = 0, 0, :dh:a_is_extra = 1)
+			or condition(charindex(',LGT,', ',' + :stage:changes + ',') = 0, 0, :dh:a_is_current = 0)
+			or condition(charindex(',FGT,', ',' + :stage:changes + ',') = 0, 0, :dh:a_decrease_pct is null))
+		and (:stage:changes is null
+			or condition(charindex(',DCR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_first_gift >= isnull(:stage:startdate, :dh:a_first_gift))
+			or condition(charindex(',ICR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_increase_pct is not null)
+			or condition(charindex(',EAM,', ',' + :stage:changes + ',') = 0, 0, :dh:a_is_extra = 1)
+			or condition(charindex(',LGT,', ',' + :stage:changes + ',') = 0, 0, :dh:a_is_current = 0)
+			or condition(charindex(',FGT,', ',' + :stage:changes + ',') = 0, 0, :dh:a_first_gift >= :stage:startdate))
+		and (:stage:changes is null
+			or condition(charindex(',DCR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_first_gift >= isnull(:stage:startdate, :dh:a_first_gift))
+			or condition(charindex(',ICR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_increase_pct is not null)
+			or condition(charindex(',EAM,', ',' + :stage:changes + ',') = 0, 0, :dh:a_is_extra = 1)
+			or condition(charindex(',LGT,', ',' + :stage:changes + ',') = 0, 0, :dh:a_is_current = 0)
+			or condition(charindex(',FGT,', ',' + :stage:changes + ',') = 0, 0, :dh:a_is_extra = 0))
+		and (:stage:changes is null
+			or condition(charindex(',DCR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_first_gift >= isnull(:stage:startdate, :dh:a_first_gift))
+			or condition(charindex(',ICR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_increase_pct is not null)
+			or condition(charindex(',EAM,', ',' + :stage:changes + ',') = 0, 0, :dh:a_is_extra = 1)
+			or condition(charindex(',LGT,', ',' + :stage:changes + ',') = 0, 0, :dh:a_last_gift <= isnull(:stage:enddate, :dh:a_last_gift))
+			or condition(charindex(',FGT,', ',' + :stage:changes + ',') = 0, 0, :dh:a_decrease_pct is null))
+		and (:stage:changes is null
+			or condition(charindex(',DCR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_first_gift >= isnull(:stage:startdate, :dh:a_first_gift))
+			or condition(charindex(',ICR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_increase_pct is not null)
+			or condition(charindex(',EAM,', ',' + :stage:changes + ',') = 0, 0, :dh:a_is_extra = 1)
+			or condition(charindex(',LGT,', ',' + :stage:changes + ',') = 0, 0, :dh:a_last_gift <= isnull(:stage:enddate, :dh:a_last_gift))
+			or condition(charindex(',FGT,', ',' + :stage:changes + ',') = 0, 0, :dh:a_first_gift >= :stage:startdate))
+		and (:stage:changes is null
+			or condition(charindex(',DCR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_first_gift >= isnull(:stage:startdate, :dh:a_first_gift))
+			or condition(charindex(',ICR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_increase_pct is not null)
+			or condition(charindex(',EAM,', ',' + :stage:changes + ',') = 0, 0, :dh:a_is_extra = 1)
+			or condition(charindex(',LGT,', ',' + :stage:changes + ',') = 0, 0, :dh:a_last_gift <= isnull(:stage:enddate, :dh:a_last_gift))
+			or condition(charindex(',FGT,', ',' + :stage:changes + ',') = 0, 0, :dh:a_is_extra = 0))
+		and (:stage:changes is null
+			or condition(charindex(',DCR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_first_gift >= isnull(:stage:startdate, :dh:a_first_gift))
+			or condition(charindex(',ICR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_increase_pct is not null)
+			or condition(charindex(',EAM,', ',' + :stage:changes + ',') = 0, 0, :dh:a_is_extra = 1)
+			or condition(charindex(',LGT,', ',' + :stage:changes + ',') = 0, 0, :d:a_act_count > 1)
+			or condition(charindex(',FGT,', ',' + :stage:changes + ',') = 0, 0, :dh:a_decrease_pct is null))
+		and (:stage:changes is null
+			or condition(charindex(',DCR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_first_gift >= isnull(:stage:startdate, :dh:a_first_gift))
+			or condition(charindex(',ICR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_increase_pct is not null)
+			or condition(charindex(',EAM,', ',' + :stage:changes + ',') = 0, 0, :dh:a_is_extra = 1)
+			or condition(charindex(',LGT,', ',' + :stage:changes + ',') = 0, 0, :d:a_act_count > 1)
+			or condition(charindex(',FGT,', ',' + :stage:changes + ',') = 0, 0, :dh:a_first_gift >= :stage:startdate))
+		and (:stage:changes is null
+			or condition(charindex(',DCR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_first_gift >= isnull(:stage:startdate, :dh:a_first_gift))
+			or condition(charindex(',ICR,', ',' + :stage:changes + ',') = 0, 0, :dh:a_increase_pct is not null)
+			or condition(charindex(',EAM,', ',' + :stage:changes + ',') = 0, 0, :dh:a_is_extra = 1)
+			or condition(charindex(',LGT,', ',' + :stage:changes + ',') = 0, 0, :d:a_act_count > 1)
+			or condition(charindex(',FGT,', ',' + :stage:changes + ',') = 0, 0, :dh:a_is_extra = 0))
+                and (:parameters:prev_keys is null or charindex(',' + rtrim(:dh:p_donor_partner_key) + ',', ',' + :parameters:prev_keys + ',') > 0)
+            group by
+                :d:a_ledger_number,
+                :d:p_donor_partner_key
+            having
+                (:stage:status is null or convert(integer, :stage:status) = max(:d:a_is_current)) and
+                (:stage:changes is null or charindex(',LGT,', ',' + :stage:changes + ',') = 0 or max(:d:a_is_current) = 0)
+            on duplicate
+		:p_partner_key,
+		:p_search_session_id,
+		:p_search_stage_id
+	    update set
+		:p_partner_key = :p_partner_key

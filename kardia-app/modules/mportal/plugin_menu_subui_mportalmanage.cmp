@@ -1,0 +1,15 @@
+$Version=2$
+plugin_menu_subui_mportalmanage "widget/component-decl"
+    {
+    width=904;
+    height=600;
+
+    mportalmanage "widget/component"
+	{
+	x=0; y=0;
+	width=904; height=604;
+	path="/apps/kardia/modules/mportal/manage.cmp";
+	us = mportalmanage;
+	actionbar="/apps/kardia/modules/mportal/minimal_actionbar.cmp";
+	}
+    }

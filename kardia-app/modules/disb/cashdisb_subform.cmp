@@ -542,8 +542,9 @@ cashdisb_subform "widget/component-decl"
 		
 		disbursement_id_param "widget/parameter" { type=integer; }
 		payee_number_param "widget/parameter" { type=string; }
+		cash_acct_param "widget/parameter" { type=string; }
 		
-		sql = "UPDATE /apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows SET :a_payee_partner_key = :parameters:payee_number_param  WHERE :a_ledger_number = :parameters:my_batch_ledger and :a_batch_number = :parameters:my_batch_batch and :a_disbursement_id = :parameters:disbursement_id_param";
+		sql = "UPDATE /apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows SET :a_cash_account_code = :parameters:cash_acct_param, :a_payee_partner_key = :parameters:payee_number_param  WHERE :a_ledger_number = :parameters:my_batch_ledger and :a_batch_number = :parameters:my_batch_batch and :a_disbursement_id = :parameters:disbursement_id_param";
 		autoquery=never;
 		
 		// Reset the main osrc to reflect this change in state...
@@ -940,6 +941,7 @@ cashdisb_subform "widget/component-decl"
 				my_batch_batch= runclient(:batch_osrc:a_batch_number);
 				disbursement_id_param = runclient(:cashdisb_osrc:a_disbursement_id);
 				payee_number_param = runclient(:txt_payee_number:content);
+				cash_acct_param = runclient(:cash_acct_dd:value);
 			}
 			// TO DOCUMENT: When working with a smartfield, editbox, the value attribute is "content" | e.g. :<smartfield_name>:content
 			
@@ -968,7 +970,7 @@ cashdisb_subform "widget/component-decl"
 			//var_effective_date "widget/variable" { fieldname="a_effective_date"; var_effective_date_hints "widget/hints" { default=runclient(getdate()); } }
 			var_line_item "widget/variable" { fieldname="a_line_item"; }
 			var_period "widget/variable" { fieldname="a_period"; }
-			var_cash_account_code "widget/variable" { fieldname="a_cash_account_code"; postproc_cash_acct_code "widget/hints" { style=readonly; default=runserver( (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :this:ledger and :a_config_name = 'DisbCashAcct') ); } }
+			//var_cash_account_code "widget/variable" { fieldname="a_cash_account_code"; postproc_cash_acct_code "widget/hints" { style=readonly; default=runserver( (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :this:ledger and :a_config_name = 'DisbCashAcct') ); } }
 			var_posted_to_gl "widget/variable" { fieldname = "a_posted_to_gl"; postproc_posted_to_gl "widget/hints" { style=readonly; default=0; } }
 			
 			// TODO: Get Period Value from Higher a_batch table (batch_osrc: see gljournal_edit )
@@ -1027,9 +1029,10 @@ cashdisb_subform "widget/component-decl"
 					x=0;y=0;width=876;height=154;
 					mode=dynamicrow;
 
-					dd_a_check_number "widget/table-column" { title="Check#"; fieldname="a_check_number"; width=40; }
-					dd_a_line_item "widget/table-column" { title="Line"; fieldname="a_line_item"; width=30; }
+					dd_a_check_number "widget/table-column" { title="Check#"; fieldname="a_check_number"; width=43; }
+					dd_a_line_item "widget/table-column" { title="Line"; fieldname="a_line_item"; width=27; }
 					dd_a_voided "widget/table-column" { title="Status"; fieldname="status"; width=40; }
+					dd_source "widget/table-column" { title="Source"; fieldname="a_cash_account_code"; width=40; }
 					dd_payee "widget/table-column" { title="Payee"; fieldname="payeename"; width=100; }
 					//dd_a_ledger_number "widget/table-column" { title="Ledger"; fieldname="a_ledger_number"; width=60; }
 					//dd_a_batch_number "widget/table-column" { title="Batch"; fieldname="a_batch_number"; width=60; }
@@ -1177,7 +1180,7 @@ cashdisb_subform "widget/component-decl"
 						event="Click";
 						target=var_saved_check_number;
 						action="SetValue";
-						Value=runclient(isnull(convert(integer,:var_check_number:value),0));
+						Value=runclient(:var_check_number:value);
 					}
 					
 					// Save the current check number...
@@ -1243,7 +1246,7 @@ cashdisb_subform "widget/component-decl"
 						event="Click";
 						target=var_check_number;
 						action="SetValue";
-						Value=runclient(isnull(convert(integer,:var_saved_check_number:value)));
+						Value=runclient(:var_saved_check_number:value);
 					}
 					
 					new_trx_line_cn5b "widget/connector"
@@ -1333,18 +1336,54 @@ cashdisb_subform "widget/component-decl"
 			// Payee GroupBox (Pane) Area
 			payee_pane "widget/pane"
 			{
-				x=0;y=230;width=270;height=128;
+				x=0;y=230;width=270;height=158;
 				bgcolor="#e0e0e0";
 				widget_class = "group";
 				border_radius = 6;
 				
 				payee_vbox "widget/vbox"
 				{
-					x=8;y=20;width=252;height=246;spacing=1;cellsize=30;
+					x=8;y=20;width=252;height=276;spacing=7;
+
+					// Cash account selection
+					cash_acct_dd "widget/component"
+					{
+							form=check_form;
+							path="/sys/cmp/smart_field.cmp";
+							field=a_cash_account_code;
+							ctl_type=dropdown;
+							text="Source:";
+							label_width=60;
+							height=25;
+
+							sql = runserver("select :a:a_account_code + ' - ' + :a:a_acct_desc, :a:a_account_code from /apps/kardia/data/Kardia_DB/a_account/rows a, /apps/kardia/data/Kardia_DB/a_config/rows c where :c:a_ledger_number = " + quote(:this:ledger) + " and :c:a_config_name = 'DisbCashAccts' and charindex(',' + rtrim(:a:a_account_code) + ',', ',' + :c:a_config_value + ',') > 0 and :a:a_ledger_number = :c:a_ledger_number");
+
+							default_cash_acct_code "widget/hints" { style=notnull; default=runserver( (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :this:ledger and :a_config_name = 'DisbCashAcct') ); }
+					}
 					
 					// Group Box
+					txt_payee_number "widget/component"
+					{
+						height = 20;
+						path="/apps/kardia/modules/disb/field_payee_with_new.cmp";
+						field=a_payee_partner_key;
+						label="Payee #";
+						label_width=60;
+						object_name="Payee";
+
+						query_on_id_change "widget/connector"
+						{
+							// update the mailing label thingy whenever our value changes.
+							event = DataChange;
+							target=payee_details_osrc;
+							action = QueryParam;
+							p_partner_key = runclient(:Value);
+						}
+					}
+
 					payee_select_hbox  "widget/hbox"
 					{
+					condition=0;
 						spacing = 4;
 						
 						// Payee Number Box
@@ -1477,7 +1516,7 @@ cashdisb_subform "widget/component-decl"
 
 						payee_label "widget/component"
 						{
-							height=74;
+							height=72;
 							path = "/apps/kardia/modules/base/address_label_fmt.cmp";
 						}
 						
@@ -1498,7 +1537,7 @@ cashdisb_subform "widget/component-decl"
 			// Display the Payee Pane's Title (Header)
 			payee_pane_hdr "widget/pane"
 			{
-				x=15;y=222;width=80;
+				x=15;y=222;width=140;
 				widget_class = "label";
 				style=flat;
 				shadow_radius=4;
@@ -1506,20 +1545,20 @@ cashdisb_subform "widget/component-decl"
 				shadow_color="#808080";
 				shadow_angle=135;
 
-				payee_pane_hdr_l "widget/label" { x=0;width=78;height=16;valign="middle";value="Payee"; widget_class="label"; }
+				payee_pane_hdr_l "widget/label" { x=0;width=138;height=16;valign="middle";value="Source and Payee"; widget_class="label"; }
 			}
 			
 			// CheckingSummary GroupBox (Pane) Area
 			CheckSummary_pane "widget/pane"
 			{
-				x=0;y=375;width=270;height=115;
+				x=0;y=405;width=270;height=85;
 				bgcolor="#e0e0e0";
 				widget_class = "group";
 				border_radius = 6;
 				
 				CheckSummary_vbox "widget/vbox"
 				{
-					x=8;y=20;width=246;height=88;spacing=1;cellsize=20;
+					x=0;y=15;width=261;height=88;spacing=1;cellsize=20;
 					
 					// Checking Details Display (Similar to jnl_total_osrc)
 					// Usage Tested - 20090320
@@ -1556,26 +1595,31 @@ cashdisb_subform "widget/component-decl"
 						
 						check_details_form "widget/form"
 						{
-							cd_cs_lbl_chk_total "widget/component" 
-							{ 
-								path="/sys/cmp/smart_field.cmp";
-								// field='check_total';	// 20091001: displays a large sum when the batch is empty
-								field='check_total';	// 20101211: GRB - trying this again.
-								ctl_type=label;
-								text='Check Total:';
-								label_width=100;
-							}
-							cd_cs_lbl_chk_count "widget/component" 
-							{ 
-								path="/sys/cmp/smart_field.cmp";
-								// field='check_total';	// 20091001: displays a large sum when the batch is empty
-								field='check_li_cnt';	// 20101211: GRB - trying this again.
-								ctl_type=label;
-								text='Line Items:';
-								label_width=100;
+							ckdet_vbox "widget/vbox"
+							{
+								height=20; spacing=1; cellsize=20; column_width=130;
+
+								cd_cs_lbl_chk_total "widget/component" 
+								{ 
+									path="/sys/cmp/smart_field.cmp";
+									// field='check_total';	// 20091001: displays a large sum when the batch is empty
+									field='check_total';	// 20101211: GRB - trying this again.
+									ctl_type=label;
+									text='Check Total:';
+									label_width=100;
+								}
+								cd_cs_lbl_chk_count "widget/component" 
+								{ 
+									path="/sys/cmp/smart_field.cmp";
+									// field='check_total';	// 20091001: displays a large sum when the batch is empty
+									field='check_li_cnt';	// 20101211: GRB - trying this again.
+									ctl_type=label;
+									text='Line Items:';
+									label_width=100;
+								}
 							}
 						}
-						
+							
 						// 20091001
 						check_total_cn "widget/connector"
 						{
@@ -1631,18 +1675,18 @@ cashdisb_subform "widget/component-decl"
 					// Checkbox Display
 					ckbox_vbox "widget/vbox"
 					{
-						height=44; spacing=1; cellsize=20; column_width=120;
+						height=44; spacing=1; cellsize=20; column_width=130;
 
 						cs_lbl_check_approve "widget/component"
 						{
-							condition=runserver( (select isnull(first(:a_config_value), 'N') from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :this:ledger and :a_config_name = 'DisbApprovals') = 'Y');
+							//condition=runserver( (select isnull(first(:a_config_value), 'N') from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :this:ledger and :a_config_name = 'DisbApprovals') = 'Y');
 							path="/sys/cmp/smart_field.cmp"; field='approved'; ctl_type=checkbox; text='Approved?'; label_width=100; type="readonly";
 							approved_hints "widget/hints" { style=readonly; } 
 						} 
 						cs_lbl_check_posted "widget/component" { path="/sys/cmp/smart_field.cmp"; field='a_posted'; ctl_type=checkbox; text='Posted/Paid?'; label_width=100; type="readonly"; posted_hints "widget/hints" { default=runclient(0); style=readonly; } } 
 						cs_lbl_check_recon "widget/component"
 						{
-							condition=runserver( (select isnull(first(:a_config_value), 'N') from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :this:ledger and :a_config_name = 'DisbRecon') = 'Y');
+							//condition=runserver( (select isnull(first(:a_config_value), 'N') from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :this:ledger and :a_config_name = 'DisbRecon') = 'Y');
 							path="/sys/cmp/smart_field.cmp"; field='a_reconciled'; ctl_type=checkbox; text='Reconciled?'; label_width=100; type="readonly";
 							recon_hints "widget/hints" { default=runclient(0); style=readonly; } 
 						} 
@@ -1660,7 +1704,7 @@ cashdisb_subform "widget/component-decl"
 			// Display the Checking Summary Pane's Title
 			CheckSummary_pane_hdr "widget/pane"
 			{
-				x=15;y=367;width=130;
+				x=15;y=397;width=130;
 				widget_class = "label";
 				style=flat;
 				shadow_radius=4;
@@ -2219,8 +2263,9 @@ cashdisb_subform "widget/component-decl"
 						// batch_number_q3 "widget/parameter" { type=integer; default="20108"; }  //   deploy_to_client=yes;
 						
 						// Lightly Tested 20090326: set to proper column name: a_check_number
-						sql = runserver("SELECT next_check_no = isnull(max(:a_check_number), 0) + 1
-							   FROM /apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows");
+						sql = runserver("SELECT next_check_no = condition(max(convert(integer, :a_check_number)) > 0, max(convert(integer, :a_check_number)) + 1, last(:a_check_number))
+							   FROM /apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows
+							   ORDER BY :a_disbursement_id");
 							   //WHERE 
 							//		:a_batch_number = :parameters:batch_number_q3 and
 							//		:a_ledger_number = " + quote(:this:ledger));
@@ -2238,7 +2283,8 @@ cashdisb_subform "widget/component-decl"
 							event = "EndQuery";
 							target = var_check_number;	// Corrected from : var_check_no
 							action = "SetValue";		// Corrected type from: 'active' =D
-							Value = runclient(isnull(convert(integer,:next_check_no_osrc:next_check_no), 0));
+							//Value = runclient(isnull(convert(integer,:next_check_no_osrc:next_check_no), 0));
+							Value = runclient(:next_check_no_osrc:next_check_no);
 						}
 						
 						// 20090817 - Proposed Implementation
@@ -2459,7 +2505,7 @@ cashdisb_subform "widget/component-decl"
 					
 					cnSave_cn324 "widget/connector" { event="Click"; target=batch_total_osrc; action="Refresh"; }
 					
-					enabled = runclient(:check_form:is_newable and isnull(not :cashdisb_osrc:a_posted, true));
+					enabled = runclient(:check_form:is_newable and :check_form:a_ledger_number is not null and isnull(not :cashdisb_osrc:a_posted, true));
 					
 					// Void_This_Check_btn
 					

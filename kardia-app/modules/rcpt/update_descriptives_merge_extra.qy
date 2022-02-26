@@ -1,0 +1,220 @@
+$Version=2$
+update_descriptives_merge_extra "system/query"
+    {
+    fund "query/parameter" { type=string; style=strnull;}
+    donor "query/parameter" { type=string; style=strnull;}
+
+    sql = " declare collection tmp_gift_items scope application;
+            declare collection tmp_intermediate_vals;
+
+            delete collection tmp_intermediate_vals;
+
+            -- Step One: Identify
+	    --  Identify one-time-extra gifts.  We consider a gift as one-time-extra if it is a single
+	    --  larger gift occurring within a regular giving pattern.
+	    update
+		identity collection a_descriptives_hist dh,
+		collection a_descriptives d
+	    set
+		:dh:a_is_extra = condition(
+                        :dh:a_count == 1 and :d:a_act_average_interval < 7.0 and (select 
+                                count(1)
+                                from collection a_descriptives_hist dh2
+                                where   :dh2:a_ledger_number = :dh:a_ledger_number and :dh2:a_cost_center = :dh:a_cost_center and :dh2:p_donor_partner_key = :dh:p_donor_partner_key and 
+                                        -- either the extra gift is a larger gift, or there are other gifts within +/- half an interval of the gift
+                                        (:dh:a_amount > :dh2:a_amount or (select count(1) from collection tmp_gift_items where :donor = :dh:p_donor_partner_key and :ledger = :dh:a_ledger_number and :fund = :dh:a_cost_center and :giftdate > dateadd(day, convert(integer, round(-0.5 * 30.5 * :dh2:a_act_average_interval)), :dh:a_first_gift) and :giftdate < dateadd(day, convert(integer, round(.5 * 30.5 * :dh2:a_act_average_interval)), :dh:a_first_gift)) > 1) and
+                                        :dh2:a_count > 1 and
+                                        -- either the extra gift falls within the regular giving or it is the most recent gift
+                                        ((:dh2:a_first_gift <= :dh:a_first_gift and :dh2:a_last_gift >= :dh:a_last_gift) or :dh:a_hist_id = 1)
+                                ) >= 1,
+                        2,
+                        0
+                        )
+	    where
+		:d:a_ledger_number = :dh:a_ledger_number and
+		:d:a_cost_center = :dh:a_cost_center and
+		:d:p_donor_partner_key = :dh:p_donor_partner_key and
+		(:parameters:fund is null or :parameters:fund = :dh:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :dh:p_donor_partner_key) and
+                :dh:a_is_extra is null
+	    ;
+            -- Case 1: Extra gift is contained by another giving interval
+            -- dh1 is the extra amount, and dh2 is the regular giving
+            update
+		identity collection a_descriptives_hist dh1,
+		collection a_descriptives_hist dh2
+	    set
+		:a_merged_id = isnull(:dh2:a_merged_id, :dh2:a_hist_id)
+	    where
+		(:parameters:fund is null or :parameters:fund = :dh2:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :dh2:p_donor_partner_key) and
+		:dh2:a_ledger_number = :dh1:a_ledger_number and
+		:dh2:a_cost_center = :dh1:a_cost_center and
+		:dh2:p_donor_partner_key = :dh1:p_donor_partner_key and
+                :dh1:a_is_extra = 2 and
+                :dh1:a_hist_id != 1 and
+                :dh2:a_count > 1 and
+                :dh2:a_first_gift <= :dh1:a_first_gift and
+                :dh2:a_last_gift >= :dh1:a_last_gift
+            ;
+            -- Case 2: Extra gift is the most recent gift
+            -- dh1 is the extra amount, and dh2 is the regular giving
+            update
+		identity collection a_descriptives_hist dh1,
+		collection a_descriptives_hist dh2
+	    set
+		:a_merged_id = isnull(:dh2:a_merged_id, :dh2:a_hist_id)
+	    where
+		(:parameters:fund is null or :parameters:fund = :dh2:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :dh2:p_donor_partner_key) and
+		:dh2:a_ledger_number = :dh1:a_ledger_number and
+		:dh2:a_cost_center = :dh1:a_cost_center and
+		:dh2:p_donor_partner_key = :dh1:p_donor_partner_key and
+                :dh1:a_is_extra = 2 and
+                :dh1:a_hist_id = 1 and
+                :dh2:a_count > 1 and
+                :dh2:a_last_gift = :dh1:a_prev_end
+            ;
+
+            --Step Two: Create Intermediate Values
+            insert
+                collection tmp_intermediate_vals
+            select
+                ledger = :dh1:a_ledger_number,
+                fund = :dh1:a_cost_center,
+                donor = :dh1:p_donor_partner_key,
+                merged_id = :dh1:a_hist_id,
+                regular_id = :dh2:a_hist_id,
+
+                -- The fuzziness here can be tweaked. If there are no other gifts
+                -- within +/- half an interval of the extra gift, the gift is assumed
+                -- to contain the regular giving amount lumped with the gift amount.
+                includes_regular_giving = ((select count(1) from collection tmp_gift_items where :donor = :dh1:p_donor_partner_key and :ledger = :dh1:a_ledger_number and :fund = :dh1:a_cost_center and :giftdate > dateadd(day, convert(integer, round(-0.5 * 30.5 * :dh2:a_act_average_interval)), :dh1:a_first_gift) and :giftdate < dateadd(day, convert(integer, round(.5 * 30.5 * :dh2:a_act_average_interval)), :dh1:a_first_gift) and :dh1:a_amount > :dh2:a_amount) = 1)
+            from
+                collection a_descriptives_hist dh1,
+                collection a_descriptives_hist dh2
+            where
+                (:parameters:fund is null or :parameters:fund = :dh2:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :dh2:p_donor_partner_key) and
+		:dh2:a_ledger_number = :dh1:a_ledger_number and
+		:dh2:a_cost_center = :dh1:a_cost_center and
+		:dh2:p_donor_partner_key = :dh1:p_donor_partner_key and
+		:dh1:a_merged_id = :dh2:a_hist_id
+            ;
+
+	    -- Step Three: Merge
+	    update
+		identity collection a_descriptives_hist dh2,
+		collection a_descriptives_hist dh1,
+                collection tmp_intermediate_vals t
+	    set
+		:dh2:a_total = condition(
+                                :t:includes_regular_giving,
+                                :dh2:a_total + :dh2:a_amount,
+                                :dh2:a_total
+                                ),
+		:dh2:a_prev_end = condition(
+                                :t:includes_regular_giving,
+                                condition(
+                                        :dh1:a_prev_end is null,
+                                        null,
+                                        condition(:dh1:a_prev_end < :dh2:a_prev_end, :dh1:a_prev_end, :dh2:a_prev_end)
+                                        ),
+                                :dh2:a_prev_end,
+                                ),
+		:dh2:a_next_start = condition(
+                                :t:includes_regular_giving,
+                                condition(
+                                        :dh1:a_next_start is null,
+                                        null,
+                                        condition(:dh1:a_next_start > :dh2:a_next_start, :dh1:a_next_start, :dh2:a_next_start)
+                                        ),
+                                :dh2:a_next_start
+                                ),
+                :dh2:a_ntl_gift = condition(
+                                :t:includes_regular_giving,
+                                condition(
+                                        :dh1:a_ntl_gift is null, 
+                                        condition(:dh2:a_last_gift < :dh1:a_last_gift, :dh2:a_last_gift, :dh2:a_ntl_gift), 
+                                        condition(:dh1:a_ntl_gift < :dh2:a_ntl_gift, :dh2:a_ntl_gift, :dh1:a_ntl_gift)
+                                        ),
+                                :dh2:a_ntl_gift
+                                ),
+                :dh2:a_first_gift = condition(
+                                :t:includes_regular_giving,
+                                condition(:dh1:a_first_gift > :dh2:a_first_gift, :dh2:a_first_gift, :dh1:a_first_gift),
+                                :dh2:a_first_gift
+                                ),
+		:dh2:a_last_gift = condition(
+                                :t:includes_regular_giving,
+                                condition(:dh1:a_last_gift < :dh2:a_last_gift, :dh2:a_last_gift, :dh1:a_last_gift),
+                                :dh2:a_last_gift
+                                ),
+                :dh2:a_act_average_amount = condition(
+                                datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) < 16,
+                                null,
+                                (:dh2:a_total - :dh2:a_amount) / round(datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) / 30.5)
+                                ),
+                :dh2:a_act_average_months = convert(integer, round(datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) / 30.5)),
+                :dh2:a_act_average_interval = condition(
+                                :dh2:a_count = 1 or datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) = 0,
+                                null,
+                                (datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) / 30.5) / (:dh2:a_total / :dh2:a_amount - 1)
+                                )
+	    where
+		(:parameters:fund is null or :parameters:fund = :dh2:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :dh2:p_donor_partner_key) and
+		:dh2:a_ledger_number = :dh1:a_ledger_number and
+		:dh2:a_cost_center = :dh1:a_cost_center and
+		:dh2:p_donor_partner_key = :dh1:p_donor_partner_key and
+		:dh1:a_merged_id = :dh2:a_hist_id and 
+                :t:ledger = :dh1:a_ledger_number and
+                :t:fund = :dh1:a_cost_center and
+                :t:donor = :dh1:p_donor_partner_key and
+                :t:merged_id = :dh1:a_hist_id and
+                :t:regular_id = :dh2:a_hist_id
+	    ;
+
+	    -- Step Four: Adjust Merged
+	    update
+		identity collection a_descriptives_hist dh1,
+                collection a_descriptives_hist dh2,
+                collection tmp_intermediate_vals t
+	    set
+                :dh1:a_amount = condition(
+                                :t:includes_regular_giving,
+                                :dh1:a_amount - :dh2:a_amount,
+                                :dh1:a_amount
+                                ),
+                :dh1:a_total = condition(
+                                :t:includes_regular_giving,
+                                :dh1:a_total - :dh2:a_amount,
+                                :dh1:a_total
+                                ),
+                :dh1:a_merged_id = null,
+                :dh1:a_is_extra = 1
+            where
+		(:parameters:fund is null or :parameters:fund = :dh2:a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :dh2:p_donor_partner_key) and
+		:dh2:a_ledger_number = :dh1:a_ledger_number and
+		:dh2:a_cost_center = :dh1:a_cost_center and
+		:dh2:p_donor_partner_key = :dh1:p_donor_partner_key and
+		:dh1:a_merged_id = :dh2:a_hist_id and 
+                :t:ledger = :dh1:a_ledger_number and
+                :t:fund = :dh1:a_cost_center and
+                :t:donor = :dh1:p_donor_partner_key and
+                :t:merged_id = :dh1:a_hist_id and
+                :t:regular_id = :dh2:a_hist_id
+            ;
+
+            -- If merge failed, undo the extra tag
+            update
+		collection a_descriptives_hist
+            set
+                :a_is_extra = 0
+            where
+                (:parameters:fund is null or :parameters:fund = :a_cost_center) and
+		(:parameters:donor is null or :parameters:donor = :p_donor_partner_key) and
+                :a_is_extra = 2
+	    ";
+    }

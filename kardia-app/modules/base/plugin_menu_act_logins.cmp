@@ -7,44 +7,11 @@ plugin_menu_act_logins "widget/component-decl"
     sql = " -- Basic updates for the user's status.
 	    declare collection ud;
 
-	    insert
-		    /apps/kardia/data/Kardia_DB/s_user_loginhistory/rows
-	    select
-		    s_username = user_name(),
-		    s_first_seen = getdate(),
-		    s_last_seen = getdate(),
-		    s_date_created = getdate(),
-		    s_created_by = user_name(),
-		    s_date_modified = getdate(),
-		    s_modified_by = user_name()
-	    having
-		    (select count(1) from /apps/kardia/data/Kardia_DB/s_user_loginhistory/rows where :s_username = user_name() and dateadd(minute, 15, :s_last_seen) >= getdate()) = 0
-	    ;
-	    update
-		    /apps/kardia/data/Kardia_DB/s_user_loginhistory/rows
-	    set
-		    :s_last_seen = getdate(),
-		    :s_date_modified = getdate(),
-		    :s_modified_by = user_name()
-	    where
-		    :s_username = user_name() and
-		    dateadd(minute, 15, :s_last_seen) >= getdate()
-	    ;
-	    insert
-		    /apps/kardia/data/Kardia_DB/s_user_data/rows
-	    select
-		    s_username = user_name(),
-		    s_status = '',
-		    s_date_created = getdate(),
-		    s_created_by = user_name(),
-		    s_date_modified = getdate(),
-		    s_modified_by = user_name()
-	    on duplicate
-		    :s_username
-	    update set
-		    :s_date_modified = getdate(),
-		    :s_modified_by = user_name()
-	    ;
+	    declare collection c_member scope application;
+	    delete collection c_member;
+	    insert collection c_member select * from /apps/kardia/data/Kardia_DB/c_member/rows ;
+
+	    exec /apps/kardia/modules/base/record_login_history.qy ;
 
 	    insert
 		    collection ud
@@ -59,7 +26,7 @@ plugin_menu_act_logins "widget/component-decl"
 		collection activity
 	    select
 		p_partner_key = :s:p_partner_key,
-		activitydate = :ud:s_date_modified,
+		activitydate = (select :h:s_last_seen from /apps/kardia/data/Kardia_DB/s_user_loginhistory/rows h where :h:s_username = :ud:s_username order by :h:s_last_seen desc limit 1),
 		e_reference_info = :ud:s_username,
 		menuname = condition(:ud:s_username = user_name(), 'Me', 'User'),
 		is_online = 0,
@@ -69,8 +36,8 @@ plugin_menu_act_logins "widget/component-decl"
 			    sum(sum(1)),
 			    :m1:c_chat_id
 			from
-			    /apps/kardia/data/Kardia_DB/c_member/rows m1,
-			    /apps/kardia/data/Kardia_DB/c_member/rows m2,
+			    collection c_member m1,
+			    collection c_member m2,
 			    /apps/kardia/data/Kardia_DB/c_message/rows msg
 			where
 			    :m1:s_username = user_name() and
@@ -81,11 +48,11 @@ plugin_menu_act_logins "widget/component-decl"
 			group by
 			    :m1:c_chat_id
 			having
-			    ((select count(1) from /apps/kardia/data/Kardia_DB/c_member/rows m3 where :m3:c_chat_id = :this:c_chat_id) = 2 and :s:p_kardia_login != user_name()) or
-			    ((select count(1) from /apps/kardia/data/Kardia_DB/c_member/rows m3 where :m3:c_chat_id = :this:c_chat_id) = 1 and :s:p_kardia_login = user_name())
+			    ((select count(1) from collection c_member m3 where :m3:c_chat_id = :this:c_chat_id) = condition(:s:p_kardia_login = user_name(), 1, 2))
 			),
 		e_whom = :s:p_partner_key,
-		e_initiation = 'C'
+		e_initiation = 'C',
+		active_staff = :s:p_is_staff
 	    from
 		/apps/kardia/data/Kardia_DB/p_staff/rows s,
 		/apps/kardia/data/Kardia_DB/p_partner/rows p,
@@ -100,7 +67,8 @@ plugin_menu_act_logins "widget/component-decl"
 		:ud:s_username
 	    having
 		(select count(1) from /sys/cx.sysinfo/session/apps a where :a:username = :this:e_reference_info) = 0 and
-		datediff(day, :this:activitydate, getdate()) <= 366
+		datediff(day, :this:activitydate, getdate()) <= 366 and
+		:active_staff is not null
 	    ;
 
 	    -- Who is online on the CRM system
@@ -118,8 +86,8 @@ plugin_menu_act_logins "widget/component-decl"
 			    sum(sum(1)),
 			    :m1:c_chat_id
 			from
-			    /apps/kardia/data/Kardia_DB/c_member/rows m1,
-			    /apps/kardia/data/Kardia_DB/c_member/rows m2,
+			    collection c_member m1,
+			    collection c_member m2,
 			    /apps/kardia/data/Kardia_DB/c_message/rows msg
 			where
 			    :m1:s_username = user_name() and
@@ -130,8 +98,7 @@ plugin_menu_act_logins "widget/component-decl"
 			group by
 			    :m1:c_chat_id
 			having
-			    ((select count(1) from /apps/kardia/data/Kardia_DB/c_member/rows m3 where :m3:c_chat_id = :this:c_chat_id) = 2 and :a:username != user_name()) or
-			    ((select count(1) from /apps/kardia/data/Kardia_DB/c_member/rows m3 where :m3:c_chat_id = :this:c_chat_id) = 1 and :a:username = user_name())
+			    ((select count(1) from collection c_member m3 where :m3:c_chat_id = :this:c_chat_id) = condition(:a:username = user_name(), 1, 2))
 			),
 		e_whom = :s:p_partner_key,
 		e_initiation = 'C'
@@ -284,11 +251,15 @@ plugin_menu_act_logins "widget/component-decl"
 		new_chatid_osrc "widget/osrc"
 		    {
 		    new_chatid_whom "widget/parameter" { type=string; }
-		    sql = " select
+		    sql = " declare collection c_member scope application;
+			    delete collection c_member;
+			    insert collection c_member select * from /apps/kardia/data/Kardia_DB/c_member/rows ;
+
+			    select
 				:c:c_chat_id
 			    from
-				/apps/kardia/data/Kardia_DB/c_member/rows m1,
-				/apps/kardia/data/Kardia_DB/c_member/rows m2,
+				collection c_member m1,
+				collection c_member m2,
 				/apps/kardia/data/Kardia_DB/c_chat/rows c
 			    where
 				:m1:s_username = user_name() and
@@ -296,8 +267,7 @@ plugin_menu_act_logins "widget/component-decl"
 				:c:c_chat_id = :m1:c_chat_id and
 				:m1:c_chat_id = :m2:c_chat_id
 			    having
-				((select count(1) from /apps/kardia/data/Kardia_DB/c_member/rows m3 where :m3:c_chat_id = :this:c_chat_id) = 2 and :parameters:new_chatid_whom != user_name()) or
-				((select count(1) from /apps/kardia/data/Kardia_DB/c_member/rows m3 where :m3:c_chat_id = :this:c_chat_id) = 1 and :parameters:new_chatid_whom = user_name())
+				((select count(1) from collection c_member m3 where :m3:c_chat_id = :this:c_chat_id) = condition(:parameters:new_chatid_whom = user_name(), 1, 2))
 			    ";
 		    readahead=2;
 		    replicasize=2;

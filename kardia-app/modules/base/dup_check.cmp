@@ -27,7 +27,7 @@ dup_check "widget/component-decl"
     //    - email domain mutual substring check and user part mutual substring
     //      check.
 
-    usethis_button "widget/parameter" { type=integer; default=0; }
+    usethis_button "widget/parameter" { type=integer; default=0; deploy_to_client=yes; }
 
     ScanForDups "widget/component-decl-action" { }
 
@@ -290,10 +290,10 @@ dup_check "widget/component-decl"
 			    (:ci:p_contact_type = 'P' or :ci:p_contact_type = 'C' or :ci:p_contact_type = 'F') and
 			    :ci:p_record_status_code = 'A' and
 			    char_length(:ci:p_contact_data) >= 3 and
-			    (char_length(:parameters:phone1_data) > 1 or char_length(:parameters:phone2_data) > 1) and
-			    ((upper(:ci:p_contact_data) = upper(:parameters:phone1_data) and
+			    (char_length(:parameters:phone1_number) > 1 or char_length(:parameters:phone2_number) > 1) and
+			    ((upper(:ci:p_contact_data) = upper(:parameters:phone1_number) and
 			      upper(:ci:p_phone_area_city) = upper(:parameters:phone1_area)) or
-			     (upper(:ci:p_contact_data) = upper(:parameters:phone2_data) and
+			     (upper(:ci:p_contact_data) = upper(:parameters:phone2_number) and
 			      upper(:ci:p_phone_area_city) = upper(:parameters:phone2_area)))
 		    ;
 

@@ -146,9 +146,10 @@ p_location_component "widget/component-decl"
 			    width=258;
 			    mode=dynamicrow;
 
+			    table_location_stat "widget/table-column" { width=16; title = "?"; fieldname = p_record_status_code; }
 			    table_location_type "widget/table-column" { width=42; title = "Type"; fieldname = loc_type_text; }
-			    table_address "widget/table-column" { width=105; title = "Address"; fieldname = all; }
-			    table_city "widget/table-column" { width=70; title = "City"; fieldname = p_city; }
+			    table_address "widget/table-column" { width=95; title = "Address"; fieldname = all; }
+			    table_city "widget/table-column" { width=65; title = "City"; fieldname = p_city; }
 			    table_state "widget/table-column" { width=25; title = "St."; fieldname = p_state_province; }
 			    //table_postal "widget/table-column" { width=60; title = "Postal"; fieldname = p_postal_code; }
 			    }
@@ -270,7 +271,7 @@ p_location_component "widget/component-decl"
 			    text = runclient("Address: " + isnull('(' + :person_location_osrc:rec_stat_txt + ')',''));
 			    object_name = "Address";
 			    allow_new = 1;
-			    //allow_delete = 1;
+			    allow_delete = 1;
 			    }
 
 			location_fields "widget/component"

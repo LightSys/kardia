@@ -15,7 +15,7 @@ fund_gift_list "system/report"
     // Give it an intelligent filename
     filename = runserver("gifts_" + :this:costctr + "_" + :this:period + "_day" + :this:startday + "-" + :this:endday + condition(:this:document_format2 == 'text/csv', '.csv', '.pdf') );
 
-    // Parameters for GL Fund Balance
+    // Parameters for Fund Gift List
     ledger "report/parameter" { type=string; default=null; }
     costctr "report/parameter" { type=string; default=null; }
     period "report/parameter" { type=string; default=null; }
@@ -24,6 +24,9 @@ fund_gift_list "system/report"
     endday "report/parameter" { type=integer; default=31; }
     document_format2 "report/parameter" { type=string; default="application/pdf"; }
 
+    // Out parameters
+    rowcount "report/parameter" { type=integer; direction=out; default=runserver(isnull(:gift_qy:all_cnt, 0)); }
+    is_empty "report/parameter" { type=integer; direction=out; default=runserver(condition(isnull(:gift_qy:all_cnt, 0) == 0, 1, 0)); }
 
     // Get name of ledger
     ledger_qy "report/query"
@@ -183,7 +186,7 @@ fund_gift_list "system/report"
 			(datepart(day, isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date)) >= :this:startday or (:i:a_period > :startperiod_qy:a_period)) and
 			-- datepart(day, isnull(:g:a_gift_postmark_date, :g:a_gift_received_date)) <= :this:endday and
 			(datepart(day, isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date)) <= :this:endday or isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) < :endperiod_qy:a_start_date) and
-			charindex(',' + rtrim(:i:a_ledger_number) + '|' + convert(string, :i:a_batch_number) + '|' + convert(string, :i:a_gift_number) + '|', :item_qy:items) > 0 and
+			-- charindex(',' + rtrim(:i:a_ledger_number) + '|' + convert(string, :i:a_batch_number) + '|' + convert(string, :i:a_gift_number) + '|', :item_qy:items) > 0 and
 			--:i:a_ledger_number = :g:a_ledger_number and
 			--:i:a_period >= :startperiod_qy:a_period and
 			--:i:a_period <= :endperiod_qy:a_period and
@@ -193,7 +196,8 @@ fund_gift_list "system/report"
 			-- charindex(',' + rtrim(:i:a_cost_center) + ',', :cclist_qy:cclist) > 0
 			:i:a_cost_center = :cclist_qy:a_cost_center and
 			:p:a_ledger_number = :i:a_ledger_number and
-			:p:a_period = :i:a_period
+			:p:a_period = :i:a_period and
+			:i:a_cost_center = :cclist_qy:a_cost_center
 		ORDER BY
 			:i:a_period,
 			isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date)
@@ -231,27 +235,23 @@ fund_gift_list "system/report"
 			changes =
 			condition( isnull( (
 					    select 1
-					    from /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g, /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i
-					    where :g:p_donor_partner_id = :gift_qy:id and :g:a_ledger_number = :this:ledger and :g:a_period < :startperiod_qy:a_period and
-						:i:a_ledger_number = :g:a_ledger_number and :i:a_batch_number = :g:a_batch_number and :i:a_gift_number = :g:a_gift_number and
-						-- charindex(',' + rtrim(:i:a_cost_center) + ',', :cclist_qy:cclist) > 0
+					    from /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i
+					    where :i:p_dn_donor_partner_id = :gift_qy:id and :i:a_ledger_number = :this:ledger and :i:a_period < :gift_qy:period and
 						:i:a_cost_center = :cclist_qy:a_cost_center
 					    limit 1
 					    ), 0) == 0, 'NEW DONOR\n', '') +
 			condition( isnull( (
 					    select 1
-					    from /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g, /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i
-					    where :g:p_donor_partner_id = :gift_qy:id and :g:a_ledger_number = :this:ledger and :g:a_period < :startperiod_qy:a_period and
-						:i:a_ledger_number = :g:a_ledger_number and :i:a_batch_number = :g:a_batch_number and :i:a_gift_number = :g:a_gift_number and
-						-- charindex(',' + rtrim(:i:a_cost_center) + ',', :cclist_qy:cclist) > 0 and :i:a_amount = :gift_qy:amount
+					    from /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i
+					    where :i:p_dn_donor_partner_id = :gift_qy:id and :i:a_ledger_number = :this:ledger and :i:a_period < :gift_qy:period and
+						:i:a_amount = :gift_qy:amount and
 						:i:a_cost_center = :cclist_qy:a_cost_center
 					    limit 1
 					    ), 0) == 0, 'NEW AMOUNT\n', '') +
 			condition( isnull( (
 					    select 1
-					    from /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g, /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i
-					    where :g:p_donor_partner_id = :gift_qy:id and :g:a_ledger_number = :this:ledger and :g:a_period < :startperiod_qy:a_period and
-						:i:a_ledger_number = :g:a_ledger_number and :i:a_batch_number = :g:a_batch_number and :i:a_gift_number = :g:a_gift_number and
+					    from /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i
+					    where :i:p_dn_donor_partner_id = :gift_qy:id and :i:a_ledger_number = :this:ledger and :i:a_period < :startperiod_qy:a_period and
 						:i:a_cost_center = :gift_qy:a_cost_center
 					    limit 1
 					    ), 0) == 0, 'NEW DESIG\n', '') +
@@ -312,7 +312,7 @@ fund_gift_list "system/report"
 		moneyformat = "-###,###,##0.00";
 		topborder=0.3;
 		bottomborder=0.3;
-		source=cclist_qy,item_qy,gift_qy,dinfo_qy,contact_qy,changes_qy;
+		source=cclist_qy,gift_qy,dinfo_qy,contact_qy,changes_qy;
 
 		hdr "report/table-row"
 		    {

@@ -106,6 +106,9 @@ alter table m_list
 alter table m_list_membership
 	add constraint m_list_membership_clustered_pk primary key  (m_list_code, p_partner_key, m_hist_id);
 
+alter table m_list_document
+	add constraint m_doc_pk primary key  (m_list_code, e_document_id);
+
 alter table e_contact_autorecord
 	add constraint e_autorec_pk primary key  (p_partner_key, e_collaborator_id, e_contact_history_type, e_contact_id);
 
@@ -256,6 +259,15 @@ alter table h_benefit_type_sched
 alter table h_benefits
 	add constraint h_ben_pk primary key  (h_benefit_type_id, p_partner_key, h_benefit_period_id);
 
+alter table r_group_sched
+	add constraint r_grp_sch_pk primary key  (r_group_name, r_group_sched_id);
+
+alter table r_group_sched_param
+	add constraint r_sparam_pk primary key  (r_group_name, r_group_sched_id, r_param_name);
+
+alter table r_group_sched_report
+	add constraint r_grp_sch_r_pk primary key  (r_group_name, r_delivery_method, r_group_sched_id, p_recipient_partner_key, r_report_id);
+
 alter table r_group
 	add constraint r_grp_pk primary key  (r_group_name);
 
@@ -352,6 +364,12 @@ alter table a_cc_staff
 alter table a_ledger_office
 	add constraint a_lo_pk primary key  (a_ledger_number, p_office_partner_key);
 
+alter table a_currency
+	add constraint a_curr_pk primary key  (a_ledger_number, a_currency_code);
+
+alter table a_currency_exch_rate
+	add constraint a_curr_pk primary key  (a_ledger_number, a_base_currency_code, a_foreign_currency_code, a_exch_rate_date);
+
 alter table a_payroll
 	add constraint a_payroll_pk primary key  (a_ledger_number, a_payroll_group_id, a_payroll_id);
 
@@ -378,6 +396,9 @@ alter table a_payroll_item_type
 
 alter table a_payroll_item_class
 	add constraint a_payroll_ic_pk primary key  (a_payroll_item_class_code);
+
+alter table a_payroll_item_subclass
+	add constraint a_payroll_isc_pk primary key  (a_payroll_item_class_code, a_payroll_item_subclass_code);
 
 alter table a_payroll_form_group
 	add constraint a_payroll_f_pk primary key  (a_ledger_number, a_payroll_form_group_name, a_payroll_form_sequence);
@@ -418,6 +439,12 @@ alter table a_cc_receipting_accts
 alter table a_receipt_type
 	add constraint a_rcpttype_pk primary key  (a_receipt_type);
 
+alter table a_gift_payment_type
+	add constraint a_gpmttype_pk primary key  (a_ledger_number, a_gift_payment_type);
+
+alter table a_receipt_mailing
+	add constraint a_giftlist_pk primary key  (a_ledger_number, m_list_code);
+
 alter table a_subtrx_gift
 	add constraint a_gifttrx_pk primary key  (a_ledger_number, a_batch_number, a_gift_number);
 
@@ -432,6 +459,9 @@ alter table a_subtrx_gift_item
 
 alter table a_subtrx_gift_item
 	add constraint a_gifttrxi_cc_clustered_idx unique  (a_cost_center, a_account_code, a_ledger_number, a_batch_number, a_gift_number, a_split_number);
+
+alter table a_subtrx_gift_intent
+	add constraint a_gifttrxin_pk primary key  (a_ledger_number, a_batch_number, a_gift_number, a_intent_number);
 
 alter table a_subtrx_gift_rcptcnt
 	add constraint a_rcptno_pk primary key  (a_ledger_number);
@@ -465,6 +495,12 @@ alter table a_descriptives
 
 alter table a_descriptives_hist
 	add constraint a_descrhist_pk primary key  (a_ledger_number, p_donor_partner_key, a_cost_center, a_hist_id);
+
+alter table a_pledge
+	add constraint a_pledge_pk primary key  (a_ledger_number, a_pledge_id);
+
+alter table a_intent_type
+	add constraint a_intenttype_pk primary key  (a_ledger_number, a_intent_type);
 
 alter table a_subtrx_cashdisb
 	add constraint a_subtrx_cashdisb_pk primary key  (a_ledger_number, a_batch_number, a_disbursement_id, a_line_item);

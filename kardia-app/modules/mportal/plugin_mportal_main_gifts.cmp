@@ -180,7 +180,9 @@ gifts "widget/component-decl"
 				    :gi:a_cost_center,
 				    :cc:a_cc_desc,
 				    :p:p_partner_key,
+				    ack_partner_key = :pa:p_partner_key,
 				    donor_name = condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, condition(char_length(:p:p_preferred_name) > 1, :p:p_preferred_name, :p:p_given_name) + ' ' + :p:p_surname),
+				    ack_name = condition(char_length(isnull(:pa:p_org_name,'')) > 1, :pa:p_org_name, condition(char_length(:pa:p_preferred_name) > 1, :pa:p_preferred_name, :pa:p_given_name) + ' ' + :pa:p_surname),
 				    :pl:p_in_care_of,
 				    :pl:p_address_1,
 				    :pl:p_address_2,
@@ -194,14 +196,18 @@ gifts "widget/component-decl"
 				    p_fips_code = isnull(:c:p_fips_code,''),
 				    p_country_name = upper(isnull(:c:p_country_name,'')),
 				    :af:p_format,
-				    email = (select :ci:p_contact_data from /apps/kardia/data/Kardia_DB/p_contact_info/rows ci where :ci:p_contact_type = 'E' and :ci:p_partner_key = :p:p_partner_key limit 1),
-				    phone = (select isnull(:ci:p_phone_country + ' ', '') + isnull(:ci:p_phone_area_city + ' ', '') + :ci:p_contact_data from /apps/kardia/data/Kardia_DB/p_contact_info/rows ci where :ci:p_contact_type = 'P' and :ci:p_partner_key = :p:p_partner_key limit 1),
-				    cell = (select isnull(:ci:p_phone_country + ' ', '') + isnull(:ci:p_phone_area_city + ' ', '') + :ci:p_contact_data from /apps/kardia/data/Kardia_DB/p_contact_info/rows ci where :ci:p_contact_type = 'C' and :ci:p_partner_key = :p:p_partner_key limit 1)
+				    ack_city = :pla:p_city,
+				    ack_stateprov = :pla:p_state_province,
+				    email = (select :ci:p_contact_data from /apps/kardia/data/Kardia_DB/p_contact_info/rows ci where :ci:p_contact_type = 'E' and :ci:p_partner_key = isnull(:pa:p_partner_key, :p:p_partner_key) limit 1),
+				    phone = (select isnull(:ci:p_phone_country + ' ', '') + isnull(:ci:p_phone_area_city + ' ', '') + :ci:p_contact_data from /apps/kardia/data/Kardia_DB/p_contact_info/rows ci where :ci:p_contact_type = 'P' and :ci:p_partner_key = isnull(:pa:p_partner_key, :p:p_partner_key) limit 1),
+				    cell = (select isnull(:ci:p_phone_country + ' ', '') + isnull(:ci:p_phone_area_city + ' ', '') + :ci:p_contact_data from /apps/kardia/data/Kardia_DB/p_contact_info/rows ci where :ci:p_contact_type = 'C' and :ci:p_partner_key = isnull(:pa:p_partner_key, :p:p_partner_key) limit 1)
 				from
 				    /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows gi,
 				    /apps/kardia/data/Kardia_DB/a_cost_center/rows cc,
 				    /apps/kardia/data/Kardia_DB/p_partner/rows p,
+				    /apps/kardia/data/Kardia_DB/p_partner/rows pa,
 				    /apps/kardia/data/Kardia_DB/p_location/rows pl,
+				    /apps/kardia/data/Kardia_DB/p_location/rows pla,
 				    /apps/kardia/data/Kardia_DB/p_country/rows c,
 				    /apps/kardia/data/Kardia_DB/p_address_format/rows af
 				where
@@ -211,13 +217,17 @@ gifts "widget/component-decl"
 				    :cc:a_ledger_number = :gi:a_ledger_number and
 				    :cc:a_cost_center = :gi:a_cost_center and
 				    :p:p_partner_key = :gi:p_dn_donor_partner_id and
+				    :pa:p_partner_key =* :gi:p_dn_ack_partner_id and
 				    :pl:p_partner_key =* :p:p_partner_key and
 				    :pl:p_revision_id = 0 and
+				    :pla:p_partner_key =* :pa:p_partner_key and
+				    :pla:p_revision_id = 0 and
 				    :c:p_country_code =* :pl:p_country_code and
 				    :af:p_country_code =* :c:p_country_code and
 				    :af:p_address_set = 'STANDARD'
 				group by
 				    :gi:p_dn_donor_partner_id,
+				    :gi:p_dn_ack_partner_id,
 				    :gi:a_ledger_number,
 				    :gi:a_cost_center
 				having
@@ -234,6 +244,7 @@ gifts "widget/component-decl"
 				    a_cc_desc = '',
 				    p_partner_key = null,
 				    donor_name = 'TOTAL:',
+				    ack_name = null,
 				    p_city = null,
 				    p_state_province = null,
 				    p_format = ''
@@ -290,7 +301,7 @@ gifts "widget/component-decl"
 			    nodata_message = runclient(condition(:gifts_osrc:cx__pending, "No gifts available.", "Loading the past twelve months' gifts..."));
 			    type_to_find = yes;
 
-			    gt_name "widget/table-column" { title = "Donor Name"; fieldname=donor_name; width=250; style=bold; font_size=16; caption_value=runclient(:gifts_osrc:p_partner_key + isnull(' - ' + :gifts_osrc:p_city + ', ' + :gifts_osrc:p_state_province, '')); }
+			    gt_name "widget/table-column" { title = "Donor Name"; value=runclient(isnull(:gifts_osrc:ack_name, :gifts_osrc:donor_name)); width=250; style=bold; font_size=16; caption_value=runclient(isnull(:gifts_osrc:ack_partner_key, :gifts_osrc:p_partner_key) + isnull(' - ' + isnull(:gifts_osrc:ack_city, :gifts_osrc:p_city) + ', ' + isnull(:gifts_osrc:ack_stateprov, :gifts_osrc:p_state_province), '') + condition(:gifts_osrc:ack_partner_key is not null, '\nVia ' + :gifts_osrc:donor_name, '')); }
 			    gt_fund "widget/table-column" { title = "Fund"; fieldname=a_cost_center; width=80; style=bold; font_size=16; caption_value=runclient(:gifts_osrc:a_cc_desc); }
 
 			    col_period_repeat "widget/repeat"
@@ -372,7 +383,9 @@ gifts "widget/component-decl"
 				    :gi:a_cost_center,
 				    :cc:a_cc_desc,
 				    :p:p_partner_key,
+				    ack_partner_key = :pa:p_partner_key,
 				    donor_name = condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, condition(char_length(:p:p_preferred_name) > 1, :p:p_preferred_name, :p:p_given_name) + ' ' + :p:p_surname),
+				    ack_name = condition(char_length(isnull(:pa:p_org_name,'')) > 1, :pa:p_org_name, condition(char_length(:pa:p_preferred_name) > 1, :pa:p_preferred_name, :pa:p_given_name) + ' ' + :pa:p_surname),
 				    :pl:p_in_care_of,
 				    :pl:p_address_1,
 				    :pl:p_address_2,
@@ -386,15 +399,19 @@ gifts "widget/component-decl"
 				    p_fips_code = isnull(:c:p_fips_code,''),
 				    p_country_name = upper(isnull(:c:p_country_name,'')),
 				    :af:p_format,
-				    email = (select :ci:p_contact_data from /apps/kardia/data/Kardia_DB/p_contact_info/rows ci where :ci:p_contact_type = 'E' and :ci:p_partner_key = :p:p_partner_key limit 1),
-				    phone = (select isnull(:ci:p_phone_country + ' ', '') + isnull(:ci:p_phone_area_city + ' ', '') + :ci:p_contact_data from /apps/kardia/data/Kardia_DB/p_contact_info/rows ci where :ci:p_contact_type = 'P' and :ci:p_partner_key = :p:p_partner_key limit 1),
-				    cell = (select isnull(:ci:p_phone_country + ' ', '') + isnull(:ci:p_phone_area_city + ' ', '') + :ci:p_contact_data from /apps/kardia/data/Kardia_DB/p_contact_info/rows ci where :ci:p_contact_type = 'C' and :ci:p_partner_key = :p:p_partner_key limit 1)
+				    ack_city = :pla:p_city,
+				    ack_stateprov = :pla:p_state_province,
+				    email = (select :ci:p_contact_data from /apps/kardia/data/Kardia_DB/p_contact_info/rows ci where :ci:p_contact_type = 'E' and :ci:p_partner_key = isnull(:pa:p_partner_key, :p:p_partner_key) limit 1),
+				    phone = (select isnull(:ci:p_phone_country + ' ', '') + isnull(:ci:p_phone_area_city + ' ', '') + :ci:p_contact_data from /apps/kardia/data/Kardia_DB/p_contact_info/rows ci where :ci:p_contact_type = 'P' and :ci:p_partner_key = isnull(:pa:p_partner_key, :p:p_partner_key) limit 1),
+				    cell = (select isnull(:ci:p_phone_country + ' ', '') + isnull(:ci:p_phone_area_city + ' ', '') + :ci:p_contact_data from /apps/kardia/data/Kardia_DB/p_contact_info/rows ci where :ci:p_contact_type = 'C' and :ci:p_partner_key = isnull(:pa:p_partner_key, :p:p_partner_key) limit 1)
 				from
 				    /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows gi,
 				    /apps/kardia/data/Kardia_DB/a_period/rows gper,
 				    /apps/kardia/data/Kardia_DB/a_cost_center/rows cc,
 				    /apps/kardia/data/Kardia_DB/p_partner/rows p,
+				    /apps/kardia/data/Kardia_DB/p_partner/rows pa,
 				    /apps/kardia/data/Kardia_DB/p_location/rows pl,
+				    /apps/kardia/data/Kardia_DB/p_location/rows pla,
 				    /apps/kardia/data/Kardia_DB/p_country/rows c,
 				    /apps/kardia/data/Kardia_DB/p_address_format/rows af
 				where
@@ -408,13 +425,17 @@ gifts "widget/component-decl"
 				    :cc:a_ledger_number = :gi:a_ledger_number and
 				    :cc:a_cost_center = :gi:a_cost_center and
 				    :p:p_partner_key = :gi:p_dn_donor_partner_id and
+				    :pa:p_partner_key =* :gi:p_dn_ack_partner_id and
 				    :pl:p_partner_key =* :p:p_partner_key and
 				    :pl:p_revision_id = 0 and
+				    :pla:p_partner_key =* :pa:p_partner_key and
+				    :pla:p_revision_id = 0 and
 				    :c:p_country_code =* :pl:p_country_code and
 				    :af:p_country_code =* :c:p_country_code and
 				    :af:p_address_set = 'STANDARD'
 				group by
 				    :gi:p_dn_donor_partner_id,
+				    :gi:p_dn_ack_partner_id,
 				    :gi:a_ledger_number,
 				    :gi:a_cost_center
 				having
@@ -492,7 +513,7 @@ gifts "widget/component-decl"
 			    nodata_message = runclient(condition(:ygifts_osrc:cx__pending, "No gifts available.", "Loading the past twelve years' gifts..."));
 			    type_to_find = yes;
 
-			    ygt_name "widget/table-column" { title = "Donor Name"; fieldname=donor_name; width=250; style=bold; font_size=16; caption_value=runclient(:ygifts_osrc:p_partner_key + isnull(' - ' + :ygifts_osrc:p_city + ', ' + :ygifts_osrc:p_state_province, '')); }
+			    ygt_name "widget/table-column" { title = "Donor Name"; value=runclient(isnull(:ygifts_osrc:ack_name, :ygifts_osrc:donor_name)); width=250; style=bold; font_size=16; caption_value=runclient(isnull(:ygifts_osrc:ack_partner_key, :ygifts_osrc:p_partner_key) + isnull(' - ' + isnull(:ygifts_osrc:ack_city, :ygifts_osrc:p_city) + ', ' + isnull(:ygifts_osrc:ack_stateprov, :ygifts_osrc:p_state_province), '') + condition(:ygifts_osrc:ack_partner_key is not null, '\nVia ' + :ygifts_osrc:donor_name, '')); }
 			    ygt_fund "widget/table-column" { title = "Fund"; fieldname=a_cost_center; width=80; style=bold; font_size=16; caption_value=runclient(:ygifts_osrc:a_cc_desc); }
 
 			    ycol_period_repeat "widget/repeat"

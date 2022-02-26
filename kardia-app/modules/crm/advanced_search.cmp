@@ -53,7 +53,7 @@ advanced_search "widget/component-decl"
 		    {
 		    x=0; y=1;
 		    width=450; height=15;
-		    text="Search Criteria Setup";
+		    value=runclient('Criteria for ' + :searches_osrc:p_search_desc);
 		    align=center;
 		    style=bold;
 		    font_size=11;
@@ -113,7 +113,7 @@ advanced_search "widget/component-decl"
 			    :ss:s_modified_by,
 			    prevcnt = (select count(1) from /apps/kardia/data/Kardia_DB/p_partner_search_stage/rows ss2 where :ss2:p_search_id = :ss:p_search_id and :ss2:p_sequence < :ss:p_sequence),
 			    nextcnt = (select count(1) from /apps/kardia/data/Kardia_DB/p_partner_search_stage/rows ss2 where :ss2:p_search_id = :ss:p_search_id and :ss2:p_sequence > :ss:p_sequence),
-			    stage_description = eval(:p:stage_description_expr),
+			    stage_description = eval(:p:stage_description_expr, 'CPOS'),
 			    :p:icon,
 			    :p:stage_label,
 			    res = (select count(1) from collection advsearch sr where :sr:p_search_session_id = :ss:p_search_id and :sr:p_search_stage_id = :ss:p_search_stage_id)
@@ -159,7 +159,7 @@ advanced_search "widget/component-decl"
 
 		criteria_table "widget/table"
 		    {
-		    height=448;
+		    height=479;
 		    min_rowheight=16;
 		    max_rowheight=64;
 		    mode=dynamicrow;
@@ -432,7 +432,7 @@ advanced_search "widget/component-decl"
 
 		add_criteria_pane "widget/pane"
 		    {
-		    height=68;
+		    height=37;
 		    style=bordered;
 		    border_radius=8;
 		    border_color="#6080c0";
@@ -440,7 +440,7 @@ advanced_search "widget/component-decl"
 		    add_criteria_hbox "widget/hbox"
 			{
 			x=10; y=6;
-			height=56;
+			height=24;
 			spacing=8;
 			fl_width=100;
 			width=408;
@@ -449,14 +449,48 @@ advanced_search "widget/component-decl"
 			    {
 			    width=95;
 			    fl_width=0;
-			    y=18;
+			    y=3;
 			    text="Add Criteria:";
 			    align=right;
 			    style=bold;
 			    }
 
+			add_criteria_dd "widget/dropdown"
+			    {
+			    x=0; y=0;
+			    height=20;
+			    width=305;
+			    fl_width=100;
+			    mode=dynamic_server;
+			    numdisplay=10;
+			    enabled=runclient(:searches_osrc:p_search_id is not null and not :criteria_osrc:is_client_savable);
+			    sql="select label = :stage_label + ': ' + :stage_description, :stage_type from object wildcard '/apps/kardia/modules/*/plugin_crm_search_*.cmp' order by :sequence";
+			    on_dd_add_criteria "widget/connector"
+				{
+				event=DataChange;
+				event_condition=runclient(:add_criteria_dd:value is not null and :add_criteria_dd:value != '');
+				target=criteria_osrc;
+				action=Create;
+				p_stage_type=runclient(:add_criteria_dd:value);
+				p_stage_op=runclient(condition(:criteria_osrc:p_stage_op is null, 'A', 'R'));
+				p_result_count=runclient(0);
+				s_date_created=runclient(getdate());
+				s_created_by=runclient(user_name());
+				s_date_modified=runclient(getdate());
+				s_modified_by=runclient(user_name());
+				}
+			    on_dd_add_criteria_2 "widget/connector"
+				{
+				event=DataChange;
+				event_condition=runclient(:add_criteria_dd:value is not null and :add_criteria_dd:value != '');
+				action=SetValue;
+				Value=runclient(null);
+				}
+			    }
+
 			add_criteria_btns "widget/hbox"
 			    {
+			    condition = 0;
 			    x=0; y=0;
 			    height=56;
 			    align=center;
@@ -541,7 +575,9 @@ advanced_search "widget/component-decl"
 		    r_p_search_id "widget/parameter" { param_name=p_search_id; type=integer; }
 		    sql = " declare collection advsearch scope application;
 
+			    print 'Clearing old results at ' + datepart(second, getdate());
 			    delete from collection advsearch where :p_search_session_id = :parameters:p_search_id;
+			    print 'Done clearing old results at ' + datepart(second, getdate());
 		    
 			    select
 				1
@@ -556,6 +592,7 @@ advanced_search "widget/component-decl"
 			    having
 				1=0
 			    ;
+			    print 'Complete at ' + datepart(second, getdate());
 
 			    select
 				:ss2:p_search_id,
@@ -613,7 +650,7 @@ advanced_search "widget/component-decl"
 		    {
 		    x=0; y=1;
 		    width=249; height=15;
-		    text="Saved Searches";
+		    text="My Searches";
 		    align=center;
 		    style=bold;
 		    font_size=11;
@@ -624,7 +661,64 @@ advanced_search "widget/component-decl"
 	    searches_osrc "widget/osrc"
 		{
 		my_id "widget/parameter" { type=string; default=runclient(:collaborator_osrc:p_partner_key); }
-		sql = "	select
+
+		// Keep track of how many times we've run this search, as the first
+		// time will be handled differently.
+		cnt "widget/parameter" { type=integer; default=runclient(1); }
+
+		sql = "	delete
+			    identity /apps/kardia/data/Kardia_DB/p_partner_search_results/rows rs,
+			    /apps/kardia/data/Kardia_DB/p_partner_search/rows ps
+			where
+			    :parameters:cnt == 1 and
+			    :ps:s_created_by == user_name() and
+			    :ps:p_search_desc == '(unsaved new search)' and
+			    :rs:p_search_session_id == :ps:p_search_id
+			;
+
+			delete
+			    identity /apps/kardia/data/Kardia_DB/p_search_stage_criteria/rows sc,
+			    /apps/kardia/data/Kardia_DB/p_partner_search/rows ps
+			where
+			    :parameters:cnt == 1 and
+			    :ps:s_created_by == user_name() and
+			    :ps:p_search_desc == '(unsaved new search)' and
+			    :sc:p_search_id == :ps:p_search_id
+			;
+
+			delete
+			    identity /apps/kardia/data/Kardia_DB/p_partner_search_stage/rows ss,
+			    /apps/kardia/data/Kardia_DB/p_partner_search/rows ps
+			where
+			    :parameters:cnt == 1 and
+			    :ps:s_created_by == user_name() and
+			    :ps:p_search_desc == '(unsaved new search)' and
+			    :ss:p_search_id == :ps:p_search_id
+			;
+
+			delete
+			    /apps/kardia/data/Kardia_DB/p_partner_search/rows
+			where
+			    :parameters:cnt == 1 and
+			    :s_created_by == user_name() and
+			    :p_search_desc == '(unsaved new search)'
+			;
+
+			insert
+			    /apps/kardia/data/Kardia_DB/p_partner_search/rows
+			select
+			    p_search_desc = '(unsaved new search)',
+			    p_search_visibility = 'P',
+			    p_is_temporary = 1,
+			    s_date_created = getdate(),
+			    s_created_by = user_name(),
+			    s_date_modified = getdate(),
+			    s_modified_by = user_name()
+			where
+			    :parameters:cnt == 1
+			;
+
+			select
 			    :ps:p_search_id,
 			    :ps:p_search_desc,
 			    :ps:p_search_visibility,
@@ -652,6 +746,8 @@ advanced_search "widget/component-decl"
 		readahead=30;
 		replicasize=30;
 		autoquery=onfirstreveal;
+
+		incr_cnt "widget/connector" { event=EndQuery; target=cnt; action=SetValue; Value=runclient(:cnt:value + 1); }
 
 		searches_table "widget/table"
 		    {
@@ -707,8 +803,44 @@ advanced_search "widget/component-decl"
 				fl_height=0;
 
 				search_name "widget/component" { path="/sys/cmp/smart_field.cmp"; height=20; text="Description:"; field=p_search_desc; }
-				search_vis "widget/component" { path="/sys/cmp/smart_field.cmp"; height=20; text="Shared?"; field=p_search_visibility; ctl_type=dropdown; sql="select label='Private', value='P'; select label='Visible to All', value='A'"; vis_hints "widget/hints" { style=notnull; } }
-				search_temp "widget/component" { path="/sys/cmp/smart_field.cmp"; height=20; text="Temporary?"; field=p_is_temporary; ctl_type=checkbox; temp_hints "widget/hints" { style=notnull; } }
+				search_vis "widget/component"
+				    {
+				    path="/sys/cmp/smart_field.cmp";
+				    height=20;
+				    text="Shared?";
+				    field=p_search_visibility;
+				    ctl_type=dropdown;
+				    sql="select label='Private', value='P'; select label='Visible to All', value='A'";
+				    vis_hints "widget/hints" { style=notnull; }
+
+				    on_make_public "widget/connector"
+					{
+					event=DataModify;
+					event_condition=runclient(:search_name:value == '(unsaved new search)' and :search_vis:value == 'A');
+					target=search_name;
+					action=SetValue;
+					Value=runclient('(new search)');
+					}
+				    }
+
+				search_temp "widget/component"
+				    {
+				    path="/sys/cmp/smart_field.cmp";
+				    height=20;
+				    text="Temporary?";
+				    field=p_is_temporary;
+				    ctl_type=checkbox;
+				    temp_hints "widget/hints" { style=notnull; }
+
+				    on_make_nontemp "widget/connector"
+					{
+					event=DataChange;
+					event_condition=runclient(:search_name:value == '(unsaved new search)' and :search_temp:value == 0 and :FromOSRC = 0);
+					target=search_name;
+					action=SetValue;
+					Value=runclient('(new search)');
+					}
+				    }
 
 				edit_a_search_ctls "widget/hbox"
 				    {
@@ -774,7 +906,7 @@ advanced_search "widget/component-decl"
 			    event=Click;
 			    target=searches_osrc;
 			    action=Create;
-			    p_search_desc=runclient('(new search)');
+			    p_search_desc=runclient('(unsaved new search)');
 			    p_search_visibility=runclient('P');
 			    p_is_temporary=1;
 			    s_date_created=runclient(getdate());

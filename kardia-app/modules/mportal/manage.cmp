@@ -3,15 +3,7 @@ manage "widget/component-decl"
     {
     width=1200; height=700;
 
-    DisableTabButtons "widget/component-decl-action" { }
-
-    disable_all_buttons "widget/connector"
-	{
-	event=DisableTabButtons;
-	target=one_tabbutton;
-	action=SetBackground;
-	Image=runclient("/sys/images/trans_1.gif");
-	}
+    actionbar "widget/parameter" { type=string; default="/apps/kardia/modules/mportal/manage_actionbar.cmp"; }
 
     user_osrc "widget/osrc"
 	{
@@ -41,94 +33,29 @@ manage "widget/component-decl"
 	    width=1200; height=700;
 	    spacing=10;
 
-	    // Title/Action bar
-	    action_bar "widget/pane"
+	    action_bar "widget/component"
 		{
-		height=60;
-		//background="/apps/kardia/images/bg/charcoal_gradient.png";
-		background="/apps/kardia/images/bg/horiz-bar-world-dark-96.png";
-		style=flat;
-		widget_class = crm_iconbar;
+		path=runserver(:this:actionbar);
+		height=runserver((select :height from object expression (:this:actionbar) ));
 		fl_height=0;
 
-		action_bar_hbox "widget/hbox"
+		on_select_tab "widget/connector"
 		    {
-		    x=10; y=0;
-		    width=1180; height=60;
-		    spacing=10;
-
-		    logo_icon "widget/image"
-			{
-			condition=runserver(:this:show_profile_only);
-			source="/apps/kardia/images/artwork/Kardia2011_transcorner.png";
-			y=10;
-			width=56;
-			height=38;
-			}
-
-		    bar_title "widget/label"
-			{
-			width=350;
-			y=11;
-			font_size=32;
-			style=bold;
-			text="Portal Management";
-			fgcolor=white;
-			}
-
-		    tabicon_bar "widget/hbox"
-			{
-			width=754;
-			align=right;
-			spacing=0;
-
-			tabicons "widget/repeat"
-			    {
-			    sql = "select :cx__rowid, :icon, :title from object wildcard '/apps/kardia/modules/*/plugin_mportal_manage_*.cmp' where :sequence is not null and isnull(:enabled,1) = 1 order by :sequence";
-
-			    one_tabbutton "widget/component"
-				{
-				fl_width=0;
-				width=76;
-				active=runserver(:tabicons:cx__rowid == 0);
-				path="button_tab.cmp";
-				text=runserver(:tabicons:title);
-				image=runserver(:tabicons:icon);
-
-				tabbutton_click0 "widget/connector"
-				    {
-				    event=Click;
-				    target=manage;
-				    action=TriggerEvent;
-				    EventName=runclient("DisableTabButtons");
-				    }
-
-				tabbutton_click "widget/connector"
-				    {
-				    event=Click;
-				    target=list_tab;
-				    action=SetTab;
-				    TabIndex=runserver(:tabicons:cx__rowid + 1);
-				    }
-
-				tabbutton_click3 "widget/connector"
-				    {
-				    event=Click;
-				    target=one_tabbutton;
-				    action=SetBackground;
-				    Image=runclient("/apps/kardia/images/bg/lsblue_gradient.png");
-				    }
-				}
-			    }
-			}
+		    event=TabSelected;
+		    target=list_tab;
+		    action=SetTab;
+		    TabIndex=runserver(:TabIndex);
 		    }
 		}
 
-	    sep1 "widget/autolayoutspacer" { height=2; }
+	    sep1 "widget/autolayoutspacer"
+		{
+		height=2;
+		}
 
 	    tab_pane "widget/pane"
 		{
-		height=620;
+		height=runserver(680 - (select :height from object expression (:this:actionbar) ));
 		x=10; width=1180;
 		style=flat;
 

@@ -4,51 +4,12 @@ activity "system/query"
     //collab_id "query/parameter" { type=string; }
     //my_cclist "query/parameter" { type=string; }
 
-    sql = " declare object activitygroup;
-	    declare collection ud;
+    sql = " declare collection ud;
+	    declare collection e_activity scope application;
 
 	    -- Basic updates for the user's status.
-	    insert
-		    /apps/kardia/data/Kardia_DB/s_user_loginhistory/rows
-	    select
-		    s_username = user_name(),
-		    s_first_seen = getdate(),
-		    s_last_seen = getdate(),
-		    s_date_created = getdate(),
-		    s_created_by = user_name(),
-		    s_date_modified = getdate(),
-		    s_modified_by = user_name()
-	    having
-		    (select count(1) from /apps/kardia/data/Kardia_DB/s_user_loginhistory/rows where :s_username = user_name() and dateadd(minute, 15, :s_last_seen) >= getdate()) = 0
-	    ;
-	    update
-		    /apps/kardia/data/Kardia_DB/s_user_loginhistory/rows
-	    set
-		    :s_last_seen = getdate(),
-		    :s_date_modified = getdate(),
-		    :s_modified_by = user_name()
-	    where
-		    :s_username = user_name() and
-		    dateadd(minute, 15, :s_last_seen) >= getdate()
-	    ;
-	    insert
-		    /apps/kardia/data/Kardia_DB/s_user_data/rows
-	    select
-		    s_username = user_name(),
-		    s_status = '',
-		    s_date_created = getdate(),
-		    s_created_by = user_name(),
-		    s_date_modified = getdate(),
-		    s_modified_by = user_name()
-	    ;
-	    update
-		    /apps/kardia/data/Kardia_DB/s_user_data/rows ud
-	    set
-		    :s_date_modified = getdate(),
-		    :s_modified_by = user_name()
-	    where
-		    :s_username = user_name()
-	    ;
+	    exec /apps/kardia/modules/base/record_login_history.qy ;
+
 	    insert
 		    collection ud
 	    select
@@ -57,52 +18,22 @@ activity "system/query"
 		    /apps/kardia/data/Kardia_DB/s_user_data/rows
 	    ;
 
-	    -- Insert a header record to reserve the group ID.
-	    -- We will need locking around this in the future.
-	    insert
-		/apps/kardia/data/Kardia_DB/e_activity/rows
-	    select
-		e_activity_id = 1,
-		p_partner_key = 'ACTIVITY',
-		e_activity_date = getdate(),
-		e_activity_type = 'HEAD',
-		e_sort_key = 'ACTIVITY',
-		s_date_created = getdate(),
-		s_created_by = user_name(),
-		s_date_modified = getdate(),
-		s_modified_by = user_name()
-	    ;
-	    select
-		:activitygroup:id = :__inserted:e_activity_group_id
-	    ;
-
 	    -- Clean up
 	    delete
-		/apps/kardia/data/Kardia_DB/e_activity/rows
-	    where
-		:s_created_by = user_name() and
-		dateadd(minute,5,:s_date_created) < getdate() and
-		:e_sort_key = 'ACTIVITY' and
-		(:e_activity_type != 'HEAD' or :e_activity_group_id != :activitygroup:id)
+		collection e_activity
 	    ;
 
 	    -- Tasks completed - today (same cal day or within 12 hours)
 	    insert
-		/apps/kardia/data/Kardia_DB/e_activity/rows
+		collection e_activity
 	    select
-		e_activity_group_id = :activitygroup:id,
 		p_partner_key = :t:e_todo_partner,
 		e_activity_date = :t:e_todo_completion_date,
 		e_activity_type = 'TASK',
-		e_sort_key = 'ACTIVITY',
 		e_reference_info = :t:name,
 		e_info = '\n' + condition(char_length(isnull(:p2:p_org_name,'')) > 1, :p2:p_org_name, condition(char_length(:p2:p_preferred_name) > 1, :p2:p_preferred_name, :p2:p_given_name) + ' ' + :p2:p_surname) + ' completed task \"' + :t:e_todo_desc + '\" with ' + condition(char_length(isnull(:p1:p_org_name,'')) > 1, :p1:p_org_name, condition(char_length(:p1:p_preferred_name) > 1, :p1:p_preferred_name, :p1:p_given_name) + ' ' + :p1:p_surname),
 		e_whom = :t:e_todo_collaborator,
-		e_initiation = 'C',
-		s_date_created = getdate(),
-		s_created_by = user_name(),
-		s_date_modified = getdate(),
-		s_modified_by = user_name()
+		e_initiation = 'C'
 	    from
 		/apps/kardia/data/Kardia_DB/e_todo/rows t,
 		/apps/kardia/data/Kardia_DB/e_todo_type/rows tt,
@@ -122,21 +53,15 @@ activity "system/query"
 
 	    -- Tasks completed - older
 	    insert
-		/apps/kardia/data/Kardia_DB/e_activity/rows
+		collection e_activity
 	    select
-		e_activity_group_id = :activitygroup:id,
 		p_partner_key = sum(:t:e_todo_partner + ',') - ',',
 		e_activity_date = min(:t:e_todo_completion_date),
 		e_activity_type = 'TASK',
-		e_sort_key = 'ACTIVITY',
 		e_reference_info = sum(:t:name + ',') - ',',
 		e_info = '\n' + condition(char_length(isnull(:p2:p_org_name,'')) > 1, :p2:p_org_name, condition(char_length(:p2:p_preferred_name) > 1, :p2:p_preferred_name, :p2:p_given_name) + ' ' + :p2:p_surname) + ' completed ' + count(1) + condition(count(1) = 1, ' task', ' tasks'),
 		e_whom = :t:e_todo_collaborator,
-		e_initiation = 'C',
-		s_date_created = getdate(),
-		s_created_by = user_name(),
-		s_date_modified = getdate(),
-		s_modified_by = user_name()
+		e_initiation = 'C'
 	    from
 		/apps/kardia/data/Kardia_DB/e_todo/rows t,
 		/apps/kardia/data/Kardia_DB/e_todo_type/rows tt,
@@ -146,6 +71,7 @@ activity "system/query"
 		:p2:p_partner_key = :t:e_todo_collaborator and
 		datediff(day, :t:e_todo_completion_date, getdate()) > 0 and
 		datediff(minute, :t:e_todo_completion_date, getdate()) >= 720 and
+		datediff(day, :t:e_todo_completion_date, getdate()) < 90 and
 		:t:e_todo_status = 'C'
 	    group by
 		datepart(day, :t:e_todo_completion_date),
@@ -156,25 +82,21 @@ activity "system/query"
 		:t:e_todo_completion_date desc
 	    limit
 		200
+	    having
+		:p_partner_key is not null
 	    ;
 
 	    -- Track events - today (same cal day or within 12 hours)
 	    insert
-		/apps/kardia/data/Kardia_DB/e_activity/rows
+		collection e_activity
 	    select
-		e_activity_group_id = :activitygroup:id,
 		p_partner_key = :pe:p_partner_key,
 		e_activity_date = :pe:s_date_created,
 		e_activity_type = 'TRK',
-		e_sort_key = 'ACTIVITY',
 		e_reference_info = :pe:name,
 		e_info = '\n' + condition(char_length(isnull(:p1:p_org_name,'')) > 1, :p1:p_org_name, condition(char_length(:p1:p_preferred_name) > 1, :p1:p_preferred_name, :p1:p_given_name) + ' ' + :p1:p_surname) + ': ' + :t:e_track_name + ', ' + :s:e_step_name + condition(char_length(:pe:e_desc) > 1, ' (' + :pe:e_desc + ')', ''),
 		e_whom = :st:p_partner_key,
-		e_initiation = 'C',
-		s_date_created = getdate(),
-		s_created_by = user_name(),
-		s_date_modified = getdate(),
-		s_modified_by = user_name()
+		e_initiation = 'C'
 	    from
 		/apps/kardia/data/Kardia_DB/e_partner_engagement/rows pe,
 		/apps/kardia/data/Kardia_DB/e_engagement_track/rows t,
@@ -196,24 +118,18 @@ activity "system/query"
 
 	    -- Track events - older - we group them together to simplify the activity log
 	    insert
-		/apps/kardia/data/Kardia_DB/e_activity/rows
+		collection e_activity
 	    select
-		e_activity_group_id = :activitygroup:id,
 		p_partner_key = sum(:pe:p_partner_key + ',') - ',',
 		e_activity_date = :pe:s_date_created,
 		e_activity_type = 'TRK',
-		e_sort_key = 'ACTIVITY',
 		e_reference_info = sum(:pe:name + ',') - ',',
 		e_info = '\n' + condition(count(1) == 1, 
 					(select condition(char_length(isnull(:p1:p_org_name,'')) > 1, :p1:p_org_name, condition(char_length(:p1:p_preferred_name) > 1, :p1:p_preferred_name, :p1:p_given_name) + ' ' + :p1:p_surname) from /apps/kardia/data/Kardia_DB/p_partner/rows p1 where :p1:p_partner_key = :pe:p_partner_key) + ': ' + :t:e_track_name + ', ' + (select :s:e_step_name from /apps/kardia/data/Kardia_DB/e_engagement_step/rows s where :s:e_track_id = :pe:e_track_id and :s:e_step_id = :pe:e_step_id) + condition(char_length(:pe:e_desc) > 1, ' (' + :pe:e_desc + ')', ''), 
 					'People took ' + count(1) + ' steps in track ' + :t:e_track_name
 					),
 		e_whom = '',
-		e_initiation = 'C',
-		s_date_created = getdate(),
-		s_created_by = user_name(),
-		s_date_modified = getdate(),
-		s_modified_by = user_name()
+		e_initiation = 'C'
 	    from
 		/apps/kardia/data/Kardia_DB/e_partner_engagement/rows pe,
 		/apps/kardia/data/Kardia_DB/e_engagement_track/rows t
@@ -221,6 +137,7 @@ activity "system/query"
 		:t:e_track_id = :pe:e_track_id and
 		datediff(day, :pe:s_date_created, getdate()) > 0 and
 		datediff(minute, :pe:s_date_created, getdate()) >= 720 and
+		datediff(day, :pe:s_date_created, getdate()) < 90 and
 		:pe:e_is_archived = 0 and
 		:pe:e_completion_status != 'X'
 	    group by
@@ -228,27 +145,23 @@ activity "system/query"
 		datepart(month, :pe:s_date_created),
 		datepart(year, :pe:s_date_created),
 		:pe:e_track_id
+	    having
+		:p_partner_key is not null
 	    limit
 		200
 	    ;
 
 	    -- Collaboration events - today (same cal day or within 12 hours)
 	    insert
-		/apps/kardia/data/Kardia_DB/e_activity/rows
+		collection e_activity
 	    select
-		e_activity_group_id = :activitygroup:id,
 		p_partner_key = :c:p_partner_key,
 		e_activity_date = :c:s_date_modified,
 		e_activity_type = 'COLL',
-		e_sort_key = 'ACTIVITY',
 		e_reference_info = :c:name,
 		e_info = '\n' + condition(char_length(isnull(:p1:p_org_name,'')) > 1, :p1:p_org_name, condition(char_length(:p1:p_preferred_name) > 1, :p1:p_preferred_name, :p1:p_given_name) + ' ' + :p1:p_surname) + ' is now working with ' + condition(char_length(isnull(:p2:p_org_name,'')) > 1, :p2:p_org_name, condition(char_length(:p2:p_preferred_name) > 1, :p2:p_preferred_name, :p2:p_given_name) + ' ' + :p2:p_surname) + ' as ' + :ct:e_collab_type_desc,
 		e_whom = :c:e_collaborator,
-		e_initiation = 'C',
-		s_date_created = getdate(),
-		s_created_by = user_name(),
-		s_date_modified = getdate(),
-		s_modified_by = user_name()
+		e_initiation = 'C'
 	    from
 		/apps/kardia/data/Kardia_DB/e_collaborator/rows c,
 		/apps/kardia/data/Kardia_DB/e_collaborator_type/rows ct,
@@ -266,21 +179,15 @@ activity "system/query"
 
 	    -- Collaboration events - older (prev cal day and older than 12 hours)
 	    insert
-		/apps/kardia/data/Kardia_DB/e_activity/rows
+		collection e_activity
 	    select
-		e_activity_group_id = :activitygroup:id,
 		p_partner_key = '00ACTIVITY',
 		e_activity_date = :c:s_date_modified,
 		e_activity_type = 'COLL',
-		e_sort_key = 'ACTIVITY',
 		e_reference_info = sum(:c:name + ',') - ',',
 		e_info = '\n' + condition(char_length(isnull(:p1:p_org_name,'')) > 1, :p1:p_org_name, condition(char_length(:p1:p_preferred_name) > 1, :p1:p_preferred_name, :p1:p_given_name) + ' ' + :p1:p_surname) + ' is now working with ' + condition(count(1) = 1, condition(char_length(isnull(:p2:p_org_name,'')) > 1, :p2:p_org_name, condition(char_length(:p2:p_preferred_name) > 1, :p2:p_preferred_name, :p2:p_given_name) + ' ' + :p2:p_surname), '' + count(1) + ' new people') + ' as ' + :ct:e_collab_type_desc,
 		e_whom = :c:e_collaborator,
-		e_initiation = 'C',
-		s_date_created = getdate(),
-		s_created_by = user_name(),
-		s_date_modified = getdate(),
-		s_modified_by = user_name()
+		e_initiation = 'C'
 	    from
 		/apps/kardia/data/Kardia_DB/e_collaborator/rows c,
 		/apps/kardia/data/Kardia_DB/e_collaborator_type/rows ct,
@@ -292,6 +199,7 @@ activity "system/query"
 		:p2:p_partner_key = :c:p_partner_key and
 		datediff(day, :c:s_date_modified, getdate()) > 0 and
 		datediff(minute, :c:s_date_modified, getdate()) >= 720 and
+		datediff(day, :c:s_date_modified, getdate()) < 90 and
 		:c:e_is_automatic = 0
 	    group by
 		datepart(day, :c:s_date_modified),
@@ -299,27 +207,31 @@ activity "system/query"
 		datepart(year, :c:s_date_modified),
 		:c:e_collab_type_id,
 		:c:e_collaborator
+	    having
+		:e_activity_date is not null
 	    limit
 		200
 	    ;
 
+	    declare collection c_member scope application;
+	    delete collection c_member;
+	    insert collection c_member select * from /apps/kardia/data/Kardia_DB/c_member/rows ;
+
 	    -- Users who are not currently online
 	    insert
-		/apps/kardia/data/Kardia_DB/e_activity/rows
+		collection e_activity
 	    select
-		e_activity_group_id = :activitygroup:id,
 		p_partner_key = :s:p_partner_key,
 		e_activity_date = :ud:s_date_modified,
 		e_activity_type = 'USER',
-		e_sort_key = 'ACTIVITY',
 		e_reference_info = :s:p_kardia_login,
 		e_info = condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, condition(char_length(:p:p_preferred_name) > 1, :p:p_preferred_name, :p:p_given_name) + ' ' + :p:p_surname)
 			+ isnull( ' (' + (  select
 						sum(sum(1)),
 						:m1:c_chat_id
 					    from
-						/apps/kardia/data/Kardia_DB/c_member/rows m1,
-						/apps/kardia/data/Kardia_DB/c_member/rows m2,
+						collection c_member m1,
+						collection c_member m2,
 						/apps/kardia/data/Kardia_DB/c_message/rows msg
 					    where
 						:m1:s_username = user_name() and
@@ -330,16 +242,11 @@ activity "system/query"
 					    group by
 						:m1:c_chat_id
 					    having
-						((select count(1) from /apps/kardia/data/Kardia_DB/c_member/rows m3 where :m3:c_chat_id = :this:c_chat_id) = 2 and :s:p_kardia_login != user_name()) or
-						((select count(1) from /apps/kardia/data/Kardia_DB/c_member/rows m3 where :m3:c_chat_id = :this:c_chat_id) = 1 and :s:p_kardia_login = user_name())
+						((select count(1) from collection c_member m3 where :m3:c_chat_id = :this:c_chat_id) = condition(:s:p_kardia_login = user_name(), 1, 2))
 					    ) + ' unread message(s))', '')
 			+ ' (offline)\n' + isnull(:ud:s_status,''),
 		e_whom = :s:p_partner_key,
-		e_initiation = 'C',
-		s_date_created = getdate(),
-		s_created_by = user_name(),
-		s_date_modified = getdate(),
-		s_modified_by = user_name()
+		e_initiation = 'C'
 	    from
 		/apps/kardia/data/Kardia_DB/p_staff/rows s,
 		/apps/kardia/data/Kardia_DB/p_partner/rows p,
@@ -355,21 +262,19 @@ activity "system/query"
 
 	    -- Who is online on the CRM system
 	    insert
-		/apps/kardia/data/Kardia_DB/e_activity/rows
+		collection e_activity
 	    select
-		e_activity_group_id = :activitygroup:id,
 		p_partner_key = :s:p_partner_key,
 		e_activity_date = max(:a:last_activity),
 		e_activity_type = 'USER',
-		e_sort_key = 'ACTIVITY',
 		e_reference_info = :a:username,
 		e_info = condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, condition(char_length(:p:p_preferred_name) > 1, :p:p_preferred_name, :p:p_given_name) + ' ' + :p:p_surname)
 			+ isnull( ' (' + (  select
 						sum(sum(1)),
 						:m1:c_chat_id
 					    from
-						/apps/kardia/data/Kardia_DB/c_member/rows m1,
-						/apps/kardia/data/Kardia_DB/c_member/rows m2,
+						collection c_member m1,
+						collection c_member m2,
 						/apps/kardia/data/Kardia_DB/c_message/rows msg
 					    where
 						:m1:s_username = user_name() and
@@ -380,16 +285,11 @@ activity "system/query"
 					    group by
 						:m1:c_chat_id
 					    having
-						((select count(1) from /apps/kardia/data/Kardia_DB/c_member/rows m3 where :m3:c_chat_id = :this:c_chat_id) = 2 and :a:username != user_name()) or
-						((select count(1) from /apps/kardia/data/Kardia_DB/c_member/rows m3 where :m3:c_chat_id = :this:c_chat_id) = 1 and :a:username = user_name())
+						((select count(1) from collection c_member m3 where :m3:c_chat_id = :this:c_chat_id) = condition(:a:username = user_name(), 1, 2))
 					    ) + ' unread message(s))', '')
 			+ '\n' + isnull(:ud:s_status,''),
 		e_whom = :s:p_partner_key,
-		e_initiation = 'C',
-		s_date_created = getdate(),
-		s_created_by = user_name(),
-		s_date_modified = getdate(),
-		s_modified_by = user_name()
+		e_initiation = 'C'
 	    from
 		/sys/cx.sysinfo/session/apps a,
 		/apps/kardia/data/Kardia_DB/p_staff/rows s,
@@ -402,11 +302,13 @@ activity "system/query"
 		:ud:s_username =* :a:username
 	    group by
 		:a:username
+	    having
+		:p_partner_key is not null
 	    ;
 
 	    -- Return the ID to the user
 	    select
 		name = 'ActivityGroupID',
-		activity_group_id = :activitygroup:id
+		activity_group_id = 1
 	    ";
     }

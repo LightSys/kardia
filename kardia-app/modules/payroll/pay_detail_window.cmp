@@ -1,7 +1,7 @@
 $Version=2$
 pay_detail_window "widget/component-decl"
     {
-    width=800; height=600;
+    width=900; height=700;
 
     Open "widget/component-decl-action" { }
     Open_cn "widget/connector" { event="Open"; target="pay_detail_win"; action="Open"; Cascade=1; IsModal=1; }
@@ -16,15 +16,15 @@ pay_detail_window "widget/component-decl"
     pay_detail_win "widget/childwindow"
 	{
 	title = "Payroll Detail";
-	width=780; height=550;
-	x=10; y=25;
+	width=780; height=580;
+	x=60; y=60;
 	visible = false;
 	icon = "/apps/kardia/images/icons/gift.gif";
 
 	pay_detail_cmp "widget/component"
 	    {
 	    path = "/apps/kardia/modules/payroll/pay_detail.cmp";
-	    width=778;height=525;
+	    width=778;height=555;
 	    ledger = runserver(:this:ledger);
 	    }
 	}

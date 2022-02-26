@@ -1,0 +1,188 @@
+$Version=2$
+gift_types "widget/component-decl"
+    {
+    // Manage gift payment types
+    width=780; height=480;
+    ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; deploy_to_client=yes; }
+
+    gift_type_vbox "widget/vbox"
+	{
+	x=0; y=0; width=780; height=480;
+	spacing=10;
+
+	rcpt_type_hdr "widget/component"
+	    {
+	    path="/apps/kardia/modules/base/section_label.cmp";
+	    height=24;
+	    text="Gift / Payment Types:";
+	    }
+
+	gift_type_osrc "widget/osrc"
+	    {
+	    gt_ledger "widget/parameter" { type=string; param_name=ledger; default=runclient(:ledger:value); }
+
+	    sql = " select
+			:gt:a_ledger_number,
+			:gt:a_gift_payment_type,
+			:gt:a_gift_payment_type_desc,
+			:gt:a_is_default,
+			:gt:a_is_enabled,
+			:gt:a_is_cash,
+			:gt:a_payment_cost_center,
+			:gt:a_payment_account_code,
+			:gt:a_desig_account_code,
+			:gt:a_min_gift,
+			:gt:a_max_gift,
+			:gt:s_date_created,
+			:gt:s_created_by,
+			:gt:s_date_modified,
+			:gt:s_modified_by,
+			:cc:a_cc_desc,
+			payment_account_desc = :a1:a_acct_desc,
+			desig_account_desc= :a2:a_acct_desc,
+			in_use = isnull( (select 1 from /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g where :g:a_ledger_number = :gt:a_ledger_number and :g:a_gift_type = :gt:a_gift_payment_type limit 1), 0)
+		    from
+			identity /apps/kardia/data/Kardia_DB/a_gift_payment_type/rows gt,
+			/apps/kardia/data/Kardia_DB/a_cost_center/rows cc,
+			/apps/kardia/data/Kardia_DB/a_account/rows a1,
+			/apps/kardia/data/Kardia_DB/a_account/rows a2
+		    where
+			:gt:a_ledger_number = :parameters:ledger and
+			:cc:a_ledger_number =* :gt:a_ledger_number and
+			:cc:a_cost_center =* :gt:a_payment_cost_center and
+			:a1:a_ledger_number =* :gt:a_ledger_number and
+			:a1:a_account_code =* :gt:a_payment_account_code and
+			:a2:a_ledger_number =* :gt:a_ledger_number and
+			:a2:a_account_code =* :gt:a_desig_account_code
+		    ";
+	    baseobj = "/apps/kardia/data/Kardia_DB/a_gift_payment_type/rows";
+	    replicasize=50;
+	    readahead=50;
+
+	    gift_type_table "widget/table"
+		{
+		height=412;
+		titlebar=yes;
+		colsep=0;
+		overlap_scrollbar=yes;
+		demand_scrollbar=yes;
+		initial_selection = no;
+		rowheight=null;
+		cellvspacing=4;
+		inner_padding=2;
+		row_border_radius=6;
+		row_shadow_radius=2;
+		row_shadow_offset=1;
+		row_shadow_color="#a0a0a0";
+		row_shadow_angle=135;
+
+		gt_name "widget/table-column" { title="Type"; width=220; value=runclient('(' + :gift_type_osrc:a_gift_payment_type + ') ' + :gift_type_osrc:a_gift_payment_type_desc); style=bold; }
+		gt_active "widget/table-column" { title="Active?"; width=70; type=check; fieldname=a_is_enabled; align=center; }
+		gt_default "widget/table-column" { title="Default?"; width=70; type=check; fieldname=a_is_default; align=center; }
+		gt_cash "widget/table-column" { title="Cash?"; width=70; type=check; fieldname=a_is_cash; align=center; }
+		gt_paycc "widget/table-column" { title="Pay To Fund"; width=150; fieldname=a_payment_cost_center; align=left; caption_fieldname=a_cc_desc; }
+		gt_payac "widget/table-column" { title="Pay To Acct"; width=150; fieldname=a_payment_account_code; align=left; caption_fieldname=payment_account_desc; }
+		gt_desac "widget/table-column" { title="Desig. Acct"; width=150; fieldname=a_desig_account_code; align=left; caption_fieldname=desig_account_desc; }
+
+		gift_type_detail "widget/table-row-detail"
+		    {
+		    width=780; height=173;
+		    show_on_new=1;
+
+		    gift_type_detail_pane "widget/pane"
+			{
+			x=8; y=5; width=762; height=163;
+			style=flat;
+			bgcolor="#f8f8f8";
+			border_radius=4;
+
+			gift_type_detail_vbox "widget/vbox"
+			    {
+			    x=10; y=10; width=440; height=143;
+			    spacing=5;
+			    cellsize=20;
+
+			    gift_type_form "widget/form"
+				{
+				typedesc_hbox "widget/hbox"
+				    {
+				    height=20; spacing=10;
+
+				    td_type "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=editbox; field=a_gift_payment_type; width=130; text="Type Code:"; }
+				    td_desc "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=editbox; field=a_gift_payment_type_desc; width=300; label_width=90; text="Description:"; }
+				    }
+				td_active "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=checkbox; field=a_is_enabled; width=300; text="Active?"; ta_hints "widget/hints" { style=notnull; default=runclient(1); } }
+				td_default "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=checkbox; field=a_is_default; width=130; text="Default?"; td_hints "widget/hints" { style=notnull; default=runclient(0); } }
+				cash_hbox "widget/hbox"
+				    {
+				    height=20; spacing=10;
+				    td_cash "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=checkbox; field=a_is_cash; width=130; text="Cash Gift?"; tc_hints "widget/hints" { style=notnull; default=runclient(1); } }
+				    cash_lbl "widget/label" { width=300; style=italic; text="(uncheck this for in-kind / non-cash gifts)"; }
+				    }
+				pay_hbox "widget/hbox"
+				    {
+				    height=20; spacing=10;
+
+				    td_pay "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=editbox; field=a_payment_cost_center; width=200; text="Pay To Fund:"; }
+				    td_payacct "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=editbox; field=a_payment_account_code; width=150; label_width=50; text="Acct:"; }
+				    }
+				td_desacct "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=editbox; field=a_desig_account_code; width=200; text="Desig Acct:"; }
+				gift_type_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
+
+				ledger_var "widget/variable" { fieldname=a_ledger_number; type=string; lv_hints "widget/hints" { default=runclient(:ledger:value); } }
+				}
+			    }
+
+			gift_type_ctls_vbox "widget/vbox"
+			    {
+			    x=620; y=10; width=130; height=130;
+			    spacing=8;
+
+			    save_btn "widget/textbutton"
+				{
+				width=130;
+				height=24;
+				text="Save";
+				enabled=runclient(:gift_type_form:is_savable and char_length(:td_type:content) > 0);
+				on_save "widget/connector" { event=Click; target=gift_type_form; action=Save; }
+				}
+
+			    discard_btn "widget/textbutton"
+				{
+				width=130;
+				height=24;
+				text="Cancel";
+				enabled=runclient(:gift_type_form:is_discardable);
+				on_discard "widget/connector" { event=Click; target=gift_type_form; action=Discard; }
+				}
+
+			    delete_btn "widget/textbutton"
+				{
+				width=130;
+				height=24;
+				text="Delete";
+				enabled=runclient(:gift_type_form:is_editable and :td_type:content != 'C' and :td_type:content != 'K' and :gift_type_osrc:in_use = 0);
+				on_delete "widget/connector" { event=Click; target=gift_type_form; action=Delete; }
+				}
+			    }
+			}
+		    }
+		}
+	    }
+
+	ctls_hbox "widget/hbox"
+	    {
+	    height=24;
+	    align=right;
+
+	    new_ctl "widget/textbutton"
+		{
+		width=130;
+		height=24;
+		text="New Gift Type";
+		enabled=runclient(:gift_type_form:is_newable);
+		on_new "widget/connector" { event=Click; target=gift_type_form; action=New; }
+		}
+	    }
+	}
+    }

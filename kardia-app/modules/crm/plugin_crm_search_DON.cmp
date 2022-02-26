@@ -1,0 +1,143 @@
+$Version=2$
+plugin_crm_search_lists "widget/component-decl"
+    {
+    stage_label = "Donor History";
+    stage_short_label = "Donor";
+    stage_description = "Search based on donor giving analytics";
+    //stage_description_expr = "isnull((select isnull('Funds: ' + :param:funds + ', ', '') + isnull('Changes: ' + :param:changes + ', ', '') + isnull('Min: ' + :param:minamt + ', ', '') + isnull('Max: ' + :param:maxamt + ', ', '') + isnull('Min Tot: ' + :param:mintamt + ', ', '') + isnull('Max Tot: ' + :param:maxtamt + ', ', '') + isnull('Min Freq: ' + :param:minfreq + ', ', '') + isnull('Max Freq: ' + :param:maxfreq + ', ', '') + isnull('Min Cnt: ' + :param:mincnt + ', ', '') + isnull('Max Cnt: ' + :param:maxcnt + ', ', '') + isnull('Giving After: ' + substring(convert(string,:param:start),1,12) - ',' + ', ', '') + isnull('Giving Before: ' + substring(convert(string,:param:end),1,12) - ',' + ', ', '') - ', ' from /apps/kardia/modules/crm/advanced_search_params.qyp param where :param:p_search_id = :ss:p_search_id and :param:p_search_stage_id = :ss:p_search_stage_id), '(click to configure)')";
+    stage_description_expr = "isnull((select isnull('Funds: ' + :param:funds + ', ', '') + isnull('Changes: ' + :param:changes + ', ', '') + isnull('Min: ' + :param:minamt + ', ', '') + isnull('Max: ' + :param:maxamt + ', ', '') + isnull('Min Freq: ' + :param:minfreq + ', ', '') + isnull('Max Freq: ' + :param:maxfreq + ', ', '') + isnull('Giving After: ' + substring(convert(string,:param:start),1,12) - ',' + ', ', '') + isnull('Giving Before: ' + substring(convert(string,:param:end),1,12) - ',' + ', ', '') + isnull('Status: ' + rtrim(substring('Lapsed LapsingCurrent', convert(integer,:param:curstat) * 7 + 1, 7)) + ', ', '') + isnull('Lapsed Days Min: ' + :param:lapsedmin + ', ', '') + isnull('Lapsed Days Max: ' + :param:lapsedmax + ', ', '') + isnull('Length Min: ' + :param:lengthmin + ', ', '') + isnull('Length Max: ' + :param:lengthmax + ', ', '') - ', ' from /apps/kardia/modules/crm/advanced_search_params.qyp param where :param:p_search_id = :ss:p_search_id and :param:p_search_stage_id = :ss:p_search_stage_id), '(click to configure)')";
+    stage_type = "DON";
+    icon = "/apps/kardia/images/icons/openiconic-3dollar.svg";
+    sequence = 25;
+    width=410;
+    height=248;
+
+    criteria_osrc "widget/parameter" { type=object; }
+    criteria_params_osrc "widget/parameter" { type=object; find_container="widget/osrc"; }
+    criteria_params_form "widget/parameter" { type=object; find_container="widget/form"; }
+
+    param_vbox "widget/vbox"
+	{
+	x=0; y=0;
+	width=410; height=248;
+	spacing=4;
+
+	f_desig_cc "widget/component"
+	    {
+	    height=24;
+	    path="/apps/kardia/modules/base/editbox_table.cmp";
+	    field='funds';
+	    text='Designations:';
+	    label_width=150;
+	    width=400;
+	    popup_width=380;
+	    popup_sql=runserver("select value = :c:a_cost_center, label = :c:a_cost_center + ' - ' + condition(isnull(:cr:a_receiptable,0) = 1, :c:a_cc_desc + ' (legacy # ' + :c:a_legacy_code + ')', '** CLOSED **') from /apps/kardia/data/Kardia_DB/a_cost_center/rows c, /apps/kardia/data/Kardia_DB/a_cc_receipting/rows cr where :c:a_is_posting = 1 and :cr:a_ledger_number =* :c:a_ledger_number and :cr:a_cost_center =* :c:a_cost_center");
+	    search_field_list="a_cost_center*,*a_cc_desc*,a_legacy_code*";
+	    key_name="a_cost_center";
+	    object_name="Fund / Cost Center";
+	    popup_text="Select Designation:";
+	    form=criteria_params_form;
+	    empty_desc="comma-separated list";
+	    multiselect=1;
+
+	    desig_hints "widget/hints" { style=applyonchange,uppercase,strnull; }
+	    }
+
+	total_hbox "widget/hbox"
+	    {
+	    condition=0;
+	    height=24;
+
+	    mintamt "widget/component" { path="/sys/cmp/smart_field.cmp"; field=mintamt; width=235; label_width=150; form=criteria_params_form; text="Total Amount, Min:"; mint_hints "widget/hints" { style=strnull; } }
+	    maxtamt "widget/component" { path="/sys/cmp/smart_field.cmp"; field=maxtamt; width=155; label_width=70; form=criteria_params_form; text="Max:"; maxt_hints "widget/hints" { style=strnull; } }
+	    }
+
+	amt_hbox "widget/hbox"
+	    {
+	    height=24;
+
+	    minamt "widget/component" { path="/sys/cmp/smart_field.cmp"; field=minamt; width=235; label_width=150; form=criteria_params_form; text="Recur/Onetime Amt, Min:"; min_hints "widget/hints" { style=strnull; } }
+	    maxamt "widget/component" { path="/sys/cmp/smart_field.cmp"; field=maxamt; width=155; label_width=70; form=criteria_params_form; text="Max:"; max_hints "widget/hints" { style=strnull; } }
+	    }
+
+	avg_hbox "widget/hbox"
+	    {
+	    height=24;
+
+	    minavg "widget/component" { path="/sys/cmp/smart_field.cmp"; field=minavg; width=235; label_width=150; form=criteria_params_form; text="Monthly Avg Amt, Min:"; minavg_hints "widget/hints" { style=strnull; } }
+	    maxavg "widget/component" { path="/sys/cmp/smart_field.cmp"; field=maxavg; width=155; label_width=70; form=criteria_params_form; text="Max:"; maxavg_hints "widget/hints" { style=strnull; } }
+	    }
+
+	freq_hbox "widget/hbox"
+	    {
+	    height=24;
+
+	    minfreq "widget/component" { path="/sys/cmp/smart_field.cmp"; field=minfreq; width=235; label_width=150; form=criteria_params_form; text="How Often, At Least:"; ctl_type=dropdown; sql="select label='Monthly', value=1; select label='Every 2 Months', value=2; select label='Quarterly', value=3; select label='Every 6 Months', value=6; select label='Once a Year', value=12"; numdisplay=12; }
+	    maxfreq "widget/component" { path="/sys/cmp/smart_field.cmp"; field=maxfreq; width=155; label_width=70; form=criteria_params_form; text="At Most:"; ctl_type=dropdown; sql="select label='Monthly', value=1; select label='Every 2 Months', value=2; select label='Quarterly', value=3; select label='Every 6 Months', value=6; select label='Annually', value=12"; numdisplay=12; }
+	    }
+
+	cnt_hbox "widget/hbox"
+	    {
+	    condition=0;
+	    height=24;
+
+	    mincnt "widget/component" { path="/sys/cmp/smart_field.cmp"; field=mincnt; width=235; label_width=150; form=criteria_params_form; text="Number of Gifts, Min:"; minc_hints "widget/hints" { style=strnull; } }
+	    maxcnt "widget/component" { path="/sys/cmp/smart_field.cmp"; field=maxcnt; width=155; label_width=70; form=criteria_params_form; text="Max:"; maxc_hints "widget/hints" { style=strnull; } }
+	    }
+
+	desigcnt_hbox "widget/hbox"
+	    {
+	    condition=0;
+	    height=24;
+
+	    mindesig "widget/component" { path="/sys/cmp/smart_field.cmp"; field=mindesig; width=235; label_width=150; form=criteria_params_form; text="# of Designations, Min:"; dcmin_hints "widget/hints" { style=strnull; } }
+	    maxdesig "widget/component" { path="/sys/cmp/smart_field.cmp"; field=maxdesig; width=155; label_width=70; form=criteria_params_form; text="Max:"; dcmax_hints "widget/hints" { style=strnull; } }
+	    }
+
+
+	gift_dates "widget/hbox"
+	    {
+	    height=24;
+	    startdate "widget/component"
+		{
+		form=criteria_params_form;
+		path="/sys/cmp/smart_field.cmp";
+		field=start;
+		text="Giving Between:";
+		width=235;
+		label_width=150;
+		ctl_type=datetime;
+		date_only=1; default_time="00:00:00";
+		}
+	    enddate "widget/component"
+		{
+		form=criteria_params_form;
+		path="/sys/cmp/smart_field.cmp";
+		field=end;
+		text="And:";
+		width=155;
+		label_width=70;
+		ctl_type=datetime;
+		date_only=1; default_time="23:59:59";
+		}
+	    }
+
+	length_hbox "widget/hbox"
+	    {
+	    height=24;
+	    length_min "widget/component" { path="/sys/cmp/smart_field.cmp"; field=lengthmin; height=24; width=235; label_width=150; form=criteria_params_form; text="Giving Len., Months, Min:"; ctl_type=editbox; lenmin_hints "widget/hints" { style=strnull; } }
+	    length_max "widget/component" { path="/sys/cmp/smart_field.cmp"; field=lengthmax; height=24; width=155; label_width=70; form=criteria_params_form; text="Max:"; ctl_type=editbox; lenmax_hints "widget/hints" { style=strnull; } }
+	    }
+
+	lapse_hbox "widget/hbox"
+	    {
+	    height=24;
+	    lapsed_min "widget/component" { path="/sys/cmp/smart_field.cmp"; field=lapsedmin; height=24; width=235; label_width=150; form=criteria_params_form; text="Lapsed Days, Min:"; ctl_type=editbox; lmin_hints "widget/hints" { style=strnull; } }
+	    lapsed_max "widget/component" { path="/sys/cmp/smart_field.cmp"; field=lapsedmax; height=24; width=155; label_width=70; form=criteria_params_form; text="Max:"; ctl_type=editbox; lmax_hints "widget/hints" { style=strnull; } }
+	    }
+
+	cur_stat "widget/component" { path="/sys/cmp/smart_field.cmp"; field=curstat; height=24; width=300; label_width=150; form=criteria_params_form; text="Current Status:"; ctl_type=dropdown; sql="select label='Already Lapsed', value=0; select label='Lapsing', value=1; select label='Current', value=2"; numdisplay=12; }
+
+	changes "widget/component" { path="/sys/cmp/smart_field.cmp"; field=changes; height=24; width=300; label_width=150; form=criteria_params_form; text="Changes:"; ctl_type=dropdown; sql="select label='Decrease', value='DEC'; select label='Increase', value='INC'; select label='Extra Amount', value='EXT'; select label='First Gift', value='FIR'; select label='Last Gift', value='LST'; select label='Increase/Extra/First', value='INC,EXT,FIR'; select label='Decrease/Last', value='DEC,LST';"; numdisplay=12; }
+	}
+    }

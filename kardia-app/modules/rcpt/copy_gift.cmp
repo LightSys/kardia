@@ -1,0 +1,189 @@
+$Version=2$
+copy_gift "widget/component-decl"
+    {
+    // Copy a gift - process
+    Copy "widget/component-decl-action" { }
+    Copied "widget/component-decl-event" { }
+    copy_cn "widget/connector"
+	{
+	event=Copy;
+	//event_confirm=runclient('Starting copy, ledger=' + :a_ledger_number + ', batch=' + :a_batch_number + ', period=' + :a_period + ', gift=' + isnull(:a_gift_number, 'null') + ', rcptno=' + :a_receipt_number + ', oldbatch=' + :old_a_batch_number + ', oldgift=' + :old_a_gift_number);
+	target=copy_osrc_1;
+	action=QueryParam;
+	event_all_params=1;
+	}
+
+    copy_osrc_1 "widget/osrc"
+	{
+	// Values for the current gift.  Note: the current gift may have already been saved, or
+	// it may be new/unsaved, so we may be modifying the rcpt record or updating it.
+	cp_a_ledger_number "widget/parameter"	{ param_name=a_ledger_number; type=string; }
+	cp_a_batch_number "widget/parameter"	{ param_name=a_batch_number; type=integer; }
+	cp_a_period "widget/parameter"		{ param_name=a_period; type=string; }
+	cp_a_gift_number "widget/parameter"	{ param_name=a_gift_number; type=integer; }
+	cp_a_rcpt_number "widget/parameter"	{ param_name=a_receipt_number; type=string; }
+
+	// The old gift to copy in
+	old_a_batch_number "widget/parameter"	{ param_name=old_a_batch_number; type=integer; }
+	old_a_gift_number "widget/parameter"	{ param_name=old_a_gift_number; type=integer; }
+
+	// Stuff the user may have already entered in the UI (don't lose)
+	new_postmark "widget/parameter"		{ param_name=new_postmark; type=string; style=strnull; }
+	new_received "widget/parameter"		{ param_name=new_received; type=string; style=strnull; }
+	new_rcptdes "widget/parameter"		{ param_name=new_rcptdes; type=string; style=strnull; }
+	new_ackrcptdes "widget/parameter"	{ param_name=new_ackrcptdes; type=string; style=strnull; }
+	new_gifttype "widget/parameter"		{ param_name=new_gifttype; type=string; style=strnull; }
+	new_adminnote "widget/parameter"	{ param_name=new_adminnote; type=string; style=strnull; }
+	new_donor "widget/parameter"		{ param_name=new_donor; type=string; style=strnull; }
+	new_ackdonor "widget/parameter"		{ param_name=new_ackdonor; type=string; style=strnull; }
+	new_viadonor "widget/parameter"		{ param_name=new_viadonor; type=string; style=strnull; }
+	new_checkno "widget/parameter"		{ param_name=new_checkno; type=string; style=strnull; }
+	new_comment "widget/parameter"		{ param_name=new_comment; type=string; style=strnull; }
+
+	replicasize=2; readahead=2; autoquery=never;
+	
+	sql = " declare object info;
+
+		select
+		    :info:giftnum = :parameters:a_gift_number,
+		    :info:rcptnum = :parameters:a_receipt_number
+		;
+
+		-- Try update
+		update
+		    identity /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g,
+		    /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g2
+		set
+		    :g:a_receipt_number = isnull(:parameters:a_receipt_number, :g:a_receipt_number),
+		    :g:p_donor_partner_id = isnull(:parameters:new_donor, :g:p_donor_partner_id),
+		    :g:p_ack_partner_id = isnull(:parameters:new_ackdonor, condition(:parameters:new_donor == :g2:p_ack_partner_id, null, :g2:p_ack_partner_id)),
+		    :g:p_pass_partner_id = isnull(:parameters:new_viadonor, :g:p_pass_partner_id),
+		    :g:a_gift_postmark_date = isnull(convert(datetime, :parameters:new_postmark), :g:a_gift_postmark_date),
+		    :g:a_gift_received_date = isnull(convert(datetime, :parameters:new_received), :g:a_gift_received_date),
+		    :g:a_receipt_desired = isnull(:parameters:new_rcptdes, isnull(:g:a_receipt_desired, :g2:a_receipt_desired)),
+		    :g:a_ack_receipt_desired = isnull(:parameters:new_ackrcptdes, isnull(:g:a_ack_receipt_desired, condition(:parameters:new_ackdonor == :g2:p_ack_partner_id, :g2:a_ack_receipt_desired, condition(:parameters:new_ackdonor == :g2:p_donor_partner_id, :g2:a_receipt_desired, condition(:parameters:new_ackdonor is null, null, 'I'))))),
+		    :g:a_gift_type = isnull(:parameters:new_gifttype, :g:a_gift_type),
+		    :g:a_amount = isnull(:g2:a_amount, :g:a_amount),
+		    :g:a_comment = isnull(:parameters:new_adminnote, isnull(:g:a_comment, :g2:a_comment))
+		where
+		    :g:a_ledger_number = :parameters:a_ledger_number and
+		    :g:a_batch_number = :parameters:a_batch_number and
+		    :g:a_gift_number = :parameters:a_gift_number and
+		    :parameters:a_gift_number is not null and
+		    :g2:a_ledger_number = :parameters:a_ledger_number and
+		    :g2:a_batch_number = :parameters:old_a_batch_number and
+		    :g2:a_gift_number = :parameters:old_a_gift_number
+		;
+
+		-- Try insert
+		insert
+		    /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows
+		select
+		    :parameters:a_ledger_number,
+		    :parameters:a_batch_number,
+		    :parameters:a_period,
+		    :g:a_amount,
+		    a_posted = 0,
+		    a_posted_to_gl = 0,
+		    a_gift_type = isnull(:parameters:new_gifttype, :g:a_gift_type),
+		    :parameters:a_receipt_number,
+		    p_donor_partner_id = isnull(:parameters:new_donor, :g:p_donor_partner_id),
+		    p_ack_partner_id = isnull(:parameters:new_ackdonor, :g:p_ack_partner_id),
+		    p_pass_partner_id = isnull(:parameters:new_viadonor, :g:p_pass_partner_id),
+		    a_receipt_sent = 0,
+		    a_receipt_desired = isnull(:parameters:new_rcptdes, condition(:parameters:new_donor == :g:p_donor_partner_id, :g:a_receipt_desired, condition(:parameters:new_donor == :g:p_ack_partner_id, :g:a_ack_receipt_desired, 'I'))),
+		    a_ack_receipt_sent = 0,
+		    a_ack_receipt_desired = isnull(:parameters:new_ackrcptdes, condition(:parameters:new_ackdonor == :g:p_ack_partner_id, :g:a_ack_receipt_desired, condition(:parameters:new_ackdonor == :g:p_donor_partner_id, :g:a_receipt_desired, condition(:parameters:new_ackdonor is null, null, 'I')))),
+		    a_first_gift = 0,
+		    :g:a_goods_provided,
+		    a_gift_received_date = isnull(convert(datetime,:parameters:new_received), getdate()),
+		    a_gift_postmark_date = convert(datetime, :parameters:new_postmark),
+		    a_comment = isnull(:parameters:new_adminnote, :g:a_comment),
+		    s_date_created = getdate(),
+		    s_created_by = user_name(),
+		    s_date_modified = getdate(),
+		    s_modified_by = user_name()
+		from
+		    /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g
+		where
+		    :g:a_ledger_number = :parameters:a_ledger_number and
+		    :g:a_batch_number = :parameters:old_a_batch_number and
+		    :g:a_gift_number = :parameters:old_a_gift_number and
+		    :parameters:a_gift_number is null
+		;
+
+		select
+		    :info:giftnum = isnull(:info:giftnum, :__inserted:a_gift_number),
+		    :info:rcptnum = isnull(:info:rcptnum, :__inserted:a_receipt_number)
+		;
+
+		-- Ensure there are no existing line items
+		delete
+		    /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows
+		where
+		    :a_ledger_number = :parameters:a_ledger_number and
+		    :a_batch_number = :parameters:a_batch_number and
+		    :a_gift_number = :parameters:a_gift_number
+		;
+
+		-- Copy across the items
+		insert
+		    /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows
+		select
+		    :parameters:a_ledger_number,
+		    :parameters:a_batch_number,
+		    a_gift_number = :info:giftnum,
+		    :parameters:a_period,
+		    :i:a_cost_center,
+		    :i:a_account_code,
+		    :i:a_amount,
+		    a_recv_document_id = :parameters:new_checkno,
+		    a_posted = 0,
+		    a_posted_to_gl = 0,
+		    :i:a_gift_admin_fee,
+		    :i:a_gift_admin_subtype,
+		    :i:p_recip_partner_id,
+		    :i:a_confidential,
+		    :i:a_non_tax_deductible,
+		    :i:a_motivational_code,
+		    a_comment = isnull(:parameters:new_comment, :i:a_comment),
+		    p_dn_donor_partner_id = :g:p_donor_partner_id,
+		    p_dn_ack_partner_id = :g:p_ack_partner_id,
+		    p_dn_pass_partner_id = :g:p_pass_partner_id,
+		    a_dn_receipt_number = :parameters:a_receipt_number,
+		    a_dn_gift_received_date = :g:a_gift_received_date,
+		    a_dn_gift_postmark_date = :g:a_gift_postmark_date,
+		    a_dn_gift_type = :g:a_gift_type,
+		    s_date_created = getdate(),
+		    s_created_by = user_name(),
+		    s_date_modified = getdate(),
+		    s_modified_by = user_name()
+		from
+		    /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i,
+		    /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g
+		where
+		    :i:a_ledger_number = :parameters:a_ledger_number and
+		    :i:a_batch_number = :parameters:old_a_batch_number and
+		    :i:a_gift_number = :parameters:old_a_gift_number and
+		    :g:a_ledger_number = :parameters:a_ledger_number and
+		    :g:a_batch_number = :parameters:a_batch_number and
+		    :g:a_gift_number = :info:giftnum
+		;
+
+		-- Return data
+		select
+		    gift_number = :info:giftnum,
+		    receipt_number = :info:rcptnum
+		";
+
+	end_copy "widget/connector"
+	    { 
+	    event=EndQuery;
+	    //event_confirm=runclient('Copy finished, gift=' + isnull(:copy_osrc_1:gift_number, 'null') + ', receipt=' + isnull(:copy_osrc_1:receipt_number, 'null'));
+	    target=copy_gift;
+	    action=Copied;
+	    a_gift_number = runclient(:copy_osrc_1:gift_number);
+	    a_receipt_number = runclient(:copy_osrc_1:receipt_number);
+	    }
+	}
+    }

@@ -58,7 +58,7 @@ plugin_crm_searchreport_engage "system/report"
 		    :ss:s_date_modified,
 		    :ss:s_modified_by,
 		    prevcnt = (select count(1) from /apps/kardia/data/Kardia_DB/p_partner_search_stage/rows ss2 where :ss2:p_search_id = :ss:p_search_id and :ss2:p_sequence < :ss:p_sequence),
-		    stage_description = eval(:p:stage_description_expr),
+		    stage_description = eval(:p:stage_description_expr, 'CPOS'),
 		    :p:icon,
 		    :p:stage_label
 		from
@@ -102,11 +102,12 @@ plugin_crm_searchreport_engage "system/report"
 	{
 	sql = runserver("
 		DECLARE object qinfo;
-
+		DECLARE COLLECTION tmp_collection SCOPE APPLICATION;
+		
 		SELECT
-		    :qinfo:id = :activity_group_id
+		    :qinfo:id = 1
 		FROM
-		    /apps/kardia/modules/crm/timeline.qy?partner_key=" + :results_qy:p_partner_key + "
+		    /apps/kardia/modules/crm/timeline.qy?partner_key=" + :results_qy:partner_key + "
 		;
 		
 		SELECT
@@ -120,9 +121,8 @@ plugin_crm_searchreport_engage "system/report"
 		    :e:p_partner_key,
 		    shortdate = substring(convert(string,:e:e_activity_date),1,11)
 		FROM
-		    /apps/kardia/data/Kardia_DB/e_activity/rows e
+		    COLLECTION tmp_collection
 		WHERE
-		    :e:e_activity_group_id = :qinfo:id and
 		    charindex(rtrim(:e:e_activity_type), 'TAG,TRK,GIFT,NOTE,COMM') > 0
 		ORDER BY
 		    :e:e_activity_date desc

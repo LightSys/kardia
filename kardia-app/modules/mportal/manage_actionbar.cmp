@@ -1,0 +1,101 @@
+$Version=2$
+manage_actionbar "widget/component-decl"
+    {
+    width=1200;
+    height=60;
+    
+    TabSelected "widget/component-decl-event" { }
+    DisableTabButtons "widget/component-decl-action" { }
+
+    disable_all_buttons "widget/connector"
+	{
+	event=DisableTabButtons;
+	target=one_tabbutton;
+	action=SetBackground;
+	Image=runclient("/sys/images/trans_1.gif");
+	}
+
+    // Title/Action bar
+    action_bar "widget/pane"
+	{
+	x=0; y=0; width=1200;
+	height=60;
+	//background="/apps/kardia/images/bg/charcoal_gradient.png";
+	background="/apps/kardia/images/bg/horiz-bar-world-dark-96.png";
+	style=flat;
+	widget_class = crm_iconbar;
+	fl_height=0;
+
+	action_bar_hbox "widget/hbox"
+	    {
+	    x=10; y=0;
+	    width=1180; height=60;
+	    spacing=10;
+
+	    logo_icon "widget/image"
+		{
+		condition=runserver(:this:show_profile_only);
+		source="/apps/kardia/images/artwork/Kardia2011_transcorner.png";
+		y=10;
+		width=56;
+		height=38;
+		}
+
+	    bar_title "widget/label"
+		{
+		width=350;
+		y=11;
+		font_size=32;
+		style=bold;
+		text="Portal Management";
+		fgcolor=white;
+		}
+
+	    tabicon_bar "widget/hbox"
+		{
+		width=754;
+		align=right;
+		spacing=0;
+
+		tabicons "widget/repeat"
+		    {
+		    sql = "select :cx__rowid, :icon, :title from object wildcard '/apps/kardia/modules/*/plugin_mportal_manage_*.cmp' where :sequence is not null and isnull(:enabled,1) = 1 order by :sequence";
+
+		    one_tabbutton "widget/component"
+			{
+			fl_width=0;
+			width=76;
+			active=runserver(:tabicons:cx__rowid == 0);
+			path="/apps/kardia/modules/mportal/button_tab.cmp";
+			text=runserver(:tabicons:title);
+			image=runserver(:tabicons:icon);
+
+			tabbutton_click0 "widget/connector"
+			    {
+			    event=Click;
+			    target=manage_actionbar;
+			    action=TriggerEvent;
+			    EventName=runclient("DisableTabButtons");
+			    }
+
+			tabbutton_click "widget/connector"
+			    {
+			    event=Click;
+			    target=manage_actionbar;
+			    action=TabSelected;
+			    TabIndex=runserver(:tabicons:cx__rowid + 1);
+			    }
+
+			tabbutton_click3 "widget/connector"
+			    {
+			    event=Click;
+			    target=one_tabbutton;
+			    action=SetBackground;
+			    Image=runclient("/apps/kardia/images/bg/lsblue_gradient.png");
+			    }
+			}
+		    }
+		}
+	    }
+	}
+    }

@@ -74,6 +74,7 @@ config_tracks "widget/component-decl"
 				    min_rowheight=16;
 				    max_rowheight=64;
 				    initial_selection=noexpand;
+				    allow_deselection=yes;
 				    nodata_message = "no tracks yet - please add one";
 
 				    ct_t_icon "widget/table-column" { value=runclient("/apps/kardia/images/icons/ionicons-track.svg"); type=image; width=24; image_maxwidth=16; image_maxheight=16; align=center; }
@@ -221,6 +222,7 @@ config_tracks "widget/component-decl"
 				    min_rowheight=16;
 				    max_rowheight=64;
 				    initial_selection=noexpand;
+				    allow_deselection=yes;
 				    nodata_message = "no collaborators yet";
 
 				    tc_t_icon "widget/table-column" { value=runclient(:tcoll_list_osrc:img); type=image; width=24; image_maxwidth=16; image_maxheight=16; align=center; }
@@ -357,6 +359,7 @@ config_tracks "widget/component-decl"
 				    min_rowheight=16;
 				    max_rowheight=64;
 				    initial_selection=noexpand;
+				    allow_deselection=yes;
 				    nodata_message = "no steps yet for this track";
 
 				    cs_t_icon "widget/table-column" { value=runclient("/apps/kardia/images/icons/ionicons-track.svg"); type=image; width=24; image_maxwidth=16; image_maxheight=16; align=center; }
@@ -601,6 +604,7 @@ config_tracks "widget/component-decl"
 				    min_rowheight=16;
 				    max_rowheight=64;
 				    initial_selection=noexpand;
+				    allow_deselection=yes;
 				    nodata_message = "no collaborators yet";
 
 				    sc_t_icon "widget/table-column" { value=runclient(:scoll_list_osrc:img); type=image; width=24; image_maxwidth=16; image_maxheight=16; align=center; }
@@ -704,6 +708,8 @@ config_tracks "widget/component-decl"
 					:r:e_due_days_from_req,
 					:r:e_due_days_from_req_id,
 					:r:e_req_whom,
+					:r:e_is_active,
+					:r:e_req_sequence,
 					whomtxt = condition(:r:e_req_whom == 'E', 'Either', condition(:r:e_req_whom == 'P', 'Partner', 'Organization')),
 					:r:e_req_doc_type_id,
 					:r:e_req_waivable,
@@ -713,11 +719,19 @@ config_tracks "widget/component-decl"
 					:r:s_modified_by
 				    from
 					identity /apps/kardia/data/Kardia_DB/e_engagement_step_req/rows r
+				    order by
+					:e_req_sequence
 				    ";
 			    baseobj="/apps/kardia/data/Kardia_DB/e_engagement_step_req/rows";
-			    replicasize=20;
-			    readahead=20;
+			    replicasize=50;
+			    readahead=50;
 			    autoquery=never;
+
+			    req_seq "widget/rule"
+				{
+				ruletype=osrc_sequence;
+				fieldname=e_req_sequence;
+				}
 
 			    req_link "widget/rule"
 				{
@@ -749,6 +763,9 @@ config_tracks "widget/component-decl"
 				    min_rowheight=16;
 				    max_rowheight=64;
 				    initial_selection=noexpand;
+				    allow_deselection=yes;
+				    textcolor=runclient(condition(:req_osrc:e_is_active, "#ffffff", "#808080"));
+				    textcolorhighlight=runclient(condition(:req_osrc:e_is_active, "#ffffff", "#808080"));
 				    nodata_message = "no requirements yet";
 
 				    req_t_icon "widget/table-column" { value=runclient("/apps/kardia/images/icons/openiconic-task.svg"); type=image; width=24; image_maxwidth=16; image_maxheight=16; align=center; }
@@ -757,7 +774,7 @@ config_tracks "widget/component-decl"
 
 				    req_t_detail "widget/table-row-detail"
 					{
-					width=302; height=240;
+					width=302; height=254;
 
 					req_edit_form "widget/form"
 					    {
@@ -771,8 +788,8 @@ config_tracks "widget/component-decl"
 
 					    req_detail_vbox "widget/vbox"
 						{
-						x=24; y=4; width=266; height=228;
-						spacing=4;
+						x=24; y=4; width=266; height=239;
+						spacing=5;
 
 						req_sepbar "widget/image" { height=1; source="/apps/kardia/images/bg/lsblue_horizsep.png"; }
 						req_spacer "widget/autolayoutspacer" { height=1; }
@@ -780,7 +797,12 @@ config_tracks "widget/component-decl"
 						req_name "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=editbox; field=e_req_name; text="Req. Name:"; height=20; label_width=90; }
 						req_fulfill "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=dropdown; field=e_req_whom; text="Fulfilled By:"; height=20; label_width=90; width=250; sql="select label='Partner', value='P'; select label='Organization', value='O'; select label='Either', value='E'"; }
 						req_fulfilldoc "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=dropdown; field=e_req_doc_type_id; text="Fulfilled Doc:"; height=20; label_width=90; width=250; sql="select label=:e_doc_type_label, value=:e_doc_type_id from /apps/kardia/data/Kardia_DB/e_document_type/rows dt order by :e_doc_type_label"; }
-						req_waivable "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=checkbox; field=e_req_waivable; text="Waivable?"; height=20; label_width=90; }
+						act_waiv_hbox "widget/hbox"
+						    {
+						    height=20;
+						    req_waivable "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=checkbox; field=e_req_waivable; text="Waivable?"; width=120; label_width=90; rw_hints "widget/hints" { style=notnull; } }
+						    req_active "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=checkbox; field=e_is_active; text="Active?"; width=120; label_width=90; ra_hints "widget/hints" { style=notnull; } }
+						    }
 
 						req_sepbar2 "widget/image" { height=1; source="/apps/kardia/images/bg/lsblue_horizsep.png"; }
 						req_spacer2 "widget/autolayoutspacer" { height=1; }
@@ -792,13 +814,38 @@ config_tracks "widget/component-decl"
 
 						req_edit_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
 
-						req_delete "widget/textbutton"
+						req_ctls_hbox "widget/hbox"
 						    {
-						    height=24; width=100; x=100;
-						    text="Delete";
-						    enabled=runclient(:req_edit_form:is_editable);
+						    height=24; spacing=8; align=center;
 
-						    on_req_delete "widget/connector" { event=Click; target=req_edit_form; action=Delete; }
+						    req_delete "widget/textbutton"
+							{
+							height=24; width=80;
+							text="Delete";
+							enabled=runclient(:req_edit_form:is_editable);
+
+							on_req_delete "widget/connector" { event=Click; target=req_edit_form; action=Delete; }
+							}
+						    rup_btn "widget/textbutton"
+							{
+							width=80;
+							height=23;
+							image="/sys/images/ico13a.gif";
+							image_position=left;
+							text = " Up";
+
+							go_rup "widget/connector" { event=Click; target=req_osrc; action=SeqBackward; }
+							}
+						    rdn_btn "widget/textbutton"
+							{
+							width=80;
+							height=23;
+							image="/sys/images/ico12a.gif";
+							image_position=left;
+							text = " Down";
+
+							go_rdn "widget/connector" { event=Click; target=req_osrc; action=SeqForward; }
+							}
 						    }
 						}
 					    }
@@ -833,6 +880,8 @@ config_tracks "widget/component-decl"
 					req_new_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
 					req_new_whom "widget/variable" { fieldname=e_req_whom; req_whom_hints "widget/hints" { default=runclient('E'); } }
 					req_new_waivable "widget/variable" { fieldname=e_req_waivable; req_waivable_hints "widget/hints" { default=runclient(0); } }
+					req_new_active "widget/variable" { fieldname=e_is_active; req_active_hints "widget/hints" { default=runclient(1); } }
+					//req_new_sequence "widget/variable" { fieldname=e_req_sequence; req_seq_hints "widget/hints" { default=runclient(1); } }
 					}
 				    }
 				}

@@ -114,8 +114,11 @@ pay_form_item "widget/component-decl"
 		allow_new = no;
 		allow_query = no;
 		next_form_within = the_vbox;
+		tab_revealed_only = yes;
 
 		saved_cn "widget/connector" { event=DataSaved; target=parent; action=TriggerEvent; EventName=runclient("ItemChanged"); Class=runclient(:pay_form_item:class_code); Type=runclient(:pay_form_item:type_code); }
+		saved_cn2 "widget/connector" { event=DataSaved; target=budget_edit_window; action=Close; }
+		discarded_cn "widget/connector" { event=Discard; target=budget_edit_window; action=Close; }
 
 		item_amt "widget/editbox"
 		    {
@@ -173,7 +176,7 @@ pay_form_item "widget/component-decl"
 		item_target_hbox "widget/hbox"
 		    {
 		    width=93;
-		    spacing=2;
+		    spacing=3;
 
 		    item_target "widget/label"
 			{
@@ -181,7 +184,7 @@ pay_form_item "widget/component-decl"
 			width=80;
 			align=right;
 			//fieldname = a_target_amount;
-			value = runclient("" + :item_form:a_target_amount);
+			value = runclient("" + :item_osrc:a_target_amount);
 			cnUseTarget "widget/connector" { event="Click"; target=item_amt; action="SetValue"; Value = runclient(:item_form:a_target_amount); }
 			}
 		    item_target_edit "widget/imagebutton"
@@ -190,8 +193,16 @@ pay_form_item "widget/component-decl"
 			height=11;
 			y=2;
 			//enabled=runclient(char_length(:item_form:a_target_amount) > 0);
-			image="/apps/kardia/images/icons/pencil.png";
+			image=runserver(condition(:this:readonly, "/apps/kardia/images/icons/pencil_d.png", "/apps/kardia/images/icons/pencil.png"));
 			//disabledimage="/apps/kardia/images/icons/pencil_d.png";
+
+			on_budget_edit "widget/connector"
+			    {
+			    event=Click;
+			    event_condition=runclient(not :pay_form_item:readonly);
+			    target=budget_edit_window;
+			    action=Open;
+			    }
 			}
 		    }
 
@@ -360,6 +371,32 @@ pay_form_item "widget/component-decl"
 		    cnRecalcGross "widget/connector" { event="Click"; target=item_gross_osrc; action="QueryParam"; }
 		    }
 		}
+	    }
+	}
+
+    budget_edit_window "widget/childwindow"
+	{
+	titlebar=no;
+	x=334; y=-1;
+	height=18; width=92;
+	style=dialog;
+	toplevel=yes;
+	modal=no;
+	visible=no;
+
+	focus_on_open "widget/connector"
+	    {
+	    event=Open;
+	    target=item_budget_amt;
+	    action=SetFocus;
+	    }
+
+	item_budget_amt "widget/editbox"
+	    {
+	    x=0; y=0;
+	    height=16; width=90;
+	    fieldname = a_target_amount;
+	    form=item_form;
 	    }
 	}
     }

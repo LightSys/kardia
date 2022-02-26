@@ -1,0 +1,261 @@
+$Version=2$
+manage_pledges "widget/component-decl"
+    {
+    // Manage intent/pledge types
+    width=780; height=580;
+    ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; deploy_to_client=yes; }
+
+    pledge_vbox "widget/vbox"
+	{
+	x=0; y=0; width=780; height=580;
+	spacing=10;
+
+	pledge_osrc "widget/osrc"
+	    {
+	    pl_ledger "widget/parameter" { type=string; param_name=ledger; default=runclient(:ledger:value); }
+
+	    sql = " select
+			:pl:a_ledger_number,
+			:pl:a_pledge_id,
+			:pl:a_intent_type,
+			:pl:a_is_active,
+			:pl:p_donor_partner_id,
+			:pl:a_cost_center,
+			:pl:a_amount,
+			:pl:a_total_amount,
+			:pl:a_pledge_date,
+			:pl:a_start_date,
+			:pl:a_end_date,
+			:pl:a_giving_interval,
+			:pl:a_gift_count,
+			:pl:a_comment,
+			:pl:s_date_created,
+			:pl:s_created_by,
+			:pl:s_date_modified,
+			:pl:s_modified_by,
+			cnt = count(:gi:a_ledger_number),
+			given = isnull(sum(:gi:a_amount), $0),
+			donor = condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
+			:cc:a_cc_desc,
+			:it:a_intent_desc,
+			interval_desc = isnull(:iv:text, 'Every ' + :pl:a_giving_interval + ' months'),
+			start_desc = dateformat(:pl:a_start_date, 'dd-MMM-yyyy'),
+			end_desc = dateformat(:pl:a_end_date, 'dd-MMM-yyyy')
+		    from
+			identity /apps/kardia/data/Kardia_DB/a_pledge/rows pl,
+			/apps/kardia/data/Kardia_DB/a_intent_type/rows it,
+			/apps/kardia/data/Kardia_DB/a_subtrx_gift_intent/rows in,
+			/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows gi,
+			/apps/kardia/data/Kardia_DB/p_partner/rows p,
+			/apps/kardia/data/Kardia_DB/a_cost_center/rows cc,
+			/apps/kardia/data/Kardia_DB/_a_giving_interval/rows iv
+		    where
+			:pl:a_ledger_number = :parameters:ledger and
+			:it:a_ledger_number =* :pl:a_ledger_number and
+			:it:a_intent_type =* :pl:a_intent_type and
+			:in:a_ledger_number =* :pl:a_ledger_number and
+			:in:a_pledge_id =* :pl:a_pledge_id and
+			:gi:a_ledger_number = :in:a_ledger_number and
+			:gi:a_batch_number = :in:a_batch_number and
+			:gi:a_gift_number = :in:a_gift_number and
+			isnull(:gi:a_split_number, -1) = isnull(:in:a_split_number, -1) and
+			:gi:a_posted = 1 and
+			:p:p_partner_key =* :pl:p_donor_partner_id and
+			:cc:a_ledger_number =* :pl:a_ledger_number and
+			:cc:a_cost_center =* :pl:a_cost_center and
+			:iv:tag =* :pl:a_giving_interval
+		    group by
+			:pl:a_ledger_number,
+			:pl:a_pledge_id
+		    having
+			:pl:a_ledger_number is not null
+		    ";
+	    baseobj = "/apps/kardia/data/Kardia_DB/a_pledge/rows";
+	    replicasize=100;
+	    readahead=100;
+
+	    pledge_table "widget/table"
+		{
+		height=546;
+		titlebar=yes;
+		colsep=0;
+		overlap_scrollbar=yes;
+		demand_scrollbar=yes;
+		initial_selection = no;
+		rowheight=null;
+		cellvspacing=4;
+		inner_padding=2;
+		row_border_radius=6;
+		row_shadow_radius=2;
+		row_shadow_offset=1;
+		row_shadow_color="#a0a0a0";
+		row_shadow_angle=135;
+
+		pt_info "widget/table-column"
+		    {
+		    width=600;
+		    title="Pledge/Intent";
+		    value=runclient(
+			    condition(:pledge_osrc:donor is not null, :pledge_osrc:donor + ': ', '')
+			    + condition(:pledge_osrc:a_total_amount is not null, 'total gift ' + :pledge_osrc:a_total_amount + ' ', isnull('giving ' + :pledge_osrc:a_amount + ' ', '')) + 'for ' + :pledge_osrc:a_cc_desc
+			    );
+		    style=bold;
+		    wrap=yes;
+		    caption_value=runclient(
+			    condition(:pledge_osrc:a_intent_desc is not null, :pledge_osrc:a_intent_desc + ', ', '')
+			    + condition(:pledge_osrc:interval_desc is not null, :pledge_osrc:interval_desc + ', ', '') 
+			    + condition(:pledge_osrc:start_desc is not null, 'from ' + :pledge_osrc:start_desc + ', ', '')
+			    + condition(:pledge_osrc:end_desc is not null, 'ends ' + :pledge_osrc:end_desc + ', ', '')
+			    + condition(:pledge_osrc:a_gift_count is not null, 'for ' + :pledge_osrc:a_gift_count + ' gift' + condition(:pledge_osrc:a_gift_count == 1, '', 's') + ', ', '')
+			    + condition(:pledge_osrc:a_comment is not null, :pledge_osrc:a_comment + ', ', '')
+			    - ', '
+			    );
+		    }
+		pl_active "widget/table-column" { title="Active?"; width=80; type=check; fieldname=a_is_active; align=center; }
+		pl_amt "widget/table-column" { title="Given"; width=100; value=runclient('' + :pledge_osrc:given + isnull(' / ' + :pledge_osrc:a_total_amount, '') + ' (' + :pledge_osrc:cnt + ')'); align=center; }
+
+		pledge_detail "widget/table-row-detail"
+		    {
+		    width=780; height=198;
+		    show_on_new=1;
+
+		    pledge_detail_pane "widget/pane"
+			{
+			x=8; y=5; width=762; height=188;
+			style=flat;
+			bgcolor="#f8f8f8";
+			border_radius=4;
+
+			pledge_detail_vbox "widget/vbox"
+			    {
+			    x=10; y=10; width=610; height=168;
+			    spacing=8;
+			    column_width=280;
+			    cellsize=20;
+
+			    pledge_form "widget/form"
+				{
+				new_def_gc "widget/connector" { event=New; target=p_cnt; action=SetValue; Value=runclient(null); }
+
+				p_type "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=dropdown; field=a_intent_type; text="Type:"; sql="select :a_intent_desc, :a_intent_type, selected=condition(:a_intent_type == 'I', 1, 0), grp=:a_allow_daf from /apps/kardia/data/Kardia_DB/a_intent_type/rows order by :a_intent_desc"; numdisplay=5; }
+				p_active "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=checkbox; field=a_is_active; text="Active?"; pa_hints "widget/hints" { default=1; style=notnull; } }
+				p_donor "widget/component"
+				    {
+				    height=20;
+				    path="/apps/kardia/modules/base/field_p_partner_key_with_new.cmp";
+				    label="Donor";
+				    object_name="Person";
+				    field="p_donor_partner_id";
+				    }
+				p_fund "widget/component"
+				    {
+				    height=20;
+				    path="/apps/kardia/modules/base/editbox_table.cmp";
+				    field='a_cost_center';
+				    text='Fund:';
+				    label_width=100;
+				    width=280;
+				    popup_width=280;
+				    popup_sql=runserver("select value = :c:a_cost_center, label = :c:a_cost_center + ' - ' + condition(isnull(:cr:a_receiptable,0) = 1, :c:a_cc_desc + ' (legacy # ' + :c:a_legacy_code + ')', '** CLOSED **') from /apps/kardia/data/Kardia_DB/a_cost_center/rows c, /apps/kardia/data/Kardia_DB/a_cc_receipting/rows cr where :c:a_is_posting = 1 and :c:a_ledger_number = " + quote(:this:ledger) + " and :cr:a_ledger_number =* :c:a_ledger_number and :cr:a_cost_center =* :c:a_cost_center");
+				    search_field_list="a_cost_center*,*a_cc_desc*,a_legacy_code*";
+				    key_name="a_cost_center";
+				    object_name="Fund / Cost Center";
+				    popup_text="Select Designation:";
+				    empty_desc="optional";
+
+				    p_fund_hints "widget/hints" { style=applyonchange,uppercase; }
+				    }
+
+				p_amt "widget/component" { width=200; path="/sys/cmp/smart_field.cmp"; ctl_type=editbox; field=a_amount; text="Recur. Amount:"; }
+				p_tamt "widget/component" { width=200; path="/sys/cmp/smart_field.cmp"; ctl_type=editbox; field=a_total_amount; text="Total Amount:"; }
+				p_interval "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=dropdown; field=a_giving_interval; text="How Often:"; sql="select :text, :tag from /apps/kardia/data/Kardia_DB/_a_giving_interval/rows order by :tag"; numdisplay=15; pi_default "widget/hints" { default=runclient(1); } }
+				p_cnt "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=editbox; field=a_gift_count; width=160; text="# Gifts:"; }
+				p_pdate "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=datetime; field=a_pledge_date; text="Date Made:"; date_only=1; default_time="12:00:00"; p_pdate_hints "widget/hints" { default=runclient(getdate()); } }
+				p_start "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=datetime; field=a_start_date; text="Starting:"; date_only=1; default_time="00:00:00"; p_start_hints "widget/hints" { default=runclient(getdate()); } }
+				p_end "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=datetime; field=a_end_date; text="Ending:"; date_only=1; default_time="23:59:59"; }
+				p_comm "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=editbox; field=a_comment; text="Comment:"; }
+
+
+				pledge_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
+
+				ledger_var "widget/variable" { fieldname=a_ledger_number; type=string; lv_hints "widget/hints" { default=runclient(:ledger:value); } }
+				}
+			    }
+
+			pledge_ctls_vbox "widget/vbox"
+			    {
+			    x=620; y=10; width=130; height=130;
+			    spacing=8;
+
+			    save_btn "widget/textbutton"
+				{
+				width=130;
+				height=24;
+				text="Save";
+				enabled=runclient(:pledge_form:is_savable);
+				on_save "widget/connector" { event=Click; target=pledge_form; action=Save; }
+				}
+
+			    discard_btn "widget/textbutton"
+				{
+				width=130;
+				height=24;
+				text="Cancel";
+				enabled=runclient(:pledge_form:is_discardable);
+				on_discard "widget/connector" { event=Click; target=pledge_form; action=Discard; }
+				}
+
+			    delete_btn "widget/textbutton"
+				{
+				width=130;
+				height=24;
+				text="Delete";
+				enabled=runclient(:pledge_form:is_editable and :pledge_osrc:cnt == 0);
+				on_delete "widget/connector" { event=Click; target=pledge_form; action=Delete; }
+				}
+			    }
+			}
+		    }
+		}
+	    }
+
+	ctls_hbox "widget/hbox"
+	    {
+	    height=24;
+	    spacing=10;
+
+	    search "widget/component"
+		{
+		width=226;
+		path="/apps/kardia/modules/base/field_search.cmp";
+		empty_description="search for pledges";
+
+		on_search "widget/connector"
+		    {
+		    event=Search;
+		    target=pledge_osrc;
+		    action=QueryText;
+		    query=runclient(:query);
+		    use_having=1;
+		    cx__case_insensitive = 1;
+		    field_list="*donor*,a_cost_center,*a_cc_desc*,p_donor_partner_id,*a_comment*";
+		    }
+		}
+
+	    buttons_hbox "widget/hbox"
+		{
+		width=544;
+		align=right;
+
+		new_ctl "widget/textbutton"
+		    {
+		    width=130;
+		    height=24;
+		    text="New Pledge/Intent";
+		    enabled=runclient(:pledge_form:is_newable);
+		    on_new "widget/connector" { event=Click; target=pledge_form; action=New; }
+		    }
+		}
+	    }
+	}
+    }

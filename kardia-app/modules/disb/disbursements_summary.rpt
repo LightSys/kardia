@@ -75,6 +75,32 @@ disbursements_summary "system/report"
 	sum_total "report/aggregate" { compute="sum(:total)"; reset=0; }
 	}
 
+    disb_by_cash_qy "report/query"
+	{
+	sql = runserver("
+		select
+			:d:a_cash_account_code,
+			:a:a_acct_desc,
+			total = isnull(sum(:a_amount), $0.00),
+			cnt = count(1),
+			gltotal = (select $0 - sum(:a_amount) from /apps/kardia/data/Kardia_DB/a_transaction/rows t where :t:a_ledger_number = :d:a_ledger_number and :t:a_origin = 'CD' and :t:a_period = :this:period and :t:a_account_code = :d:a_cash_account_code)
+		from
+			/apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows d,
+			/apps/kardia/data/Kardia_DB/a_account/rows a
+		where
+			:d:a_ledger_number = :this:ledger and
+			:d:a_period = :this:period and
+			:d:a_voided = 0 and
+			:a:a_account_code = :d:a_cash_account_code and
+			:a:a_ledger_number = :d:a_ledger_number
+		group by
+			:d:a_cash_account_code
+		");
+	sum_cnt "report/aggregate" { compute="sum(:cnt)"; reset=0; }
+	sum_total "report/aggregate" { compute="sum(:total)"; reset=0; }
+	sum_gltotal "report/aggregate" { compute="sum(:gltotal)"; reset=0; }
+	}
+
     ledger_form "report/form"
 	{
 	source = ledger_qy, period_qy;
@@ -89,6 +115,8 @@ disbursements_summary "system/report"
 	    t_d3 "report/data" { value = runserver("Requested by " + user_name() + " on " + getdate() + "\n"); }
 	    t_d4 "report/data" { condition=runserver(:this:unposted); value = runserver("*** WARNING:  GL DATA INCLUDES UNPOSTED TRANSACTIONS ***\n"); }
 	    }
+
+	sep0 "report/data" { value="By Batch:\n"; font=helvetica; style=bold; }
 
 	table "report/table"
 	    {
@@ -140,7 +168,7 @@ disbursements_summary "system/report"
 		font=courier;
 		fontsize=8;
 		topborder=0.3;
-		marginbottom=1.0;
+		marginbottom=0.1;
 
 		s_batch "report/table-cell" { value=runserver(""); align=left; }
 		s_x1 "report/table-cell" { value=runserver(""); align=left; }
@@ -149,6 +177,67 @@ disbursements_summary "system/report"
 		s_disb "report/table-cell" { value=runserver(:disb_qy:sum_total); align=right; }
 		s_gl "report/table-cell" { value=runserver(:gl_qy:sum_total); align=right; }
 		s_diff "report/table-cell" { value=runserver(condition(:gl_qy:sum_total - :disb_qy:sum_total = $0, '', 'X')); align=right; }
+		}
+	    }
+
+	sep1 "report/data" { value="\n\nBy Cash Account:\n"; font=helvetica; style=bold; }
+
+	table2 "report/table"
+	    {
+	    x=0; width=80; height=0;
+	    columns=6;
+	    widths=7,40.8,9,9,9,3;
+	    colsep=0.8;
+	    source=disb_by_cash_qy;
+	    topborder=0.3;
+	    bottomborder=0.3;
+	    nullformat="-";
+	    moneyformat = "###,###,###.00-";
+	    dateformat = "dd-MMM-yyyy";
+
+	    tbl_hdr "report/table-row"
+		{
+		header=yes;
+		font=helvetica;
+		fontsize=8;
+		bottomborder=0.05;
+
+		h_batch "report/table-cell" { value='Account'; align=center; style=bold; }
+		h_desc "report/table-cell" { value='Description'; align=center; style=bold; }
+		h_cnt "report/table-cell" { value='Count'; align=center; style=bold; }
+		h_disb "report/table-cell" { value='Disb. Total'; align=center; style=bold; }
+		h_gl "report/table-cell" { value='GL Total'; align=center; style=bold; }
+		h_diff "report/table-cell" { value='Diff'; align=center; style=bold; }
+		}
+
+	    tbl_row "report/table-row"
+		{
+		font=courier;
+		fontsize=8;
+		marginbottom=0.0;
+
+		d_batch "report/table-cell" { value=runserver(:disb_by_cash_qy:a_cash_account_code); align=left; }
+		d_desc "report/table-cell" { value=runserver(:disb_by_cash_qy:a_acct_desc); align=left; font=helvetica; }
+		d_cnt "report/table-cell" { value=runserver(:disb_by_cash_qy:cnt); align=right; }
+		d_disb "report/table-cell" { value=runserver(:disb_by_cash_qy:total); align=right; }
+		d_gl "report/table-cell" { value=runserver(:disb_by_cash_qy:gltotal); align=right; }
+		d_diff "report/table-cell" { value=runserver(condition(:disb_by_cash_qy:total - :disb_by_cash_qy:gltotal = $0, '', 'X')); align=right; }
+		}
+
+	    tbl_sum_all "report/table-row"
+		{
+		summary=yes;
+		font=courier;
+		fontsize=8;
+		topborder=0.3;
+		marginbottom=0.1;
+
+		s_batch "report/table-cell" { value=runserver(""); align=left; }
+		s_x2 "report/table-cell" { value=runserver("GRAND TOTAL:"); align=right; }
+		s_cnt "report/table-cell" { value=runserver(:disb_by_cash_qy:sum_cnt); align=right; }
+		s_disb "report/table-cell" { value=runserver(:disb_by_cash_qy:sum_total); align=right; }
+		s_gl "report/table-cell" { value=runserver(:disb_by_cash_qy:sum_gltotal); align=right; }
+		s_diff "report/table-cell" { value=runserver(condition(:disb_by_cash_qy:sum_gltotal - :disb_by_cash_qy:sum_total = $0, '', 'X')); align=right; }
 		}
 	    }
 	}

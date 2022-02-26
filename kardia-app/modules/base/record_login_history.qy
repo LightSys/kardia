@@ -1,0 +1,44 @@
+$Version=2$
+record_login_history "system/query"
+    {
+    sql = " insert
+		    /apps/kardia/data/Kardia_DB/s_user_loginhistory/rows
+	    select
+		    s_username = user_name(),
+		    s_first_seen = getdate(),
+		    s_last_seen = getdate(),
+		    s_date_created = getdate(),
+		    s_created_by = user_name(),
+		    s_date_modified = getdate(),
+		    s_modified_by = user_name()
+	    having
+		    (select count(1) from /apps/kardia/data/Kardia_DB/s_user_loginhistory/rows where :s_username = user_name() and dateadd(minute, 15, :s_date_modified) >= getdate()) = 0
+	    ;
+
+	    update
+		    /apps/kardia/data/Kardia_DB/s_user_loginhistory/rows h
+	    set
+		    :h:s_last_seen = (select max(:a:last_activity) from /sys/cx.sysinfo/session/apps a where :a:username = user_name()),
+		    :h:s_date_modified = getdate(),
+		    :h:s_modified_by = user_name()
+	    where
+		    :h:s_username = user_name() and
+		    dateadd(minute, 15, :h:s_date_modified) >= getdate()
+	    ;
+
+	    insert
+		    /apps/kardia/data/Kardia_DB/s_user_data/rows
+	    select
+		    s_username = user_name(),
+		    s_status = '',
+		    s_date_created = getdate(),
+		    s_created_by = user_name(),
+		    s_date_modified = getdate(),
+		    s_modified_by = user_name()
+	    on duplicate
+		    :s_username
+	    update set
+		    :s_date_modified = getdate(),
+		    :s_modified_by = user_name()
+	    ";
+    }

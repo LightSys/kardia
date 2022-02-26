@@ -442,8 +442,12 @@ alter table c_chat
 	add constraint c_public_idx unique nonclustered (c_public, c_chat_id)
 go
 
+alter table t_project
+	add constraint t_parent_idx unique nonclustered (t_parent_project_id, t_project_id)
+go
+
 alter table t_sprint
-	add constraint t_sprint_proj_idx unique nonclustered (t_project_id, t_sprint_id)
+	add constraint t_sprint_idx unique nonclustered (t_sprint_id)
 go
 
 alter table t_sprint_time

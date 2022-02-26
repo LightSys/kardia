@@ -294,7 +294,8 @@ gift_import "widget/component-decl"
 				      (:parameters:pstat = 'I' and :a_batch_number is not null) or
 				      ((:parameters:pstat = 'R' or :parameters:pstat = 'RQ') and :a_batch_number is null and :i_eg_donormap_confidence == 2 and :i_eg_fundmap_confidence == 2 and :i_eg_acctmap_confidence == 2 and :i_eg_status == 'paid') or
 				      ((:parameters:pstat = 'Q' or :parameters:pstat = 'RQ') and :a_batch_number is null and (isnull(:i_eg_donormap_confidence,0) < 2 or isnull(:i_eg_fundmap_confidence,0) < 2 or isnull(:i_eg_acctmap_confidence,0) < 2) and :i_eg_status == 'paid') or
-				      (:parameters:pstat = 'N' and :i_eg_status == 'pending')
+				      (:parameters:pstat = 'N' and :i_eg_status == 'pending') or
+				      (:parameters:pstat = 'N' and :i_eg_status == 'cleared')
 				    )
 			    ORDER BY
 				    :eg:i_eg_gift_trx_date desc
@@ -647,7 +648,7 @@ gift_import "widget/component-decl"
 					imported = (select count(1) from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows where :a_batch_number is not null),
 					ready = (select count(1) from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows where :a_batch_number is null and :i_eg_donormap_confidence == 2 and :i_eg_fundmap_confidence == 2 and :i_eg_acctmap_confidence == 2 and :i_eg_status == 'paid'),
 					need_qa = (select count(1) from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows where :a_batch_number is null and (isnull(:i_eg_donormap_confidence,0) < 2 or isnull(:i_eg_fundmap_confidence,0) < 2 or isnull(:i_eg_acctmap_confidence,0) < 2) and :i_eg_status == 'paid'),
-					pending = (select count(1) from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows where :i_eg_status == 'pending'),
+					pending = (select count(1) from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows where :i_eg_status == 'pending' or :i_eg_status = 'cleared'),
 					mostrecent = (select substring(convert(string,max(:i_eg_gift_trx_date)),1,11) from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows ),
 					notimpamount = (select sum(:i_eg_gift_amount) from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows where :a_batch_number is null and :i_eg_status != 'returned' )
 				";
@@ -657,12 +658,12 @@ gift_import "widget/component-decl"
 
 			summary_form "widget/form"
 			    {
-			    numimported "widget/component" { path="/sys/cmp/smart_field.cmp"; x=150; height=16; y=4; width=170; label_width=140; text="Total Imported:"; field=imported; color=white; ctl_type=label; }
-			    numready "widget/component" { path="/sys/cmp/smart_field.cmp"; x=150; height=16; y=20; width=170; label_width=140; text="Ready for Import:"; field=ready; color=white; ctl_type=label; }
-			    numneed_qa "widget/component" { path="/sys/cmp/smart_field.cmp"; x=320; height=16; y=4; width=170; label_width=140; text="Needing QA:"; field=need_qa; color=white; ctl_type=label; }
-			    numpending "widget/component" { path="/sys/cmp/smart_field.cmp"; x=320; height=16; y=20; width=170; label_width=140; text="Pending from Service:"; field=pending; color=white; ctl_type=label; }
-			    mostrecent "widget/component" { path="/sys/cmp/smart_field.cmp"; x=490; height=16; y=4; width=270; label_width=140; text="Most Recent Gift:"; field=mostrecent; color=white; ctl_type=label; }
-			    notimpamt "widget/component" { path="/sys/cmp/smart_field.cmp"; x=490; height=16; y=20; width=270; label_width=140; text="To Be Imported:"; field=notimpamount; color=white; ctl_type=label; }
+			    numimported "widget/component" { path="/sys/cmp/smart_field.cmp"; x=150; height=16; y=2; width=170; label_width=140; text="Total Imported:"; field=imported; color=white; ctl_type=label; }
+			    numready "widget/component" { path="/sys/cmp/smart_field.cmp"; x=150; height=16; y=18; width=170; label_width=140; text="Ready for Import:"; field=ready; color=white; ctl_type=label; }
+			    numneed_qa "widget/component" { path="/sys/cmp/smart_field.cmp"; x=320; height=16; y=2; width=170; label_width=140; text="Needing QA:"; field=need_qa; color=white; ctl_type=label; }
+			    numpending "widget/component" { path="/sys/cmp/smart_field.cmp"; x=320; height=16; y=18; width=170; label_width=140; text="Pending from Service:"; field=pending; color=white; ctl_type=label; }
+			    mostrecent "widget/component" { path="/sys/cmp/smart_field.cmp"; x=490; height=16; y=2; width=270; label_width=140; text="Most Recent Gift:"; field=mostrecent; color=white; ctl_type=label; }
+			    notimpamt "widget/component" { path="/sys/cmp/smart_field.cmp"; x=490; height=16; y=18; width=270; label_width=140; text="To Be Imported:"; field=notimpamount; color=white; ctl_type=label; }
 			    }
 			}
 		    }
@@ -1810,10 +1811,11 @@ gift_import "widget/component-decl"
 			    a_amount = sum(:i_eg_gift_amount),
 			    a_posted = 0,
 			    a_posted_to_gl = 0,
-			    a_gift_type = condition(:i_eg_gift_pmt_type == 'ACH', 'E', 'D'),
+			    a_gift_type = condition(:i_eg_gift_pmt_type == 'ACH', 'E', condition(:i_eg_gift_pmt_type == 'Paypal', 'P', 'D')),
 			    a_receipt_number = '', -- to be assigned later
 			    p_donor_partner_id = :p_donor_partner_key,
 			    a_receipt_sent = 0,
+			    a_ack_receipt_sent = 0,
 			    a_receipt_desired = isnull((select :p_receipt_desired from /apps/kardia/data/Kardia_DB/p_donor/rows d where :d:p_partner_key = :eg:p_donor_partner_key and :d:a_gl_ledger_number = :eg:a_ledger_number), isnull((select first(:a_config_value) from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'RcptEGDefRcpt' and :a_ledger_number = :eg:a_ledger_number), 'I')),
 			    a_first_gift = 0,
 			    a_goods_provided = $0,
@@ -1872,6 +1874,7 @@ gift_import "widget/component-decl"
 			    a_dn_gift_received_date = :i_eg_gift_trx_date,
 			    a_dn_receipt_number = (select :a_receipt_number from /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g where :g:a_batch_number = convert(integer, :parameters:batchno) and :g:p_donor_partner_id = :eg:p_donor_partner_key and :g:a_ledger_number = :eg:a_ledger_number),
 			    i_eg_source_key = :eg:name,
+			    a_item_intent_code = condition(:i_eg_gift_interval = 'MONTHLY', 'M', condition(:i_eg_gift_interval = 'QUARTERLY', 'Q', condition(:i_eg_gift_interval = 'ANNUAL', 'Y', null))),
 			    s_date_created = getdate(),
 			    s_created_by = user_name(),
 			    s_date_modified = getdate(),
@@ -1881,6 +1884,52 @@ gift_import "widget/component-decl"
 		    where
 			    :a_batch_number = convert(integer, :parameters:batchno) and
 			    :a_ledger_number = :parameters:ledger
+		    ;
+
+		    insert into
+			    /apps/kardia/data/Kardia_DB/a_subtrx_gift_intent/rows
+		    select
+			    :a_ledger_number,
+			    :a_batch_number,
+			    a_gift_number = (select :a_gift_number from /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g where :g:a_batch_number = convert(integer, :parameters:batchno) and :g:p_donor_partner_id = :eg:p_donor_partner_key and :g:a_ledger_number = :eg:a_ledger_number),
+			    a_split_number = (select :a_split_number from /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i where :i:a_batch_number = convert(integer, :parameters:batchno) and :i:p_dn_donor_partner_id = :eg:p_donor_partner_key and :i:a_ledger_number = :eg:a_ledger_number and :i:i_eg_source_key = :eg:name),
+			    a_intent_type = 'R',
+			    a_amount = :i_eg_gift_amount,
+			    a_start_date = :i_eg_gift_date,
+			    a_giving_interval = condition(:i_eg_gift_interval = 'MONTHLY', 1, condition(:i_eg_gift_interval = 'QUARTERLY', 3, condition(:i_eg_gift_interval = 'ANNUAL', 12, null))),
+			    p_dn_donor_partner_id = :eg:p_donor_partner_key,
+			    a_autogen = 0,
+			    a_cost_center = :eg:a_cost_center,
+			    s_date_created = getdate(),
+			    s_created_by = user_name(),
+			    s_date_modified = getdate(),
+			    s_modified_by = user_name()
+		    from
+			    /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows eg
+		    where
+			    :a_batch_number = convert(integer, :parameters:batchno) and
+			    :a_ledger_number = :parameters:ledger and
+			    (:i_eg_gift_interval = 'MONTHLY' or :i_eg_gift_interval = 'QUARTERLY' or :i_eg_gift_interval = 'ANNUAL')
+		    ;
+
+		    update
+			    identity /apps/kardia/data/Kardia_DB/a_subtrx_gift_intent/rows in,
+			    /apps/kardia/data/Kardia_DB/a_pledge/rows p
+		    set
+			    :in:a_pledge_id = :p:a_pledge_id,
+			    :in:a_giving_interval = :p:a_giving_interval
+		    where
+			    :in:a_pledge_id is null and
+			    :in:a_ledger_number = :parameters:ledger and
+			    :in:a_batch_number = convert(integer, :parameters:batchno) and
+			    :p:a_ledger_number = :in:a_ledger_number and
+			    :p:a_giving_interval = isnull(:in:a_giving_interval, :p:a_giving_interval) and
+			    :p:a_amount = :in:a_amount and
+			    :p:p_donor_partner_id = :in:p_dn_donor_partner_id and
+			    :p:a_cost_center = :in:a_cost_center and
+			    :p:a_is_active = 1 and
+			    isnull(:p:a_start_date, dateadd(day, -1, getdate())) <= getdate() and
+			    isnull(:p:a_end_date, dateadd(day, 1, getdate())) >= getdate()
 		    ";
 
 	    readahead=2;

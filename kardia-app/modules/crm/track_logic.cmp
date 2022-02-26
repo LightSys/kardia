@@ -54,6 +54,29 @@ track_logic "widget/component-decl"
 		    1
 		;
 
+		-- Didn't find a recent step?
+		select
+		    :stepinfo:laststep = :pe:e_step_id,
+		    :stepinfo:lasthist = :pe:e_hist_id,
+		    :stepinfo:lastseq = :s:e_step_sequence,
+		    :stepinfo:lastdesc = :pe:e_desc,
+		    :stepinfo:lastcomm = :pe:e_comments
+		from
+		    /apps/kardia/data/Kardia_DB/e_partner_engagement/rows pe,
+		    /apps/kardia/data/Kardia_DB/e_engagement_step/rows s
+		where
+		    :pe:p_partner_key = :parameters:partner_key and
+		    :pe:e_engagement_id = :parameters:engagement_id and
+		    :s:e_track_id = :pe:e_track_id and
+		    :s:e_step_id = :pe:e_step_id and
+		    :pe:e_is_archived = 0 and
+		    :stepinfo:lastdesc is null
+		order by
+		    :s:e_step_sequence desc
+		limit
+		    1
+		;
+
 		-- Determine the current step ID to use (either specified or next)
 		select
 		    :stepinfo:step = :e_step_id
@@ -112,6 +135,11 @@ track_logic "widget/component-decl"
 		update set
 		    :e_desc = isnull(:parameters:description, :e_desc),
 		    :e_comments = isnull(:parameters:comment, :e_comments),
+		    :e_completion_status = 'I',
+		    :e_completion_date = null,
+		    :e_completed_by = null,
+		    :e_exited_date = null,
+		    :e_exited_by = null,
 		    :s_date_modified = getdate(),
 		    :s_modified_by = user_name()
 		;
@@ -140,6 +168,8 @@ track_logic "widget/component-decl"
 		    :sr:e_req_whom,
 		    :sr:e_req_doc_type_id,
 		    :sr:e_req_waivable,
+		    :sr:e_is_active,
+		    :sr:e_req_sequence,
 		    s_date_created = getdate(),
 		    s_created_by = user_name(),
 		    s_date_modified = getdate(),
@@ -379,6 +409,228 @@ track_logic "widget/component-decl"
 	autoquery=never;
 
 	on_arcendquery "widget/connector" { event=EndQuery; target=track_logic; action=ArchiveDone; partner_key=runclient(:Archive_osrc:partner_key); engagement_id=runclient(:Archive_osrc:engagement_id); track_id=runclient(:Archive_osrc:track_id); }
+	}
+
+    // Delete a step (undo it)
+    DeleteStep "widget/component-decl-action" { }
+    DeleteStepDone "widget/component-decl-event" { }
+    do_DeleteStep "widget/connector"
+	{
+	event=DeleteStep;
+	target=DeleteStep_osrc;
+	action=QueryParam;
+	event_all_params=1;
+	}
+    DeleteStep_osrc "widget/osrc"
+	{
+	dtrack_id "widget/parameter" { param_name=track_id; type=integer; }
+	dstep_id "widget/parameter" { param_name=step_id; type=integer; }
+	dengagement_id "widget/parameter" { param_name=engagement_id; type=integer; }
+	dpartner_key "widget/parameter" { param_name=partner_key; type=string; }
+
+	sql = "	declare object stepinfo;
+
+		-- Look up user's partner ID
+		select
+		    :stepinfo:collab = :p_partner_key
+		from
+		    /apps/kardia/data/Kardia_DB/p_staff/rows
+		where
+		    :p_kardia_login = user_name()
+		;
+
+		-- Find the history ID of the step to be deleted (fixme - pass this one in when we have it)
+		select
+		    :stepinfo:hist_id = :e:e_hist_id,
+		    :stepinfo:status = :e:e_completion_status
+		from
+		    /apps/kardia/data/Kardia_DB/e_partner_engagement/rows e
+		where
+		    :e:p_partner_key = :parameters:partner_key and
+		    :e:e_engagement_id = :parameters:engagement_id and
+		    :e:e_track_id = :parameters:track_id and
+		    :e:e_step_id = :parameters:step_id
+		order by
+		    :e:e_start_date desc
+		limit
+		    1
+		;
+
+		-- Remove any step requirements
+		delete from
+		    identity /apps/kardia/data/Kardia_DB/e_partner_engagement_req/rows er
+		where
+		    :er:p_partner_key = :parameters:partner_key and
+		    :er:e_engagement_id = :parameters:engagement_id and
+		    :er:e_track_id = :parameters:track_id and
+		    :er:e_step_id = :parameters:step_id and
+		    :er:e_hist_id = :stepinfo:hist_id
+		;
+
+		-- Remove the step
+		delete from
+		    identity /apps/kardia/data/Kardia_DB/e_partner_engagement/rows e
+		where
+		    :e:p_partner_key = :parameters:partner_key and
+		    :e:e_engagement_id = :parameters:engagement_id and
+		    :e:e_track_id = :parameters:track_id and
+		    :e:e_step_id = :parameters:step_id and
+		    :e:e_hist_id = :stepinfo:hist_id
+		;
+
+		-- Find out what the previously completed step was, and reactivate it
+		select
+		    :stepinfo:laststep = :e:e_hist_id
+		from
+		    /apps/kardia/data/Kardia_DB/e_partner_engagement/rows e
+		where
+		    :e:p_partner_key = :parameters:partner_key and
+		    :e:e_engagement_id = :parameters:engagement_id and
+		    :e:e_track_id = :parameters:track_id and
+		    :e:e_completion_status = 'C'
+		order by
+		    :e:e_completion_date desc
+		limit
+		    1
+		;
+		update
+		    /apps/kardia/data/Kardia_DB/e_partner_engagement/rows e
+		set
+		    :e:e_completion_status = 'I',
+		    :e:e_completion_date = null,
+		    :e:e_completed_by = null
+		where
+		    :e:p_partner_key = :parameters:partner_key and
+		    :e:e_engagement_id = :parameters:engagement_id and
+		    :e:e_track_id = :parameters:track_id and
+		    :e:e_completion_status = 'C' and
+		    :e:e_hist_id = :stepinfo:laststep and
+		    :stepinfo:status = 'I'
+		;
+
+		-- Remove unneeded (but automatically-added) collaborators
+		delete from
+		    identity /apps/kardia/data/Kardia_DB/e_collaborator/rows c,
+		    /apps/kardia/data/Kardia_DB/e_engagement_step_collab/rows sc
+		where
+		    :sc:e_track_id = :parameters:track_id and
+		    :sc:e_step_id = :parameters:step_id and
+		    :c:p_partner_key = :parameters:partner_key and
+		    :c:e_collaborator = :sc:p_collab_partner_key and
+		    :c:e_collab_type_id = :sc:e_collab_type_id and
+		    :c:e_is_automatic = 1
+		";
+	replicasize=2;
+	readahead=2;
+	autoquery=never;
+
+	on_delendquery "widget/connector" { event=EndQuery; target=track_logic; action=DeleteStepDone; event_all_params=1; }
+	}
+
+    // Re-sync Requirements from the master list
+    ResyncStep "widget/component-decl-action" { }
+    ResyncStepDone "widget/component-decl-event" { }
+    do_ResyncStep "widget/connector"
+	{
+	event=ResyncStep;
+	target=ResyncStep_osrc;
+	action=QueryParam;
+	event_all_params=1;
+	}
+    ResyncStep_osrc "widget/osrc"
+	{
+	rtrack_id "widget/parameter" { param_name=track_id; type=integer; }
+	rstep_id "widget/parameter" { param_name=step_id; type=integer; }
+	rengagement_id "widget/parameter" { param_name=engagement_id; type=integer; }
+	rpartner_key "widget/parameter" { param_name=partner_key; type=string; }
+
+	sql = "	declare object stepinfo;
+
+		-- Look up user's partner ID
+		select
+		    :stepinfo:collab = :p_partner_key
+		from
+		    /apps/kardia/data/Kardia_DB/p_staff/rows
+		where
+		    :p_kardia_login = user_name()
+		;
+
+		-- Find the history ID of the step to be resynced (fixme - pass this one in when we have it)
+		select
+		    :stepinfo:hist_id = :e:e_hist_id,
+		    :stepinfo:status = :e:e_completion_status
+		from
+		    /apps/kardia/data/Kardia_DB/e_partner_engagement/rows e
+		where
+		    :e:p_partner_key = :parameters:partner_key and
+		    :e:e_engagement_id = :parameters:engagement_id and
+		    :e:e_track_id = :parameters:track_id and
+		    :e:e_step_id = :parameters:step_id
+		order by
+		    :e:e_start_date desc
+		limit
+		    1
+		;
+
+		-- Resync from the master requirements list
+		insert
+		    /apps/kardia/data/Kardia_DB/e_partner_engagement_req/rows
+		select
+		    :e:p_partner_key,
+		    :e:e_engagement_id,
+		    :e:e_hist_id,
+		    :e:e_track_id,
+		    :e:e_step_id,
+		    :sr:e_req_id,
+		    e_req_completion_status = 'I',
+		    :sr:e_req_name,
+		    :sr:e_due_days_from_step,
+		    :sr:e_due_days_from_req,
+		    :sr:e_due_days_from_req_id,
+		    :sr:e_req_whom,
+		    :sr:e_req_doc_type_id,
+		    :sr:e_req_waivable,
+		    :sr:e_is_active,
+		    :sr:e_req_sequence,
+		    s_date_created = getdate(),
+		    s_created_by = user_name(),
+		    s_date_modified = getdate(),
+		    s_modified_by = user_name()
+		from
+		    /apps/kardia/data/Kardia_DB/e_partner_engagement/rows e,
+		    /apps/kardia/data/Kardia_DB/e_engagement_step_req/rows sr
+		where
+		    :e:e_completion_status = 'I' and
+		    :sr:e_track_id = :e:e_track_id and
+		    :sr:e_step_id = :e:e_step_id and
+		    :e:p_partner_key = :parameters:partner_key and
+		    :e:e_engagement_id = :parameters:engagement_id and
+		    :e:e_hist_id = :stepinfo:hist_id
+		on duplicate
+		    :p_partner_key,
+		    :e_engagement_id,
+		    :e_hist_id,
+		    :e_track_id,
+		    :e_step_id,
+		    :e_req_id
+		update set
+		    :s_modified_by = user_name() IF MODIFIED,
+		    :s_date_modified = getdate() IF MODIFIED,
+		    :e_is_active = :sr:e_is_active,
+		    :e_req_sequence = :sr:e_req_sequence,
+		    :e_req_name = :sr:e_req_name,
+		    :e_due_days_from_step = :sr:e_due_days_from_step,
+		    :e_due_days_from_req = :sr:e_due_days_from_req,
+		    :e_due_days_from_req_id = :sr:e_due_days_from_req_id,
+		    :e_req_whom = :sr:e_req_whom,
+		    :e_req_doc_type_id = :sr:e_req_doc_type_id,
+		    :e_req_waivable = :sr:e_req_waivable
+		";
+	replicasize=2;
+	readahead=2;
+	autoquery=never;
+
+	on_resendquery "widget/connector" { event=EndQuery; target=track_logic; action=ResyncStepDone; event_all_params=1; }
 	}
     }
 

@@ -73,7 +73,36 @@ post_cd_batch "widget/component-decl"
 		WHERE
 			:d:a_batch_number = :parameters:a_batch_number and
 			:d:a_ledger_number = :parameters:a_ledger_number and
-			:d:a_period = :parameters:a_period";
+			:d:a_period = :parameters:a_period
+		;
+
+		-- Mark payees via p_payee as 'payments allowed'.
+		insert
+		    /apps/kardia/data/Kardia_DB/p_payee/rows
+		select
+		    p_partner_key = :d:a_payee_partner_key,
+		    a_gl_ledger_number = :d:a_ledger_number,
+		    p_allow_payments = 1,
+		    s_date_created=getdate(),
+		    s_created_by=user_name(),
+		    s_date_modified=getdate(),
+		    s_modified_by=user_name()
+		from
+		    /apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows d
+		where
+		    :d:a_ledger_number = :parameters:a_ledger_number and
+		    :d:a_batch_number = :parameters:a_batch_number and
+		    :d:a_period = :parameters:a_period
+		group by
+		    :d:a_payee_partner_key
+		on duplicate
+		    :a_gl_ledger_number,
+		    :p_partner_key
+		update set
+		    :p_allow_payments = 1,
+		    :s_date_modified=getdate() IF MODIFIED,
+		    :s_modified_by=user_name() IF MODIFIED
+		";
 
 	end_post "widget/connector"
 	    { 
