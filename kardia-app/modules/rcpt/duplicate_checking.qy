@@ -1,0 +1,15 @@
+$Version=2$
+update_descriptives_new "system/query"
+    {
+    partner "query/parameter" { type=string; style=strnull; }
+    sql = " 	    
+
+	-- Return the dataset to the caller
+	    select
+		*
+	    from
+		/apps/kardia/data/Kardia_DB/p_partner/rows p
+	    where
+		(:parameters:partner is null or :parameters:partner = :p:p_partner_key)
+	    ";
+    }
