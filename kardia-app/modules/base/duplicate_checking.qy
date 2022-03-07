@@ -2,14 +2,33 @@ $Version=2$
 update_descriptives_new "system/query"
     {
     partner "query/parameter" { type=string; style=strnull; }
-    sql = " 	    
+    sql = " 
+	-- Create a temporary collection
+	    declare collection tmp_duplicates scope application;
+
+	    insert
+		collection tmp_duplicates
+	    select
+		p_partner = :p:p_partner_key,
+		p_given_name = :p:p_given_name,
+		p_preferred_name = :p:p_preferred_name
+	    from
+		/apps/kardia/data/Kardia_DB/p_partner_key/rows p
+		/apps/kardia/data/Kardia_DB/p_location/rows l
+		/apps/kardia/data/Kardia_DB/p_contact_info/rows c
+	    where
+		(:parameters:partner is null or :parameters:partner = :p:p_partner_key)
+	    order by
+		:i:a_ledger_number,
+		:i:a_cost_center,
+		:i:p_dn_donor_partner_id,
+		isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) desc
+	    ;
 
 	-- Return the dataset to the caller
 	    select
 		*
 	    from
-		/apps/kardia/data/Kardia_DB/p_partner/rows p
-	    where
-		(:parameters:partner is null or :parameters:partner = :p:p_partner_key)
-	    ";
+		collection tmp_duplicates
+	";
     }
