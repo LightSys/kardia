@@ -9,48 +9,52 @@ update_descriptives_new "system/query"
 	    insert
 		collection tmp_duplicates
 	    select
+		-- One p_partner key is sufficient for all three tables invlolved
 		-- Start of p partner
 		p_partner = :p:p_partner_key,
 		p_given_name = :p:p_given_name,
-		p_preferred_name = :p:p_preferred_name
-	    p_surname = :p:p_surname
-		p_surname_first	= :p:p_surname_first
-		p_suffix = :p:p_suffix
-		p_org_name = :p:p_org_name
-		p_gender = :p:p_gender
-		p_record_status_code = :p:p_record_status_code
-		p_no_mail_reason = :p:p_no_mail_reason
-		p_no_solicitations = :p:p_no_solicitations
-		p_no_mail = :p:p_no_mail
-		-- Start of p location. One p_partner key is 
-		-- sufficient for all three tables invlolved
-		p_location_id = :p:p_location_id
-		p_location_type = :p:p_location_type
-		p_purge_date = :p:p_purge_date
-		p_in_care_of = :p:p_in_care_of
-		p_address_1 = :p:p_address_1
-		p_address_2 = :p:p_address_2
-		p_address_3 = :p:p_address_3
-		p_city = :p:p_city
-		p_state_province = :p:p_state_province
-		p_country_code = :p:p_country_code
-		p_postal_code = :p:p_postal_code
-		p_postal_mode = :p:p_postal_mode
-		p_bulk_postal_code = :p:p_bulk_postal_code
-		p_postal_status = :p:p_postal_status
-		p_postal_barcode = :p:p_postal_barcode
-		p_record_status_code = :p:p_record_status_code
-		from
-		/apps/kardia/data/Kardia_DB/p_partner_key/rows p
-		/apps/kardia/data/Kardia_DB/p_location/rows l
+		p_preferred_name = :p:p_preferred_name,
+	    p_surname = :p:p_surname,
+		p_surname_first	= :p:p_surname_first,
+		p_suffix = :p:p_suffix,
+		p_org_name = :p:p_org_name,
+		p_gender = :p:p_gender,
+		p_record_status_code = :p:p_record_status_code,
+		p_no_mail_reason = :p:p_no_mail_reason,
+		p_no_solicitations = :p:p_no_solicitations,
+		p_no_mail = :p:p_no_mail,
+		-- Start of p location.
+		p_location_id = :p:p_location_id,
+		p_location_type = :p:p_location_type,
+		p_purge_date = :p:p_purge_date,
+		p_in_care_of = :p:p_in_care_of,
+		p_address_1 = :p:p_address_1,
+		p_address_2 = :p:p_address_2,
+		p_address_3 = :p:p_address_3,
+		p_city = :p:p_city,
+		p_state_province = :p:p_state_province,
+		p_country_code = :p:p_country_code,
+		p_postal_code = :p:p_postal_code,
+		p_postal_mode = :p:p_postal_mode,
+		p_bulk_postal_code = :p:p_bulk_postal_code,
+		p_postal_status = :p:p_postal_status,
+		p_postal_barcode = :p:p_postal_barcode,
+		p_record_status_code = :p:p_record_status_code,
+		--Start of p contact info
+		p_contact_id = :c:p_contact_id,
+		p_contact_type = :c:p_contact_type,
+		p_location_id = :c:p_location_id,
+		p_phone_country = :c:p_phone_country,
+		p_phone_area_city = :c:p_phone_area_city,
+		p_contact_data = :c:p_contact_data,
+		p_record_status_code = :c:p_record_status_code
+	    from
+		/apps/kardia/data/Kardia_DB/p_partner/rows p,
+		/apps/kardia/data/Kardia_DB/p_location/rows l,
 		/apps/kardia/data/Kardia_DB/p_contact_info/rows c
 	    where
-		(:parameters:partner is null or :parameters:partner = :p:p_partner_key)
-	    order by
-		:i:a_ledger_number,
-		:i:a_cost_center,
-		:i:p_dn_donor_partner_id,
-		isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) desc
+		:p:p_partner_key *= :l:p_partner_key and
+		:p:p_partner_key *= :c:p_partner_key
 	    ;
 
 	-- Return the dataset to the caller
