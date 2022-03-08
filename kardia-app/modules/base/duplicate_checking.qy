@@ -6,6 +6,8 @@ update_descriptives_new "system/query"
 	-- Create a temporary collection
 	    declare collection tmp_duplicates scope application;
 
+	    delete from collection tmp_duplicates;
+
 	    insert
 		collection tmp_duplicates
 	    select
@@ -14,40 +16,25 @@ update_descriptives_new "system/query"
 		p_partner = :p:p_partner_key,
 		p_given_name = :p:p_given_name,
 		p_preferred_name = :p:p_preferred_name,
-	    p_surname = :p:p_surname,
+		p_surname = :p:p_surname,
 		p_surname_first	= :p:p_surname_first,
 		p_suffix = :p:p_suffix,
 		p_org_name = :p:p_org_name,
 		p_gender = :p:p_gender,
-		p_record_status_code = :p:p_record_status_code,
-		p_no_mail_reason = :p:p_no_mail_reason,
-		p_no_solicitations = :p:p_no_solicitations,
-		p_no_mail = :p:p_no_mail,
 		-- Start of p location.
-		p_location_id = :l:p_location_id,
-		p_location_type = :l:p_location_type,
-		p_purge_date = :l:p_purge_date,
-		p_in_care_of = :l:p_in_care_of,
-		p_address_1 = :l:p_address_1,
-		p_address_2 = :l:p_address_2,
-		p_address_3 = :l:p_address_3,
-		p_city = :l:p_city,
-		p_state_province = :l:p_state_province,
-		p_country_code = :l:p_country_code,
-		p_postal_code = :l:p_postal_code,
-		p_postal_mode = :l:p_postal_mode,
-		p_bulk_postal_code = :l:p_bulk_postal_code,
-		p_postal_status = :l:p_postal_status,
-		p_postal_barcode = :l:p_postal_barcode,
-		p_record_status_code = :l:p_record_status_code,
+		--Concatenate address fields
+		p_address_1 = nth(isnull(:l:p_address_1,'') + isnull(:l:p_address_2,'') + isnull(:l:p_address_3,'') + isnull(:l:p_city,'') + isnull(:l:p_state_province,'') + isnull(:l:p_country_code,'') + isnull(:l:p_postal_code,''), 1),
+		p_address_2 = nth(isnull(:l:p_address_1,'') + isnull(:l:p_address_2,'') + isnull(:l:p_address_3,'') + isnull(:l:p_city,'') + isnull(:l:p_state_province,'') + isnull(:l:p_country_code,'') + isnull(:l:p_postal_code,''), 2),
+		p_address_3 = nth(isnull(:l:p_address_1,'') + isnull(:l:p_address_2,'') + isnull(:l:p_address_3,'') + isnull(:l:p_city,'') + isnull(:l:p_state_province,'') + isnull(:l:p_country_code,'') + isnull(:l:p_postal_code,''), 3),
 		--Start of p contact info
-		p_contact_id = :c:p_contact_id,
-		p_contact_type = :c:p_contact_type,
-		p_contact_location = :c:p_location_id,
-		p_phone_country = :c:p_phone_country,
-		p_phone_area_city = :c:p_phone_area_city,
-		p_contact_data = :c:p_contact_data,
-		p_record_status_code = :c:p_record_status_code
+		--Concatenate phone number fields
+		p_contact_data_phone1 = condition(:c:p_contact_type = 'P' or :c:p_contact_type = 'C', nth(isnull(:c:p_phone_country,'') + isnull(:c:p_phone_area_city,'') + isnull(:c:p_contact_data,''), 1), null),
+		p_contact_data_phone2 = condition(:c:p_contact_type = 'P' or :c:p_contact_type = 'C', nth(isnull(:c:p_phone_country,'') + isnull(:c:p_phone_area_city,'') + isnull(:c:p_contact_data,''), 2), null),
+		p_contact_data_phone3 = condition(:c:p_contact_type = 'P' or :c:p_contact_type = 'C', nth(isnull(:c:p_phone_country,'') + isnull(:c:p_phone_area_city,'') + isnull(:c:p_contact_data,''), 3), null),
+		--Email fields
+		p_contact_data_email1 = condition(:c:p_contact_type = 'E', nth(:c:p_contact_data, 1), null),
+		p_contact_data_email2 = condition(:c:p_contact_type = 'E', nth(:c:p_contact_data, 2), null),
+		p_contact_data_email3 = condition(:c:p_contact_type = 'E', nth(:c:p_contact_data, 3), null)
 	    from
 		/apps/kardia/data/Kardia_DB/p_partner/rows p,
 		/apps/kardia/data/Kardia_DB/p_location/rows l,
@@ -55,6 +42,17 @@ update_descriptives_new "system/query"
 	    where
 		:p:p_partner_key *= :l:p_partner_key and
 		:p:p_partner_key *= :c:p_partner_key
+	    group by
+	    	:p:p_partner_key
+	    order by
+		:p:p_partner_key asc,
+		:c:p_partner_key asc,
+		:c:p_contact_id asc,
+		:c:s_date_modified desc,
+		:l:p_partner_key asc,
+		:l:p_location_id asc,
+		:l:p_revision_id asc,
+		:l:s_date_modified desc
 	    ;
 
 	-- Return the dataset to the caller
