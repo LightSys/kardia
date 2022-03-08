@@ -43,7 +43,7 @@ update_descriptives_new "system/query"
 		--Start of p contact info
 		p_contact_id = :c:p_contact_id,
 		p_contact_type = :c:p_contact_type,
-		p_location_id = :c:p_location_id,
+		p_contact_location = :c:p_location_id,
 		p_phone_country = :c:p_phone_country,
 		p_phone_area_city = :c:p_phone_area_city,
 		p_contact_data = :c:p_contact_data,
