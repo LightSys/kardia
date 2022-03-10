@@ -8,7 +8,7 @@ update_descriptives_new "system/query"
         delete from collection tmp_field_merge_duplicates;
         --insert duplicate contact records
 	    insert
-		collection tmp_field_merge_duplicates
+		collection tmp_field_merge_phones_duplicates
 	    select
         --type = 'P' and type 'C' phone numbers are treated the same in the following concatenation
         --(combines all possible fields that would contain a resulting phone number entry OR email entry)
@@ -17,6 +17,11 @@ update_descriptives_new "system/query"
         from
         /apps/kardia/data/Kardia_DB/p_contact_info/rows c
         ;
+        --select
+        --l_address = replace(replace(replace(isnull(:l:p_address_1, ''), ',', ''), '.', ''), ' ', '')
+        --from
+        --/apps/kardia/data/Kardia_DB/p_location/rows l
+        --;
         -- Return the dataset to the caller
         select * from collection tmp_field_merge_duplicates
     ";
