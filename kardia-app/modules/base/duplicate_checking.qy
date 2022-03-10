@@ -4,7 +4,7 @@ update_descriptives_new "system/query"
     partner "query/parameter" { type=string; style=strnull; }
     sql = " 
 	-- Create a temporary collection
-	    declare collection tmp_duplicates scope application;
+	    declare collection tmp_duplicates scope query;
 
 	    delete from collection tmp_duplicates;
 
@@ -13,7 +13,7 @@ update_descriptives_new "system/query"
 	    select
 		-- One p_partner key is sufficient for all three tables invlolved
 		-- Start of p partner
-		p_partner = :p:p_partner_key,
+		p_partner_key = :p:p_partner_key,
 		p_given_name = :p:p_given_name,
 		p_preferred_name = :p:p_preferred_name,
 		p_surname = :p:p_surname,
@@ -25,16 +25,7 @@ update_descriptives_new "system/query"
 		--Concatenate address fields
 		p_address_1 = nth(isnull(:l:p_address_1,'') + isnull(:l:p_address_2,'') + isnull(:l:p_address_3,'') + isnull(:l:p_city,'') + isnull(:l:p_state_province,'') + isnull(:l:p_country_code,'') + isnull(:l:p_postal_code,''), 1),
 		p_address_2 = nth(isnull(:l:p_address_1,'') + isnull(:l:p_address_2,'') + isnull(:l:p_address_3,'') + isnull(:l:p_city,'') + isnull(:l:p_state_province,'') + isnull(:l:p_country_code,'') + isnull(:l:p_postal_code,''), 2),
-		p_address_3 = nth(isnull(:l:p_address_1,'') + isnull(:l:p_address_2,'') + isnull(:l:p_address_3,'') + isnull(:l:p_city,'') + isnull(:l:p_state_province,'') + isnull(:l:p_country_code,'') + isnull(:l:p_postal_code,''), 3),
-		--Start of p contact info
-		--Concatenate phone number fields
-		p_contact_data_phone1 = condition(:c:p_contact_type = 'P' or :c:p_contact_type = 'C', nth(isnull(:c:p_phone_country,'') + isnull(:c:p_phone_area_city,'') + isnull(:c:p_contact_data,''), 1), null),
-		p_contact_data_phone2 = condition(:c:p_contact_type = 'P' or :c:p_contact_type = 'C', nth(isnull(:c:p_phone_country,'') + isnull(:c:p_phone_area_city,'') + isnull(:c:p_contact_data,''), 2), null),
-		p_contact_data_phone3 = condition(:c:p_contact_type = 'P' or :c:p_contact_type = 'C', nth(isnull(:c:p_phone_country,'') + isnull(:c:p_phone_area_city,'') + isnull(:c:p_contact_data,''), 3), null),
-		--Email fields
-		p_contact_data_email1 = condition(:c:p_contact_type = 'E', nth(:c:p_contact_data, 1), null),
-		p_contact_data_email2 = condition(:c:p_contact_type = 'E', nth(:c:p_contact_data, 2), null),
-		p_contact_data_email3 = condition(:c:p_contact_type = 'E', nth(:c:p_contact_data, 3), null)
+		p_address_3 = nth(isnull(:l:p_address_1,'') + isnull(:l:p_address_2,'') + isnull(:l:p_address_3,'') + isnull(:l:p_city,'') + isnull(:l:p_state_province,'') + isnull(:l:p_country_code,'') + isnull(:l:p_postal_code,''), 3)
 	    from
 		/apps/kardia/data/Kardia_DB/p_partner/rows p,
 		/apps/kardia/data/Kardia_DB/p_location/rows l,
@@ -55,6 +46,35 @@ update_descriptives_new "system/query"
 		:l:s_date_modified desc
 	    ;
 
+	    update
+		identity collection tmp_duplicates t,
+		/apps/kardia/data/Kardia_DB/p_contact_info/rows c
+	    set
+	    	--Start of p contact info
+		--Concatenate phone number fields
+		:t:p_contact_data_phone1 = nth(isnull(:c:p_phone_country,'') + isnull(:c:p_phone_area_city,'') + isnull(:c:p_contact_data,''), 1),
+		:t:p_contact_data_phone2 = nth(isnull(:c:p_phone_country,'') + isnull(:c:p_phone_area_city,'') + isnull(:c:p_contact_data,''), 2),
+		:t:p_contact_data_phone3 = nth(isnull(:c:p_phone_country,'') + isnull(:c:p_phone_area_city,'') + isnull(:c:p_contact_data,''), 3),
+		:t:s_date_modified = getdate(),
+		:t:s_modified_by = user_name()
+	    where
+		:t:p_partner_key = :c:p_partner_key and
+		(:c:p_contact_type = 'P' or :c:p_contact_type = 'C')
+	    group by
+	    	:c:p_partner_key
+	    order by
+		:c:p_partner_key asc,
+		:c:s_date_modified desc
+	    ;
+	    /*
+		--Email fields
+		:p_contact_data_email1 = condition(:c:p_contact_type = 'E', nth(:c:p_contact_data, 1), null),
+		:p_contact_data_email2 = condition(:c:p_contact_type = 'E', nth(:c:p_contact_data, 2), null),
+		:p_contact_data_email3 = condition(:c:p_contact_type = 'E', nth(:c:p_contact_data, 3), null),
+	    	:s_date_modified = getdate(),
+		:s_modified_by = getuser()
+	    ;
+	    */
 	-- Return the dataset to the caller
 	    select
 		*
