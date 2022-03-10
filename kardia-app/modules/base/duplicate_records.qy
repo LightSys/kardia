@@ -53,7 +53,7 @@ update_descriptives_new "system/query"
           :l1:p_revision_id < :l2:p_revision_id
         )
         ;
-
+        -- Return the dataset to the caller
         select * from collection tmp_pcl_duplicates
     ";
     }

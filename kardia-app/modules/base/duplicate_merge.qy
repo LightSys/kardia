@@ -10,7 +10,8 @@ update_descriptives_new "system/query"
 	    insert
 		collection tmp_field_merge_duplicates
 	    select
-        --type = 'P',type C
+        --type = 'P' and type 'C' phone numbers are treated the same in the following concatenation
+        --(combines all possible fields that would contain a resulting phone number entry OR email entry)
         p_contact_phone = replace(replace(replace(replace(replace
                 (isnull(:c:p_phone_country,'') + isnull(:c:p_phone_area_city,'') + isnull(:c:p_contact_data,''), '(', ''), ')', ''), '-', ''), '.', ''), ' ', '')
         from
