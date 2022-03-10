@@ -1,0 +1,118 @@
+$Version=2$
+update_descriptives_new "system/query"
+    {
+    sort_type "query/parameter" { type=string; style=notnull; }
+    match_dist "query/parameter" { type=integer;}
+		//TODO: can we add a default match_dist=3? Can we add a minvalue=1?
+
+    // Takes one parameter sort_type ('N', 'C', or 'A') and sorts on name, contact, or address.
+    // Returns pairs of partner keys (likely containing duplicate pairs) that are near-adjacent in the sorted list.
+
+    sql = " 
+	-- Create a temporary collection
+	    declare collection tmp_sorted_duplicates scope application;
+	    delete from collection tmp_sorted_duplicates;
+
+	    insert
+		collection tmp_sorted_duplicates
+	    select
+		p_row_num = dense_rank(:p:p_partner_key),
+		-- One p_partner key is sufficient for all three tables invlolved
+		-- Start of p partner
+		p_partner_key = :p:p_partner_key,
+		p_given_name = :p:p_given_name,
+		p_preferred_name = :p:p_preferred_name,
+		p_surname = :p:p_surname,
+		p_surname_first	= :p:p_surname_first,
+		p_suffix = :p:p_suffix,
+		p_org_name = :p:p_org_name,
+		p_gender = :p:p_gender,
+		-- Start of p location.
+		p_address_1 = :l:p_address_1,
+		p_address_2 = :l:p_address_2,
+		p_address_3 = :l:p_address_3,
+		--Start of p contact info
+		p_contact_type = condition(:c:p_contact_type = 'E', 'E', 'P'),
+		p_contact_data = lower(replace(replace(replace(replace(replace(
+					isnull(:c:p_phone_country,'') + 
+					isnull(:c:p_phone_area_city,'') + 
+					isnull(:c:p_contact_data,''), 
+					'(', ''), ')', ''), '-', ''), '.', ''), ' ', ''))
+	    from
+		/apps/kardia/data/Kardia_DB/p_partner/rows p,
+		/apps/kardia/data/Kardia_DB/p_location/rows l,
+		/apps/kardia/data/Kardia_DB/p_contact_info/rows c
+	    where
+		:p:p_partner_key = :l:p_partner_key and
+		:p:p_partner_key = :c:p_partner_key
+	    order by
+
+	    ---change sort criteria based on parameter sort_type---
+
+		condition(:parameters:sort_type = 'C',
+		------------------to sort by contact data---------------------------------------
+			(condition(:c:p_contact_type = 'E', 'E', 'P') +
+			lower(replace(replace(replace(replace(replace(
+					isnull(:c:p_phone_country,'') + 
+					isnull(:c:p_phone_area_city,'') + 
+					isnull(:c:p_contact_data,''), 
+					'(', ''), ')', ''), '-', ''), '.', ''), ' ', '')))
+		, 
+		
+		condition(:parameters:sort_type = 'N',
+		-------------------to sort by name------------------------------------------------
+			(:p:p_given_name +
+			:p:p_surname +
+			:p:p_preferred_name)
+		, condition(:parameters:sort_type = 'A',
+		-------------------to sort by address-------------------------------
+			:l:p_address_1
+		, 
+		---------error: invalid sort character------------
+			:p:p_partner_key
+		)))
+		;
+
+	-- Return the dataset to the caller
+	    select
+	    --------return pairs of partner keys to compare------
+		p_partner_key_1 = :i:p_partner_key,
+		p_partner_key_2 = :jj:p_partner_key
+--------uncomment and replace above with this to select all data---------
+--		p_partner_key_1 = :i:p_partner_key,
+--		p_given_name_1 = :i:p_given_name,
+--		p_preferred_name_1 = :i:p_preferred_name,
+--		p_surname_1 = :i:p_surname,
+--		p_surname_first_1	= :i:p_surname_first,
+--		p_suffix_1 = :i:p_suffix,
+--		p_org_name_1 = :i:p_org_name,
+--		p_gender_1 = :i:p_gender,
+--		-- Start of p location.
+--		p_address_1_1 = :i:p_address_1,
+--		p_address_2_1 = :i:p_address_2,
+--		p_address_3_1 = :i:p_address_3,
+--		--Start of p contact info
+--		p_contact_type_1 = :i:p_contact_type,
+--		p_contact_data_1 = :i:p_contact_data,
+--		p_partner_key_2 = :jj:p_partner_key,
+--		p_given_name_2 = :jj:p_given_name,
+--		p_preferred_name_2 = :jj:p_preferred_name,
+--		p_surname_2 = :jj:p_surname,
+--		p_surname_first_2 = :jj:p_surname_first,
+--		p_suffix_2 = :jj:p_suffix,
+--		p_org_name_2 = :jj:p_org_name,
+--		p_gender_2 = :jj:p_gender,
+--		-- Start of p location.
+--		p_address_1_2 = :jj:p_address_1,
+--		p_address_2_2 = :jj:p_address_2,
+--		p_address_3_2 = :jj:p_address_3,
+--		--Start of p contact info
+--		p_contact_type_2 = :jj:p_contact_type,
+--		p_contact_data_2 = :jj:p_contact_data
+	    from
+		identity collection tmp_sorted_duplicates i,
+		collection tmp_sorted_duplicates jj
+	    where
+		:i:p_row_num > :jj:p_row_num and :i:p_row_num - :jj:p_row_num <= :parameters:match_dist
+	";
+    }
