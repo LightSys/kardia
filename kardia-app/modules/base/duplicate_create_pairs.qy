@@ -10,7 +10,7 @@ update_descriptives_new "system/query"
 
     sql = " 
 	-- Create a temporary collection
-	    declare collection tmp_sorted_duplicates scope application;
+	    declare collection tmp_sorted_duplicates scope query;
 	    delete from collection tmp_sorted_duplicates;
 
 	    insert
