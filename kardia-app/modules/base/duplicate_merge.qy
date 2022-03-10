@@ -1,0 +1,22 @@
+$Version=2$
+update_descriptives_new "system/query"
+    {
+    partner "query/parameter" { type=string; style=strnull; }
+    sql = " 
+	-- Create a temporary collection
+	    declare collection tmp_field_merge_duplicates scope application;
+        delete from collection tmp_field_merge_duplicates;
+        --insert duplicate contact records
+	    insert
+		collection tmp_field_merge_duplicates
+	    select
+        --type = 'P',type C
+        p_contact_phone = replace(replace(replace(replace(replace
+                (isnull(:c:p_phone_country,'') + isnull(:c:p_phone_area_city,'') + isnull(:c:p_contact_data,''), '(', ''), ')', ''), '-', ''), '.', ''), ' ', '')
+        from
+        /apps/kardia/data/Kardia_DB/p_contact_info/rows c
+        ;
+        -- Return the dataset to the caller
+        select * from collection tmp_field_merge_duplicates
+    ";
+    }
