@@ -117,6 +117,6 @@ update_descriptives_new "system/query"
 		identity collection tmp_sorted_duplicates i,
 		collection tmp_sorted_duplicates jj
 	    where
-		:i:p_row_num > :jj:p_row_num and :i:p_row_num - :jj:p_row_num <= :parameters:match_dist
+		:i:p_row_num > :jj:p_row_num and :i:p_row_num - :jj:p_row_num <= :parameters:match_dist and :i:p_partner_key != :jj:p_partner_key
 	";
     }
