@@ -229,12 +229,17 @@ update_descriptives_new "system/query"
 	    	:p_similarity >= 0.85
 	    ;
 
+	--Adds to table tmp_pcl_duplicates records that contain
+	--  primary keys of contact and location information duplicated
+	--  across a single partner
+	    exec /apps/kardia/modules/base/duplicate_records.qy
+	    	partner=''
+	    ;
+
 	--Return the dataset to the caller
 	    select
 		*
 	    from
 		collection tmp_pcl_duplicates
-	    order by
-	    	:p_similarity desc
 	";
     }
