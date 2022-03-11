@@ -7,10 +7,12 @@ update_descriptives_new "system/query"
 	    declare collection tmp_partner_data scope query;
 	    declare collection tmp_partner_condensed scope query;
 	    declare collection tmp_partner_pairs scope query;
+	    declare collection tmp_partner_pair_similarity scope query;
 	    
 	    delete from collection tmp_partner_data;
 	    delete from collection tmp_partner_condensed;
 	    delete from collection tmp_partner_pairs;
+	    delete from collection tmp_partner_pair_similarity;
 
 	    insert
 		collection tmp_partner_data
@@ -190,11 +192,27 @@ update_descriptives_new "system/query"
 	    	update set :p_partner_key_1 = :p_partner_key_1
 	    ;
 
+	    insert
+	    	collection tmp_partner_pair_similarity
+	    select
+		p_partner_key_1 = :p:p_partner_key_1,
+		p_partner_key_2 = :p:p_partner_key_2,
+		p_similarity = similarity(:c1:p_data, :c2:p_data)
+	    from
+	    	collection tmp_partner_pairs p,
+		collection tmp_partner_condensed c1,
+		collection tmp_partner_condensed c2
+	    where
+	    	:p:p_partner_key_1 = :c1:p_partner_key and
+		:p:p_partner_key_2 = :c2:p_partner_key
+	    ;
   
 	--Return the dataset to the caller
 	    select
 		*
 	    from
-		collection tmp_partner_pairs
+		collection tmp_partner_pair_similarity
+	    order by
+	    	:p_similarity desc
 	";
     }
