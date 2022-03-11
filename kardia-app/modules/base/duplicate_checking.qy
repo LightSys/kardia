@@ -6,8 +6,11 @@ update_descriptives_new "system/query"
 	-- Create a temporary collection containing partner data
 	    declare collection tmp_partner_data scope query;
 	    declare collection tmp_partner_condensed scope query;
+	    declare collection tmp_partner_pairs scope query;
+	    
 	    delete from collection tmp_partner_data;
 	    delete from collection tmp_partner_condensed;
+	    delete from collection tmp_partner_pairs;
 
 	    insert
 		collection tmp_partner_data
@@ -134,11 +137,64 @@ update_descriptives_new "system/query"
 	    	collection tmp_partner_data
 	    ;
 	
+	--Returns a table containing pairs of partner keys that are possible matches		
+	    -- Insert based on first name sorting
+	    insert
+	    	collection tmp_partner_pairs
+	    select
+	    	p_partner_key_1 = first(:p_partner_key_1),
+		p_partner_key_2 = first(:p_partner_key_2)
+	    from
+	    	/apps/kardia/modules/base/duplicate_create_pairs.qy?sort_type=N&match_dist=3
+	    -- prevent duplicate rows
+	    on duplicate :p_partner_key_1, :p_partner_key_2
+	    	update set :p_partner_key_1 = :p_partner_key_1
+	    ;
+
+	    -- Insert based on contact sorting
+	    insert
+	    	collection tmp_partner_pairs
+	    select
+	    	p_partner_key_1 = :p_partner_key_1,
+		p_partner_key_2 = :p_partner_key_2
+	    from
+	    	/apps/kardia/modules/base/duplicate_create_pairs.qy?sort_type=C&match_dist=3
+	    -- prevent duplicate rows
+	    on duplicate :p_partner_key_1, :p_partner_key_2
+	    	update set :p_partner_key_1 = :p_partner_key_1
+	    ;
+
+	    -- Insert based on address sorting
+	    insert
+	    	collection tmp_partner_pairs
+	    select
+	    	p_partner_key_1 = :p_partner_key_1,
+		p_partner_key_2 = :p_partner_key_2
+	    from
+	    	/apps/kardia/modules/base/duplicate_create_pairs.qy?sort_type=A&match_dist=3
+	    -- prevent duplicate rows
+	    on duplicate :p_partner_key_1, :p_partner_key_2
+	    	update set :p_partner_key_1 = :p_partner_key_1
+	    ;
+
+	    -- Insert based on last name sorting
+	    insert
+	    	collection tmp_partner_pairs
+	    select
+	    	p_partner_key_1 = :p_partner_key_1,
+		p_partner_key_2 = :p_partner_key_2
+	    from
+	    	/apps/kardia/modules/base/duplicate_create_pairs.qy?sort_type=S&match_dist=3
+	    -- prevent duplicate rows
+	    on duplicate :p_partner_key_1, :p_partner_key_2
+	    	update set :p_partner_key_1 = :p_partner_key_1
+	    ;
+
   
 	--Return the dataset to the caller
 	    select
 		*
 	    from
-		collection tmp_partner_condensed
+		collection tmp_partner_pairs
 	";
     }
