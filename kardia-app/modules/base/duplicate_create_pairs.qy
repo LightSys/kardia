@@ -5,12 +5,12 @@ update_descriptives_new "system/query"
     match_dist "query/parameter" { type=integer;}
 		//TODO: can we add a default match_dist=3? Can we add a minvalue=1?
 
-    // Takes one parameter sort_type ('N', 'C', or 'A') and sorts on name, contact, or address.
+    // Takes one parameter sort_type ('N', 'C', 'A', or 'S') and sorts on first name, contact, address, or last name.
     // Returns pairs of partner keys (likely containing duplicate pairs) that are near-adjacent in the sorted list.
 
     sql = " 
 	-- Create a temporary collection
-	    declare collection tmp_sorted_duplicates scope application;
+	    declare collection tmp_sorted_duplicates scope query;
 	    delete from collection tmp_sorted_duplicates;
 
 	    insert
@@ -67,10 +67,14 @@ update_descriptives_new "system/query"
 		, condition(:parameters:sort_type = 'A',
 		-------------------to sort by address-------------------------------
 			:l:p_address_1
-		, 
+		, condition(:parameters:sort_type = 'S',
+			(:p:p_surname +
+			:p:p_given_name +
+			:p:p_preferred_name)
+		,
 		---------error: invalid sort character------------
 			:p:p_partner_key
-		)))
+		))))
 		;
 
 	-- Return the dataset to the caller

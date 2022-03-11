@@ -41,13 +41,13 @@ update_descriptives_new "system/query"
         /apps/kardia/data/Kardia_DB/p_contact_info/rows c2
         where
         :c1:p_partner_key = :c2:p_partner_key and
-        replace(replace(replace(replace(replace
+        lower(replace(replace(replace(replace(replace
                 (isnull(:c1:p_phone_country,'') + isnull(:c1:p_phone_area_city,'') + isnull(:c1:p_contact_data,''), 
-                        '(', ''), ')', ''), '-', ''), '.', ''), ' ', '') 
+                        '(', ''), ')', ''), '-', ''), '.', ''), ' ', ''))
             =
-        replace(replace(replace(replace(replace
+        lower(replace(replace(replace(replace(replace
                 (isnull(:c2:p_phone_country,'') + isnull(:c2:p_phone_area_city,'') + isnull(:c2:p_contact_data,''), 
-                        '(', ''), ')', ''), '-', ''), '.', ''), ' ', '')
+                        '(', ''), ')', ''), '-', ''), '.', ''), ' ', ''))
         and
         :c1:p_contact_id < :c2:p_contact_id
         ;
