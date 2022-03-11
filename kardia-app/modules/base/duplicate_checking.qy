@@ -8,13 +8,17 @@ update_descriptives_new "system/query"
 	    declare collection tmp_partner_condensed scope query;
 	    declare collection tmp_partner_pairs scope query;
 	    declare collection tmp_partner_pair_similarity scope query;
-	    declare collection tmp_pcl_duplicates scope application;
+	    declare collection tmp_partner_pair_fuzzy scope query;
+	    declare collection tmp_pcl_duplicates scope query;
 	    
 	    delete from collection tmp_partner_data;
 	    delete from collection tmp_partner_condensed;
 	    delete from collection tmp_partner_pairs;
 	    delete from collection tmp_partner_pair_similarity;
+	    delete from collection tmp_partner_pair_fuzzy;
 	    delete from collection tmp_pcl_duplicates;
+
+	    print 'Create tmp_partner_data at ' + dateformat(getdate(), 'hh:mm:ss');
 
 	    insert
 		collection tmp_partner_data
@@ -116,6 +120,8 @@ update_descriptives_new "system/query"
 		:l:s_date_modified desc
 	    ;
 
+	    print 'Create tmp_partner_condensed at ' + dateformat(getdate(), 'hh:mm:ss');
+
 	-- Creates and fills tmp_partner_condensed by concatenation		
 	    insert
 	    	collection tmp_partner_condensed
@@ -141,6 +147,7 @@ update_descriptives_new "system/query"
 	    	collection tmp_partner_data
 	    ;
 	
+	    print 'Create tmp_partner_pairs by N at ' + dateformat(getdate(), 'hh:mm:ss');
 	--Returns a table containing pairs of partner keys that are possible matches		
 	    -- Insert based on first name sorting
 	    insert
@@ -154,7 +161,7 @@ update_descriptives_new "system/query"
 	    on duplicate :p_partner_key_1, :p_partner_key_2
 	    	update set :p_partner_key_1 = :p_partner_key_1
 	    ;
-
+	    print 'Create tmp_partner_pairs by C at ' + dateformat(getdate(), 'hh:mm:ss');
 	    -- Insert based on contact sorting
 	    insert
 	    	collection tmp_partner_pairs
@@ -168,6 +175,7 @@ update_descriptives_new "system/query"
 	    	update set :p_partner_key_1 = :p_partner_key_1
 	    ;
 
+	    print 'Create tmp_partner_pairs by A at ' + dateformat(getdate(), 'hh:mm:ss');
 	    -- Insert based on address sorting
 	    insert
 	    	collection tmp_partner_pairs
@@ -180,7 +188,8 @@ update_descriptives_new "system/query"
 	    on duplicate :p_partner_key_1, :p_partner_key_2
 	    	update set :p_partner_key_1 = :p_partner_key_1
 	    ;
-
+	    
+	    print 'Create tmp_partner_pairs by S at ' + dateformat(getdate(), 'hh:mm:ss');
 	    -- Insert based on last name sorting
 	    insert
 	    	collection tmp_partner_pairs
@@ -194,14 +203,84 @@ update_descriptives_new "system/query"
 	    	update set :p_partner_key_1 = :p_partner_key_1
 	    ;
 
+	----Compare pairs of duplicates based on their entire data
+	--    print 'Create tmp_partner_pair_similarity at ' + dateformat(getdate(), 'hh:mm:ss');
+	--    --Using the similarity function
+	--    insert
+	--    	collection tmp_partner_pair_similarity
+	--    select
+	--	p_partner_key_1 = :p:p_partner_key_1,
+	--	p_partner_key_2 = :p:p_partner_key_2,
+	--	p_similarity = similarity(:c1:p_data, :c2:p_data)
+	--    from
+	--    	collection tmp_partner_pairs p,
+	--	collection tmp_partner_condensed c1,
+	--	collection tmp_partner_condensed c2
+	--    where
+	--    	:p:p_partner_key_1 = :c1:p_partner_key and
+	--	:p:p_partner_key_2 = :c2:p_partner_key
+	--    ;
+--
+	--    print 'Create tmp_partner_pair_fuzzy at ' + dateformat(getdate(), 'hh:mm:ss');
+	--    --Using the fuzzy_compare function
+	--    insert
+	--    	collection tmp_partner_pair_fuzzy
+	--    select
+	--	p_partner_key_1 = :p:p_partner_key_1,
+	--	p_partner_key_2 = :p:p_partner_key_2,
+	--	--The value 1063 is the maximum possible length of all the fields in tmp_partner_condensed
+	--	p_fuzzy = 1.0 - fuzzy_compare(:c1:p_data, :c2:p_data, 1063)
+	--    from
+	--    	collection tmp_partner_pairs p,
+	--	collection tmp_partner_condensed c1,
+	--	collection tmp_partner_condensed c2
+	--    where
+	--    	:p:p_partner_key_1 = :c1:p_partner_key and
+	--	:p:p_partner_key_2 = :c2:p_partner_key
+	--    ;
+--
+	----Adds to table tmp_pcl_duplicates records that contain primary keys of possibly duplicated partners
+	--    print 'Create tmp_pcl_duplicates by weighted average at ' + dateformat(getdate(), 'hh:mm:ss');
+	--    insert
+	--    	collection tmp_pcl_duplicates
+	--    select
+	--    	type = 'P',
+	--	--perform a weighted average of similarity and fuzzy
+	--	priority = 0.2 * :s:p_similarity + 0.8 * :f:p_fuzzy,
+	--	p_partner_key_1 = :s:p_partner_key_1,
+	--	p_location_id_1 = '',
+	--	p_revision_id_1 = '',
+	--	p_contact_id_1 = '',
+	--	p_partner_key_2 = :s:p_partner_key_2,
+	--	p_location_id_2 = '',
+	--	p_revision_id_2 = '',
+	--	p_contact_id_2 = ''
+	--    from
+	--    	collection tmp_partner_pair_similarity s,
+	--	collection tmp_partner_pair_fuzzy f
+	--    where
+	--	:s:p_partner_key_1 = :f:p_partner_key_1 and
+	--	:s:p_partner_key_2 = :f:p_partner_key_2 and
+	--	(0.2 * :s:p_similarity + 0.8 * :f:p_fuzzy) >= 0.48
+	--    ;
+
+	    print 'Create tmp_pcl_duplicates by weighted average in one query at ' + dateformat(getdate(), 'hh:mm:ss');
 	    insert
-	    	collection tmp_partner_pair_similarity
+	    	collection tmp_pcl_duplicates
 	    select
+	    	type = 'P',
+		--perform a weighted average of similarity and fuzzy
+		priority = 0.2 * similarity(:c1:p_data, :c2:p_data) + 0.8 * (1.0 - fuzzy_compare(:c1:p_data, :c2:p_data, 1063)),
 		p_partner_key_1 = :p:p_partner_key_1,
+		p_location_id_1 = '',
+		p_revision_id_1 = '',
+		p_contact_id_1 = '',
 		p_partner_key_2 = :p:p_partner_key_2,
-		p_similarity = similarity(:c1:p_data, :c2:p_data)
+		p_location_id_2 = '',
+		p_revision_id_2 = '',
+		p_contact_id_2 = ''
 	    from
-	    	collection tmp_partner_pairs p,
+	        collection tmp_partner_pairs p,
 		collection tmp_partner_condensed c1,
 		collection tmp_partner_condensed c2
 	    where
@@ -209,37 +288,36 @@ update_descriptives_new "system/query"
 		:p:p_partner_key_2 = :c2:p_partner_key
 	    ;
 
-	--Adds to table tmp_pcl_duplicates records that contain primary keys of possibly duplicated partners
-	    insert
-	    	collection tmp_pcl_duplicates
-	    select
-	    	type = 'P',
-		p_partner_key_1 = :p_partner_key_1,
-		p_location_id_1 = '',
-		p_revision_id_1 = '',
-		p_contact_id_1 = '',
-		p_partner_key_2 = :p_partner_key_2,
-		p_location_id_2 = '',
-		p_revision_id_2 = '',
-		p_contact_id_2 = ''
-	    from
-	    	collection tmp_partner_pair_similarity
-	    where
-	    	--this value can be tweaked
-	    	:p_similarity >= 0.85
-	    ;
-
 	--Adds to table tmp_pcl_duplicates records that contain
 	--  primary keys of contact and location information duplicated
 	--  across a single partner
-	    exec /apps/kardia/modules/base/duplicate_records.qy
-	    	partner=''
+	    print 'Create tmp_pcl_duplicates by exact record checking at ' + dateformat(getdate(), 'hh:mm:ss');
+	    insert
+	    	collection tmp_pcl_duplicates
+	    select
+	    	type = :type,
+		priority = 1.0,
+	    	p_partner_key_1 = :p_partner_key_1,
+		p_location_id_1 = :p_location_id_1,
+		p_revision_id_1 = :p_revision_id_2,
+		p_contact_id_1 = :p_contact_id_1,
+		p_partner_key_2 = :p_partner_key_2,
+		p_location_id_2 = :p_location_id_2,
+		p_revision_id_2 = p_revision_id_2,
+		p_contact_id_2 = :p_contact_id_2
+	    from
+	    	/apps/kardia/modules/base/duplicate_records.qy
 	    ;
 
 	--Return the dataset to the caller
+	    print 'Return result set at ' + dateformat(getdate(), 'hh:mm:ss');
 	    select
 		*
 	    from
 		collection tmp_pcl_duplicates
+	    where
+	    	:priority >= 0.48
+	    order by
+	    	:priority desc
 	";
     }

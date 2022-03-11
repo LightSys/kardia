@@ -20,20 +20,21 @@ update_descriptives_new "system/query"
     //      (different partner_keys) to the same table, probably no otherwise
     sql = " 
 	-- Create a temporary collection
-	    declare collection tmp_pcl_duplicates scope application;
+	    declare collection tmp_record_duplicates scope query;
+        delete from collection tmp_record_duplicates;
 
         --insert duplicate contact records
 	    insert
-		collection tmp_pcl_duplicates
+		collection tmp_record_duplicates
 	    select
         type = 'C',
         p_partner_key_1 = :c1:p_partner_key,
-        p_location_id_1 = 'NULL',
-        p_revision_id_1 = 'NULL',
+        p_location_id_1 = '',
+        p_revision_id_1 = '',
         p_contact_id_1 = :c1:p_contact_id,
         p_partner_key_2 = :c2:p_partner_key,
-        p_location_id_2 = 'NULL',
-        p_revision_id_2 = 'NULL',
+        p_location_id_2 = '',
+        p_revision_id_2 = '',
         p_contact_id_2 = :c2:p_contact_id
 
         from
@@ -54,17 +55,17 @@ update_descriptives_new "system/query"
 
         --insert duplicate location records
         insert
-		collection tmp_pcl_duplicates
+		collection tmp_record_duplicates
 	    select
         type = 'L',
         p_partner_key_1 = :l1:p_partner_key,
         p_location_id_1 = :l1:p_location_id,
         p_revision_id_1 = :l1:p_revision_id,
-        p_contact_id_1 = 'NULL',
+        p_contact_id_1 = '',
         p_partner_key_2 = :l2:p_partner_key,
         p_location_id_2 = :l2:p_location_id,
         p_revision_id_2 = :l2:p_revision_id,
-        p_contact_id_2 = 'NULL'
+        p_contact_id_2 = ''
         from
         /apps/kardia/data/Kardia_DB/p_location/rows l1,
         /apps/kardia/data/Kardia_DB/p_location/rows l2
@@ -77,8 +78,8 @@ update_descriptives_new "system/query"
           :l1:p_location_id < :l2:p_location_id or
           :l1:p_revision_id < :l2:p_revision_id
         )
-        --;
+        ;
         -- Return the dataset to the caller
-        --select * from collection tmp_pcl_duplicates
+        select * from collection tmp_record_duplicates
     ";
     }
