@@ -8,7 +8,7 @@ update_descriptives_new "system/query"
     //          same person (same partner_key)
     //TABLE STRUCTURE:
     //   --------------------------------------------------------------------------------------------------------------------------------------------------------------
-    //   | type  | p_partner_key_1  | p_location_id_1  | p_revision_id_1  | p_contact_id_2 | p_partner_key_2  | p_location_id_2  | p_revision_id_2  | p_contact_id_2  |
+    //   | type  | p_partner_key_1  | p_location_id_1  | p_revision_id_1  | p_contact_id_1 | p_partner_key_2  | p_location_id_2  | p_revision_id_2  | p_contact_id_2  |
     //
     // where type is one of 'C', 'L' [later possibly extended to 'P']
     // and each indicates the table for which we have the primary keys:
@@ -21,7 +21,6 @@ update_descriptives_new "system/query"
     sql = " 
 	-- Create a temporary collection
 	    declare collection tmp_pcl_duplicates scope application;
-        delete from collection tmp_pcl_duplicates;
 
         --insert duplicate contact records
 	    insert
