@@ -662,6 +662,21 @@ create table p_search_stage_criteria (
 );
 
 
+/* p_nondup */
+
+create table p_nondup (
+        p_partner_key                         char(10)  not null,      /*  --  */
+        p_nondup_partner_key                  char(10)  not null,      /*  --  */
+        p_comment                             varchar(900)  null,      /* comments about this pair of partner keys --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
 /* m_list */
 
 create table m_list (
@@ -4424,6 +4439,28 @@ create table s_stats_cache (
         s_money_value                         decimal(14,4)  null,     /* currency value of the statistic --  */
         s_double_value                        float  null,             /* floating point value of the statistic --  */
         s_datetime_value                      datetime  null,          /* date/time value of the statistic --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* s_document_scanner */
+
+create table s_document_scanner (
+        s_scanner_id                          integer  not null,       /* unique ID of the scanner --  */
+        s_scanner_desc                        varchar(255)  not null,  /* description of this scanner --  */
+        s_scanner_type                        char(3)  not null,       /* type/protocol of scanner. Currently supported: CHK - Check Scanner using DM check-reader server. --  */
+        s_scanner_host                        varchar(255)  null,      /* network address (IP address) of the scanner. For CHK, this is the address of the check-reader server. --  */
+        s_scanner_port                        integer  null,           /* network port of the scanner, if needed. --  */
+        s_scanner_auth_user                   varchar(255)  null,      /* username to authenticate to scanner server, if needed. (unused for CHK) --  */
+        s_scanner_auth_token                  varchar(255)  null,      /* token/password to authenticate to scanner server, if needed. (token is used for CHK) --  */
+        s_scanner_id_on_server                varchar(255)  null,      /* unique identifier for this scanner, if needed, on the document scanner server. For CHK, this is the profile ID. --  */
+        s_date_last_used                      datetime  null,          /* date/time this scanner was last used --  */
+        s_last_used_by                        varchar(20)  null,       /* username that last used this scanner --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */

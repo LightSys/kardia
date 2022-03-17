@@ -185,6 +185,12 @@ create  index p_search_stage_idx on p_partner_search_results (s_username,p_searc
 /* go */
 
 
+/* p_nondup */
+/* create  index p_nondup_pk on p_nondup (p_partner_key, p_nondup_partner_key)*/ 
+/* go */
+create  index p_nondup_rev_idx on p_nondup (p_nondup_partner_key, p_partner_key);
+
+
 /* m_list */
 /* create  index m_list_pk on m_list (m_list_code)*/ 
 /* go */
@@ -1272,4 +1278,9 @@ create  index s_audit_strval_idx on s_audit (s_table, s_attrname, s_valuestring,
 
 /* s_stats_cache */
 /* create  index s_stats_cache_pk on s_stats_cache (s_stat_type, s_stat_group, s_stat)*/ 
+/* go */
+
+
+/* s_document_scanner */
+/* create  index s_scanner_pk on s_document_scanner (s_scanner_id)*/ 
 /* go */
