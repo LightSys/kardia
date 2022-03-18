@@ -1,0 +1,44 @@
+Project: Finding Duplicate Records (LightSys) Kardia Repository
+Team:
+- Luke Avent
+- Nathan Moyes
+- Brian Smith
+
+Queries and Functions Added/Edited:
+    * levenshtein() takes two strings for Levenshtein analysis: modified to be SQL callable
+
+Files Added/Edited:
+    * The “duplicate_checking.qy” query file was edited to include support for a new table used in flagging nonduplicates (see later pages of this documentation)
+
+Nonduplicate Flagging:
+
+Use of table for comparing potential duplicates 
+    * Table formatted and implemented by project owner (Mr. Greg Beeley), provided below and via the riot chat:
+    
+1. p_partner_key
+2. p_nondup_partner_key
+3. p_comment
+4. s_date_created
+5. s_created_by
+6. s_date_modified
+7. s_modified_by
+8. __cx_osml_control
+9. 
+10. primary key unique index (p_partner_key, p_dup_partner_key)
+11. additional unique index (p_dup_partner_key, p_partner_key) 
+
+    * Looks for forward and backwards relationships: “For example, if you find a potential dup between key 1000 and key 1001, you need to search the above table with (p_partner_key = 1000 and p_nondup_partner_key = 1001) as well as (p_partner_key = 1001 and p_nondup_partner_key = 1000)” (Mr. Beeley, from chat)
+    * Always looks to see if key 1 (p_partner_key_1) is < key 2 (p_partner_key_2) in duplicate_checking.qy
+
+Implementation of new query for flag checking
+    * After testing the table against the algorithm, the “create tmp_pcl_duplicates by weighted average” part of the duplicate_checking.qy query was edited to flag nonduplicate values using the “p_nondup_partner_key” field of the above table.
+    * Flagged nonduplicates are deleted from tmp_pcl_duplicates before returning it normally
+
+Granting users ability to flag “duplicate” results as nonduplicates
+    * Currently, existing edit functions and manual entry are used to flag “duplicate” entries as nonduplicates and prevent them from being shown.
+        o In the future, implement a query, script, or GUI element to do this automatically
+
+Fix for repeating rows issue:
+    * While testing, the repeating rows issue returned, and thus duplicate_checking.qy was recoded to patch this issue.
+
+3/14/2022 - 3/18/2022	Finding Duplicate Records 	2
