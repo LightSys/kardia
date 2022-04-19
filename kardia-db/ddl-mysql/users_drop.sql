@@ -625,3 +625,6 @@ revoke select on ra to public;
 
 
 /* s_stats_cache */
+
+
+/* s_document_scanner */

@@ -645,3 +645,6 @@ alter table s_global_search
 
 alter table s_stats_cache
 	add constraint s_stats_cache_pk primary key  (s_stat_type, s_stat_group, s_stat);
+
+alter table s_document_scanner
+	add constraint s_scanner_pk primary key  (s_scanner_id);

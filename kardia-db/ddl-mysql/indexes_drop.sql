@@ -1273,3 +1273,8 @@ alter table s_audit drop index s_audit_strval_idx;
 /* s_stats_cache */
 /* drop index s_stats_cache.s_stats_cache_pk */ 
 /* go */
+
+
+/* s_document_scanner */
+/* drop index s_document_scanner.s_scanner_pk */ 
+/* go */

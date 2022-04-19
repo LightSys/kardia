@@ -833,3 +833,7 @@ drop table s_global_search;
 
 /* s_stats_cache */
 drop table s_stats_cache;
+
+
+/* s_document_scanner */
+drop table s_document_scanner;
