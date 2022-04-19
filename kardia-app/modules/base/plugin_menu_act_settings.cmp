@@ -2,7 +2,7 @@ $Version=2$
 plugin_menu_act_logins "widget/component-decl"
     {
     width=216;
-    height=142;
+    height=158;
     type = "Settings";
     sql = null;
 
@@ -38,7 +38,7 @@ plugin_menu_act_logins "widget/component-decl"
     settings_pane "widget/pane"
 	{
 	x=0; y=0;
-	width=216; height=142;
+	width=216; height=158;
 	border_radius=4;
 	bgcolor="#faf8ff";
 	style=flat;
@@ -54,7 +54,7 @@ plugin_menu_act_logins "widget/component-decl"
 	    settings_vbox "widget/vbox"
 		{
 		x=10;y=10;
-		width=196;height=122;
+		width=196;height=138;
 		spacing=8;
 
 		f_ledger "widget/component"
@@ -66,6 +66,8 @@ plugin_menu_act_logins "widget/component-decl"
 		    text='Ledger:';
 		    label_width=70;
 		    sql = runserver("select :a_ledger_number + ' - ' + :a_ledger_desc, :a_ledger_number from /apps/kardia/data/Kardia_DB/a_ledger/rows");
+
+		    ledger_hints "widget/hints" { style=notnull; }
 
 		    ledger_sel_cn "widget/connector"
 			{
@@ -95,6 +97,8 @@ plugin_menu_act_logins "widget/component-decl"
 		    sql = runserver("select :a_period + ' - ' + :a_period_desc, :a_period, 0, :a_ledger_number from /apps/kardia/data/Kardia_DB/a_period/rows where :a_parent_period is null order by :a_period desc");
 		    label_width=70;
 
+		    year_hints "widget/hints" { style=notnull; }
+
 		    year_sel_cn "widget/connector"
 			{
 			event="DataChange";
@@ -113,13 +117,14 @@ plugin_menu_act_logins "widget/component-decl"
 		    ctl_type=dropdown;
 		    text='Period:';
 		    label_width=70;
-		    sql = runserver("select :a_period + ' - ' + :a_period_desc, :a_period, 0, :a_ledger_number + '|' + :a_parent_period from  /apps/kardia/data/Kardia_DB/a_period/rows where :a_summary_only = 0 order by :a_period asc");
+		    sql = runserver("select :a_period + ' - ' + :a_period_desc, :a_period, 0, :a_ledger_number + '|' + :a_parent_period from  /apps/kardia/data/Kardia_DB/a_period/rows where :a_summary_only = 0 order by :a_period desc");
 
+		    period_hints "widget/hints" { style=notnull; }
 		    }
 
 		controls_hbox "widget/hbox"
 		    {
-		    height=30;
+		    height=24;
 		    spacing=8;
 		    align=center;
 
@@ -147,6 +152,8 @@ plugin_menu_act_logins "widget/component-decl"
 			cancel_cn "widget/connector" { event=Click; target=settings_form; action=Discard; }
 			}
 		    }
+
+		info_label "widget/label" { height=12; font_size=9; style=italic; text="Settings will be in effect for this session only."; align=center; }
 		}
 	    }
 	}
