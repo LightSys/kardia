@@ -185,6 +185,12 @@ create  index p_search_stage_idx on p_partner_search_results (s_username,p_searc
 /* go */
 
 
+/* p_nondup */
+/* create  index p_nondup_pk on p_nondup (p_partner_key, p_nondup_partner_key)*/ 
+/* go */
+create  index p_nondup_rev_idx on p_nondup (p_nondup_partner_key, p_partner_key);
+
+
 /* m_list */
 /* create  index m_list_pk on m_list (m_list_code)*/ 
 /* go */

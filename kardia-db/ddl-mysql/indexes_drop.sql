@@ -185,6 +185,12 @@ alter table p_partner_search_results drop index p_search_stage_idx;
 /* go */
 
 
+/* p_nondup */
+/* drop index p_nondup.p_nondup_pk */ 
+/* go */
+alter table p_nondup drop index p_nondup_rev_idx;
+
+
 /* m_list */
 /* drop index m_list.m_list_pk */ 
 /* go */

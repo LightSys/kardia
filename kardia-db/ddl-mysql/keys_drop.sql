@@ -206,6 +206,10 @@ alter table p_search_stage_criteria
 	drop primary key;
 
 
+alter table p_nondup
+	drop primary key;
+
+
 alter table m_list
 	drop primary key;
 

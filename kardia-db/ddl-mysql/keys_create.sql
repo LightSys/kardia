@@ -100,6 +100,9 @@ alter table p_partner_search_results
 alter table p_search_stage_criteria
 	add constraint p_stage_criteria_pk primary key  (p_search_id,p_search_stage_id,p_criteria_name);
 
+alter table p_nondup
+	add constraint p_nondup_pk primary key  (p_partner_key, p_nondup_partner_key);
+
 alter table m_list
 	add constraint m_list_pk primary key  (m_list_code);
 

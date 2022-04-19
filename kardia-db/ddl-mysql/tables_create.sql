@@ -662,6 +662,21 @@ create table p_search_stage_criteria (
 );
 
 
+/* p_nondup */
+
+create table p_nondup (
+        p_partner_key                         char(10)  not null,      /*  --  */
+        p_nondup_partner_key                  char(10)  not null,      /*  --  */
+        p_comment                             varchar(900)  null,      /* comments about this pair of partner keys --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
 /* m_list */
 
 create table m_list (

@@ -123,6 +123,10 @@ drop table p_partner_search_results;
 drop table p_search_stage_criteria;
 
 
+/* p_nondup */
+drop table p_nondup;
+
+
 /* m_list */
 drop table m_list;
 
