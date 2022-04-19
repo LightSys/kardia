@@ -206,6 +206,10 @@ alter table p_search_stage_criteria
 	drop primary key;
 
 
+alter table p_nondup
+	drop primary key;
+
+
 alter table m_list
 	drop primary key;
 
@@ -1343,4 +1347,8 @@ alter table s_global_search
 
 
 alter table s_stats_cache
+	drop primary key;
+
+
+alter table s_document_scanner
 	drop primary key;
