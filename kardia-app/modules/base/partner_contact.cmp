@@ -1,0 +1,225 @@
+$Version=2$
+partner_contact "widget/component-decl"
+    {
+    width=970; height=361;
+
+    //This osrc is a parameter passed in from the outside
+    sync_osrc "widget/parameter" { type=object; find_container="widget/osrc"; }
+
+    // Refresh if we make a change
+    send_refresh "widget/parameter" { type=integer; default=0; deploy_to_client=yes; }
+    send_refresh_to "widget/parameter" { type=object; deploy_to_client=yes; }
+
+    // OSRC for retrieving contact and address information
+    contact_addr_osrc "widget/osrc"
+	{
+	p_partner_key "widget/parameter" { type=string; }
+
+	sql = "	-- Retrieve addresses
+		SELECT
+		    type = 'Address',
+		    :l:p_postal_mode,
+		    :l:p_purge_date,
+		    :l:p_postal_code,
+		    :l:p_date_effective,
+		    all=(:l:p_address_1 + condition(char_length(rtrim(:l:p_address_2)) > 0 , ' / ' + :l:p_address_2, '') + condition(char_length(rtrim(:l:p_address_3)) > 0, ' / ' + :l:p_address_3, '')),
+		    :l:p_in_care_of,
+		    :l:p_address_1,
+		    :l:p_address_2,
+		    :l:p_address_3,
+		    :l:p_city,
+		    :l:p_state_province,
+		    :l:p_country_code,
+		    :l:p_location_type,
+		    :l:p_record_status_code,
+		    :l:p_partner_key,
+		    :l:p_date_good_until,
+		    :l:p_certified_date,
+		    :l:p_location_comments,
+		    :l:p_location_id,
+		    :l:p_bulk_postal_code,
+		    :l:p_postal_status,
+		    :l:s_created_by,
+		    :l:s_date_created,
+		    :l:s_modified_by,
+		    :l:s_date_modified,
+		    loc_type_txt = isnull(:lt:text, 'INVALID'),
+		    rec_stat_txt = isnull(:rsc:text, 'Unknown'),
+		    sec_level = isnull(:c:p_security_level, 0),
+		    p_country_name = upper(:c:p_country_name),
+		    :af:p_format
+		FROM
+		    identity /apps/kardia/data/Kardia_DB/p_location/rows l,
+		    /apps/kardia/data/Kardia_DB/_p_location_type/rows lt,
+		    /apps/kardia/data/Kardia_DB/_p_record_status/rows rsc,
+		    /apps/kardia/data/Kardia_DB/p_country/rows c,
+		    /apps/kardia/data/Kardia_DB/p_address_format/rows af
+		WHERE
+		    :l:p_partner_key = :parameters:p_partner_key and
+		    :l:p_revision_id = 0 and
+		    :l:p_location_type *= :lt:tag and
+		    :l:p_record_status_code *= :rsc:tag and
+		    :l:p_country_code *= :c:p_country_code and
+		    :af:p_country_code =* :c:p_country_code and
+		    :af:p_address_set = 'STANDARD'
+		ORDER BY
+		    :l:p_location_id
+		;
+
+		-- Retrieve contact info (email/phone/etc)
+		SELECT
+		    type = :ct:text,
+		    :c:p_contact_id,
+		    :c:p_contact_type,
+		    all=(isnull(:c:p_phone_country + ' ', '') + isnull(:c:p_phone_area_city + ' ', '') + :c:p_contact_data),
+		    :c:p_phone_country,
+		    :c:p_contact_comments,
+		    :c:p_partner_key,
+		    :c:p_location_id,
+		    :c:p_record_status_code,
+		    :c:p_phone_area_city,
+		    :c:p_contact_data,
+		    :c:s_created_by,
+		    :c:s_date_created,
+		    :c:s_modified_by,
+		    :c:s_date_modified,
+		    con_type_txt = :ct:text,
+		    loc_type_txt = isnull(:lt:text, isnull(:lt2:text,'-')),
+		    rec_stat_txt = isnull(:rsc:text, 'Unknown'),
+		    phn_ctry_txt = (select sum(:cn:p_country_name + '/') - '/' from /apps/kardia/data/Kardia_DB/p_country/rows cn where :cn:p_phone_code != 0 and :cn:p_phone_code = :c:p_phone_country group by :cn:p_phone_code asc)
+		FROM
+		    IDENTITY /apps/kardia/data/Kardia_DB/p_contact_info/rows c,
+		    /apps/kardia/data/Kardia_DB/_p_contact_type/rows ct,
+		    /apps/kardia/data/Kardia_DB/p_location/rows l,
+		    /apps/kardia/data/Kardia_DB/_p_location_type/rows lt,
+		    /apps/kardia/data/Kardia_DB/_p_location_type/rows lt2,
+		    /apps/kardia/data/Kardia_DB/_p_record_status/rows rsc
+		WHERE
+		    :c:p_partner_key = :parameters:p_partner_key and
+		    :c:p_contact_type = :ct:tag and
+		    convert(integer,:c:p_location_id) *= :l:p_location_id and
+		    :c:p_partner_key *= :l:p_partner_key and
+		    :l:p_location_type *= :lt:tag and
+		    :l:p_revision_id = 0 and
+		    convert(string,:c:p_location_id) *= :lt2:tag and
+		    :c:p_record_status_code *= :rsc:tag
+		ORDER BY
+		    :c:p_location_id,
+		    :c:p_contact_id
+		";
+	replicasize=20;
+	readahead=20;
+
+	loc_sync "widget/rule"
+	    {
+	    ruletype = "osrc_relationship";
+
+	    target = sync_osrc;
+	    is_slave = yes;
+	    key_1 = p_partner_key;
+	    target_key_1 = p_partner_key;
+	    revealed_only = yes;
+	    }
+
+	contact_addr_table "widget/table"
+	    {
+	    x=0; y=0; width=970; height=361;
+	    overlap_scrollbar = yes;
+	    demand_scrollbar = yes;
+	    show_mouse_focus = no;
+	    initial_selection = no;
+	    max_rowheight=200;
+	    colsep = 0;
+	    cellvspacing=4;
+	    inner_padding=4;
+	    row_border_radius=4;
+	    rowhighlight_border_color="#6080c0";
+	    rowhighlight_shadow_color="#6080c0";
+	    rowhighlight_shadow_radius=2;
+	    rowhighlight_shadow_offset=1;
+	    rowhighlight_shadow_angle=135;
+	    row1_bgcolor="white";
+	    row2_bgcolor="white";
+	    rowhighlight_bgcolor="#faf8ff";
+	    textcolorhighlight="black";
+	    titlecolor = white;
+	    titlebar = yes;
+	    hdr_background = "/apps/kardia/images/bg/lsblue_gradient.png";
+	    rowcache_size=200;
+	    nodata_message = runclient(condition(:contact_addr_osrc:cx__pending, "No contact information information available.", "Looking up contact info..."));
+
+	    // Editing tools for address, phone, email, etc.
+	    detail_rows "widget/repeat"
+		{
+		sql = "	select
+			    path = :cx__pathname,
+			    :types,
+			    :height,
+			    :icon
+			from
+			    object wildcard '/apps/kardia/modules/*/plugin_base_contact_*.cmp'
+			";
+
+		detail_item "widget/table-row-detail"
+		    {
+		    condition=runserver(:detail_rows:height > 0);
+		    display_for=runclient(charindex(',' + :contact_addr_osrc:type + ',', runserver(',' + :detail_rows:types + ',')) > 0);
+		    height=runserver(:detail_rows:height + 20);
+		    width=970;
+
+		    detail_cmp "widget/component"
+			{
+			x=10; y=10;
+			width=950;
+			height=runserver(:detail_rows:height);
+			fl_height=0;
+			path = runserver(:detail_rows:path);
+			}
+		    }
+		}
+
+	    // Columns displayed in the table
+	    ca_valid "widget/table-column" { title = "Active"; value=runclient(condition(:contact_addr_osrc:p_record_status_code != 'A', '/sys/images/dotted_check.gif', '/sys/images/green_check.gif')); type=image; width=90; align=center; font_size=16; style=bold; }
+	    ca_pref "widget/table-column" { title = "Preferred"; value=runclient(condition(:contact_addr_osrc:p_record_status_code != 'A', '/sys/images/dotted_check.gif', '/sys/images/green_check.gif')); type=image; width=90; align=center; font_size=16; style=bold; }
+	    ca_type "widget/table-column" { title = "Type"; value=runclient(isnull(:contact_addr_osrc:loc_type_txt + ' ', '') + :contact_addr_osrc:type); width=160; style=bold; font_size=16; align=left; }
+	    ca_usage "widget/table-column" { title = "Usage"; value=runclient('All'); width=70; style=bold; font_size=16; align=left; }
+
+	    // This column requires a bit more work.
+	    ca_name "widget/table-column"
+		{
+		title = "Contact Information";
+		value=runclient(condition(:contact_addr_osrc:type == 'Address',
+						    condition(char_length(rtrim(:sync_osrc:p_given_name + :sync_osrc:p_surname)) > 0, :sync_osrc:p_given_name + ' ' + :sync_osrc:p_surname + condition(char_length(:sync_osrc:p_suffix) > 0, ', ' + :sync_osrc:p_suffix, '') + '\n', '') +
+						    condition(char_length(:sync_osrc:p_org_name) > 0, :sync_osrc:p_org_name + "\n", "") +
+						    substitute(isnull(:contact_addr_osrc:p_format, "[:p_in_care_of]\n[:p_address_1]\n[:p_address_2]\n[:p_address_3]\n[:p_city], [:p_state_province] [:p_postal_code]\n[:p_country_name]"), "l=contact_addr_osrc,p=sync_osrc"),
+				condition(:contact_addr_osrc:type == 'Email',
+						    condition(char_length(rtrim(:sync_osrc:p_given_name + :sync_osrc:p_surname)) > 0, :sync_osrc:p_given_name + ' ' + :sync_osrc:p_surname + condition(char_length(:sync_osrc:p_suffix) > 0, ', ' + :sync_osrc:p_suffix, '') + ' ', '') +
+						    condition(char_length(:sync_osrc:p_org_name) > 0, :sync_osrc:p_org_name + ' ', "") +
+						    '<' + :contact_addr_osrc:p_contact_data + '>',
+				condition(:contact_addr_osrc:type == 'Cell' or :contact_addr_osrc:type == 'Phone' or :contact_addr_osrc:type == 'Fax',
+						    isnull(:contact_addr_osrc:phn_ctry_txt + ': (+' + :contact_addr_osrc:p_phone_country + ') ', '') + isnull(:contact_addr_osrc:p_phone_area_city + ' ', '') + :contact_addr_osrc:p_contact_data,
+				''))));
+		wrap=yes;
+		width=560;
+		style=bold;
+		font_size=runclient(condition(isnull(:contact_addr_osrc:type, '') != 'Address' , 16, 14));
+		}
+	    }
+
+	add_contact_button "widget/textbutton"
+	    {
+	    x=924;
+	    y=315;
+	    width=36;
+	    height=36;
+	    image_width=36;
+	    image_height=36;
+	    fl_width=0;
+	    fl_height=0;
+	    border_style=none;
+	    text="";
+	    image="/apps/kardia/images/icons/ionicons-plus-circled.svg";
+	    background=null;
+	    }
+	}
+    }

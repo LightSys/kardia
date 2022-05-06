@@ -1,0 +1,392 @@
+$Version=2$
+partner_edit "widget/component-decl"
+    {
+    width=1024;
+    height=700;
+
+    LookupPartner "widget/component-decl-action" { }
+
+    onLookupPartner "widget/connector"
+	{
+	event=LookupPartner;
+	target=primary_partner_osrc;
+	action=QueryParam;
+	p_partner_key=runclient(:partner_key);
+	}
+
+    // This osrc holds the record for the "primary partner" being displayed
+    primary_partner_osrc "widget/osrc"
+	{
+	sql = runserver("
+		SELECT
+			*
+		FROM
+			/apps/kardia/data/Kardia_DB/p_partner/rows
+		--WHERE
+		--	:p_partner_key = '100451'
+		ORDER BY
+			:p_partner_key
+		LIMIT
+			1
+		");
+        baseobj = "/apps/kardia/data/Kardia_DB/p_partner/rows";
+	replicasize = 10;
+	readhead = 5;
+	autoquery = never;
+	//autoquery = onload;
+
+	auto_edit_on_create "widget/connector"
+	    {
+	    event=Created;
+	    target=partner_form;
+	    action=Edit;
+	    event_delay=0.50;
+	    }
+
+	partner_osrc "widget/osrc"
+	    {
+	    sql="	SELECT
+			    :p_partner_key, :p_creating_office, :p_parent_key, :p_partner_class, :p_status_code, :p_status_change_date,
+			    :p_title, :p_given_name, :p_preferred_name, :p_surname, :p_surname_first, :p_localized_name, :p_org_name, :p_gender,
+			    :p_language_code, :p_acquisition_code, :p_comments, :p_record_status_code, :p_no_solicitations, :p_no_mail,
+			    :p_no_mail_reason,
+			    :p_cost_center, :p_best_contact, :p_merged_with, :p_legacy_key_1, :p_legacy_key_2, :p_legacy_key_3, :p_suffix,
+			    :s_date_created, :s_created_by, :s_date_modified, :s_modified_by, :__cx_osml_control,
+			    date_txt = substring(convert(string, :s_date_created), 1, 11),
+			    update_txt = substring(convert(string, :s_date_modified), 1, 11),
+			    disp_name = condition(char_length(rtrim(:p_org_name)) > 0, :p_org_name + ' ' + condition(char_length(:p_given_name + :p_surname) > 0, '- ', ''), '') + isnull(:p_given_name + ' ','') + isnull(:p_surname + ' ','') + condition(isnull(:p_merged_with,'X') = :parameters:param_id, '(old; merged)', '') + condition(:p_partner_key = :parameters:param_merge, '(new; merged into)', ''),
+			    disp_ico = '/apps/kardia/images/icons/' + condition(:p_partner_class == 'IND', 'person.gif', 'group.gif')
+		    FROM
+			    /apps/kardia/data/Kardia_DB/p_partner/rows
+		    WHERE
+			    (:p_partner_key = :parameters:param_id or			-- the 'primary' record
+			    :p_partner_key = :parameters:param_parent or			-- the parent of the record
+			    isnull(:p_parent_key,'X') = :parameters:param_id or		-- children of the record
+			    isnull(:p_parent_key,'X') = :parameters:param_parent or		-- siblings (shared parent) of the record
+			    isnull(:p_merged_with,'X') = :parameters:param_id or		-- obsolete rec merged with this one
+			    :p_partner_key = :parameters:param_merge) and			-- this rec is obs; merged with record...
+			    convert(integer, :p_partner_key) > 0
+		    ORDER BY
+			    charindex('*' + rtrim(:p_partner_key) + '*', '*' + :parameters:param_id + '*') desc,
+			    charindex('*' + rtrim(:p_partner_key) + '*', '*' + :parameters:param_parent + '*') desc,
+			    charindex('*' + rtrim(:p_parent_key) + '*', '*' + :parameters:param_id + '*') desc,
+			    charindex('*' + rtrim(:p_parent_key) + '*', '*' + :parameters:param_parent + '*') desc,
+			    convert(integer,:p_partner_key)
+		    ";
+	    baseobj = "/apps/kardia/data/Kardia_DB/p_partner/rows";
+	    replicasize=20;
+	    readahead=10;
+	    autoquery = never;
+
+	    param_id "widget/parameter" { type=string; default=null; }
+	    param_parent "widget/parameter" { type=string; default=null; }
+	    param_merge "widget/parameter" { type=string; default=null; }
+
+	    partner_sync "widget/rule"
+		{
+		ruletype = osrc_relationship;
+		target = primary_partner_osrc;
+		key_1 = param_id;
+		key_2 = param_parent;
+		key_3 = param_merge;
+		target_key_1 = p_partner_key;
+		target_key_2 = p_parent_key;
+		target_key_3 = p_merged_with;
+		}
+
+	    main_vbox "widget/vbox"
+		{
+		x=0; y=0;
+		width=1024; height=700;
+		spacing=10;
+
+		// Title/Action bar
+		action_bar "widget/pane"
+		    {
+		    height=60;
+		    //background="/apps/kardia/images/bg/charcoal_gradient.png";
+		    background="/apps/kardia/images/bg/horiz-bar-world-dark-96.png";
+		    style=flat;
+		    widget_class = crm_iconbar;
+		    fl_height=0;
+
+		    action_bar_hbox "widget/hbox"
+			{
+			x=10; y=0;
+			width=1004; height=60;
+			spacing=10;
+
+			// spacer to leave room for photo
+			photo_spacer "widget/autolayoutspacer" { width=130; fl_width=0; }
+
+			bar_title "widget/label"
+			    {
+			    width=550;
+			    y=11;
+			    font_size=32;
+			    style=bold;
+			    fgcolor=white;
+			    value=runclient(:partner_osrc:disp_name);
+			    }
+
+			button_hbox "widget/hbox"
+			    {
+			    width=304;
+			    align=right;
+			    spacing=0;
+
+			    save_button "widget/component"
+				{
+				fl_width=0;
+				width=76;
+				active=runclient(:partner_osrc:is_client_savable);
+				path="button_action.cmp";
+				text=runserver("Save");
+				image=runserver("/apps/kardia/images/icons/ionicons-archive.svg");
+				}
+
+			    cancel_button "widget/component"
+				{
+				fl_width=0;
+				width=76;
+				active=runclient(:partner_osrc:is_client_discardable);
+				path="button_action.cmp";
+				text=runserver("Cancel");
+				image=runserver("/apps/kardia/images/icons/ionicons-arrow-return-left.svg");
+				}
+
+			    new_button "widget/component"
+				{
+				fl_width=0;
+				width=76;
+				active=runclient(not :partner_osrc:is_client_discardable);
+				path="button_action.cmp";
+				text = "New";
+				image="/apps/kardia/images/icons/ionicons-person-add.svg";
+				}
+			    }
+			}
+		    }
+		}
+
+	    partner_main_hbox "widget/hbox"
+		{
+		x=16;
+		y=16;
+		width=992;
+		height=250;
+		fl_height=0;
+		spacing=16;
+
+		partner_meta_form "widget/form"
+		    {
+		    profile_info "widget/vbox"
+			{
+			width=120;
+			spacing=6;
+
+			profile_photo "widget/component"
+			    {
+			    width=120;
+			    height=120;
+			    fl_height=0;
+			    fl_width=0;
+			    path="../crm/profile_picture.cmp";
+			    }
+
+			profile_id "widget/component" { height=14; label_width=50; path="/sys/cmp/smart_field.cmp"; ctl_type=label; text="ID:"; field=p_partner_key; }
+			profile_date "widget/component" { height=14; label_width=50; path="/sys/cmp/smart_field.cmp"; ctl_type=label; text="Added:"; field=date_txt; }
+			profile_moddate "widget/component" { height=14; label_width=50; path="/sys/cmp/smart_field.cmp"; ctl_type=label; text="Update:"; field=update_txt; }
+			}
+		    }
+
+		partner_form "widget/form"
+		    {
+		    partner_fields "widget/component"
+			{
+			y=64;
+			width=582;
+			height=186;
+			path="/apps/kardia/modules/base/p_partner_fields.cmp";
+			}
+		    }
+
+		related_pane "widget/pane"
+		    {
+		    y=64;
+		    width=258;
+		    height=186;
+		    style=bordered;
+		    border_color="#6080c0";
+		    border_radius=8;
+		    shadow_color="#6080c0";
+		    shadow_radius=8;
+		    bgcolor="#ffffff";
+
+		    related_table "widget/table"
+			{
+			x=8; y=8;
+			width=240;
+			height=170;
+			row_border_radius=4;
+			demand_scrollbar = yes;
+			overlap_scrollbar = yes;
+			initial_selection = yes;
+			colsep = 0;
+			titlebar = yes;
+			min_rowheight = 16;
+			max_rowheight = 200;
+			cellvspacing = 2;
+			row1_bgcolor = white;
+			row2_bgcolor = white;
+			show_selection = yes;
+			inner_padding = 2;
+			//rowhighlight_bgcolor = "#fff090";
+			textcolorhighlight = "#000000";
+			titlecolor = white;
+			hdr_background = "/apps/kardia/images/bg/lsblue_gradient.png";
+			rowhighlight_border_color="#6080c0";
+			rowhighlight_border_radius=3;
+			rowhighlight_shadow_color="#6080c0";
+			rowhighlight_shadow_radius=2;
+			rowhighlight_shadow_offset=1;
+			rowhighlight_shadow_angle=135;
+			rowhighlight_bgcolor="#faf8ff";
+
+			ico "widget/table-column" { width=24; title = ""; fieldname = disp_ico; type=image; }
+			nm "widget/table-column" { width=218; title = "Related Partners:"; fieldname = disp_name; style=runclient(condition(:partner_osrc:p_partner_key is null, 'bold', 'plain')); }
+			}
+
+		    add_relate_button "widget/textbutton"
+			{
+			x=202;
+			y=132;
+			width=36;
+			height=36;
+			image_width=36;
+			image_height=36;
+			fl_width=0;
+			fl_height=0;
+			border_style=none;
+			text="";
+			image="/apps/kardia/images/icons/ionicons-plus-circled.svg";
+			background=null;
+			}
+		    }
+		}
+
+	    //partner_detail_pane "widget/pane"
+	//	{
+	//	x=16; y=282;
+	//	height=408;
+	//	width=992;
+	//	style=bordered;
+	//	border_color="#6080c0";
+	//	border_radius=8;
+	//	shadow_color="#6080c0";
+	//	shadow_radius=8;
+
+		partner_detail_tabctl "widget/tab"
+		    {
+		    //x=0; y=0; height=406; width=990;
+		    x=16; y=282; height=383; width=992;
+                    selected = "partner_address_tab";
+		    bgcolor="#ffffff";
+		    inactive_bgcolor="#e0e0e0";
+		    //inactive_background="/apps/kardia/images/bg/light_bgnd3.jpg";
+		    //border_style=none;
+		    //tab_location=none;
+		    border_color="#6080c0";
+		    border_radius=8;
+		    shadow_color="#6080c0";
+		    shadow_radius=8;
+
+		    partner_address_tab "widget/tabpage"
+			{
+			title = "Address/Contact";
+			textcolor = black;
+
+			person_location_cmp "widget/component"
+			    {
+			    path="/apps/kardia/modules/base/partner_contact.cmp";
+			    x=10; y=10; width=970; height=361;
+			    //send_refresh = runserver(:this:send_refresh);
+			    //send_refresh_to = send_refresh_to;
+			    }
+			}
+		    partner_rest_tab "widget/tabpage"
+			{
+			title = "Advanced...";
+			textcolor = black;
+			x=0; y=0; width=835; height=428;
+			p_partner_adv_vbox1 "widget/vbox"
+			    {
+			    x=10;y=10;cellsize=20; spacing=4;
+			    height=338;
+			    width=300;
+
+			    locale_hdr "widget/component" { path="/apps/kardia/modules/base/section_label.cmp"; text="National / Local Info"; }
+			    p_language_code_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_language_code; text="Language:"; ctl_type="editbox"; form=partner_form; tooltip="The Partners Language"; }
+			    localized_name_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_localized_name; text="Localized Name:"; ctl_type="editbox"; form=partner_form; tooltip="The name as written in the partners national language"; }
+			    p_surname_first_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_surname_first; text="Last Name First:"; ctl_type="checkbox"; form=partner_form; tooltip="Is the Last Name (Surname) listed first as in many countries"; sur_first_hints "widget/hints" { default=runclient(0); } }
+			    sep00 "widget/autolayoutspacer" { height=4; }
+			    legacy_hdr "widget/component" { path="/apps/kardia/modules/base/section_label.cmp"; text="Legacy System"; }
+			    p_legacy_key_1_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_legacy_key_1; text=runserver(isnull( (select :s_config_value from /apps/kardia/data/Kardia_DB/s_config/rows where :s_config_name = 'PtnrSpecField1'), 'Legacy Key 1') + ':'); ctl_type="editbox"; form=partner_form; tooltip=runserver('Legacy Value - ' + isnull( (select :s_config_value from /apps/kardia/data/Kardia_DB/s_config/rows where :s_config_name = 'PtnrSpecField1'), 'Legacy Key 1')); }
+			    p_legacy_key_2_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_legacy_key_2; text=runserver(isnull( (select :s_config_value from /apps/kardia/data/Kardia_DB/s_config/rows where :s_config_name = 'PtnrSpecField2'), 'Legacy Key 2') + ':'); ctl_type="editbox"; form=partner_form; tooltip=runserver('Legacy Value - ' + isnull( (select :s_config_value from /apps/kardia/data/Kardia_DB/s_config/rows where :s_config_name = 'PtnrSpecField2'), 'Legacy Key 2')); }
+			    p_legacy_key_3_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_legacy_key_3; text=runserver(isnull( (select :s_config_value from /apps/kardia/data/Kardia_DB/s_config/rows where :s_config_name = 'PtnrSpecField3'), 'Legacy Key 3') + ':'); ctl_type="editbox"; form=partner_form; tooltip=runserver('Legacy Value - ' + isnull( (select :s_config_value from /apps/kardia/data/Kardia_DB/s_config/rows where :s_config_name = 'PtnrSpecField3'), 'Legacy Key 3')); }
+			    sep01 "widget/autolayoutspacer" { height=4; }
+			    addl_hdr "widget/component" { path="/apps/kardia/modules/base/section_label.cmp"; text="Additional..."; }
+			    p_best_contact_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_best_contact; text="Best Contact:"; ctl_type="editbox"; form=partner_form; tooltip="Best contact"; }
+			    p_acquisition_code_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_acquisition_code; text="Acquisition:"; ctl_type="editbox"; form=partner_form; tooltip="How the partner was acquired"; }
+			    }
+
+			p_partner_adv_vbox2 "widget/vbox"
+			    {
+			    x=326; y=10; cellsize=20; spacing=4;
+			    height=338;
+			    width=300;
+
+			    recinfo_hdr "widget/component" { path="/apps/kardia/modules/base/section_label.cmp"; text="Record Information"; }
+			    p_record_status_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; form=partner_form; field=p_record_status_code; text="Record Status:"; sql="select :text, :tag from /apps/kardia/data/Kardia_DB/_p_record_status/rows"; tooltip="The status of the record"; ctl_type="dropdown"; rec_stat_hints "widget/hints" { default=runclient('A'); } }
+			    p_status_change_date_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_status_change_date; text="Status Change:"; ctl_type="datetime"; form=partner_form; tooltip="Date of the last status change";}
+			    p_creating_office_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_creating_office; text="Creating Office:"; ctl_type="editbox"; form=partner_form; tooltip="This is the office which created the record"; creating_ofc_hints "widget/hints" { default=runclient('USA'); } }
+			    p_merged_with_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_merged_with; text="Merged With:"; ctl_type="editbox"; form=partner_form; tooltip="The partner this partner was merged with." ; }
+			    p_parent_key_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_parent_key; text="Parent Key:"; ctl_type="editbox"; form=partner_form; tooltip="For hierarcies of various sorts"; }
+			    s_date_created_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_date_created; text="Date Created:"; ctl_type="datetime"; type="create"; form=partner_form; tooltip="The date the record was created."; }
+			    s_created_by_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_created_by; text="Created By:"; ctl_type="editbox"; type="create"; form=partner_form; tooltip="The user who created the partner record" ; }
+			    s_date_modified_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_date_modified; text="Date Modified:"; ctl_type="datetime"; type="modify"; form=partner_form; tooltip="The date the record was created."; }
+			    s_modified_by_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_modified_by; text="Modified By:"; ctl_type="editbox"; type="modify"; form=partner_form; tooltip="The user who modified the partner record" ; }
+			    }
+			}
+		    person_class_tab "widget/tabpage"
+			{
+			title = "Person";
+			textcolor = black;
+			x=0; y=0; width=833; height=338;
+			visible = runclient( :partner_osrc:p_partner_class = 'IND' );
+			person_person_cmp "widget/component"
+			    {
+			    path="/apps/kardia/modules/base/p_person.cmp";
+			    x=0; y=0; width=831; height=338;
+			    sync_osrc = partner_osrc;
+			    }
+			}
+		    church_class_tab "widget/tabpage"
+			{
+			title = "Church";
+			textcolor = black;
+			x=0; y=0; width=833; height=338;
+			visible = runclient( :partner_osrc:p_partner_class == 'CHU' );
+			person_church_cmp "widget/component"
+			    {
+			    path="/apps/kardia/modules/base/p_church.cmp";
+			    x=0; y=0; width=831; height=338;
+			    sync_osrc = partner_osrc;
+			    }
+			}
+		    }
+		//}
+	    }
+	}
+    }
+

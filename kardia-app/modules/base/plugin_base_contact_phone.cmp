@@ -1,0 +1,26 @@
+$Version=2$
+plugin_base_contact_phone "widget/component-decl"
+    {
+    types="Phone,Cell,Fax";
+    width=950;
+    height=20;
+
+    osrc "widget/parameter" { type=object; find_container="widget/osrc"; }
+
+    phone_hbox "widget/hbox"
+	{
+	x=0; y=0; width=950; height=20;
+	align=center;
+
+	phone_form "widget/form"
+	    {
+	    objectsource=osrc;
+
+	    phone_fields "widget/component"
+		{
+		width=650;
+		path="/apps/kardia/modules/base/phone_fields.cmp";
+		}
+	    }
+	}
+    }

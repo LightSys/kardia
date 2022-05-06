@@ -1,0 +1,26 @@
+$Version=2$
+plugin_base_contact_address "widget/component-decl"
+    {
+    types="Address";
+    width=950;
+    height=188;
+
+    osrc "widget/parameter" { type=object; find_container="widget/osrc"; }
+
+    location_hbox "widget/hbox"
+	{
+	x=0; y=0; width=950; height=188;
+	align=center;
+
+	location_form "widget/form"
+	    {
+	    objectsource=osrc;
+
+	    location_fields "widget/component"
+		{
+		width=650;
+		path="/apps/kardia/modules/base/p_location_fields.cmp";
+		}
+	    }
+	}
+    }

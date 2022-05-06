@@ -1,0 +1,356 @@
+$Version=2$
+partner_search_new "widget/component-decl"
+    {
+    width=1280;
+    height=700;
+    
+    hbox "widget/hbox"
+	{
+	x=0; y=0;
+	width=1280;
+	height=700;
+	spacing=0;
+
+	search_pane "widget/pane"
+	    {
+	    width=256;
+	    style=flat;
+	    bgcolor="#496293";
+	    shadow_radius=8;
+	    shadow_color="#000000";
+	    shadow_angle=90;
+	    shadow_offset=2;
+
+	    search_vbox "widget/vbox"
+		{
+		x=0; y=0;
+		width=256; height=700;
+		spacing=10;
+
+		search_entry_pane "widget/pane"
+		    {
+		    height=59;
+		    bgcolor="#334466";
+		    style=flat;
+		    shadow_radius=8;
+		    shadow_color="#202020";
+		    shadow_angle=180;
+		    shadow_offset=2;
+
+		    search_entry_hbox "widget/hbox"
+			{
+			x=16; y=14;
+			height=32;
+			width=224;
+			spacing=6;
+
+			search_entry_eb "widget/editbox"
+			    {
+			    y=2;
+			    width=158;
+			    height=28;
+			    empty_description="search";
+
+			    enter_pressed_switch_tab "widget/connector"
+				{
+				event=BeforeKeyPress;
+				event_condition=runclient(:Name == 'enter' and char_length(:search_entry_eb:content) >= 2);
+				target = search_tab;
+				action = SetTab;
+				TabIndex = 1;
+				}
+
+			    enter_pressed_do_search "widget/connector"
+				{
+				event=BeforeKeyPress;
+				event_condition=runclient(:Name == 'enter' and char_length(:search_entry_eb:content) >= 2);
+				event_cancel=runclient(:Name == 'enter');
+				target=search_osrc;
+				action=QueryParam;
+				string=runclient(:search_entry_eb:content);
+				}
+			    }
+
+			search_btn "widget/imagebutton"
+			    {
+			    width=32;
+			    height=32;
+			    text="";
+			    image = "/apps/kardia/images/icons/ionicons-search-w.svg";
+
+			    btn_pressed_switch_tab "widget/connector"
+				{
+				event=Click;
+				event_condition=runclient(char_length(:search_entry_eb:content) >= 2);
+				target = search_tab;
+				action = SetTab;
+				TabIndex = 1;
+				}
+
+			    btn_do_search "widget/connector"
+				{
+				event=Click;
+				event_condition=runclient(char_length(:search_entry_eb:content) >= 2);
+				target=search_osrc;
+				action=QueryParam;
+				string=runclient(:search_entry_eb:content);
+				}
+			    }
+
+			gear_btn "widget/imagebutton"
+			    {
+			    y=4;
+			    width=24;
+			    height=24;
+			    text="";
+			    image = "/apps/kardia/images/icons/ionicons-gear-w.svg";
+
+			    btn_do_adv_search "widget/connector"
+				{
+				event=Click;
+				target=adv_popover;
+				action=Open;
+				PointAt=search_pane;
+				PointSide=runclient("left");
+				}
+			    }
+			}
+		    }
+
+		search_tab "widget/tab"
+		    {
+		    height=641;
+		    tab_location=none;
+		    bgcolor=null;
+		    background=null;
+		    border_style=none;
+
+		    normal_search_page "widget/tabpage"
+			{
+			title = "Search";
+
+			search_osrc "widget/osrc"
+			    {
+			    string "widget/parameter" { type=string; }
+			    sql = " select
+					:s:partner_id,
+					-- nm = condition(char_length(rtrim(:p:p_org_name)) > 1, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
+					:s:partner_name,
+					:s:contact,
+					:s:partner_address,
+					is_staff = (select count(1) from /apps/kardia/data/Kardia_DB/p_staff/rows st where :st:p_partner_key = :s:partner_id),
+					is_donor = (select count(1) from /apps/kardia/data/Kardia_DB/p_donor/rows d where :d:p_partner_key = :s:partner_id) +
+						    isnull( (select 1 from /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g where :g:p_donor_partner_id = :s:partner_id limit 1), 0),
+					is_payee = (select count(1) from /apps/kardia/data/Kardia_DB/p_payee/rows py where :py:p_partner_key = :s:partner_id) +
+						    isnull( (select 1 from /apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows di where :di:a_payee_partner_key = :s:partner_id limit 1), 0),
+					-- loc = isnull(:pl:p_city + ', ','') + isnull(:pl:p_state_province + ' ','') + isnull(:pl:p_postal_code, ''),
+					img = isnull( ( select
+						    path = :d:e_current_folder + '/' + :d:e_current_filename
+						from
+						    /apps/kardia/data/Kardia_DB/e_partner_document/rows pd,
+						    /apps/kardia/data/Kardia_DB/e_document/rows d,
+						    /apps/kardia/data/Kardia_DB/e_document_type/rows dt
+						where
+						    :pd:p_partner_key = :s:partner_id and
+						    :pd:e_document_id = :d:e_document_id and
+						    :d:e_doc_type_id = :dt:e_doc_type_id and
+						    :dt:e_doc_type_label = 'Profile Photo'
+						order by
+						    :pd:s_date_modified desc
+						limit
+						    1
+						), '/apps/kardia/images/artwork/persona.png')
+				    from
+					expression ('/apps/kardia/modules/base/api_partnersearch.qy?string=' + escape(:parameters:string, '', '/')) s,
+					/apps/kardia/data/Kardia_DB/p_location/rows pl
+				    where
+					:s:partner_id *= :pl:p_partner_key and
+					:s:is_valid = 1 and
+					:s:is_valid = 1 and
+					:pl:p_revision_id = 0 and
+					:pl:p_record_status_code = 'A'
+				    ";
+			    replicasize=100;
+			    readahead=100;
+			    autoquery=never;
+
+			    search_table "widget/table"
+				{
+				height=619;
+				width=236;
+				x=10;
+				y=2;
+				min_rowheight=16;
+				max_rowheight=128;
+				mode=dynamicrow;
+				allow_selection = yes;
+				show_selection = yes;
+				initial_selection = no;
+				demand_scrollbar = yes;
+				overlap_scrollbar = yes;
+				colsep = 0;
+				titlebar = no;
+				row_border_radius=4;
+				rowhighlight_bgcolor = "#6080c0";
+				rowhighlight_shadow_angle=180;
+				rowhighlight_shadow_radius=4;
+				rowhighlight_shadow_offset=1;
+				rowhighlight_shadow_color="#202020";
+				textcolorhighlight = "#000000";
+				inner_padding = 4;
+				cellvspacing = 4;
+				row1_bgcolor = "#496293";
+				row2_bgcolor = "#496293";
+				nodata_message = "(type your search above and press Enter)";
+
+				t_img "widget/table-column" { title=""; fieldname="img"; width=38; type=image; image_maxwidth=32; image_maxheight=32; align=center; textcolor=white; }
+				t_name "widget/table-column" { title="Partner"; fieldname=partner_name; caption_value=runclient(condition(char_length(:search_osrc:contact) > 1, :search_osrc:contact + '\n', '') + condition(char_length(:search_osrc:partner_address) > 1, :search_osrc:partner_address + '\n', '') + '#' + :search_osrc:partner_id + condition(:search_osrc:is_donor > 0, ' (donor)', '') + condition(:search_osrc:is_payee > 0, ' (payee)', '') + condition(:search_osrc:is_staff > 0, ' (staff)', '')); width=166; textcolor=white; caption_textcolor="#f0f0f0"; style=bold; font_size=15; caption_style=italic; wrap=yes; }
+
+				on_row_click "widget/connector"
+				    {
+				    event=Click;
+				    target=partner_cmp;
+				    action=LookupPartner;
+				    partner_key=runclient(:search_osrc:partner_id);
+				    }
+				}
+			    }
+			}
+
+		    advanced_search_page "widget/tabpage"
+			{
+			title = "Advanced";
+
+			adv_search_osrc "widget/osrc"
+			    {
+			    sql="   SELECT
+					    partner_id = :p:p_partner_key,
+					    partner_name = condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name + ' ' + condition(char_length(:p:p_given_name + :p:p_surname) > 0, '- ', ''), '') + isnull(:p:p_given_name + ' ','') + isnull(:p:p_surname + ' ',''),
+					    partner_address = substitute(isnull(:af:p_format, '[:p_in_care_of]\n[:p_address_1]\n[:p_address_2]\n[:p_address_3]\n[:p_city], [:p_state_province] [:p_postal_code]\n[:p_country_name]'), 'l=l,p=p,c=c'),
+					    contact = null,
+					    is_staff = (select count(1) from /apps/kardia/data/Kardia_DB/p_staff/rows st where :st:p_partner_key = :p:p_partner_key),
+					    is_donor = (select count(1) from /apps/kardia/data/Kardia_DB/p_donor/rows d where :d:p_partner_key = :p:p_partner_key) +
+							isnull( (select 1 from /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g where :g:p_donor_partner_id = :p:p_partner_key limit 1), 0),
+					    is_payee = (select count(1) from /apps/kardia/data/Kardia_DB/p_payee/rows py where :py:p_partner_key = :p:p_partner_key) +
+							isnull( (select 1 from /apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows di where :di:a_payee_partner_key = :p:p_partner_key limit 1), 0),
+					    :l:p_address_3, :l:p_address_2, :l:p_location_type, :l:p_country_code, :l:p_address_1,
+					    :l:p_postal_code, :l:p_state_province, :l:p_in_care_of, :l:p_city, :l:p_location_id,
+					    :p:p_partner_key, :p:p_partner_class, :p:p_title, :p:p_given_name, :p:p_preferred_name,
+					    :p:p_surname, :p:p_org_name, :p:p_comments,  :p:p_legacy_key_1, :p:p_legacy_key_2, :p:p_legacy_key_3,
+					    img = isnull( ( select
+							path = :d:e_current_folder + '/' + :d:e_current_filename
+						    from
+							/apps/kardia/data/Kardia_DB/e_partner_document/rows pd,
+							/apps/kardia/data/Kardia_DB/e_document/rows d,
+							/apps/kardia/data/Kardia_DB/e_document_type/rows dt
+						    where
+							:pd:p_partner_key = :p:p_partner_key and
+							:pd:e_document_id = :d:e_document_id and
+							:d:e_doc_type_id = :dt:e_doc_type_id and
+							:dt:e_doc_type_label = 'Profile Photo'
+						    order by
+							:pd:s_date_modified desc
+						    limit
+							1
+						    ), '/apps/kardia/images/artwork/persona.png')
+				    FROM
+					    /apps/kardia/data/Kardia_DB/p_partner/rows p,
+					    /apps/kardia/data/Kardia_DB/p_location/rows l,
+					    /apps/kardia/data/Kardia_DB/p_country/rows c,
+					    /apps/kardia/data/Kardia_DB/p_address_format/rows af
+				    WHERE
+					    :p:p_partner_key = :l:p_partner_key and
+					    :p:p_record_status_code != 'X' and
+					    :l:p_revision_id = 0 and
+					    :c:p_country_code =* :l:p_country_code and
+					    :af:p_country_code =* :c:p_country_code and
+					    :af:p_address_set = 'STANDARD'
+				    ";
+			    baseobj = "/apps/kardia/data/Kardia_DB/p_partner/rows";
+			    replicasize=100;
+			    readahead=100;
+			    autoquery=never;
+
+			    adv_search_results "widget/connector"
+				{
+				event=BeginQuery;
+				target=search_tab;
+				action = SetTab;
+				TabIndex = 2;
+				}
+
+			    adv_search_results_clear_eb "widget/connector"
+				{
+				event=BeginQuery;
+				target=search_entry_eb;
+				action = SetValue;
+				Value=runclient("");
+				}
+
+			    adv_search_table "widget/table"
+				{
+				height=619;
+				width=236;
+				x=10;
+				y=2;
+				min_rowheight=16;
+				max_rowheight=128;
+				mode=dynamicrow;
+				allow_selection = yes;
+				show_selection = yes;
+				initial_selection = no;
+				demand_scrollbar = yes;
+				overlap_scrollbar = yes;
+				colsep = 0;
+				titlebar = no;
+				row_border_radius=4;
+				rowhighlight_bgcolor = "#6080c0";
+				rowhighlight_shadow_angle=180;
+				rowhighlight_shadow_radius=4;
+				rowhighlight_shadow_offset=1;
+				rowhighlight_shadow_color="#202020";
+				textcolorhighlight = "#000000";
+				inner_padding = 4;
+				cellvspacing = 4;
+				row1_bgcolor = "#496293";
+				row2_bgcolor = "#496293";
+				nodata_message = "(no results)";
+
+				at_img "widget/table-column" { title=""; fieldname="img"; width=38; type=image; image_maxwidth=32; image_maxheight=32; align=center; textcolor=white; }
+				at_name "widget/table-column" { title="Partner"; fieldname=partner_name; caption_value=runclient(condition(char_length(:adv_search_osrc:contact) > 1, :adv_search_osrc:contact + '\n', '') + condition(char_length(:adv_search_osrc:partner_address) > 1, :adv_search_osrc:partner_address + '\n', '') + '#' + :adv_search_osrc:partner_id + condition(:adv_search_osrc:is_donor > 0, ' (donor)', '') + condition(:adv_search_osrc:is_payee > 0, ' (payee)', '') + condition(:adv_search_osrc:is_staff > 0, ' (staff)', '')); width=166; textcolor=white; caption_textcolor="#f0f0f0"; style=bold; font_size=15; caption_style=italic; wrap=yes; }
+
+				on_adv_row_click "widget/connector"
+				    {
+				    event=Click;
+				    target=partner_cmp;
+				    action=LookupPartner;
+				    partner_key=runclient(:adv_search_osrc:partner_id);
+				    }
+				}
+			    }
+			}
+		    }
+		}
+	    }
+
+	partner_cmp "widget/component" 
+	    { 
+	    width=1024;
+	    path="/apps/kardia/modules/base/partner_edit_new.cmp"; 
+	    id = runserver(:this:id);
+	    ledger = runserver(:this:ledger);
+	    search = runserver(:this:search);
+	    send_refresh = runserver(:this:send_refresh);
+	    send_refresh_to = send_refresh_to;
+	    partner_only = partner_only;
+	    }
+	}
+
+    adv_popover "widget/component"
+	{
+	x=0; y=0;
+	width=1280; height=700;
+	path="popover_advanced_search.cmp";
+	search_osrc = adv_search_osrc;
+	}
+    }
