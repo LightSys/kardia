@@ -1,0 +1,102 @@
+$Version=2$
+mykardia "widget/component-decl"
+    {
+    width=800;
+    height=600;
+
+    title_pane "widget/pane"
+	{
+	x=0; y=0; width=800; height=600;
+	style=bordered;
+	border_radius=4;
+	bgcolor=white;
+	border_color=black;
+
+	title_img_hbox "widget/hbox"
+	    {
+	    x=0; y=16; width=798; height=37;
+	    align=center;
+
+	    title_img "widget/image"
+		{
+		width=182; height=37;
+		source="/apps/kardia/images/artwork/Kardia2011b-horiz-37.png";
+		}
+	    }
+
+	title_sep "widget/pane"
+	    {
+	    x=12; y=71; width=776; height=2;
+	    style=flat;
+	    bgcolor=black;
+	    }
+
+	options_vbox "widget/vbox"
+	    {
+	    x=10; y=85; width=780; height=505;
+	    column_width=385;
+	    spacing=10;
+	    justify=filled;
+
+	    options_rpt "widget/repeat"
+		{
+		sql = "select
+			    path = :pl:cx__pathname,
+			    module = :mk:s_module,
+			    component = :pl:cx__pathpart5,
+			    :pl:description,
+			    height = isnull(:mk:s_height, :pl:height),
+			    flex = isnull(:pl:fl_height,0),
+			    plname = :mk:s_plugin
+			from
+			    object wildcard '/apps/kardia/modules/*/plugin_kardia_myk_*.cmp' pl,
+			    /apps/kardia/data/Kardia_DB/s_mykardia/rows mk
+			where
+			    :mk:s_username = user_name() and
+			    :mk:s_module = :pl:cx__pathpart4 and
+			    :mk:s_plugin = :pl:cx__pathpart5
+			order by
+			    :mk:s_sequence";
+
+		option_pane "widget/pane"
+		    {
+		    width=385;
+		    style=bordered;
+		    border_radius=4;
+		    bgcolor="#f7f7f7";
+		    //bgcolor="#f3f6f9";
+		    shadow_color="#6080c0";
+		    shadow_radius=4;
+		    //border_color="#a8c1d8";
+		    border_color="#6080c0";
+		    height=runserver(:options_rpt:height + 8 + 4);
+
+		    glow "widget/connector"
+			{
+			condition=0;
+			event=MouseOver;
+			action=SetBackground;
+			Color=runclient("#a8c1d8");
+			}
+
+		    noglow "widget/connector"
+			{
+			condition=0;
+			event=MouseOut;
+			action=SetBackground;
+			Color=runclient("white");
+			}
+
+		    option_cmp "widget/component"
+			{
+			path=runserver(:options_rpt:path);
+			x=0; y=4;
+			width=377;
+			height=runserver(:options_rpt:height);
+			fl_height=runserver(:options_rpt:flex);
+			}
+		    }
+		}
+	    }
+	}
+    }

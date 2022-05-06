@@ -1,0 +1,9 @@
+$Version=2$
+kardia_modinfo "system/structure"
+    {
+    module_name = "Kardia";
+    module_abbrev = "Kardia";
+    module_description = "Welcome to Kardia, a free open-source financial and ministry management software system.";
+    module_sequence = null;
+    module_ui = "mykardia.cmp";
+    }

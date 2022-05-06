@@ -1,0 +1,62 @@
+$Version=2$
+plugin_kardia_myk_reports "widget/component-decl"
+    {
+    width=390; height=200;
+    fl_height=10;
+    description = "My Reports";
+
+    reports_hbox "widget/hbox"
+	{
+	x=0; y=0; width=390; height=200;
+	spacing=12;
+	reports_img "widget/image" { height=32; width=32; source="/apps/kardia/images/tango/x-office-spreadsheet.png"; }
+
+	reports_vbox "widget/vbox"
+	    {
+	    width=346;
+	    spacing=0;
+
+	    sep1 "widget/autolayoutspacer" { height=4; }
+
+	    reports_label "widget/label"
+		{
+		widget_class=link;
+		y=4;
+		height=28;
+		font_size=20;
+		style=bold;
+		text="My Reports";
+
+		//focus_on_click "widget/connector" { event=Click; target=input_eb; action=SetFocus; }
+		}
+
+	    sep2 "widget/autolayoutspacer" { height=4; }
+
+	    reports_pane "widget/pane"
+		{
+		height=164;
+		style=bordered;
+		border_color="#e0e0e0";
+
+		reports_scroll "widget/scrollpane"
+		    {
+		    x=0; y=0;
+		    height=162; width=344;
+
+		    reports_tree "widget/treeview"
+			{
+			x=0; y=0;
+			height=162; width=320;
+			show_root=no;
+			show_branches=yes;
+			show_root_branch = yes;
+			highlight_bgcolor = "#153f5f";
+			highlight_fgcolor = white;
+			use_3d_lines=no;
+			source = runserver("/apps/kardia/modules/base/reports_tree.qyt/" + (select :p_partner_key from /apps/kardia/data/Kardia_DB/p_staff/rows where :p_kardia_login = user_name() ) + "/");
+			}
+		    }
+		}
+	    }
+	}
+    }

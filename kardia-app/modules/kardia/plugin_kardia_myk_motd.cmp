@@ -1,0 +1,14 @@
+$Version=2$
+plugin_kardia_myk_motd "widget/component-decl"
+    {
+    width=390; height=32;
+    description = "Message of the Day";
+
+    motd_hbox "widget/hbox"
+	{
+	x=0; y=0; width=390; height=32;
+	spacing=12;
+	motd_img "widget/image" { width=32; source="/apps/kardia/images/tango/internet-news-reader.png"; }
+	motd_label "widget/label" { widget_class=link; y=4; width=300; font_size=20; style=bold; text="Message of the Day"; }
+	}
+    }

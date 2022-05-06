@@ -1,0 +1,43 @@
+$Version=2$
+plugin_kardia_myk_gtodo "widget/component-decl"
+    {
+    width=390; height=200;
+    fl_height=10;
+    description = "My To-Do List";
+
+    gtodo_hbox "widget/hbox"
+	{
+	x=0; y=0; width=390; height=200;
+	spacing=12;
+	gtodo_img "widget/image" { height=32; width=32; source="/apps/kardia/images/tango/format-justify-left.png"; }
+
+	gtodo_vbox "widget/vbox"
+	    {
+	    width=346;
+	    spacing=0;
+
+	    sep1 "widget/autolayoutspacer" { height=4; }
+
+	    gtodo_label "widget/label"
+		{
+		widget_class=link;
+		y=4;
+		height=28;
+		font_size=20;
+		style=bold;
+		text="My To-Do List";
+
+		//focus_on_click "widget/connector" { event=Click; target=input_eb; action=SetFocus; }
+		}
+
+	    sep2 "widget/autolayoutspacer" { height=4; }
+
+	    gtodo_pane "widget/pane"
+		{
+		height=164;
+		style=bordered;
+		border_color="#e0e0e0";
+		}
+	    }
+	}
+    }

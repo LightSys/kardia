@@ -1,0 +1,22 @@
+$Version=2$
+reports_tree "system/querytree"
+    {
+    recipients "system/querytree"
+	{
+	sql = "select name = :p_recipient_partner_key, * from /apps/kardia/data/Kardia_DB/r_group_report/rows group by :p_recipient_partner_key";
+	use_having = yes;
+
+	reports "system/querytree"
+	    {
+	    sql = "select name = :r:r_group_name, annotation = :g:r_group_description from /apps/kardia/data/Kardia_DB/r_group_report/rows r, /apps/kardia/data/Kardia_DB/r_group/rows g where :r:p_recipient_partner_key = :recipients:name and :g:r_group_name = :r:r_group_name";
+	    use_having = yes;
+
+	    costctrs "system/querytree"
+		{
+		// FIXME - this does not take into account the ledger.
+		sql = "select name = :rp:r_param_value, annotation = :c:a_cc_desc from /apps/kardia/data/Kardia_DB/r_group_report_param/rows rp, /apps/kardia/data/Kardia_DB/a_cost_center/rows c where :rp:r_group_name = :reports:name and :rp:p_recipient_partner_key = :recipients:name and :c:a_cost_center = :rp:r_param_value";
+		use_having = yes;
+		}
+	    }
+	}
+    }

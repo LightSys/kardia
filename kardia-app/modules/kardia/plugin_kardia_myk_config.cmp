@@ -1,0 +1,14 @@
+$Version=2$
+plugin_kardia_myk_config "widget/component-decl"
+    {
+    width=390; height=32;
+    description = "My Kardia Config";
+
+    config_hbox "widget/hbox"
+	{
+	x=0; y=0; width=390; height=32;
+	spacing=12;
+	config_img "widget/image" { width=32; source="/apps/kardia/images/tango/applications-accessories.png"; }
+	config_label "widget/label" { widget_class=link; y=4; width=300; font_size=20; style=bold; text="My Kardia Setup"; }
+	}
+    }

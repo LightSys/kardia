@@ -1,0 +1,8 @@
+$Version=2$
+plugin_kardia_myk_sepline "widget/component-decl"
+    {
+    width=390; height=2;
+    description = "Separator Line";
+
+    sep_pane "widget/pane" { height=2; width=346; x=44; y=0; style=bordered; border_color="#e0e0e0"; }
+    }

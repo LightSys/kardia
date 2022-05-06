@@ -1,0 +1,81 @@
+$Version=2$
+plugin_kardia_myk_gsearch "widget/component-decl"
+    {
+    width=390; height=76;
+    description = "Global Search";
+
+    launch_timer "widget/timer"
+	{
+	msec=50;
+	auto_reset=0;
+	auto_start=0;
+	do_launch "widget/connector"
+	    {
+	    event=Expire;
+	    target=plugin_kardia_myk_gsearch;
+	    action=Launch;
+	    Multi = 1;
+	    Source = runclient("/apps/kardia/modules/base/partner_window.app?ledger=" + :kardia_sysattrs_osrc:Ledger + "&period=" + :kardia_sysattrs_osrc:CurrentPeriod + "&year_period=" + :kardia_sysattrs_osrc:YearPeriod);
+	    Width = 844;
+	    Height = 600;
+	    search = runclient(:input_eb:content);
+	    }
+	}
+
+    gsearch_hbox "widget/hbox"
+	{
+	x=0; y=0; width=390; height=76;
+	spacing=12;
+	gsearch_img "widget/image" { height=32; width=32; source="/apps/kardia/images/tango/applications-internet.png"; }
+
+	gsearch_vbox "widget/vbox"
+	    {
+	    width=346;
+	    spacing=0;
+
+	    sep1 "widget/autolayoutspacer" { height=4; }
+
+	    gsearch_label "widget/label"
+		{
+		widget_class=link;
+		y=4;
+		height=28;
+		font_size=20;
+		style=bold;
+		text="Global Search";
+
+		focus_on_click "widget/connector" { event=Click; target=input_eb; action=SetFocus; }
+		}
+
+	    sep2 "widget/autolayoutspacer" { height=4; }
+
+	    gsearch_label2 "widget/label"
+		{
+		height=16;
+		text="Any ID, number, name, place, or part of comment.";
+		}
+
+	    sep3 "widget/autolayoutspacer" { height=4; }
+
+	    input_hbox "widget/hbox"
+		{
+		height=16;
+		spacing=8;
+		//input_label "widget/label" { width=75; text="Name or ID:"; align=left; }
+		input_eb "widget/editbox"
+		    {
+		    width=345;
+		    bgcolor="#f0f0f0";
+
+		    dosearch "widget/connector"
+			{
+			// Bug workaround - debounce enter key. :(
+			event=ReturnPressed;
+			target=launch_timer;
+			action=SetTimer;
+			}
+		    }
+		}
+	    }
+	}
+    }
