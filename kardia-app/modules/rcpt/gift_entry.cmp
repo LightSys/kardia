@@ -10,6 +10,12 @@ gift_entry "widget/component-decl"
     receipts_rpt "widget/parameter" { type=string; default=runserver(isnull( (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :this:ledger and :a_config_name = 'RcptReport'), "/apps/kardia/modules/rcpt/receipt_batch.rpt")); deploy_to_client=yes; }
     acks_rpt "widget/parameter" { type=string; default=runserver(isnull( (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :this:ledger and :a_config_name = 'RcptAckReport'), "/apps/kardia/modules/rcpt/receipt_batch.rpt")); deploy_to_client=yes; }
     nc_rpt "widget/parameter" { type=string; default=runserver(isnull( (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :this:ledger and :a_config_name = 'RcptNCReport'), "/apps/kardia/modules/rcpt/receipt_batch.rpt")); deploy_to_client=yes; }
+    use_scanner "widget/parameter" { type=integer; default=runserver(convert(integer, isnull( (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :this:ledger and :a_config_name = 'RcptEnabScanner'), "0"))); deploy_to_client=yes; }
+
+    last_ckno "widget/variable" { type=string; }
+    last_pkey "widget/variable" { type=string; }
+    last_hash "widget/variable" { type=string; }
+    last_file "widget/variable" { type=string; }
 
     LoadSidebar "widget/component-decl-action" { }
 
@@ -105,6 +111,40 @@ gift_entry "widget/component-decl"
 	    action=SetValue;
 	    Value=runclient(:prevrcpt_osrc:p_ack_partner_id);
 	    }
+	}
+
+    // Set scanned data (hash and filename) in the line items, only if these
+    // are currently unset *and* the check number matches.
+    //
+    set_scan_osrc "widget/osrc"
+	{
+	ss_ledger "widget/parameter" { type=string; param_name=ledger; default=runclient(:ledger:value); }
+	ss_ckno "widget/parameter" { type=string; param_name=checkno; default=runclient(:last_ckno:value); }
+	ss_file "widget/parameter" { type=string; param_name=file; default=runclient(:last_file:value); }
+	ss_hash "widget/parameter" { type=string; param_name=hash; default=runclient(:last_hash:value); }
+	ss_batch "widget/parameter" { type=integer; param_name=batch; default=runclient(:receipts_osrc:a_batch_number); }
+	ss_gift "widget/parameter" { type=integer; param_name=gift; default=runclient(:receipts_osrc:a_gift_number); }
+
+	autoquery=never;
+	readahead=2;
+	replicasize=2;
+
+	sql = "	update
+		    /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows
+		set
+		    :a_account_hash = :parameters:hash,
+		    :a_check_front_image = :parameters:file
+		where
+		    :a_ledger_number = :parameters:ledger and
+		    :a_batch_number = :parameters:batch and
+		    :a_gift_number = :parameters:gift and
+		    :a_recv_document_id = :parameters:checkno and
+		    :a_account_hash is null and
+		    :a_check_front_image is null and
+		    :a_posted = 0
+		";
+
+	on_set_scan_endquery "widget/connector" { event=EndQuery; target=line_items_osrc; action=Refresh; }
 	}
 
     config_osrc "widget/osrc"
@@ -258,7 +298,7 @@ gift_entry "widget/component-decl"
 					
 			receipts_tbl "widget/table"
 			    {
-			    height=598;
+			    height=runserver(condition(:this:use_scanner, 384, 598));
 			    titlebar=no;
 			    overlap_scrollbar=yes;
 			    demand_scrollbar=yes;
@@ -359,6 +399,42 @@ gift_entry "widget/component-decl"
 			    new_cn2 "widget/connector" { event=Click; target=rcpt_form; action=New; }
 			    new_cn3 "widget/connector" { event=Click; target=donor_osrc; action=Clear; }
 			    }
+			}
+
+		    scanlbl "widget/component"
+			{
+			condition=runserver(:this:use_scanner);
+			path="/apps/kardia/modules/base/section_label.cmp";
+			height=26;
+			fl_height=0;
+			text = runclient("Check Scanner");
+			}
+
+		    // When a check is "used", we do one of three things:
+		    //
+		    // 1. If the current line items have no scan info, and the
+		    //    ckno matches, then we apply the scan info to the current
+		    //    line items.
+		    // 2. If we can't do the above, and a new check is not being
+		    //    entered, we do New Receipt.
+		    // 3. If a new gift is being entered (even if because we just
+		    //    did (2) above), we prefill partner, ckno, hash, and file
+		    //    from the scanned check.
+		    //
+		    scanner "widget/component"
+			{
+			condition=runserver(:this:use_scanner);
+			path="/apps/kardia/modules/rcpt/check_scanner.cmp";
+			height=168;
+			ledger=runserver(:this:ledger);
+
+			// Save the scanner data
+			on_scan_1 "widget/connector" { event=Scanned; target=last_ckno; action=SetValue; Value=runclient(:check_number); }
+			on_scan_2 "widget/connector" { event=Scanned; target=last_pkey; action=SetValue; Value=runclient(:partner_key); }
+			on_scan_3 "widget/connector" { event=Scanned; target=last_hash; action=SetValue; Value=runclient(:hash); }
+			on_scan_4 "widget/connector" { event=Scanned; target=last_file; action=SetValue; Value=runclient(:filename); }
+
+			// Do we need to assign data in the *current* check?
 			}
 		    }
 
@@ -646,15 +722,19 @@ gift_entry "widget/component-decl"
 		    block_save_if_no_valid_donor "widget/connector"
 			{
 			event=BeforeSave;
-			//event_condition=runclient(not char_length(:f_rcpt_donorid:description) > 0);
-			//event_cancel=runclient(not char_length(:f_rcpt_donorid:description) > 0);
 			event_condition=runclient((not char_length(:f_rcpt_donorid:description) > 0) or :f_rcpt_donorid:description == '** INVALID **');
 			event_cancel=runclient((not char_length(:f_rcpt_donorid:description) > 0) or :f_rcpt_donorid:description == '** INVALID **');
-			//target = gift_entry;
-			//action = Alert;
-			//Message=runclient('"' + :f_rcpt_donorid:content + '" is not a valid donor number.');
 			event_delay = 0.25;
 			target = f_rcpt_donorid;
+			action = SetFocus;
+			}
+		    block_save_if_daf_but_no_valid_ack "widget/connector"
+			{
+			event=BeforeSave;
+			event_condition=runclient((isnull(:donor_osrc:p_is_daf, 0) = 1 and ((not char_length(:f_rcpt_ackid:description) > 0) or :f_rcpt_ackid:description == '** INVALID **' or :f_rcpt_ackid:description == 'required')));
+			event_cancel=runclient((isnull(:donor_osrc:p_is_daf, 0) = 1 and ((not char_length(:f_rcpt_ackid:description) > 0) or :f_rcpt_ackid:description == '** INVALID **' or :f_rcpt_ackid:description == 'required')));
+			event_delay = 0.25;
+			target = f_rcpt_ackid;
 			action = SetFocus;
 			}
 
@@ -938,7 +1018,7 @@ gift_entry "widget/component-decl"
 				    event = EndQuery;
 				    target = f_rcpt_ackid;
 				    action = SetValueDescription;
-				    Description = runclient(condition(char_length(:donor_osrc:acklabel) > 0, :donor_osrc:acklabel, condition(char_length(:f_rcpt_ackid:content) > 0, '** INVALID **', '')));
+				    Description = runclient(condition(char_length(:donor_osrc:acklabel) > 0, :donor_osrc:acklabel, condition(char_length(:f_rcpt_ackid:content) > 0, '** INVALID **', condition(:donor_osrc:p_is_daf == 1, 'required', ''))));
 				    }
 
 				set_rcpt_desired "widget/connector"
@@ -1082,6 +1162,8 @@ gift_entry "widget/component-decl"
 					:g:a_gift_admin_subtype,
 					admin = isnull(:g:a_gift_admin_fee + ' ', '') + isnull(:g:a_gift_admin_subtype, ''),
 					:g:a_recv_document_id,
+					:g:a_account_hash,
+					:g:a_check_front_image,
 					:g:p_recip_partner_id,
 					:g:a_confidential,
 					:g:a_non_tax_deductible,
@@ -1593,6 +1675,23 @@ gift_entry "widget/component-decl"
 							ctl_type=dropdown;
 							}
 
+						    checkimage_hbox "widget/hbox"
+							{
+							height=20;
+							spacing=5;
+
+							ci_label "widget/label" { width=95; y=3; align=right; text="Check Image:"; }
+
+							ci_link "widget/label"
+							    {
+							    widget_class=link;
+							    width=160;
+							    y=3;
+							    align=left;
+							    value=runclient(replace(:line_items_osrc:a_check_front_image, "/apps/kardia/files/rcpt/", ""));
+							    }
+							}
+
 						    acctinfo_osrc "widget/osrc"
 							{
 							a_account_code "widget/parameter" { type=string; }
@@ -1611,7 +1710,6 @@ gift_entry "widget/component-decl"
 							    Value = runclient(:acctinfo_osrc:check);
 							    }
 							}
-						    firsttime_ind "widget/label" { height=20; value=runclient(condition(char_length(:f_desig_cc:content) > 0 and :f_desig_cc:content = :f_desig_cc:value, condition(:f_rcpt_donorid:content == :f_desig_cc:content, "DONOR ID SAME AS DESIGNATION", condition(:ccinfo_osrc:giftcnt == 0, "FIRST TIME DONATION TO THIS FUND", "")),"")); fgcolor=red; align=right; valign=middle; }
 						    }
 						}
 					    }
@@ -1628,6 +1726,14 @@ gift_entry "widget/component-decl"
 					    del_d_cn "widget/connector" { event=Click; target=desig_form; action=Delete; }
 					    }
 					}
+				    }
+
+				desig_detail_warning "widget/table-row-detail"
+				    {
+				    show_on_new=1;
+				    display_for=runclient(char_length(:f_desig_cc:content) > 0 and :f_desig_cc:content = :f_desig_cc:value and (:f_rcpt_donorid:content == :f_desig_cc:content or :ccinfo_osrc:giftcnt == 0));
+				    height=18; width=562;
+				    firsttime_ind "widget/label" { x=0; y=2; height=16; width=562; value=runclient(condition(char_length(:f_desig_cc:content) > 0 and :f_desig_cc:content = :f_desig_cc:value, condition(:f_rcpt_donorid:content == :f_desig_cc:content, "DONOR ID SAME AS DESIGNATION", condition(:ccinfo_osrc:giftcnt == 0, "FIRST TIME DONATION TO THIS FUND", "")),"")); fgcolor=runclient(condition(:desig_form:form_mode == 'New', 'red', 'yellow')); align=center; valign=middle; style=bold; }
 				    }
 				}
 			    }
@@ -2241,6 +2347,8 @@ gift_entry "widget/component-decl"
 
     item_posted "widget/variable" { form=desig_form; fieldname=a_posted; dp_hints "widget/hints" { default=runclient(0); } }
     item_glposted "widget/variable" { form=desig_form; fieldname=a_posted_to_gl; dgp_hints "widget/hints" { default=runclient(0); } }
+    item_hash "widget/variable" { form=desig_form; fieldname=a_account_hash; }
+    item_file "widget/variable" { form=desig_form; fieldname=a_check_front_image; }
 
     nextrcpt "widget/component"
 	{
@@ -2943,6 +3051,30 @@ gift_entry "widget/component-decl"
 		    do_copy_cancel1 "widget/connector" { event=Click; target=pad_form; action=Discard; }
 		    }
 		}
+	    }
+	}
+
+    popover_view_check "widget/childwindow"
+	{
+	width=560; height=240;
+	x=210; y=220;
+	titlebar=no;
+	visible=no;
+	border_style=solid;
+	border_color="#f8f8f8";
+	background=null;
+	bgcolor="#f8f8f8";
+	border_radius=12;
+	shadow_radius=4;
+	shadow_offset=2;
+	shadow_color="#808080";
+	shadow_angle=135;
+
+	check_image "widget/image"
+	    {
+	    height=238;
+	    width=558;
+	    source=runclient(isnull(:last_file:value, "/apps/kardia/images/bg/light_bgnd.jpg"));
 	    }
 	}
     }

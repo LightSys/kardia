@@ -1,0 +1,35 @@
+$Version=2$
+csapi "application/http"
+    {
+    // Headers
+    Authorization "http/parameter" { type=string; source=none; usage=header; default=runserver("Bearer " + (select :s_scanner_auth_token from /apps/kardia/data/Kardia_DB/s_document_scanner/rows where :s_scanner_id = :parameters:scannerid) ); }
+    Accept "http/parameter" { type=string; source=none; usage=header; default=runserver("application/json"); }
+
+    // Other parameters
+    scannerid "http/parameter" { type=integer; source=path; usage=none; pathpart=1; }
+    command "http/parameter" { type=string; source=path; usage=none; pathpart=2; }
+
+    // Connection information
+    server = runserver( (select :s_scanner_host from /apps/kardia/data/Kardia_DB/s_document_scanner/rows where :s_scanner_id = :parameters:scannerid) );
+    port = runserver( (select convert(string, :s_scanner_port) from /apps/kardia/data/Kardia_DB/s_document_scanner/rows where :s_scanner_id = :parameters:scannerid) );
+    path = runserver(
+		    condition(:parameters:command == 'connect',
+			    // Connect: GET /connect/{profilename}
+			    "/connect/" + (select :s_scanner_id_on_server from /apps/kardia/data/Kardia_DB/s_document_scanner/rows where :s_scanner_id = :parameters:scannerid),
+			    condition(:parameters:command == 'disconnect',
+				    // Disconnect: GET /disconnect
+				    "/disconnect",
+				    condition(:parameters:command == 'scan',
+					    // Scan: GET /check_data
+					    "/check_data",
+					    "/disconnect" // default action
+				    )
+			    )
+		    )
+	    );
+    protocol = "http";
+    method = GET;
+    allowsubdirs = 0;
+    cache_max_ttl = 86400000;
+    cache_min_ttl = 3600000;
+    }

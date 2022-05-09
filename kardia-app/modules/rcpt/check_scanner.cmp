@@ -1,0 +1,541 @@
+$Version=2$
+check_scanner "widget/component-decl"
+    {
+    // Check Scanner widget for Gift Entry
+    //
+    width=185;
+    height=168;
+
+    // Parameters
+    //
+    ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; deploy_to_client=yes; }
+
+    // Action NextCheck: retrieve the next check from the check scanner.
+    //
+    NextCheck "widget/component-decl-action" { }
+    on_NextCheck "widget/connector"
+	{
+	event=NextCheck;
+	target=scan_osrc;
+	action=QueryParam;
+	}
+
+    // Event Scanned: invoked when a new check is available
+    Scanned "widget/component-decl-event" { }
+
+    // We use a "tab control" here to overlay multiple "pages", but we omit
+    // the "tabs" since switching is done entirely programmatically.
+    //
+    overlay "widget/tab"
+	{
+	x=0; y=0; width=185; height=168;
+	tab_location=none;
+	border_style=none;
+	background=null;
+	inactive_background=null;
+	bgcolor=null;
+	inactive_bgcolor=null;
+
+	// Disconnected page is shown when the user is NOT connected to a
+	// check scanner and is not attempting to connect.  This is the
+	// initial display.
+	//
+	disconnected "widget/tabpage"
+	    {
+	    title = "Disconnected";
+
+	    disc_vbox "widget/vbox"
+		{
+		x=0; y=0; width=185; height=168;
+		spacing=10;
+		align=center;
+
+		notconn_lbl "widget/label" { height=45; text="Not currently connected to a check scanner.  Click below to connect to a scanner."; style=italic; align=center; }
+
+		conn_btn "widget/textbutton"
+		    {
+		    x=27; width=130; height=24;
+		    text = "Connect";
+
+		    on_connect "widget/connector" { event=Click; target=overlay; action=SetTab; TabIndex=2; }
+		    }
+		}
+	    }
+
+	// Scanner list page is shown when the user has chosen to connect
+	// to a scanner.  Here we display the list of scanners, and if only
+	// one configured, we automatically try to connect to it.
+	//
+	scanlist "widget/tabpage"
+	    {
+	    title = "Scanner List";
+
+	    sl_vbox "widget/vbox"
+		{
+		x=0; y=0; width=185; height=168;
+		spacing=5;
+
+		sl_osrc "widget/osrc"
+		    {
+		    sql = " select
+				*,
+				busy_txt = condition(:ds:s_last_used_by == user_name() and datediff(second, :ds:s_date_last_used, getdate()) <= 60, 'I am using', condition(:ds:s_last_used_by == user_name() or datediff(second, :ds:s_date_last_used, getdate()) > 60 or :ds:s_date_last_used is null, 'Available', 'Busy'))
+			    from
+				/apps/kardia/data/Kardia_DB/s_document_scanner/rows ds
+			    ";
+		    autoquery=oneachreveal;
+		    replicasize=20;
+		    readahead=20;
+
+		    on_onlyone_1 "widget/connector" 
+			{
+			event=EndQuery;
+			event_condition = runclient(:sl_osrc:cx__last_id == 1 and :sl_osrc:busy_txt != 'Busy');
+			target=sl_table;
+			action=ShowSelection;
+			}
+
+		    on_onlyone_2 "widget/connector" 
+			{
+			event=EndQuery;
+			event_condition = runclient(:sl_osrc:cx__last_id == 1 and :sl_osrc:busy_txt != 'Busy');
+			target=conn_osrc;
+			action=QueryParam;
+			scanner_id=runclient(:sl_osrc:s_scanner_id);
+			}
+
+		    sl_table "widget/table"
+			{
+			height=139;
+			overlap_scrollbar=yes;
+			demand_scrollbar=yes;
+			rowheight=null;
+			cellvspacing=4;
+			inner_padding=2;
+			colsep=0;
+			row_border_radius=6;
+			row_shadow_radius=2;
+			row_shadow_offset=1;
+			row_shadow_color="#a0a0a0";
+			row_shadow_angle=135;
+			show_selection = yes;
+			initial_selection = no;
+			titlebar = no;
+			nodata_message = "No scanners found.";
+
+			sl_name "widget/table-column" { title="Name"; fieldname="s_scanner_desc"; width=112; style=bold; }
+			sl_stat "widget/table-column" { title="Status"; fieldname="busy_txt"; width=70; style=bold; align=right; }
+
+			sl_connmsg "widget/table-row-detail"
+			    {
+			    display_for=runclient((:conn_osrc:cx__pending != 0 or :conn_osrc:connected == 0) and isnull(:conn_osrc:req_scanner, :sl_osrc:s_scanner_id) == :sl_osrc:s_scanner_id);
+			    height=16;
+
+			    sl_cm_lbl "widget/label"
+				{
+				x=0; y=2; height=12; width=185;
+				align=center;
+				style=italic;
+				fgcolor=white;
+				value=runclient(condition(:conn_osrc:cx__pending != 0, "Connecting...", "Connection failed"));
+				}
+			    }
+
+			on_select "widget/connector" 
+			    {
+			    event=Click;
+			    event_cancel = runclient(:sl_osrc:busy_txt == 'Busy');
+			    event_condition = runclient(:sl_osrc:busy_txt != 'Busy' and (:selected is null or :selected != :recnum));
+			    target=conn_osrc;
+			    action=QueryParam;
+			    scanner_id=runclient(:sl_osrc:s_scanner_id);
+			    }
+			}
+		    }
+
+		sl_cancelconnect "widget/textbutton"
+		    {
+		    x=27; width=130; height=24;
+		    text = "Cancel";
+
+		    on_cancel_1 "widget/connector" { event=Click; target=overlay; action=SetTab; TabIndex=1; }
+		    on_cancel_2 "widget/connector" { event=Click; target=sl_table; action=Clear; }
+		    }
+		}
+	    }
+
+	// This page shows when the user is actively connect to a check
+	// scanner.  This also displays the scanned check, check number, and
+	// the donor name.
+	//
+	connected "widget/tabpage"
+	    {
+	    title = "Connected";
+
+	    conn_vbox "widget/vbox"
+		{
+		x=0; y=0; width=185; height=168;
+		spacing=5;
+
+		scan_name_lbl "widget/label" { height=15; style=bold; align=center; value=runclient(:conn_osrc:desc); }
+
+		img "widget/image"
+		    {
+		    height=76;
+		    source=runclient(isnull(:scan_osrc:filename, "/apps/kardia/images/bg/light_bgnd.jpg"));
+		    }
+
+		plbl "widget/label"
+		    {
+		    height=38;
+		    align=center;
+		    //value=runclient(isnull('#' + :scan_osrc:check_number + ' ', '') + isnull('R' + :scan_osrc:routing_number + ' ', '') + isnull('A' + :scan_osrc:account_number + ' ', '') + isnull(:scan_osrc:partner_name, ''));
+		    value=runclient(isnull('#' + :scan_osrc:check_number + ' ', '') + isnull(:scan_osrc:partner_name, ''));
+		    }
+
+		btn_hbox "widget/hbox"
+		    {
+		    height=24;
+		    spacing=5;
+		    align=center;
+
+		    disc_btn "widget/textbutton"
+			{
+			height=24;
+			width=90;
+			text = "Discon.";
+
+			on_disc "widget/connector"
+			    {
+			    event=Click;
+			    target=disconn_osrc;
+			    action=QueryParam;
+			    }
+			}
+
+		    use_btn "widget/textbutton"
+			{
+			height=24;
+			width=90;
+			text = "Use >>";
+			enabled = runclient(:scan_osrc:check_number is not null);
+
+			on_use_1 "widget/connector"
+			    {
+			    event=Click;
+			    target=check_scanner;
+			    action=Scanned;
+			    check_number = runclient(:scan_osrc:check_number);
+			    partner_key = runclient(:scan_osrc:partner_key);
+			    partner_name = runclient(:scan_osrc:partner_name);
+			    hash = runclient(:scan_osrc:hash);
+			    filename = runclient(:scan_osrc:filename);
+			    }
+
+			on_use_2 "widget/connector"
+			    {
+			    event=Click;
+			    target=check_scanner;
+			    action=TriggerEvent;
+			    EventName=runclient('NextCheck');
+			    }
+			}
+		    }
+		}
+	    }
+	}
+
+    // Process for disconnecting from a check scanner.
+    //
+    disconn_osrc "widget/osrc"
+	{
+	sql = "	declare object scaninfo scope application;
+	
+		-- Disconnect from scanner
+		select
+		    :scaninfo:connected = :connected
+		from
+		    object expression ('/apps/kardia/modules/' + :scaninfo:module + '/' + :scaninfo:api + '/' + :scaninfo:got_scanner + '/disconnect')
+		where
+		    :scaninfo:got_scanner is not null
+		;
+
+		-- Release our hold on this scanner
+		update
+		    /apps/kardia/data/Kardia_DB/s_document_scanner/rows
+		set
+		    :s_last_used_by = user_name(),
+		    :s_date_last_used = dateadd(second, -61, getdate())
+		where
+		    :s_scanner_id = :scaninfo:got_scanner and
+		    :s_last_used_by = user_name() and
+		    :scaninfo:got_scanner is not null
+		;
+
+		-- Clear our reference to the scanner (by ID)
+		select
+		    :scaninfo:got_scanner = null
+		;
+
+		-- Return to caller
+		select
+		    :scaninfo:req_scanner,
+		    :scaninfo:got_scanner,
+		    :scaninfo:connected,
+		    :scaninfo:desc
+		";
+	autoquery=never;
+	readahead=2;
+	replicasize=2;
+
+	on_disconnected_1 "widget/connector"
+	    {
+	    event=EndQuery;
+	    event_condition=runclient(:disconn_osrc:got_scanner is null);
+	    target=scan_osrc;
+	    action=Clear;
+	    }
+
+	on_disconnected_2 "widget/connector"
+	    {
+	    event=EndQuery;
+	    event_condition=runclient(:disconn_osrc:got_scanner is null);
+	    target=overlay;
+	    action=SetTab;
+	    TabIndex=1;
+	    }
+
+	on_notdisconnected "widget/connector"
+	    {
+	    event=EndQuery;
+	    event_condition=runclient(:disconn_osrc:got_scanner is not null);
+	    target=overlay;
+	    action=SetTab;
+	    TabIndex=3;
+	    }
+	}
+
+    // Process for connecting to a check scanner.
+    //
+    conn_osrc "widget/osrc"
+	{
+	c_scanner_id "widget/parameter" { param_name=scanner_id; type=integer; }
+
+	sql = "	declare object scaninfo scope application;
+
+		-- Get previous user info
+		select
+		    :scaninfo:prev_user = :s_last_used_by,
+		    :scaninfo:prev_date = :s_date_last_used,
+		    :scaninfo:req_scanner = :s_scanner_id
+		from
+		    /apps/kardia/data/Kardia_DB/s_document_scanner/rows
+		where
+		    :s_scanner_id = :parameters:scanner_id
+		;
+
+		-- Try to seize the scanner
+		update
+		    /apps/kardia/data/Kardia_DB/s_document_scanner/rows
+		set
+		    :s_last_used_by = user_name(),
+		    :s_date_last_used = getdate()
+		where
+		    :s_scanner_id = :parameters:scanner_id and
+		    (:s_last_used_by == user_name() or
+			datediff(second, :s_date_last_used, getdate()) > 60 or
+			:s_date_last_used is null)
+		;
+
+		-- See if we got it
+		select
+		    :scaninfo:got_scanner = first(:s_scanner_id),
+		    :scaninfo:type = first(:s_scanner_type),
+		    :scaninfo:desc = first(:s_scanner_desc),
+		    :scaninfo:connected = 0
+		from
+		    /apps/kardia/data/Kardia_DB/s_document_scanner/rows
+		where
+		    :s_scanner_id = :parameters:scanner_id and
+		    :s_last_used_by == user_name() and
+		    datediff(second, :s_date_last_used, getdate()) <= 60
+		;
+
+		-- Get the internal api location
+		select
+		    :scaninfo:api = :scanner_api,
+		    :scaninfo:module = :cx__pathpart4
+		from
+		    object wildcard '/apps/kardia/modules/*/plugin_system_scan_*.struct'
+		where
+		    :scanner_type = :scaninfo:type and
+		    :scaninfo:got_scanner is not null
+		;
+
+		-- Call the connect operation on the scanner
+		select
+		    :scaninfo:connected = isnull(:connected, 0)
+		from
+		    object expression ('/apps/kardia/modules/' + :scaninfo:module + '/' + :scaninfo:api + '/' + :scaninfo:got_scanner + '/connect')
+		where
+		    :scaninfo:got_scanner is not null
+		;
+
+		-- Release if the connect operation failed
+		update
+		    /apps/kardia/data/Kardia_DB/s_document_scanner/rows
+		set
+		    :s_last_used_by = :scaninfo:prev_user,
+		    :s_date_last_used = :scaninfo:prev_date
+		where
+		    :s_scanner_id = :scaninfo:got_scanner and
+		    isnull(:scaninfo:connected, 0) = 0 and
+		    :scaninfo:got_scanner is not null
+		;
+
+		-- Return status to the caller
+		select
+		    :scaninfo:req_scanner,
+		    got_scanner = condition(:scaninfo:connected, :scaninfo:got_scanner, null),
+		    :scaninfo:connected,
+		    :scaninfo:desc
+		";
+	autoquery=never;
+	readahead=2;
+	replicasize=2;
+
+	on_connected_1 "widget/connector"
+	    {
+	    event=EndQuery;
+	    event_condition=runclient(:conn_osrc:got_scanner == :sl_osrc:s_scanner_id);
+	    target=overlay;
+	    action=SetTab;
+	    TabIndex=3;
+	    }
+
+	on_connected_2 "widget/connector"
+	    {
+	    event=EndQuery;
+	    event_delay=0.1;
+	    event_condition=runclient(:conn_osrc:got_scanner == :sl_osrc:s_scanner_id);
+	    target=scan_osrc;
+	    action=QueryParam;
+	    }
+
+	on_notconnected "widget/connector"
+	    {
+	    condition=0;
+	    event=EndQuery;
+	    event_condition=runclient(:conn_osrc:got_scanner is null);
+	    target=overlay;
+	    action=SetTab;
+	    TabIndex=1;
+	    }
+	}
+
+    // Process for actually scanning a check
+    //
+    scan_osrc "widget/osrc"
+	{
+	so_ledger "widget/parameter" { param_name=ledger; type=string; default=runclient(:ledger:value); }
+
+	sql = "	declare object scaninfo scope application;
+
+		-- Get hash key
+		select
+		    :scaninfo:hashkey = isnull(first(:a_config_value), '')
+		from
+		    /apps/kardia/data/Kardia_DB/a_config/rows
+		where
+		    :a_ledger_number = :parameters:ledger and
+		    :a_config_name = 'RcptCkScanKey'
+		;
+
+		-- Scan a check
+		select
+		    :scaninfo:account_number = replace(replace(:account_number, ' ', ''), 'O', ''),
+		    :scaninfo:routing_number = replace(replace(:routing_number, ' ', ''), 'T', ''),
+		    :scaninfo:check_number = convert(string, convert(integer, lztrim(replace(replace(:check_number, ' ', ''), 'O', '')))),
+		    :scaninfo:image = :image,
+		    :scaninfo:image_content_type = :image_content_type
+		from
+		    object expression ('/apps/kardia/modules/' + :scaninfo:module + '/' + :scaninfo:api + '/' + :scaninfo:got_scanner + '/scan')
+		;
+		select
+		    :scaninfo:hash = hmac('sha256', '' + lztrim(:scaninfo:account_number) + '|' + :scaninfo:routing_number, :scaninfo:hashkey)
+		;
+
+		-- Filename
+		select
+		    :scaninfo:lastfile = 'check-' + convert(string,convert(integer,rand()*1000000)) + convert(string,convert(integer,rand()*1000000)) + '.png'
+		where
+		    :scaninfo:image_content_type is not null
+		;
+
+		-- Write it to a file
+		insert
+		    /apps/kardia/files/rcpt
+		select
+		    name = :scaninfo:lastfile,
+		    objcontent = from_base64(:scaninfo:image)
+		where
+		    :scaninfo:image_content_type is not null
+		;
+
+		-- Lookup donor information, if available.
+		select
+		    :scaninfo:partner_key = first(:p:p_partner_key),
+		    :scaninfo:partner_name = first(condition( convert(string, char_length(ltrim(rtrim(isnull(:p:p_org_name, ''))))) == 0, :p:p_given_name + ' ' + :p:p_surname, :p:p_org_name))
+		from
+		    /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i,
+		    /apps/kardia/data/Kardia_DB/p_partner/rows p
+		where
+		    :p:p_partner_key = :i:p_dn_donor_partner_id and
+		    :i:a_ledger_number = :parameters:ledger and
+		    --:i:a_posted = 1 and
+		    :i:a_account_hash = :scaninfo:hash
+		order by
+		    :i:a_dn_gift_received_date desc
+		;
+
+		-- Number of donors with this account/routing hash.
+		select
+		    :scaninfo:partner_cnt = count(count(1))
+		from
+		    /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i
+		where
+		    :i:a_ledger_number = :parameters:ledger and
+		    :i:a_posted = 1 and
+		    :i:a_account_hash = :scaninfo:hash
+		group by
+		    :i:p_dn_donor_partner_id
+		;
+
+		-- Return the scanned data to the caller
+		select
+		    :scaninfo:account_number,
+		    :scaninfo:routing_number,
+		    :scaninfo:check_number,
+		    :scaninfo:partner_key,
+		    :scaninfo:partner_name,
+		    :scaninfo:partner_cnt,
+		    :scaninfo:hash,
+		    filename = '/apps/kardia/files/rcpt/' + :scaninfo:lastfile
+
+		";
+	autoquery=never;
+	readahead=2;
+	replicasize=2;
+	indicates_activity=no;
+
+	on_scanned_1 "widget/connector"
+	    {
+	    condition = 0;
+	    event=EndQuery;
+	    event_delay=0.1;
+	    event_condition=runclient(:conn_osrc:got_scanner == :sl_osrc:s_scanner_id);
+	    action=QueryParam;
+	    }
+	}
+    }
+

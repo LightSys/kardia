@@ -65,6 +65,9 @@ plugin_base_config_rcpt "widget/component-decl"
 
 		rcpt_label_4 "widget/label" { height=15; text="Gift received date: This controls whether the 'received date' field on the gift entry form is disabled (read only) or not."; }
 		rcpt_disrcv "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="RcptDisabRcvdDt"; text="Disable Received Date:"; width=300; label_width=150; ctl_type=checkbox; rcvd_hints "widget/hints" { style=notnull; } }
+
+		rcpt_label_5 "widget/label" { height=15; text="Enable check scanner: Select this option to enable check scanner integration in gift receipting."; }
+		rcpt_ckscan "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="RcptEnabScanner"; text="Enable Check Scanner:"; width=300; label_width=150; ctl_type=checkbox; ckscan_hints "widget/hints" { style=notnull; } }
 		}
 	    }
 
