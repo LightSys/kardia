@@ -3077,7 +3077,7 @@ function vm_prep_cleanYum
 function vm_prep_setupEtc
 {
 	mkdir -p /etc/samba /etc/pam-script /etc/systemd/system
-	files="issue.kardia issue.kardia-init pam.d/system-auth.kardia samba/smb.conf.noshares samba/smb.conf.onerepo samba/smb.conf.userrepo ssh/sshd_config.kardia pam-script/pam_script_passwd pam.d/system-auth.kardia systemd/system/centrallix.service logrotate.d/centrallix"
+	files="issue.kardia issue.kardia-init pam.d/system-auth.kardia samba/smb.conf.noshares samba/smb.conf.onerepo samba/smb.conf.userrepo ssh/sshd_config.kardia pam-script/pam_script_passwd pam.d/system-auth.kardia systemd/system/centrallix.service logrotate.d/centrallix dracut.conf.d/kardia_vm.conf"
 	directory="/usr/local/src/kardia-git/kardia-vm/etc/"
 	echo "Settting Up the ETC directory"
 	for file in $files; do
