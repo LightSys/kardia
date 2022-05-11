@@ -952,6 +952,11 @@ function repoCommit
 	echo "You cannot commit changes as 'root'.  Switching user..."
 	sleep 1
     fi
+    #Preserve group ownership of the git directory
+    chgrp -R kardia_src .
+    #Preserve group write permissions on the git directory
+    chmod -R g+w .
+
     AsUser doGit commit -a
     RVAL=$?
     sleep 1
@@ -969,6 +974,11 @@ function repoCommitFiles
     /bin/rm -f "$TMPNAME" 2>/dev/null
     touch "$TMPNAME"
     cd "$REPO"
+    #Preserve group ownership of the git directory
+    chgrp -R kardia_src .
+    #Preserve group write permissions on the git directory
+    chmod -R g+w .
+
     git status | while read POUND V1 V2 V3; do
 	if [ "$POUND" = "#" ]; then
 	    FILE=""
@@ -1072,6 +1082,11 @@ function repoAddFile
 function repoPush
     {
     cd "$1"
+    #Preserve group ownership of the git directory
+    chgrp -R kardia_src .
+    #Preserve group write permissions on the git directory
+    chmod -R g+w .
+
     PUSHTO=$(git config --get remote.origin.url 2>/dev/null)
 
     # Temporarily set origin to the shared repo?  Sometimes we have to
@@ -1130,6 +1145,11 @@ function repoPull
     echo "    TO:   $1"
     echo ""
     doGit pull origin
+    #Preserve group ownership of the git directory
+    chgrp -R kardia_src .
+    #Preserve group write permissions on the git directory
+    chmod -R g+w .
+
     RVAL=$?
     git config remote.origin.url "$PULLFROM"
     echo ""
