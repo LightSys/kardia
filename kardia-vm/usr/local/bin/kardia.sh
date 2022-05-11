@@ -896,13 +896,13 @@ function repoSetStatus
     RVAL=$?
     if [ "$RVAL" = "0" ]; then
 	if [ "$N_CXUSER" = "" ]; then
-	    doGit config remote.origin.url "git://$CX_GITREPO"
+	    doGit config remote.origin.url "http://$CX_GITREPO"
 	else
 	    doGit config remote.origin.url "https://$N_CXUSER@$CX_GITREPO"
 	fi
 	cd "$1/kardia-git"
 	if [ "$N_CXUSER" = "" ]; then
-	    doGit config remote.origin.url "git://$K_GITREPO"
+	    doGit config remote.origin.url "http://$K_GITREPO"
 	else
 	    doGit config remote.origin.url "https://$N_CXUSER@$K_GITREPO"
 	fi
@@ -1153,8 +1153,8 @@ function repoSetOrigin
 	CXORIGIN="$BASEDIR/src/cx-git"
 	KORIGIN="$BASEDIR/src/kardia-git"
     elif [ "$2" = "READONLY" ]; then
-	CXORIGIN="git://$CX_GITREPO"
-	KORIGIN="git://$K_GITREPO"
+	CXORIGIN="http://$CX_GITREPO"
+	KORIGIN="http://$K_GITREPO"
     else
 	CXORIGIN="https://$2@CX_GITREPO"
 	KORIGIN="https://$2@$K_GITREPO"
@@ -1182,8 +1182,8 @@ function repoInitUser
 	CXORIGIN="$BASEDIR/src/cx-git"
 	KORIGIN="$BASEDIR/src/kardia-git"
     elif [ "$2" = "READONLY" ]; then
-	CXORIGIN="git://$CX_GITREPO"
-	KORIGIN="git://$K_GITREPO"
+	CXORIGIN="http://$CX_GITREPO"
+	KORIGIN="http://$K_GITREPO"
     else
 	CXORIGIN="https://$2@$CX_GITREPO"
 	KORIGIN="https://$2@$K_GITREPO"
@@ -1209,8 +1209,8 @@ function repoInitShared
     KORIGIN=$(cd $BASEDIR/src/kardia-git 2>/dev/null; git config --get remote.origin.url 2>/dev/null)
     CXMETHOD=${CXORIGIN%%:*}
     if [ "$CXMETHOD" != "https" ]; then
-	CXORIGIN="git://$CX_GITREPO"
-	KORIGIN="git://$K_GITREPO"
+	CXORIGIN="http://$CX_GITREPO"
+	KORIGIN="http://$K_GITREPO"
     fi
     [ -z "$CXORIGIN" ] && repoSetOrigin
     [ -z "$KORIGIN" ] && repoSetOrigin
@@ -2266,11 +2266,11 @@ function menuWorkflowMode
 	for HOMEDIR in /home/*; do
 	    if [ -d "$HOMEDIR/cx-git" ]; then
 		cd "$HOMEDIR/cx-git"
-		doGit config remote.origin.url "git://$CX_GITREPO"
+		doGit config remote.origin.url "http://$CX_GITREPO"
 	    fi
 	    if [ -d "$HOMEDIR/kardia-git" ]; then
 		cd "$HOMEDIR/kardia-git"
-		doGit config remote.origin.url "git://$K_GITREPO"
+		doGit config remote.origin.url "http://$K_GITREPO"
 	    fi
 	done
 	echo "Press ENTER to continue..."
