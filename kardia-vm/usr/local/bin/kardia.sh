@@ -2746,7 +2746,7 @@ function menuDevel
 		doBuild
 		;;
 	    DBBuild)
-		doDataBuild
+		AsRoot doDataBuild
 		;;
 	esac
     done
@@ -2996,7 +2996,7 @@ function doCxkUpdates
 	doBuild
     fi
     if [ "${CXKSEL%%Data*}" != "$SEL" ]; then
-	doDataBuild
+	AsRoot doDataBuild
     fi
     }
 
@@ -3773,7 +3773,7 @@ function doSetupGuideUser
 	dialog --backtitle "$TITLE" --title "Step Ten:  Build and Run Centrallix/Kardia" --yes-label Build --no-label Skip --yesno "Finally, you can build and run Centrallix and Kardia.  This will compile the source code in the shared repository, install Centrallix, build the Kardia database, and start the Centrallix server on port $CXPORT." 0 0
 	if [ "$?" = 0 ]; then
 	    doBuild
-	    doDataBuild
+	    AsRoot doDataBuild
 	    cxStart
 	    lookupStatus
 	    dialog --backtitle "$TITLE" --title "Centrallix Started" --msgbox "Centrallix is started and is running on the following port:
@@ -3791,7 +3791,7 @@ URL:   http://$IPADDR:$CXPORT/" 0 0
 	dialog --backtitle "$TITLE" --title "Step Eleven:  Build and Run Centrallix/Kardia" --yes-label Build --no-label Skip --yesno "Finally, you can build and run Centrallix and Kardia.  This will compile the source code in $USER's repository, install Centrallix, build the Kardia database, and start the Centrallix server on port $CXPORT." 0 0
 	if [ "$?" = 0 ]; then
 	    doBuild
-	    doDataBuild
+	    AsRoot doDataBuild
 	    cxStart
 	    lookupStatus
 	    dialog --backtitle "$TITLE" --title "Centrallix Started" --msgbox "Centrallix is started and is running on the following port:
@@ -4102,7 +4102,7 @@ function sg11RootBuildRun
     dialog --backtitle "$TITLE" --title "Step $STEPNUM:  Build and Run Centrallix/Kardia" --yes-label Build --no-label Skip --yesno "Finally, you can build and run Centrallix and Kardia.  This will compile the source code, install Centrallix, build the Kardia database, and start the Centrallix server on port 800." 0 0
     if [ "$?" = 0 ]; then
 	doBuild
-	doDataBuild
+	AsRoot doDataBuild
 	cxStart
 	lookupStatus
 	dialog --backtitle "$TITLE" --title "Centrallix Started" --msgbox "Centrallix is started and is running on the following port:
