@@ -734,6 +734,15 @@ function checkAndInstallRequiredPackages
 	YUMTMPFILE="$$-YUM.tmp"
 	rpm -qa > $YUMTMPFILE
 	NOTFOUNDLIST=""
+
+	#Auto add repo stuff
+	if [ `which dnf 2> /dev/null`]; then
+	     #install epel
+	     dnf -y install epel-release
+	     #activate powertools
+	     dnf config-manager --set-enabled powertools
+	fi
+
 	for a in $( cat /usr/local/src/kardia-git/kardia-vm/rpms_needed.txt ); do
 	    if [ -z "`grep $a $YUMTMPFILE`" ]; then
 		NOTFOUNDLIST="$NOTFOUNDLIST $a" 
