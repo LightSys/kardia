@@ -713,6 +713,33 @@ function menuUsers
     doCreateKardiaUnixUser
     }
 
+#Do partition, lvm and filesystem resize
+function doResize
+    {
+	dialog --backtitle "$TITLE" --title "Resize the VM" --yes-label Resize --no-label Skip --yesno "This option will resize the VM image.  Before running this, you should have powered down the VM, added space to the disk image, and then brought the image back up.  Then, running this resize should increase the disk size.\n\nThe easiest way to add space is by using the dd command.  In Windows, use the Linux subsystem to get a linux prompt where you can use dd.  A command like this:\n\n  'dd if=/dev/zero bs=1 seek=7G count=0 of=KardiaVM.hdd'\n\nWhere KardiaVM.hdd is the drive image you are trying to increase and the 7G is the new size you want the image to be.  Remember, 500MB is lost to other partitions.  7G will only give your machine 6.5G of space." 0 0
+	if [ "$?" = 0 ]; then
+	    #Do the resize
+	    DRIVE=$(pvdisplay | grep dev | sed 's/.* \//\//')
+	    NUMBER=$(echo "$DRIVE" | sed 's/\([^0-9]*\)\([0-9]*\)/\2/')
+	    DISK=$(echo "$DRIVE" | sed 's/\([^0-9]*\)\([0-9]*\)/\1/')
+	    logger -t "Kardia.sh-Resize" "Resizing: Drive=$DRIVE Disk=$DISK Number=$NUMBER"
+	    logger -t "Kardia.sh-Resize" "repartitioning using sfdisk"
+	    echo ", +" | sfdisk -N $NUMBER $DISK --force
+	    partprobe
+	    LV=$(lvdisplay | grep Path | sed 's/[^\/]*//')
+	    VG=$(dirname $LV)
+	    logger -t "Kardia.sh-Resize" "Resizing Physical Volume: $DRIVE"
+	    pvresize $DRIVE
+	    logger -t "Kardia.sh-Resize" "resizing Logival Volume: $LV"
+	    lvextend -l +100%FREE $LV
+	    logger -t "Kardia.sh-Resize" "Growing the filesystem"
+	    xfs_growfs $LV 2>/dev/null  #xfs
+	    resize2fs $LV  2>/dev/null #ext4
+
+	    echo -n "Done.  Press enter to continue > "
+	    read line
+	fi
+    }
 
 # Do updates (yum update)
 function doUpdates
@@ -842,6 +869,7 @@ function menuSystem
 	DSTR="$DSTR RootPass 'Change Root Password'"
 	DSTR="$DSTR Updates 'Download and Install OS Updates'"
 	DSTR="$DSTR Timezone 'Set the System Time Zone'"
+	DSTR="$DSTR Resize 'Resize the Virtual Machine'"
         Rootable && DSTR="$DSTR Wizard 'Re-Run the Initial Setup Wizard'"
 	DSTR="$DSTR Quit 'Exit Kardia / Centrallix Management'"
 
@@ -856,6 +884,9 @@ function menuSystem
 	    Shutdown)
 		shutdown -h now
 		exit
+		;;
+	    Resize)
+		AsRoot doResize
 		;;
 	    RootPass)
 		passwd
