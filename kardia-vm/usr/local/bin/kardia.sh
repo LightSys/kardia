@@ -716,15 +716,20 @@ function menuUsers
 #Do partition, lvm and filesystem resize
 function doResize
     {
-	dialog --backtitle "$TITLE" --title "Resize the VM" --yes-label Resize --no-label Skip --yesno "This option will resize the VM image.  Before running this, you should have powered down the VM, added space to the disk image, and then brought the image back up.  Then, running this resize should increase the disk size.\n\nThe easiest way to add space is by using the dd command.  In Windows, use the Linux subsystem to get a linux prompt where you can use dd.  A command like this:\n\n  'dd if=/dev/zero bs=1 seek=7G count=0 of=KardiaVM.hdd'\n\nWhere KardiaVM.hdd is the drive image you are trying to increase and the 7G is the new size you want the image to be.  Remember, 500MB is lost to other partitions.  7G will only give your machine 6.5G of space." 0 0
+	dialog --backtitle "$TITLE" --title "Resize the VM" --yes-label Resize --no-label Skip --yesno "This option will resize the VM image.  Before running this, you should have powered down the VM, added space to the disk image, and then brought the image back up.  Then, running this resize should increase the disk size.\n\nThe easiest way to add space is by using the truncate command.  In Windows, use the Linux subsystem to get a linux prompt where you can use truncate.  A command like this:\n\n  'truncate +500M KardiaVM.hdd'\n\nWhere KardiaVM.hdd is the drive image you are trying to increase and the 500M is the amount we want to increase it by.  Remember, 500MB is lost to other partitions.  7G will only give your machine 6.5G of space." 0 0
 	if [ "$?" = 0 ]; then
 	    #Do the resize
 	    DRIVE=$(pvdisplay | grep dev | sed 's/.* \//\//')
 	    NUMBER=$(echo "$DRIVE" | sed 's/\([^0-9]*\)\([0-9]*\)/\2/')
 	    DISK=$(echo "$DRIVE" | sed 's/\([^0-9]*\)\([0-9]*\)/\1/')
-	    logger -t "Kardia.sh-Resize" "Resizing: Drive=$DRIVE Disk=$DISK Number=$NUMBER"
+	    EXTENDED=$(sfdisk -l $DISK | grep -i extended | sed 's/ .*//' | sed 's/[^0-9]*//')
+	    logger -t "Kardia.sh-Resize" "Resizing: Drive=$DRIVE Disk=$DISK Number=$NUMBER EXTENDED=$EXTENDED"
+	    if [ -n "$EXTENDED" ]; then
+		logger -t "Kardia.sh-Resize" "repartitioning extended partition using sfdisk"
+		echo ", +" | sfdisk -N $EXTENDED $DISK --force --no-reread
+	    fi
 	    logger -t "Kardia.sh-Resize" "repartitioning using sfdisk"
-	    echo ", +" | sfdisk -N $NUMBER $DISK --force
+	    echo ", +" | sfdisk -N $NUMBER $DISK --force --no-reread
 	    partprobe
 	    LV=$(lvdisplay | grep Path | sed 's/[^\/]*//')
 	    VG=$(dirname $LV)
