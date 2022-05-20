@@ -1300,7 +1300,7 @@ function repoInitShared
     ln -s ../../../kardia-git/kardia-app kardia
 
     # Set repo permissions to allow updates
-    cd cx-git
+    cd $BASEDIR/src/cx-git
     doGit config receive.denyCurrentBranch ignore
     cd ../kardia-git
     doGit config receive.denyCurrentBranch ignore
