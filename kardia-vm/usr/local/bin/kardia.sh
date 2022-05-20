@@ -768,7 +768,7 @@ function checkAndInstallRequiredPackages
 	NOTFOUNDLIST=""
 
 	#Auto add repo stuff
-	if [ `which dnf 2> /dev/null`]; then
+	if [ `which dnf 2> /dev/null` ]; then
 	     #install epel
 	     dnf -y install epel-release
 	     #activate powertools
