@@ -3529,6 +3529,11 @@ function menuAutossh
 	DSTR="dialog --backtitle '$TITLE' --title 'Autossh' --cancel-label 'Back' --menu 'Administrate Autossh' 20 72 14" 
 	DSTR="$DSTR Configure 'Configure Autossh'"
 	DSTR="$DSTR EnableDisable 'Enable / Disable Autossh($status)'"
+	if [ "$AUTOSSH_RUNNING" = "yes" ]; then
+	    DSTR="$DSTR Stop 'Stop Autossh (running)'"
+	else
+	    DSTR="$DSTR Start 'Start Autossh (not running)'"
+	fi
 	DSTR="$DSTR Quit 'Exit Kardia / Centrallix Management'"
 
 	SEL=$(eval "$DSTR" 2>&1 >/dev/tty)
@@ -3538,6 +3543,12 @@ function menuAutossh
 		;;
 	    Configure)
 		menuConfigureAutossh
+		;;
+	    Start)
+		doStartAutossh
+		;;
+	    Stop)
+		doStopAutossh
 		;;
 	    EnableDisable)
 		menuEnableDisableAutossh
@@ -3565,6 +3576,24 @@ function doStartAutossh
 	    else
 		#run it
 		$cmd
+	    fi
+	fi
+    else
+	echo "Autossh is disabled via configuration.  Please enable it and try again"
+	sleep 2
+    fi
+    }
+
+function doStopAutossh
+    {
+    lookupStatus
+    if [ "$AUTOSSH_ENABLED" = "yes" ]; then
+	autossh=$(which autossh 2>/dev/null)
+	if [ -n $autossh ]; then
+	    if [ "$AUTOSSH_RUNNING" = "yes" ]; then
+		killall autossh
+	    else
+		echo "Autossh not yet running. Nothing done."
 	    fi
 	fi
     else
