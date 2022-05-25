@@ -134,7 +134,7 @@ if Root; then
 	fi
 	psphome2=/usr/local/etc/pam-script.d/pam_script_passwd
 	if [ ! -f "$psphome2" ]; then
-	    ln -s "$psphome" "$psphome"
+	    ln -s "$psphome" "$psphome" 2>/dev/null
 	fi
     fi
 fi
@@ -875,6 +875,7 @@ function menuSystem
 	DSTR="$DSTR Updates 'Download and Install OS Updates'"
 	DSTR="$DSTR Timezone 'Set the System Time Zone'"
 	DSTR="$DSTR Resize 'Resize the Virtual Machine'"
+	DSTR="$DSTR Autossh 'Configure Autossh'"
         Rootable && DSTR="$DSTR Wizard 'Re-Run the Initial Setup Wizard'"
 	DSTR="$DSTR Quit 'Exit Kardia / Centrallix Management'"
 
@@ -892,6 +893,9 @@ function menuSystem
 		;;
 	    Resize)
 		AsRoot doResize
+		;;
+	    Autossh)
+		 menuAutossh
 		;;
 	    RootPass)
 		passwd
@@ -1966,6 +1970,19 @@ function lookupStatus
 	export DUPLICITY_PORT=$(grep PORT $DUPLICITY_CONF | sed 's/.*=//')
 	export DUPLICITY_PATH=$(grep PATH $DUPLICITY_CONF | sed 's/.*=//')
 	export DUPLICITY_ENABLED=$(grep ENABLED $DUPLICITY_CONF | sed 's/.*=//')
+    fi
+    export AUTOSSH_CONF=$ETCDIR/autossh.conf
+    if [ -e "$AUTOSSH_CONF" ]; then
+	export AUTOSSH_USER=$(grep USER $AUTOSSH_CONF | sed 's/.*=//')
+	export AUTOSSH_HOST=$(grep HOST $AUTOSSH_CONF | sed 's/.*=//')
+	export AUTOSSH_PORT=$(grep PORT $AUTOSSH_CONF | sed 's/.*=//')
+	export AUTOSSH_BASE=$(grep BASE $AUTOSSH_CONF | sed 's/.*=//')
+	export AUTOSSH_ENABLED=$(grep ENABLED $AUTOSSH_CONF | sed 's/.*=//')
+    fi
+    if [ -n "`pgrep autossh`" ]; then
+	AUTOSSH_RUNNING=yes
+    else
+	AUTOSSH_RUNNING=no
     fi
     }
 
@@ -3497,6 +3514,186 @@ function doCreateMissingCronFiles
 	fi
     done
     }
+
+#Autossh autossh
+function menuAutossh
+    {
+    lookupStatus
+    while true; do
+	HOST=$(/bin/hostname)
+	if [ "$AUTOSSH_ENABLED" = "yes" ]; then
+	    status=enabled
+	else
+	    status=disabled
+	fi
+	DSTR="dialog --backtitle '$TITLE' --title 'Autossh' --cancel-label 'Back' --menu 'Administrate Autossh' 20 72 14" 
+	DSTR="$DSTR Configure 'Configure Autossh'"
+	DSTR="$DSTR EnableDisable 'Enable / Disable Autossh($status)'"
+	DSTR="$DSTR Quit 'Exit Kardia / Centrallix Management'"
+
+	SEL=$(eval "$DSTR" 2>&1 >/dev/tty)
+	case "$SEL" in
+	    Quit)
+		exit
+		;;
+	    Configure)
+		menuConfigureAutossh
+		;;
+	    EnableDisable)
+		menuEnableDisableAutossh
+		;;
+	    '')
+		break
+		;;
+	esac
+    done
+    }
+
+function doStartAutossh
+    {
+    lookupStatus
+    if [ "$AUTOSSH_ENABLED" = "yes" ]; then
+	autossh=$(which autossh 2>/dev/null)
+	if [ -n $autossh ]; then
+	    #we are ready to run it
+	    LSSH=$(($AUTOSSH_BASE + 22))
+	    LWEB=$(($AUTOSSH_BASE + 80))
+	    LSSL=$(($AUTOSSH_BASE + 43))
+	    cmd="$autossh -f -M 0 -p $AUTOSSH_PORT $AUTOSSH_USER@$AUTOSSH_HOST -N -R $LSSH:localhost:22 -R $LWEB:localhost:843 -R $LSSL:localhost:800"
+	    if [ "$AUTOSSH_RUNNING" = "yes" ]; then
+		echo "Autossh already running.  Please stop it first"
+	    else
+		#run it
+		$cmd
+	    fi
+	fi
+    else
+	echo "Autossh is disabled via configuration.  Please enable it and try again"
+	sleep 2
+    fi
+    }
+
+function menuEnableDisableAutossh
+    {
+    lookupStatus
+    if [ "$AUTOSSH_ENABLED" = "yes" ]; then
+	en=on
+	ds=off
+    else
+	en=off
+	ds=on
+    fi
+    DSTR="dialog --backtitle '$TITLE' --title 'Enable/Disable Autossh' --radiolist 'Autossh:' 16 72 10"
+    DSTR="$DSTR enabled 'Enable Autossh' $en"
+    DSTR="$DSTR disabled 'Disable Autossh' $ds"
+
+    SEL=$(eval "$DSTR" 2>&1 >/dev/tty)
+    
+    if [ -n "$SEL" ]; then
+	#we have chosen one of them
+	if [ "$SEL" = "enabled" ]; then
+	    export AUTOSSH_ENABLED=yes
+	else
+	    export AUTOSSH_ENABLED=no
+	fi
+	doWriteAutosshConfiguration
+    fi
+    }
+
+function doWriteAutosshConfiguration
+    {
+	if [ -n "$AUTOSSH_USER" -a -n "$AUTOSSH_HOST" -a -n "$AUTOSSH_BASE" ]; then
+	    echo "USER=$AUTOSSH_USER" >$AUTOSSH_CONF
+	    echo "HOST=$AUTOSSH_HOST" >>$AUTOSSH_CONF
+	    echo "PORT=$AUTOSSH_PORT" >>$AUTOSSH_CONF
+	    echo "BASE=$AUTOSSH_BASE" >>$AUTOSSH_CONF
+	    echo "ENABLED=$AUTOSSH_ENABLED" >>$AUTOSSH_CONF
+	fi
+    }
+
+function menuConfigureAutossh
+    {
+    while true; do
+	lookupStatus
+	DSTR="dialog --title 'Configure AutoSSH' --backtitle 'Configure AutoSSH' --form"
+	DSTR="$DSTR 'Configure AutoSSH to allow remote connections to this host.' 0 0 0"
+	DSTR="$DSTR 'DestUser:' 1 1 '$AUTOSSH_USER' 1 26 30 0"
+	DSTR="$DSTR 'DestHost:' 3 1 '$AUTOSSH_HOST' 3 26 30 0"
+	DSTR="$DSTR 'DestPort:' 5 1 '$AUTOSSH_PORT' 5 26 5 0"
+	DSTR="$DSTR 'DestBasePort:' 7 1 '$AUTOSSH_BASE' 7 26 30 0"
+
+	echo $DSTR
+ 
+	ANS=$(eval "$DSTR" 2>&1 >/dev/tty | 
+	    {
+	    read N_USER; read N_HOST; read N_PORT; read N_BASE
+	    if [ -z "$N_USER" -a -z "$N_HOST" -a -z "$N_BASE" ]; then
+		return 0 #We are canceling out, or nothing defined	
+	    fi
+	    #We need to test before we commit
+	    #try a silent ssh that would fail if something wrong to get an error
+	    #if the error is such that we need a key, try doing ssh-copy-id
+	    #see where we go from that
+	    echo Testing settings
+	    target="$N_USER@$N_HOST"
+	    working=$( ssh -oBatchMode=yes -oStrictHostKeyChecking=no -oConnectTimeout=3 -p $N_PORT $target ls 2>&1 )
+	    #track the response
+	    response=$?
+	    #echo working = $working
+	    #echo response = $response
+	    #we are looking for "Permission denied (publickey,password)."
+	    
+	    if [ $response -ne 0 ]; then
+		if [ -n "$( echo $working | grep publickey )" ]; then
+		    echo ---------------------------------------------------
+		    echo Trying to push the id to the server with ssh-copy-id
+		    echo Enter the password for $N_USER if prompted for it
+		    echo ---------------------------------------------------
+		    #we believe we can fix it by doing ssh-copy-id
+		    ssh-copy-id -p $N_PORT $target
+		    export hostfile=~/.ssh/known_hosts
+		    ( cat $hostfile; ssh-keyscan -p$N_PORT $N_HOST )2>/dev/null|  sort -u > $hostfile
+		    echo ---------------------------------------------------
+		    echo We will return to the menu and try again now that
+		    echo We think it is fixed.
+		    set -x
+		    AUTOSSH_USER=$N_USER;
+		    AUTOSSH_PORT=$N_PORT;
+		    AUTOSSH_HOST=$N_HOST;
+		    AUTOSSH_PATH=$N_BASE;
+		    doWriteAutosshConfiguration
+		    set +x
+		    sleep 2
+		else
+		    echo There is an error we cannot fix:
+		    echo "ERROR: $working"
+		    exit
+		fi
+	    else
+		if [ -n "$N_USER" -a -n "$N_HOST" -a -n "$N_BASE" ]; then
+		    AUTOSSH_USER=$N_USER;
+		    AUTOSSH_PORT=$N_PORT;
+		    AUTOSSH_HOST=$N_HOST;
+		    AUTOSSH_PATH=$N_BASE;
+		    doWriteAutosshConfiguration
+		    return 0
+		else
+		    echo Missing some settings - not saved 1>&2
+		    sleep 2
+		    break
+		    return 1
+		fi
+
+	    fi
+	    return 1
+	    } 1>&2)
+	if [ $? -eq 0 ]; then
+	    break	
+	fi
+    done
+    }
+
+#Backup
 
 function menuConfigureBackup
     {
