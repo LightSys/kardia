@@ -1,0 +1,7 @@
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/bin/kardia.sh doOnBoot
+
+[Install]
+WantedBy=multi-user.target

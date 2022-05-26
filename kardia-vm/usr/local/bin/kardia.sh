@@ -3159,7 +3159,7 @@ function vm_prep_cleanYum
 function vm_prep_setupEtc
 {
 	mkdir -p /etc/samba /etc/pam-script /etc/systemd/system
-	files="issue.kardia issue.kardia-init pam.d/system-auth.kardia samba/smb.conf.noshares samba/smb.conf.onerepo samba/smb.conf.userrepo ssh/sshd_config.kardia pam-script/pam_script_passwd pam.d/system-auth.kardia systemd/system/centrallix.service logrotate.d/centrallix dracut.conf.d/kardia_vm.conf"
+	files="issue.kardia issue.kardia-init pam.d/system-auth.kardia samba/smb.conf.noshares samba/smb.conf.onerepo samba/smb.conf.userrepo ssh/sshd_config.kardia pam-script/pam_script_passwd pam.d/system-auth.kardia systemd/system/kardiaVM-startup.service systemd/system/centrallix.service logrotate.d/centrallix dracut.conf.d/kardia_vm.conf"
 	directory="/usr/local/src/kardia-git/kardia-vm/etc/"
 	echo "Settting Up the ETC directory"
 	for file in $files; do
@@ -3202,6 +3202,10 @@ function vm_prep_setupEtc
 	echo "$N_HOST" > /etc/hostname
 	/bin/hostname "$N_HOST"
 	echo
+
+	####################
+	# make sure the startup service runs
+	systemctl enable kardiaVM-startup
 }
 
 ###########
@@ -3576,6 +3580,7 @@ function doStartAutossh
 	    else
 		#run it
 		$cmd
+		logger -t "kardia.sh" "Starting autossh $AUTOSSH_USER@$AUTOSSH_HOST"
 	    fi
 	fi
     else
@@ -3592,6 +3597,7 @@ function doStopAutossh
 	if [ -n $autossh ]; then
 	    if [ "$AUTOSSH_RUNNING" = "yes" ]; then
 		killall autossh
+		logger -t "kardia.sh" "Stopping autossh"
 	    else
 		echo "Autossh not yet running. Nothing done."
 	    fi
@@ -4043,6 +4049,16 @@ function displyCentrallixConnectInfo
 
     URL:   http://$IPADDR:$CXPORT/
     URL:   https://$IPADDR:$CXSSLPORT/" 0 0
+    }
+
+function doOnBoot
+    {
+    lookupStatus
+
+    logger -t "kardia.sh" "Running kardia.sh doOnBoot"
+    if [ "$AUTOSSH_ENABLED" = "yes" ]; then
+	doStartAutossh
+    fi
     }
 
 function doSetupGuideUser
