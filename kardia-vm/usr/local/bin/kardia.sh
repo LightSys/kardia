@@ -3622,10 +3622,19 @@ function menuEnableDisableAutossh
 	#we have chosen one of them
 	if [ "$SEL" = "enabled" ]; then
 	    export AUTOSSH_ENABLED=yes
+	    doWriteAutosshConfiguration
+	    #enable it, then start it
+	    doStartAutossh
+	    echo "Enabled at boot.  Starting autossh now"
 	else
+	    #stop it while it is enabled, then disable it
+	    doStopAutossh
+	    #Now, change the configuration
 	    export AUTOSSH_ENABLED=no
+	    doWriteAutosshConfiguration
+	    echo "Disabled at boot.  Stopping autossh now"
 	fi
-	doWriteAutosshConfiguration
+	sleep 2 
     fi
     }
 
