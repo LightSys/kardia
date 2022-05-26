@@ -210,6 +210,10 @@ alter table p_nondup
 	drop primary key;
 
 
+alter table p_dup
+	drop primary key;
+
+
 alter table m_list
 	drop primary key;
 

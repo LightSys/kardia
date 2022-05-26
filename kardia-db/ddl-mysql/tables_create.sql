@@ -677,6 +677,28 @@ create table p_nondup (
 );
 
 
+/* p_dup */
+
+create table p_dup (
+        p_partner_key                         char(10)  not null,      /*  --  */
+        p_dup_partner_key                     char(10)  not null,      /*  --  */
+        p_match_quality                       float  not null,         /* The degree of match for the potential duplicates (0.0 ~ 1.0) --  */
+        p_location_id                         integer  null,           /* If this is a duplicate location (same partner), this is the location ID. --  */
+        p_dup_location_id                     integer  null,           /*  --  */
+        p_revision_id                         integer  null,           /*  --  */
+        p_dup_revision_id                     integer  null,           /*  --  */
+        p_contact_id                          integer  null,           /* If this is a duplicate contact record (same partner), this is the contact ID. --  */
+        p_dup_contact_id                      integer  null,           /*  --  */
+        p_comment                             varchar(900)  null,      /* comments about this potential duplicate --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
 /* m_list */
 
 create table m_list (
