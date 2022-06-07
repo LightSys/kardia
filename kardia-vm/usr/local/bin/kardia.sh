@@ -3519,6 +3519,222 @@ function doCreateMissingCronFiles
     done
     }
 
+#readCron - Pass filename first, followed by the command (in case no such cron exists yet)
+# readCron /etc/cron.kardia.d/backup /usr/local/bin/kardia.sh doBackup
+function readCron
+    {
+    #first parameter is the filename
+    cronFile="$1"
+    shift
+    sentCommand="$*"
+    if [ -n "$cronFile" -a -e "$cronFile" ]; then
+	#We were passed a cron file and it exists
+	set -x
+	while read a b c d e f g; do 
+	    export cron_hour="$a" 
+	    export cron_minute="$b"
+	    export cron_day="$c" 
+	    export cron_week="$d" 
+	    export cron_month="$e" 
+	    export cron_who="$f" 
+	    export cron_command="$g" 
+	done < $cronFile
+	set +x
+	#echo "$cron_hour $cron_minute $cron_day $cron_week $cron_month $cron_who $cron_command"
+    else
+	#defaults
+	export cron_hour=22
+	export cron_minute=15
+	export cron_day="Mon,Tue,Wed,Thu,Fri"
+	export cron_week="*"
+	export cron_month="*"
+	export cron_who=root
+	export cron_command=sentCommand
+    fi
+    export cron_Sun=off
+    export cron_Mon=off
+    export cron_Tue=off
+    export cron_Wed=off
+    export cron_Thu=off
+    export cron_Fri=off
+    export cron_Sat=off
+    alldays=$(echo $cron_day | sed 's/,/ /g')
+    for oneday in $alldays; do
+	case $oneday in
+	    0|7|Sun)
+		cron_Sun=on
+		;;
+	    1|Mon)
+		cron_Mon=on
+		;;
+	    2|Tue)
+		cron_Tue=on
+		;;
+	    3|Wed)
+		cron_Wed=on
+		;;
+	    4|Thu)
+		cron_Thu=on
+		;;
+	    5|Fri)
+		cron_Fri=on
+		;;
+	    6|Sat)
+		cron_Sat=on
+		;;
+	esac
+		
+    done
+    }
+
+function writeCron
+    {
+    #first parameter is the filename
+    cronFile="$1"
+    shift
+    sentCommand="$*"
+    #use the command in the cronfile if we did not pass one in
+    if [ -z "$sentCommand" ]; then
+	sentCommand=$cron_command
+    fi
+
+    if [ -n "$cronFile" ]; then
+	#make the directory if it does not yet exist
+	cronDir=`basename $cronFile`
+	mkdir -p $cronDir
+
+#Make sure we have the paths set up for the cron and other default info
+cat > $cronFile << EOF
+SHELL=/bin/bash
+PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
+MAILTO=root
+EOF
+#Now, put the cron command into the file
+	echo "$cron_hour $cron_minute $cron_day $cron_week $cron_month $cron_who $sentCommand" >> $cronFile
+    fi
+    }
+
+#editCronFull - Pass filename first, followed by the command (in case no such cron exists yet)
+# editCronFull /etc/cron.kardia.d/backup /usr/local/bin/kardia.sh doBackup
+function editCronFull
+    {
+    #first parameter is the filename
+    cronFile="$1"
+    shift
+    sentCommand="$*"
+
+    #read the cronfile
+    readCron "$cronFile" "$sentCommand"
+
+    DSTR="dialog --title 'Edit Cron $cronFile' --backtitle '$TITLE' --form"
+    DSTR="$DSTR 'Edit Cron' 0 0 0"
+    DSTR="$DSTR 'Hour(s):' 3 1 '$cron_hour' 3 36 30 0"
+    DSTR="$DSTR 'Minute(s):' 5 1 '$cron_minute' 5 36 30 0"
+    DSTR="$DSTR 'Day(s):' 7 1 '$cron_day' 7 36 30 0"
+    DSTR="$DSTR 'Week:' 9 1 '$cron_week' 9 36 30 0"
+    DSTR="$DSTR 'Month:' 11 1 '$cron_month' 11 36 30 0"
+
+    eval "$DSTR" 2>&1 >/dev/tty |
+	{
+	read cron_hour; read cron_minute; read cron_day; read cron_week; read cron_month; 
+	if [ -z "$cron_hour" -a -z "$cron_minute" ]; then
+	    #they probably canceled
+	    return
+	fi
+	if [ -z "$cron_hour" ]; then
+	    echo "Invalid hour."; sleep 2; return
+	fi
+	if [ -z "$cron_minute" ]; then
+	    echo "Invalid minute."; sleep 2; return
+	fi
+	if [ -z "$cron_day" ]; then
+	    echo "Invalid day."; sleep 2; return
+	fi
+	if [ -z "$cron_week" ]; then
+	    echo "Invalid week."; sleep 2; return
+	fi
+	if [ -z "$cron_month" ]; then
+	    echo "Invalid month."; sleep 2; return
+	fi
+	writeCron "$cronFile" "$sentCommand"
+
+	#Do any links.  Cron files for kardia are stored in /etc/cron.kardia.d but linked
+	doCreateMissingCronFiles
+	#Delete any broken cron links
+	doCleanBadCronFiles
+	}
+    }
+
+#editCronTime - needs to have the cron file read before this is called
+function editCronTime
+    {
+    DSTR="dialog --title 'Edit Cron $cronFile' --backtitle '$TITLE' --form"
+    DSTR="$DSTR 'Edit Cron' 0 0 0"
+    DSTR="$DSTR 'Hour(s):' 3 1 '$cron_hour' 3 36 30 0"
+    DSTR="$DSTR 'Minute(s):' 5 1 '$cron_minute' 5 36 30 0"
+
+    SEL=$(eval "$DSTR" 2>&1 >/dev/tty)
+    if [ $? -eq 0 ]; then
+	set $SEL
+	cron_hour=$1
+	cron_minute=$2
+    else
+	return 1
+    fi
+    }
+
+#editCronDays - needs to have the cron file read before this is called
+function editCronDays
+    {
+
+    DSTR="dialog --title 'Edit Cron $cronFile' --backtitle '$TITLE'"
+    DSTR="$DSTR --checklist 'Select The Days for the cron job' 0 0 0"
+    DSTR="$DSTR Sun Sunday $cron_Sun"
+    DSTR="$DSTR Mon Monday $cron_Mon"
+    DSTR="$DSTR Tue Tuesday $cron_Tue"
+    DSTR="$DSTR Wed Wednesday $cron_Wed"
+    DSTR="$DSTR Thu Thursday $cron_Thu"
+    DSTR="$DSTR Fri Friday $cron_Fri"
+    DSTR="$DSTR Sat Saturday $cron_Sat"
+
+    daystr=""
+    Chosen=$(eval "$DSTR" 2>&1 >/dev/tty)
+    if [ $? -eq 0 ]; then
+	for a in $Chosen; do
+	    [ -n "$daystr" ] && daystr="$daystr,"
+	    daystr="$daystr$a"
+	done
+	cron_day=$daystr
+    else
+	#return an error code so we know it was canceled
+	return 1
+    fi
+    }
+
+function editCron
+    {
+    cronFile="$1"
+    shift
+    sentCommand="$*"
+
+    #read the cronfile
+    readCron "$cronFile" "$sentCommand"
+
+    editCronTime
+
+    if [ $? -eq 0 ]; then
+	editCronDays
+	if [ $? -eq 0 ]; then
+	    writeCron "$cronFile" "$sentCommand"
+	fi
+    fi
+
+    #Do any links.  Cron files for kardia are stored in /etc/cron.kardia.d but linked
+    doCreateMissingCronFiles
+    #Delete any broken cron links
+    doCleanBadCronFiles
+    }
+
 #Autossh autossh
 function menuAutossh
     {
@@ -3873,6 +4089,7 @@ function menuBackup
 	DSTR="dialog --no-cancel --backtitle '$TITLE' --menu 'Backup Menu' 0 0 0"
 	DSTR="$DSTR Alter 'Backup ($status)'"
 	DSTR="$DSTR Config 'Configure Backup'"
+	DSTR="$DSTR Cron 'Configure automatic backup times'"
 	DSTR="$DSTR Do 'Do Backup'"
 	DSTR="$DSTR Restore 'Restore from Backup'"
 	DSTR="$DSTR Back 'Go back one menu'"
@@ -3891,6 +4108,9 @@ function menuBackup
 	if [ "$SEL" = "Restore" ]; then
 	    menuRestore
 	    continue
+	fi
+	if [ "$SEL" = "Cron" ]; then
+	    editCron /etc/cron.kardia.d/backup /usr/local/bin/kardia.sh doAutoBackup
 	fi
 	if [ "$SEL" = "Alter" ]; then
 	    menuEnableDisableBackup
@@ -3990,8 +4210,14 @@ function restoreOneDir
 	fi
     }
 
+function doAutoBackup
+    {
+    doBackup quiet
+    }
+
 function doBackup
     {
+    quiet="$1"
     lookupStatus
 
     if [ "$DUPLICITY_ENABLED" = "yes" ]; then
@@ -4026,12 +4252,16 @@ function doBackup
 		exit
 	    fi
 	else
-	    echo "Backup is not yet configured.  Please configure it"
-	    sleep 5
+	    if [ -z "$quiet" ]; then
+		echo "Backup is not yet configured.  Please configure it"
+		sleep 5
+	    fi
 	fi
     else
-	echo "Backup is disabled.  Please enable first"
-	sleep 5
+	if [ -z "$quiet" ]; then
+	    echo "Backup is disabled.  Please enable first"
+	    sleep 5
+	fi
     fi
     }
 
