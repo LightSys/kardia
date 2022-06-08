@@ -1965,10 +1965,13 @@ function lookupStatus
     ETCDIR=$( dirname $CXETC )
     export DUPLICITY_CONF=$ETCDIR/duplicity.conf
     if [ -e "$DUPLICITY_CONF" ]; then
+	export DUPLICITY_TARGET=$(grep TARGET $DUPLICITY_CONF | sed 's/.*=//')
+	export DUPLICITY_CONFIGURED=$(grep CONFIGURED $DUPLICITY_CONF | sed 's/.*=//')
 	export DUPLICITY_USER=$(grep USER $DUPLICITY_CONF | sed 's/.*=//')
 	export DUPLICITY_HOST=$(grep HOST $DUPLICITY_CONF | sed 's/.*=//')
 	export DUPLICITY_PORT=$(grep PORT $DUPLICITY_CONF | sed 's/.*=//')
 	export DUPLICITY_PATH=$(grep PATH $DUPLICITY_CONF | sed 's/.*=//')
+	export DUPLICITY_UUID=$(grep UUID $DUPLICITY_CONF | sed 's/.*=//')
 	export DUPLICITY_ENABLED=$(grep ENABLED $DUPLICITY_CONF | sed 's/.*=//')
     fi
     export AUTOSSH_CONF=$ETCDIR/autossh.conf
@@ -4061,15 +4064,98 @@ function menuEnableDisableBackup
     fi
     }
 
+function menuChooseBackupTarget
+    {
+    lookupStatus
+
+    ssh=off
+    local=off
+    cifs=off
+    case $DUPLICITY_TARGET in
+	SSH)
+	    ssh=on
+	    ;;
+	LOCAL)
+	    local=on
+	    ;;
+	CIFS)
+	    cifs=on
+	    ;;
+    esac
+   
+    DSTR="dialog --backtitle '$TITLE' --title 'Backup Target' --radiolist 'Duplicity target:' 16 72 10"
+    DSTR="$DSTR ssh 'Use duplicity over ssh' $ssh"
+    DSTR="$DSTR local 'Use a local (usb or detachable) disk' $local"
+    DSTR="$DSTR cifs 'Use a windows file-share ' $cifs"
+    
+    SEL=$(eval "$DSTR" 2>&1 >/dev/tty)
+
+    if [ -n "$SEL" ]; then
+	#we have chosen one of them
+	case $SEL in
+	    ssh)
+		DUPLICITY_TARGET=SSH
+		;;
+	    local)
+		DUPLICITY_TARGET=LOCAL
+		;;
+	    cifs)
+		DUPLICITY_TARGET=CIFS
+		;;
+
+	esac
+	
+	doWriteBackupConfiguration
+    fi
+    }
+
+function menuSelectTargetDrive
+    {
+    lookupStatus
+    UUIDS=$(lsblk -f | egrep "ext|xfs" | grep -v / | cut -c 32-70)
+    
+
+    DSTR="dialog --backtitle '$TITLE' --title 'Backup Drive' --radiolist 'Duplicity drive:' 16 72 10"
+    count=0
+    for uuid in $UUIDS; do
+	disk=$(blkid --uuid $uuid)
+	label=$(e2label $disk)
+	disk=$(basename $disk)
+	onoff=off
+	if [ "$uuid" = $DUPLICITY_UUID ]; then
+	    onoff=on
+	fi
+	if [ -n "$disk" ]; then
+	    ((count+=1))
+	    DSTR="$DSTR $disk '$uuid $label' $onoff"
+	fi
+    done
+
+    SEL=""
+    if [ $count -gt 0 ]; then
+	SEL=$(eval "$DSTR" 2>&1 >/dev/tty)
+    fi
+
+    if [ -n "$SEL" ]; then
+	#SEL should be the disk we want
+	#find the UUID that belongs to the disk
+	UUID=$(lsblk -f | egrep "ext|xfs" | grep -v / | grep $SEL | cut -c 32-70)
+
+	DUPLICITY_UUID=$UUID
+	doWriteBackupConfiguration
+    fi
+    }
+
 function doWriteBackupConfiguration
     {
-	if [ -n "$DUPLICITY_USER" -a -n "$DUPLICITY_HOST" -a -n "$DUPLICITY_PATH" ]; then
-	    echo "USER=$DUPLICITY_USER" >$DUPLICITY_CONF
-	    echo "HOST=$DUPLICITY_HOST" >>$DUPLICITY_CONF
-	    echo "PORT=$DUPLICITY_PORT" >>$DUPLICITY_CONF
-	    echo "PATH=$DUPLICITY_PATH" >>$DUPLICITY_CONF
-	    echo "ENABLED=$DUPLICITY_ENABLED" >>$DUPLICITY_CONF
-	fi
+	echo "TARGET=$DUPLICITY_TARGET" >$DUPLICITY_CONF
+	echo "CONFIGURED=$DUPLICITY_CONFIGURED" >>$DUPLICITY_CONF
+	echo "USER=$DUPLICITY_USER" >>$DUPLICITY_CONF
+	echo "HOST=$DUPLICITY_HOST" >>$DUPLICITY_CONF
+	echo "PORT=$DUPLICITY_PORT" >>$DUPLICITY_CONF
+	echo "PATH=$DUPLICITY_PATH" >>$DUPLICITY_CONF
+	echo "UUID=$DUPLICITY_UUID" >>$DUPLICITY_CONF
+	echo "ENABLED=$DUPLICITY_ENABLED" >>$DUPLICITY_CONF
     }
 
 function menuBackup
