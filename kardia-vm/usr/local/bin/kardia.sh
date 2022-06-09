@@ -1972,6 +1972,7 @@ function lookupStatus
 	export DUPLICITY_PORT=$(grep PORT $DUPLICITY_CONF | sed 's/.*=//')
 	export DUPLICITY_PATH=$(grep PATH $DUPLICITY_CONF | sed 's/.*=//')
 	export DUPLICITY_UUID=$(grep UUID $DUPLICITY_CONF | sed 's/.*=//')
+	export DUPLICITY_KEY=$(grep KEY $DUPLICITY_CONF | sed 's/.*=//')
 	export DUPLICITY_ENABLED=$(grep ENABLED $DUPLICITY_CONF | sed 's/.*=//')
     fi
     export AUTOSSH_CONF=$ETCDIR/autossh.conf
@@ -4155,6 +4156,7 @@ function doWriteBackupConfiguration
 	echo "PORT=$DUPLICITY_PORT" >>$DUPLICITY_CONF
 	echo "PATH=$DUPLICITY_PATH" >>$DUPLICITY_CONF
 	echo "UUID=$DUPLICITY_UUID" >>$DUPLICITY_CONF
+	echo "KEY=$DUPLICITY_KEY" >>$DUPLICITY_CONF
 	echo "ENABLED=$DUPLICITY_ENABLED" >>$DUPLICITY_CONF
     }
 
@@ -4299,6 +4301,131 @@ function restoreOneDir
 function doAutoBackup
     {
     doBackup quiet
+    }
+
+function doBackupPrePost
+    {
+    Mode=$1
+    lookupStatus
+    set -x
+    echo $Mode
+    echo $DUPLICITY_TARGET
+
+    case $Mode in
+	connect)
+	    #We are connecting.  Set up for the backup
+	    case $DUPLICITY_TARGET in
+		SSH)
+		    if [ "`ssh -oBatchMode=yes -oStrictHostKeyChecking=no -p $DUPLICITY_PORT $target ls `" ]; then
+			#tested fine
+			logger -t doBackupPrePost "SSH test successful.  Continuing to do backup."
+		    else
+			#failed test
+			logger -t doBackupPrePost "SSH test FAILED.  Backup process will end here."
+			return 1
+		    fi
+		    dup_path="scp://$DUPLICITY_USER@$DUPLICITY_HOST:$DUPLICITY_PORT//$DUPLICITY_PATH"
+		;;
+		CIFS)
+		    #mount the directory
+		    dup_path="file://mnt/backup/kardia-vm"
+		;;
+		LOCAL)
+		    #mount the local directory
+		    mkdir -p /mnt/backup
+		    logger -t doBackupPrePost "Mounting local drive for duplicity"
+		    mount UUID=$DUPLICITY_UUID /mnt/backup
+		    if [ $? -gt 0 ]; then
+			logger -t doBackupPrePost "Local mount failed.  The backup stops here."
+			return 1
+		    fi
+		    dup_path="file://mnt/backup/kardia-vm"
+		;;
+	    esac
+
+	    export PASSPHRASE=$DUPLICITY_KEY
+	    ;;
+	disconnect)
+	    #We are connecting.  Set up for the backup
+	    case $DUPLICITY_TARGET in
+		SSH)
+		    logger -t doBackupPrePost "Duplicity over SSH has completed."
+		;;
+		CIFS)
+		    #umount the directory
+		;;
+		LOCAL)
+		    #umount the local directory
+		    logger -t doBackupPrePost "Unmounting local drive for duplicity"
+		    umount /mnt/backup
+		    if [ $? -gt 0 ]; then
+			logger -t doBackupPrePost "Local unmount failed. Not sure what to do.  Moving on with life"
+			return 1
+		    fi
+		;;
+	    esac
+	    unset PASSPHRASE
+    esac
+    }
+
+function menuBackupPassphrase
+    {
+    lookupStatus
+
+    edit=false
+    if [ -z "$DUPLICITY_KEY" ]; then
+	#when we have no key, go straight into edit mode
+	edit=true
+    fi
+    
+    notDone=1
+    while [ $notDone -gt 0 ]; do
+	if [ "$edit" = "true" ]; then
+	    DSTR="dialog --title 'Encryption Key' --extra-button --backtitle 'Key' --extra-label 'Generate Random' --form"
+	    DSTR="$DSTR 'The decryption Key' 0 0 0"
+	    DSTR="$DSTR 'KEY' 1 1 '$DUPLICITY_KEY' 1 26 30 0"
+	else
+	    #dialog --backtitle "$TITLE" --title "Develop or just Looking?" --yes-label 'Developer' --no-label 'Just Looking' --yesno "Are you a developer, or just looking at Kardia?  Someone who is just viewing Kardia will have a number of default settings chosen for them." 0 0
+	    DSTR="dialog --title 'Encryption Key' --extra-button --backtitle 'Key' --extra-label 'Edit' --yesno"
+	    DSTR="$DSTR 'Key: $DUPLICITY_KEY' 0 0"
+	fi
+
+	SEL=$(eval "$DSTR" 2>&1 >/dev/tty)
+	#eval "$DSTR" 2>&1 >/dev/tty
+	
+	button=$? 
+	#button now holds which button was selected.  0=ok, 1=cancel, 3=other
+	if [ "$SEL" = "" ]; then
+	    #no data passed.
+	    echo nothing
+	fi
+	if [ $button -eq 0 ]; then
+	    #OK was chosen
+	    if [ "$edit" = "true" ]; then
+		#we are editing it, update the value
+		DUPLICITY_KEY=$SEL
+	    fi
+	    notDone=0 #break out of the loop
+	    doWriteBackupConfiguration
+	fi
+	if [ $button -eq 1 ]; then
+	    #cancel was chosen
+	    return 1
+	fi
+	if [ $button -eq 3 ]; then
+	    #optional button was chosen
+	    #  Either generate a random key (edit=true)
+	    #  or go into edit mode (edit=false)
+	    if [ "$edit" = "false" ]; then
+		#go into edit mode
+		edit=true
+	    else
+		#generate was selected, generate a new key
+		DUPLICITY_KEY=$(cat /dev/urandom | tr -dc '[:alpha:]' | fold -w ${1:-40} | head -n 1)
+		echo $DUPLICITY_KEY
+	    fi
+	fi
+    done
     }
 
 function doBackup
