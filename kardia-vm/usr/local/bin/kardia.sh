@@ -1975,6 +1975,9 @@ function lookupStatus
 	export DUPLICITY_KEY=$(grep KEY $DUPLICITY_CONF | sed 's/.*=//')
 	export DUPLICITY_OLDEY=$(grep OLDEY $DUPLICITY_CONF | sed 's/.*=//')
 	export DUPLICITY_ENABLED=$(grep ENABLED $DUPLICITY_CONF | sed 's/.*=//')
+	if [ -z "$DUPLICITY_KEY" ]; then
+	    export DUPLICITY_OPT="--no-encryption"
+	fi
     fi
     export AUTOSSH_CONF=$ETCDIR/autossh.conf
     if [ -e "$AUTOSSH_CONF" ]; then
@@ -4009,6 +4012,7 @@ function menuConfigureBackup
 		    DUPLICITY_PORT=$N_PORT;
 		    DUPLICITY_HOST=$N_HOST;
 		    DUPLICITY_PATH=$N_PATH;
+		    DUPLICITY_CONFIGURED=yes
 		    doWriteBackupConfiguration
 		    sleep 2
 		else
@@ -4022,6 +4026,7 @@ function menuConfigureBackup
 		    DUPLICITY_PORT=$N_PORT;
 		    DUPLICITY_HOST=$N_HOST;
 		    DUPLICITY_PATH=$N_PATH;
+		    DUPLICITY_CONFIGURED=yes
 		    doWriteBackupConfiguration
 		    return 0
 		else
@@ -4144,6 +4149,7 @@ function menuSelectTargetDrive
 	UUID=$(lsblk -f | egrep "ext|xfs" | grep -v / | grep $SEL | cut -c 32-70)
 
 	DUPLICITY_UUID=$UUID
+	DUPLICITY_CONFIGURED=yes
 	doWriteBackupConfiguration
     fi
     }
@@ -4215,11 +4221,18 @@ function menuBackup
 function menuRestore
     {
     lookupStatus
-    if [ -n "DUPLICITY_USER" -a -n "DUPLICITY_HOST" -a -n "DUPLICITY_PATH" ]; then
+    if [ -n "DUPLICITY_CONFIGURED" ]; then
 	echo "Gathering data: Please Wait"
 	DSTR="dialog --backtitle '$TITLE' --menu 'Choose an item to restore' 0 0 0"
-	dup_path="scp://$DUPLICITY_USER@$DUPLICITY_HOST:$DUPLICITY_PORT//$DUPLICITY_PATH"
-	dates=$( duplicity collection-status $dup_path/DB --no-encryption | grep -v Chain | grep -v date | grep 20[0-9][0-9] | sed 's/.*\(....................20[0-9][0-9]\).*/\1/' | { while read one; do date -d"$one"  +%Y-%m-%dT%H:%M:%S; done } )
+
+	doBackupPrePost connect
+	if [ $? -ne 0 ]; then
+	    echo "ERROR connecting to the backup target"
+	    sleep 5
+	    return
+	fi
+
+	dates=$( duplicity collection-status $DUPLICITY_OPT $dup_path/DB  | grep -v Chain | grep -v date | grep 20[0-9][0-9] | sed 's/.*\(....................20[0-9][0-9]\).*/\1/' | { while read one; do date -d"$one"  +%Y-%m-%dT%H:%M:%S; done } )
 	echo $dates;
 	if [ -z "$dates" ]; then
 	    echo -----------------------------------
@@ -4235,14 +4248,13 @@ function menuRestore
 	echo $SEL
 	if [ -n "$SEL" ]; then
 	    #We are trying to restore a backup
-	    dup_path="scp://$DUPLICITY_USER@$DUPLICITY_HOST:$DUPLICITY_PORT//$DUPLICITY_PATH"
 
 	    export DBDUMP="/tmp/mysql.tmp"
 
 	    #echo Dumping mysql
 	    #mysqldump -u root -h localhost --databases Kardia_DB --complete-insert --skip-extended-insert --add-drop-database > "$DBDUMP"
 	    echo recovering mysql sql file from $SEL
-	    #duplicity $DBDUMP $dup_path/DB --force --no-encryption --time $SEL
+	    #duplicity $DBDUMP $dup_path/DB --force $DUPLICITY_OPT --time $SEL
 	    restoreOneDir $dup_path/DB $DBDUMP $SEL
 
 	    echo Restoring etc from $SEL
@@ -4251,17 +4263,17 @@ function menuRestore
 
 	    #restore the data directory
 	    echo Restoring data from $SEL
-	    #duplicity $dup_path/data $KSRC/kardia-app/data --force --no-encryption --time $SEL
+	    #duplicity $dup_path/data $KSRC/kardia-app/data --force $DUPLICITY_OPT --time $SEL
 	    restoreOneDir $dup_path/data $KSRC/kardia-app/data $SEL
 
 	    #restore the files directory
 	    echo Restoring files from $SEL
-	    #duplicity $dup_path/files $KSRC/kardia-app/files --force --no-encryption --time $SEL
+	    #duplicity $dup_path/files $KSRC/kardia-app/files --force $DUPLICITY_OPT --time $SEL
 	    restoreOneDir $dup_path/files $KSRC/kardia-app/files $SEL
 
 	    #restore the tpl directory
 	    echo Restoring tpl from $SEL
-	    #duplicity $dup_path/tpl $KSRC/kardia-app/tpl --force --no-encryption --time $SEL
+	    #duplicity $dup_path/tpl $KSRC/kardia-app/tpl --force $DUPLICITY_OPT --time $SEL
 	    restoreOneDir $dup_path/tpl $KSRC/kardia-app/tpl $SEL
 
 	    echo restoring MYSQL database from sql file
@@ -4271,6 +4283,7 @@ function menuRestore
 	    echo -n "Press enter to continue"
 	    read line
 	fi
+	doBackupPrePost disconnect
     fi
     }
 
@@ -4285,7 +4298,7 @@ function restoreOneDir
 	    #if we fail, put the old stuff back
 	    rm -rf /tmp/old 2>/dev/null
 	    mv $dest /tmp/old
-	    duplicity $source $dest --no-encryption --time $time
+	    duplicity $source $dest $DUPLICITY_OPT --time $time
 	    if [ -d "$dest" -o -e "$dest" ]; then
 		#success!
 		rm -rf /tmp/old
@@ -4309,9 +4322,7 @@ function doBackupPrePost
     {
     Mode=$1
     lookupStatus
-    set -x
-    echo $Mode
-    echo $DUPLICITY_TARGET
+    echo Duplicity Mode: $Mode
 
     case $Mode in
 	connect)
@@ -4330,7 +4341,7 @@ function doBackupPrePost
 		;;
 		CIFS)
 		    #mount the directory
-		    dup_path="file://mnt/backup/kardia-vm"
+		    dup_path="file:///mnt/backup/kardia-vm"
 		;;
 		LOCAL)
 		    #mount the local directory
@@ -4341,7 +4352,7 @@ function doBackupPrePost
 			logger -t doBackupPrePost "Local mount failed.  The backup stops here."
 			return 1
 		    fi
-		    dup_path="file://mnt/backup/kardia-vm"
+		    dup_path="file:///mnt/backup/kardia-vm"
 		;;
 	    esac
 
@@ -4407,16 +4418,22 @@ function menuBackupPassphrase
 	    #OK was chosen
 	    if [ "$edit" = "true" ]; then
 		#we are editing it, update the value
-		if [ "$SEL" != "$DUPLICITY_KEY" ]; then
+		if [ "$SEL" != "$orig_DUPLICITY_KEY" ]; then
 		    if [ -n "$orig_DUPLICITY_KEY" ]; then
 			#There is a pre-existing key we are replacing.  Verify
 			
-			DSTR="dialog --backtitle '$TITLE' --title 'Replace Key' --radiolist 'Replace Key:' 16 72 10"
+			DSTR="dialog --backtitle '$TITLE' --title 'Replace Key' --radiolist 'Replace Key:\n\n"
+			DSTR="$DSTR Never replace your key if you have actual backups that are encrypted with an actual key."
+			DSTR="$DSTR If you do, it makes a key-mismatch and all old, and all new backups will fail.  The"
+			DSTR="$DSTR only way to recover is by either deleting all backups, or by deleting any new backups done with"
+			DSTR="$DSTR the new key, and reverting to the old key.\n\nIf you have no key yet, or have not made any"
+			DSTR="$DSTR backups using the old key, you are OK.\n' 18 78 14"
 			DSTR="$DSTR keep 'Keep your current key' on"
-			DSTR="$DSTR replace 'Replace your encryption key and invalidate ALL previous backups' off"
+			DSTR="$DSTR replace 'Replace your key and invalidate ALL previous backups' off"
 
 			AREYOUSURE=$(eval "$DSTR" 2>&1 >/dev/tty)
 			worked=$?
+			echo $AREYOUSURE
 		    else
 			#there was no key previously.  Assigning a new one
 			worked=0
@@ -4455,36 +4472,47 @@ function menuBackupPassphrase
     done
     }
 
+
 function doBackup
     {
     quiet="$1"
     lookupStatus
 
     if [ "$DUPLICITY_ENABLED" = "yes" ]; then
-	if [ -n "DUPLICITY_USER" -a -n "DUPLICITY_HOST" -a -n "DUPLICITY_PATH" ]; then
-	    target="$DUPLICITY_USER@$DUPLICITY_HOST"
-	    if [ "`ssh -oBatchMode=yes -oStrictHostKeyChecking=no -p $DUPLICITY_PORT $target ls `" ]; then
-		dup_path="scp://$DUPLICITY_USER@$DUPLICITY_HOST:$DUPLICITY_PORT//$DUPLICITY_PATH"
-
+	if [ "$DUPLICITY_CONFIGURED" ]; then
+	    doBackupPrePost connect
+	    if [ $? -eq 0 ]; then
 		export DBDUMP="/tmp/mysql.tmp"
 
+		#Back up the mysql database
 		echo Dumping mysql
+		logger -t doBackup "Dumping mysql"
 		mysqldump -u root -h localhost --databases Kardia_DB --complete-insert --skip-extended-insert --add-drop-database > "$DBDUMP"
 		echo Backing up mysql
-		duplicity $DBDUMP $dup_path/DB --no-encryption
+		logger -t doBackup "Backing up mysql"
+		duplicity $DUPLICITY_OPT $DBDUMP $dup_path/DB 
 
-		echo backing up etc
 		#backup the etc directory
-		duplicity $ETCDIR $dup_path/etc --no-encryption
+		echo backing up etc
+		logger -t doBackup "backing up etc"
+		duplicity $DUPLICITY_OPT $ETCDIR $dup_path/etc
+
 		#backup the data directory
 		echo backing up data
-		duplicity $KSRC/kardia-app/data $dup_path/data --no-encryption
+		logger -t doBackup "backing up data"
+		duplicity $DUPLICITY_OPT $KSRC/kardia-app/data $dup_path/data
+
 		#backup the files directory
 		echo backing up files
-		duplicity $KSRC/kardia-app/files $dup_path/files --no-encryption
+		logger -t doBackup "backing up files"
+		duplicity $DUPLICITY_OPT $KSRC/kardia-app/files $dup_path/files
+
 		#backup the tpl directory
 		echo backing up tpl
-		duplicity $KSRC/kardia-app/tpl $dup_path/tpl --no-encryption
+		logger -t doBackup  "backing up tpl"
+		duplicity $DUPLICITY_OPT $KSRC/kardia-app/tpl $dup_path/tpl
+
+		doBackupPrePost disconnect
 	    else
 		echo --------------------------------
 		echo "There was an error testing SSH"
