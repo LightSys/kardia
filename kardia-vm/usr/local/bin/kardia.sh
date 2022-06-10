@@ -1973,6 +1973,7 @@ function lookupStatus
 	export DUPLICITY_PATH=$(grep PATH $DUPLICITY_CONF | sed 's/.*=//')
 	export DUPLICITY_UUID=$(grep UUID $DUPLICITY_CONF | sed 's/.*=//')
 	export DUPLICITY_KEY=$(grep KEY $DUPLICITY_CONF | sed 's/.*=//')
+	export DUPLICITY_OLDEY=$(grep OLDEY $DUPLICITY_CONF | sed 's/.*=//')
 	export DUPLICITY_ENABLED=$(grep ENABLED $DUPLICITY_CONF | sed 's/.*=//')
     fi
     export AUTOSSH_CONF=$ETCDIR/autossh.conf
@@ -4157,6 +4158,7 @@ function doWriteBackupConfiguration
 	echo "PATH=$DUPLICITY_PATH" >>$DUPLICITY_CONF
 	echo "UUID=$DUPLICITY_UUID" >>$DUPLICITY_CONF
 	echo "KEY=$DUPLICITY_KEY" >>$DUPLICITY_CONF
+	echo "OLDEY=$DUPLICITY_OLDEY" >>$DUPLICITY_CONF
 	echo "ENABLED=$DUPLICITY_ENABLED" >>$DUPLICITY_CONF
     }
 
@@ -4403,7 +4405,21 @@ function menuBackupPassphrase
 	    #OK was chosen
 	    if [ "$edit" = "true" ]; then
 		#we are editing it, update the value
-		DUPLICITY_KEY=$SEL
+		if [ "$SEL" != "$DUPLICITY_KEY" ]; then
+		    DSTR="dialog --backtitle '$TITLE' --title 'Replace Key' --radiolist 'Replace Key:' 16 72 10"
+		    DSTR="$DSTR keep 'Keep your current key' on"
+		    DSTR="$DSTR replace 'Replace your encryption key and invalidate ALL previous backups' off"
+
+		    AREYOUSURE=$(eval "$DSTR" 2>&1 >/dev/tty)
+		    if [ "$?" = 0 -a "$AREYOUSURE" = "replace" ]; then
+			echo "Key replaced"
+			DUPLICITY_OLDEY=$DUPLICITY_KEY
+			DUPLICITY_KEY=$SEL
+		    else
+			echo "Key not changed"
+			return 1
+		    fi
+		fi
 	    fi
 	    notDone=0 #break out of the loop
 	    doWriteBackupConfiguration
