@@ -4379,17 +4379,19 @@ function menuBackupPassphrase
 	#when we have no key, go straight into edit mode
 	edit=true
     fi
-    
+    orig_DUPLICITY_KEY="$DUPLICITY_KEY"
+
     notDone=1
     while [ $notDone -gt 0 ]; do
 	if [ "$edit" = "true" ]; then
 	    DSTR="dialog --title 'Encryption Key' --extra-button --backtitle 'Key' --extra-label 'Generate Random' --form"
-	    DSTR="$DSTR 'The decryption Key' 0 0 0"
+	    DSTR="$DSTR 'Make sure you make a copy of this key and store it elsewhere.  If you need to rebuild the VM,"
+	    DSTR="$DSTR you will need this key to restore from backup.' 0 0 0"
 	    DSTR="$DSTR 'KEY' 1 1 '$DUPLICITY_KEY' 1 26 30 0"
 	else
-	    #dialog --backtitle "$TITLE" --title "Develop or just Looking?" --yes-label 'Developer' --no-label 'Just Looking' --yesno "Are you a developer, or just looking at Kardia?  Someone who is just viewing Kardia will have a number of default settings chosen for them." 0 0
 	    DSTR="dialog --title 'Encryption Key' --extra-button --backtitle 'Key' --extra-label 'Edit' --yesno"
-	    DSTR="$DSTR 'Key: $DUPLICITY_KEY' 0 0"
+	    DSTR="$DSTR 'Make sure you make a copy of this key and store it elsewhere.  If you need to rebuild the VM,"
+	    DSTR="$DSTR you will need this key to restore from backup.  \n\nExcryption Key: $DUPLICITY_KEY' 0 0"
 	fi
 
 	SEL=$(eval "$DSTR" 2>&1 >/dev/tty)
@@ -4406,12 +4408,21 @@ function menuBackupPassphrase
 	    if [ "$edit" = "true" ]; then
 		#we are editing it, update the value
 		if [ "$SEL" != "$DUPLICITY_KEY" ]; then
-		    DSTR="dialog --backtitle '$TITLE' --title 'Replace Key' --radiolist 'Replace Key:' 16 72 10"
-		    DSTR="$DSTR keep 'Keep your current key' on"
-		    DSTR="$DSTR replace 'Replace your encryption key and invalidate ALL previous backups' off"
+		    if [ -n "$orig_DUPLICITY_KEY" ]; then
+			#There is a pre-existing key we are replacing.  Verify
+			
+			DSTR="dialog --backtitle '$TITLE' --title 'Replace Key' --radiolist 'Replace Key:' 16 72 10"
+			DSTR="$DSTR keep 'Keep your current key' on"
+			DSTR="$DSTR replace 'Replace your encryption key and invalidate ALL previous backups' off"
 
-		    AREYOUSURE=$(eval "$DSTR" 2>&1 >/dev/tty)
-		    if [ "$?" = 0 -a "$AREYOUSURE" = "replace" ]; then
+			AREYOUSURE=$(eval "$DSTR" 2>&1 >/dev/tty)
+			worked=$?
+		    else
+			#there was no key previously.  Assigning a new one
+			worked=0
+			AREYOUSURE="replace"
+		    fi
+		    if [ "$worked" = 0 -a "$AREYOUSURE" = "replace" ]; then
 			echo "Key replaced"
 			DUPLICITY_OLDEY=$DUPLICITY_KEY
 			DUPLICITY_KEY=$SEL
@@ -4437,7 +4448,7 @@ function menuBackupPassphrase
 		edit=true
 	    else
 		#generate was selected, generate a new key
-		DUPLICITY_KEY=$(cat /dev/urandom | tr -dc '[:alpha:]' | fold -w ${1:-40} | head -n 1)
+		DUPLICITY_KEY=$(cat /dev/urandom | tr -dc '[:alpha:]' | fold -w ${1:-30} | head -n 1)
 		echo $DUPLICITY_KEY
 	    fi
 	fi
