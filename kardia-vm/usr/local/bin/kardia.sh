@@ -3537,7 +3537,6 @@ function readCron
     sentCommand="$*"
     if [ -n "$cronFile" -a -e "$cronFile" ]; then
 	#We were passed a cron file and it exists
-	set -x
 	while read a b c d e f g; do 
 	    export cron_hour="$a" 
 	    export cron_minute="$b"
@@ -3547,7 +3546,6 @@ function readCron
 	    export cron_who="$f" 
 	    export cron_command="$g" 
 	done < $cronFile
-	set +x
 	#echo "$cron_hour $cron_minute $cron_day $cron_week $cron_month $cron_who $cron_command"
     else
 	#defaults
@@ -3924,7 +3922,6 @@ function menuConfigureAutossh
 		    echo ---------------------------------------------------
 		    echo We will return to the menu and try again now that
 		    echo We think it is fixed.
-		    set -x
 		    AUTOSSH_USER=$N_USER;
 		    AUTOSSH_PORT=$N_PORT;
 		    AUTOSSH_HOST=$N_HOST;
@@ -4184,21 +4181,42 @@ function menuBackup
 
 	DSTR="dialog --no-cancel --backtitle '$TITLE' --menu 'Backup Menu' 0 0 0"
 	DSTR="$DSTR Alter 'Backup ($status)'"
+	DSTR="$DSTR Target 'Choose Backup target ($DUPLICITY_TARGET)'"
 	DSTR="$DSTR Config 'Configure Backup'"
+	DSTR="$DSTR Key 'Encryption Key'"
 	DSTR="$DSTR Cron 'Configure automatic backup times'"
 	DSTR="$DSTR Do 'Do Backup'"
+	DSTR="$DSTR -- '----'"
 	DSTR="$DSTR Restore 'Restore from Backup'"
 	DSTR="$DSTR Back 'Go back one menu'"
 
 	SEL=$(eval "$DSTR" 2>&1 >/dev/tty)
 
 	if [ "$SEL" = "Config" ]; then 
-	    menuConfigureBackup
+	    case $DUPLICITY_TARGET in
+		SSH)
+		    menuConfigureBackup
+		;;
+		CIFS)
+		    menuCIFSCredentials
+		;;
+		LOCAL)
+		    menuSelectTargetDrive
+		;;
+	    esac
+	    continue
+	fi
+	if [ "$SEL" = "Key" ]; then
+	    menuBackupPassphrase
 	    continue
 	fi
 	if [ "$SEL" = "Do" ]; then
 	    doBackup
 	    echo backin up
+	    continue
+	fi
+	if [ "$SEL" = "Target" ]; then
+	    menuChooseBackupTarget
 	    continue
 	fi
 	if [ "$SEL" = "Restore" ]; then
@@ -4342,6 +4360,23 @@ function doBackupPrePost
 		CIFS)
 		    #mount the directory
 		    dup_path="file:///mnt/backup/kardia-vm"
+		    readCIFSCredentials
+
+		    if [ -e "$CIFS_CONF" ]; then
+			#the config file exists.
+
+			mkdir -p /mnt/backup
+			logger -t doBackupPrePost "Mounting CIFS (windows networking) drive for duplicity"
+
+
+			err=$(mount -t cifs $DUPLICITY_PATH /mnt/backup -o credentials=$CIFS_CONF 2>&1 )
+			if [ $? -gt 0 ]; then
+			    logger -t doBackupPrePost "Network mount failed.  The backup stops here. $err"
+			    return 1
+			fi
+		    else
+			logger -t doBackupPrePost "No CIFS configuration. Cannot continue without authentication"
+		    fi
 		;;
 		LOCAL)
 		    #mount the local directory
@@ -4366,6 +4401,13 @@ function doBackupPrePost
 		;;
 		CIFS)
 		    #umount the directory
+		    logger -t doBackupPrePost "Unmounting network drive for duplicity"
+		    umount /mnt/backup
+		    if [ $? -gt 0 ]; then
+			logger -t doBackupPrePost "Network unmount failed. Not sure what to do.  Moving on with life"
+			return 1
+		    fi
+		    logger -t doBackupPrePost "Duplicity backup to windows share completed."
 		;;
 		LOCAL)
 		    #umount the local directory
@@ -4375,6 +4417,7 @@ function doBackupPrePost
 			logger -t doBackupPrePost "Local unmount failed. Not sure what to do.  Moving on with life"
 			return 1
 		    fi
+		    logger -t doBackupPrePost "Duplicity backup to local drive completed."
 		;;
 	    esac
 	    unset PASSPHRASE
@@ -4402,7 +4445,7 @@ function menuBackupPassphrase
 	else
 	    DSTR="dialog --title 'Encryption Key' --extra-button --backtitle 'Key' --extra-label 'Edit' --yesno"
 	    DSTR="$DSTR 'Make sure you make a copy of this key and store it elsewhere.  If you need to rebuild the VM,"
-	    DSTR="$DSTR you will need this key to restore from backup.  \n\nExcryption Key: $DUPLICITY_KEY' 0 0"
+	    DSTR="$DSTR you will need this key to restore from backup.  \n\nEncryption Key: $DUPLICITY_KEY' 0 0"
 	fi
 
 	SEL=$(eval "$DSTR" 2>&1 >/dev/tty)
@@ -4469,6 +4512,99 @@ function menuBackupPassphrase
 		echo $DUPLICITY_KEY
 	    fi
 	fi
+    done
+    }
+
+function readCIFSCredentials
+    {
+    
+    if [ -z "$ETCDIR" ]; then
+	lookupStatus
+    fi
+
+    export CIFS_CONF=$ETCDIR/cifs.conf
+    
+    if [ -e "$CIFS_CONF" ]; then
+	export CIFS_USER=$(grep username $CIFS_CONF | sed 's/.*=//')
+	export CIFS_PASS=$(grep password $CIFS_CONF | sed 's/.*=//')
+    fi
+    }
+
+function doWriteCIFSCredentials
+    {
+    if [ -z "$ETCDIR" ]; then
+	lookupStatus
+    fi
+
+    export CIFS_CONF=$ETCDIR/cifs.conf
+    
+    echo "username=$CIFS_USER" >$CIFS_CONF
+    echo "password=$CIFS_PASS" >>$CIFS_CONF
+    chmod 700 $CIFS_CONF
+    }
+
+#Get CIFS credentials for mounting a backup file. /usr/local/etc/cifs.conf
+function menuCIFSCredentials
+    {
+    option=$1
+    if [ -z "$option" ]; then
+	option=menu
+    fi
+
+    readCIFSCredentials
+
+    completed=false
+    while [ "$completed" = "false" ]; do
+	#loop through, giving the various menus	
+	case "$option" in
+	    menu)
+		DSTR="dialog --title 'CIFS Credentials'  --extra-button --extra-label 'Password' --form"
+		DSTR="$DSTR 'Configure the network path where the backup will be stored.\n"
+		DSTR="$DSTR A valid network path would look like: //server/share\n' 0 0 0"
+		DSTR="$DSTR 'Network Path:' 1 1 '$DUPLICITY_PATH' 1 20 40 0"
+		DSTR="$DSTR 'Username:' 3 1 '$CIFS_USER' 3 20 40 0"
+
+		SEL=$(eval $DSTR 2>&1 >/dev/tty)
+		response=$?
+		
+		if [ $response = 0 -o $response = 3 ]; then
+		    #ok or password was pressed.
+		    set $SEL
+		    DUPLICITY_PATH=$1
+		    CIFS_USER=$2
+		fi
+		if [ $response = 0 ]; then
+		    completed=true #so we exit
+		    #write the CIFS credential file
+		    doWriteCIFSCredentials
+		    DUPLICITY_CONFIGURED=yes
+		    #We also changed DUPLICITY variables save that
+		    doWriteBackupConfiguration
+		fi
+		if [ $response = 1 ]; then
+		    #cancel
+		    completed=true #exit
+		fi
+		if [ $response = 3 ]; then
+		    #change password
+		    option=password
+		fi
+	    ;;
+	    password)
+		DSTR="dialog --title 'Password' --clear --insecure --passwordbox 'Enter Password' 10 30 '$CIFS_PASS'"
+		SEL=$(eval $DSTR 2>&1 >/dev/tty)
+
+		if [ $? = 0 ]; then
+		    echo oldpass=$CCIFS_PASS
+		    CIFS_PASS=$SEL
+		    option=menu
+		    sleep 3
+		else
+		    echo "Skipping password change"
+		fi
+		exit
+	    ;;
+	esac
     done
     }
 
