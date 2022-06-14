@@ -4186,10 +4186,11 @@ function menuBackup
 	DSTR="$DSTR Key 'Encryption Key'"
 	DSTR="$DSTR Cron 'Configure automatic backup times'"
 	DSTR="$DSTR Do 'Do Backup'"
-	DSTR="$DSTR -- '----'"
+	DSTR="$DSTR '---' '------'"
 	DSTR="$DSTR Restore 'Restore from Backup'"
 	DSTR="$DSTR Back 'Go back one menu'"
 
+	echo $DSTR
 	SEL=$(eval "$DSTR" 2>&1 >/dev/tty)
 
 	if [ "$SEL" = "Config" ]; then 
@@ -4339,6 +4340,7 @@ function doAutoBackup
 function doBackupPrePost
     {
     Mode=$1
+    Testing="$2"
     lookupStatus
     echo Duplicity Mode: $Mode
 
@@ -4347,12 +4349,14 @@ function doBackupPrePost
 	    #We are connecting.  Set up for the backup
 	    case $DUPLICITY_TARGET in
 		SSH)
-		    if [ "`ssh -oBatchMode=yes -oStrictHostKeyChecking=no -p $DUPLICITY_PORT $target ls `" ]; then
+		    err=$(ssh -oBatchMode=yes -oStrictHostKeyChecking=no -p $DUPLICITY_PORT $target ls 2>&1)
+		    if [ $? -eq 0 ]; then
 			#tested fine
 			logger -t doBackupPrePost "SSH test successful.  Continuing to do backup."
 		    else
 			#failed test
 			logger -t doBackupPrePost "SSH test FAILED.  Backup process will end here."
+			[ "$Testing" = "testing" ] && echo $err
 			return 1
 		    fi
 		    dup_path="scp://$DUPLICITY_USER@$DUPLICITY_HOST:$DUPLICITY_PORT//$DUPLICITY_PATH"
@@ -4372,6 +4376,7 @@ function doBackupPrePost
 			err=$(mount -t cifs $DUPLICITY_PATH /mnt/backup -o credentials=$CIFS_CONF 2>&1 )
 			if [ $? -gt 0 ]; then
 			    logger -t doBackupPrePost "Network mount failed.  The backup stops here. $err"
+			    [ "$Testing" = "testing" ] && echo $err
 			    return 1
 			fi
 		    else
@@ -4382,9 +4387,10 @@ function doBackupPrePost
 		    #mount the local directory
 		    mkdir -p /mnt/backup
 		    logger -t doBackupPrePost "Mounting local drive for duplicity"
-		    mount UUID=$DUPLICITY_UUID /mnt/backup
+		    err=$(mount UUID=$DUPLICITY_UUID /mnt/backup 2>&1 )
 		    if [ $? -gt 0 ]; then
 			logger -t doBackupPrePost "Local mount failed.  The backup stops here."
+			[ "$Testing" = "testing" ] && echo $err
 			return 1
 		    fi
 		    dup_path="file:///mnt/backup/kardia-vm"
@@ -4421,6 +4427,19 @@ function doBackupPrePost
 		;;
 	    esac
 	    unset PASSPHRASE
+	    ;;
+	testing)
+	    #set -x
+	    c_err=$(doBackupPrePost connect testing)
+	    c_erval=$?
+	    d_err=$(doBackupPrePost disconnect testing)
+	    d_erval=$?
+	    if [ "$c_erval" -ne 0 ]; then
+		#there was a connect error.  Return an error code and print the message
+		echo "$c_err"
+		return 1
+	    fi
+	    ;;
     esac
     }
 
@@ -4580,6 +4599,18 @@ function menuCIFSCredentials
 		    DUPLICITY_CONFIGURED=yes
 		    #We also changed DUPLICITY variables save that
 		    doWriteBackupConfiguration
+
+		    #Now we need to test
+		    err=$(doBackupPrePost testing)
+		    if [ $? -ne 0 ]; then
+			#Somethig did not work
+			echo "ERROR: something did not work.  The error was:"
+			echo "  $err"
+			echo "Please check your path and network credentials and try again"
+			echo -n "Press enter to continue: > "
+			read line
+			completed=false
+		    fi
 		fi
 		if [ $response = 1 ]; then
 		    #cancel
@@ -4595,14 +4626,11 @@ function menuCIFSCredentials
 		SEL=$(eval $DSTR 2>&1 >/dev/tty)
 
 		if [ $? = 0 ]; then
-		    echo oldpass=$CCIFS_PASS
 		    CIFS_PASS=$SEL
 		    option=menu
-		    sleep 3
 		else
 		    echo "Skipping password change"
 		fi
-		exit
 	    ;;
 	esac
     done
