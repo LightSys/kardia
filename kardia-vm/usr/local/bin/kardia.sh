@@ -3110,8 +3110,6 @@ function doSystemUpdate
     if [ "${SEL%%Menus*}" != "$SEL" ]; then
 	AsRoot UpdateMenus
     fi
-    # copy the cron files and make sure they are updated
-    AsRoot doCopyCronFiles
     }
 
 ########################
@@ -3487,45 +3485,6 @@ function doCreateKardiaUnixUser
 	fi
     }
 
-#Set up the cron files for kardia from git
-function doCopyCronFiles
-    {
-    if [ -d /usr/local/src/kardia-git/kardia-vm/ ]; then
-	#copy this, deleting any cron files that do not exist on git
-	rsync -ra --delete /usr/local/src/kardia-git/kardia-vm/etc/cron.kardia.d/ /etc/cron.kardia.d/
-	doCreateMissingCronFiles
-	doCleanBadCronFiles
-    fi
-    }
-
-#Erase any broken links to kardia.cron.d 
-function doCleanBadCronFiles
-    {
-    for onecron in /etc/cron.d/*; do
-        if [ -L "$onecron" ]; then
-	    if [ ! -e "$onecron" ]; then
-		echo link $onecron is broken removing
-		rm -f $onecron
-	    fi
-	fi
-    done
-    }
-
-#Add any missing crontabs that should be there
-function doCreateMissingCronFiles
-    {
-    for onecron in /etc/cron.kardia.d/*; do
-        if [ -e "$onecron" ]; then
-	    dest_b=`basename $onecron`
-	    dest_full="/etc/cron.d/$dest_b"
-
-	    if [ ! -L "$dest_full" ]; then
-		echo cron file $dest_full does not exist.  Creating link
-		ln -s $onecron $dest_full
-	    fi
-	fi
-    done
-    }
 
 #readCron - Pass filename first, followed by the command (in case no such cron exists yet)
 # readCron /etc/cron.kardia.d/backup /usr/local/bin/kardia.sh doBackup
@@ -3540,9 +3499,9 @@ function readCron
 	while read a b c d e f g; do 
 	    export cron_hour="$a" 
 	    export cron_minute="$b"
-	    export cron_day="$c" 
-	    export cron_week="$d" 
-	    export cron_month="$e" 
+	    export cron_week="$c" 
+	    export cron_month="$d" 
+	    export cron_day="$e" 
 	    export cron_who="$f" 
 	    export cron_command="$g" 
 	done < $cronFile
@@ -3551,9 +3510,9 @@ function readCron
 	#defaults
 	export cron_hour=22
 	export cron_minute=15
-	export cron_day="Mon,Tue,Wed,Thu,Fri"
 	export cron_week="*"
 	export cron_month="*"
+	export cron_day="Mon,Tue,Wed,Thu,Fri"
 	export cron_who=root
 	export cron_command=sentCommand
     fi
@@ -3616,12 +3575,12 @@ PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
 MAILTO=root
 EOF
 #Now, put the cron command into the file
-	echo "$cron_hour $cron_minute $cron_day $cron_week $cron_month $cron_who $sentCommand" >> $cronFile
+	echo "$cron_hour $cron_minute $cron_week $cron_month $cron_day $cron_who $sentCommand" >> $cronFile
     fi
     }
 
 #editCronFull - Pass filename first, followed by the command (in case no such cron exists yet)
-# editCronFull /etc/cron.kardia.d/backup /usr/local/bin/kardia.sh doBackup
+# editCronFull /etc/cron.d/backup /usr/local/bin/kardia.sh doAutoBackup
 function editCronFull
     {
     #first parameter is the filename
@@ -3664,10 +3623,6 @@ function editCronFull
 	fi
 	writeCron "$cronFile" "$sentCommand"
 
-	#Do any links.  Cron files for kardia are stored in /etc/cron.kardia.d but linked
-	doCreateMissingCronFiles
-	#Delete any broken cron links
-	doCleanBadCronFiles
 	}
     }
 
@@ -3735,10 +3690,6 @@ function editCron
 	fi
     fi
 
-    #Do any links.  Cron files for kardia are stored in /etc/cron.kardia.d but linked
-    doCreateMissingCronFiles
-    #Delete any broken cron links
-    doCleanBadCronFiles
     }
 
 #Autossh autossh
@@ -3900,6 +3851,7 @@ function menuConfigureAutossh
 	    #try a silent ssh that would fail if something wrong to get an error
 	    #if the error is such that we need a key, try doing ssh-copy-id
 	    #see where we go from that
+
 	    echo Testing settings
 	    target="$N_USER@$N_HOST"
 	    working=$( ssh -oBatchMode=yes -oStrictHostKeyChecking=no -oConnectTimeout=3 -p $N_PORT $target ls 2>&1 )
@@ -3915,6 +3867,11 @@ function menuConfigureAutossh
 		    echo Trying to push the id to the server with ssh-copy-id
 		    echo Enter the password for $N_USER if prompted for it
 		    echo ---------------------------------------------------
+		    #create an RSA key if we need one
+		    if [ ! -e ~/.ssh/id_rsa ]; then
+			# generate a ssh key for this user
+			ssh-keygen -q -t rsa -N "" -f ~/.ssh/id_rsa
+		    fi
 		    #we believe we can fix it by doing ssh-copy-id
 		    ssh-copy-id -p $N_PORT $target
 		    export hostfile=~/.ssh/known_hosts
@@ -3977,6 +3934,8 @@ function menuConfigureBackup
 	    {
 	    read N_USER; read N_HOST; read N_PORT; read N_PATH
 	    if [ -z "$N_USER" -a -z "$N_HOST" -a -z "$N_PATH" ]; then
+		echo "Missing information. No port, user, or host"
+		sleep 1
 		return 0 #We are canceling out, or nothing defined	
 	    fi
 	    #We need to test before we commit
@@ -4225,7 +4184,7 @@ function menuBackup
 	    continue
 	fi
 	if [ "$SEL" = "Cron" ]; then
-	    editCron /etc/cron.kardia.d/backup /usr/local/bin/kardia.sh doAutoBackup
+	    editCron /etc/cron.d/backup /usr/local/bin/kardia.sh doAutoBackup
 	fi
 	if [ "$SEL" = "Alter" ]; then
 	    menuEnableDisableBackup
@@ -4349,6 +4308,7 @@ function doBackupPrePost
 	    #We are connecting.  Set up for the backup
 	    case $DUPLICITY_TARGET in
 		SSH)
+		    target="$DUPLICITY_USER@$DUPLICITY_HOST"
 		    err=$(ssh -oBatchMode=yes -oStrictHostKeyChecking=no -p $DUPLICITY_PORT $target ls 2>&1)
 		    if [ $? -eq 0 ]; then
 			#tested fine
@@ -4430,10 +4390,16 @@ function doBackupPrePost
 	    ;;
 	testing)
 	    #set -x
+	    echo Connecting
 	    c_err=$(doBackupPrePost connect testing)
 	    c_erval=$?
+	    [ $c_erval -eq 0 ] && echo " Perfect!"
+	    [ $c_erval -ne 0 ] && echo " Oops!"
+	    echo Disconnecting
 	    d_err=$(doBackupPrePost disconnect testing)
 	    d_erval=$?
+	    [ $d_erval -eq 0 ] && echo " Perfect!"
+	    [ $d_erval -ne 0 ] && echo " Oops!"
 	    if [ "$c_erval" -ne 0 ]; then
 		#there was a connect error.  Return an error code and print the message
 		echo "$c_err"
