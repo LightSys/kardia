@@ -4184,7 +4184,7 @@ function menuBackup
 	    continue
 	fi
 	if [ "$SEL" = "Cron" ]; then
-	    editCron /etc/cron.d/backup /usr/local/bin/kardia.sh doAutoBackup
+	    editCron /etc/cron.d/kardia_backup /usr/local/bin/kardia.sh doAutoBackup
 	fi
 	if [ "$SEL" = "Alter" ]; then
 	    menuEnableDisableBackup
