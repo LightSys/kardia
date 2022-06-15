@@ -4157,6 +4157,12 @@ function menuBackup
 	DSTR="$DSTR Last 'Find last backup date'"
 	DSTR="$DSTR '---' '------'"
 	DSTR="$DSTR Restore 'Restore from Backup'"
+	NeedsUmount=$( df | grep /mnt/backup )
+	if [ -n "$NeedsUmount" ]; then
+	    #something was left mounted on /mnt/backup.  Give an option to unmount it
+	DSTR="$DSTR '---' '------'"
+	DSTR="$DSTR Umount 'Unmount the backup directory'"
+	fi
 	DSTR="$DSTR Back 'Go back one menu'"
 
 	echo $DSTR
@@ -4176,37 +4182,43 @@ function menuBackup
 	    esac
 	    continue
 	fi
-	if [ "$SEL" = "Key" ]; then
+	case $SEL in
+	    Key)
 	    menuBackupPassphrase
 	    continue
-	fi
-	if [ "$SEL" = "Do" ]; then
+	    ;;
+	Do)
 	    doBackup
 	    echo backin up
 	    continue
-	fi
-	if [ "$SEL" = "Target" ]; then
+	    ;;
+	Target)
 	    menuChooseBackupTarget
 	    continue
-	fi
-	if [ "$SEL" = "Restore" ]; then
+	    ;;
+	Restore)
 	    menuRestore
 	    continue
-	fi
-	if [ "$SEL" = "Cron" ]; then
+	    ;;
+	Cron)
 	    editCron /etc/cron.d/kardia_backup /usr/local/bin/kardia.sh doAutoBackup
-	fi
-	if [ "$SEL" = "Alter" ]; then
+	    ;;
+	Alter)
 	    menuEnableDisableBackup
 	    #lookupStatus
-	fi
-	if [ "$SEL" = "Last" ]; then
+	    ;;
+	Umount)
+	    doBackupPrePost disconnect
+	    #lookupStatus
+	    ;;
+	Last)
 	    menuFindLastBackupDate
 	    continue
-	fi
-	if [ "$SEL" = "Back" ]; then
+	    ;;
+	Back)
 	    return
-	fi
+	    ;;
+	esac
     done
     }
 
@@ -4346,10 +4358,14 @@ function doBackupPrePost
     Mode=$1
     Testing="$2"
     lookupStatus
-    echo Duplicity Mode: $Mode
+    [ -z "$Testing" ] && echo Duplicity Mode: $Mode
 
     case $Mode in
 	connect)
+	    #Unmount before backing up if we need to do so, if we were left mounted, we will fail at this point 
+	    NeedsDisconnect=$(df | grep /mnt/backup)
+	    [ -n "$NeedsDisconnect" ] && doBackupPrePost disconnect quiet
+
 	    #We are connecting.  Set up for the backup
 	    case $DUPLICITY_TARGET in
 		SSH)
@@ -4408,27 +4424,27 @@ function doBackupPrePost
 	    #We are connecting.  Set up for the backup
 	    case $DUPLICITY_TARGET in
 		SSH)
-		    logger -t doBackupPrePost "Duplicity over SSH has completed."
+		    [ -z "$Testing" ] && logger -t doBackupPrePost "Duplicity over SSH has completed."
 		;;
 		CIFS)
 		    #umount the directory
-		    logger -t doBackupPrePost "Unmounting network drive for duplicity"
+		    [ -z "$Testing" ] && logger -t doBackupPrePost "Unmounting network drive for duplicity"
 		    umount /mnt/backup
 		    if [ $? -gt 0 ]; then
-			logger -t doBackupPrePost "Network unmount failed. Not sure what to do.  Moving on with life"
+			[ -z "$Testing" ] && logger -t doBackupPrePost "Network unmount failed. Not sure what to do.  Moving on with life"
 			return 1
 		    fi
-		    logger -t doBackupPrePost "Duplicity backup to windows share completed."
+		    [ -z "$Testing" ] && logger -t doBackupPrePost "Duplicity backup to windows share completed."
 		;;
 		LOCAL)
 		    #umount the local directory
-		    logger -t doBackupPrePost "Unmounting local drive for duplicity"
+		    [ -z "$Testing" ] && logger -t doBackupPrePost "Unmounting local drive for duplicity"
 		    umount /mnt/backup
 		    if [ $? -gt 0 ]; then
-			logger -t doBackupPrePost "Local unmount failed. Not sure what to do.  Moving on with life"
+			[ -z "$Testing" ] && logger -t doBackupPrePost "Local unmount failed. Not sure what to do.  Moving on with life"
 			return 1
 		    fi
-		    logger -t doBackupPrePost "Duplicity backup to local drive completed."
+		    [ -z "$Testing" ] && logger -t doBackupPrePost "Duplicity backup to local drive completed."
 		;;
 	    esac
 	    unset PASSPHRASE
@@ -4655,6 +4671,7 @@ function doBackup
 
     if [ "$DUPLICITY_ENABLED" = "yes" ]; then
 	if [ "$DUPLICITY_CONFIGURED" ]; then
+
 	    doBackupPrePost connect
 	    if [ $? -eq 0 ]; then
 		export DBDUMP="/tmp/mysql.tmp"
@@ -4690,8 +4707,12 @@ function doBackup
 		doBackupPrePost disconnect
 	    else
 		echo --------------------------------
-		echo "There was an error testing SSH"
-		echo "Please check your configuration and network connection"
+		[ "$DUPLICITY_TARGET" = "SSH" ] && echo "There was an error testing SSH"
+		[ "$DUPLICITY_TARGET" = "SSH" ] && echo "Please check your configuration and network connection"
+		[ "$DUPLICITY_TARGET" = "LOCAL" ] && echo "There was an error connecting to the local backup drive"
+		[ "$DUPLICITY_TARGET" = "LOCAL" ] && echo "Verify it is connected to the machine"
+		[ "$DUPLICITY_TARGET" = "CIFS" ] && echo "There was an error connecting to the windows share"
+		[ "$DUPLICITY_TARGET" = "CIFS" ] && echo "Please check your configuration and network connection"
 		exit
 	    fi
 	else
