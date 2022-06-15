@@ -95,7 +95,7 @@ function insertLine
 
 BASEDIR=/usr/local
 USER=$(/usr/bin/id -un)
-VERSION="1.3"
+VERSION="1.4"
 sTITLE="Kardia/Centrallix VM Appliance $VERSION  (C) LightSys"
 Root || TITLE="[$USER]  $sTITLE"
 Root && TITLE="** ROOT **  $sTITLE"
