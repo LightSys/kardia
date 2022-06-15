@@ -4667,6 +4667,18 @@ function menuCIFSCredentials
 function doBackup
     {
     quiet="$1"
+
+    if Root; then
+	#all is right with the world
+	echo
+    else
+	echo -------------------
+	echo "Backup must be run as root.  Both for permissions, and for the configuration files"
+	echo ------------------
+	sleep 5
+	return 1
+    fi
+
     lookupStatus
 
     if [ "$DUPLICITY_ENABLED" = "yes" ]; then
