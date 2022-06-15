@@ -629,6 +629,7 @@ function doGiveUserKardiaSysadmin
 	    return
 	fi
 	echo "insert into s_sec_endorsement (s_endorsement,s_context, s_subject, s_date_created, s_created_by, s_date_modified, s_modified_by) values ('kardia:sys_admin','kardia','u:THEUSER',curdate(),'THEUSER',curdate(),'THEUSER');" | sed "s/THEUSER/$TUSER/g" | mysql -u root Kardia_DB 2> /dev/null
+	[ $? -ne 0 ] && logger -t "doGiveUserKardiaSysadmin" "MySQL failed.  Trying to add permissions for the Kardia user. Probably because the kardia tables are not yet loaded.  Ignore for now."
     }
 
 function doGiveAllSysadmsSysadmin
@@ -711,6 +712,7 @@ function menuUsers
     done
     #create the kardia user if we need to do that
     doCreateKardiaUnixUser
+    return 0 #This fixes an error if the burried mysql-function errors out
     }
 
 #Do partition, lvm and filesystem resize
