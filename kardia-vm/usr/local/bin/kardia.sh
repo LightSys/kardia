@@ -4154,6 +4154,7 @@ function menuBackup
 	DSTR="$DSTR Key 'Encryption Key'"
 	DSTR="$DSTR Cron 'Configure automatic backup times'"
 	DSTR="$DSTR Do 'Do Backup'"
+	DSTR="$DSTR Last 'Find last backup date'"
 	DSTR="$DSTR '---' '------'"
 	DSTR="$DSTR Restore 'Restore from Backup'"
 	DSTR="$DSTR Back 'Go back one menu'"
@@ -4199,11 +4200,46 @@ function menuBackup
 	    menuEnableDisableBackup
 	    #lookupStatus
 	fi
-	if [ "$SEL" = "Back" ]; then 
+	if [ "$SEL" = "Last" ]; then
+	    menuFindLastBackupDate
+	    continue
+	fi
+	if [ "$SEL" = "Back" ]; then
 	    return
 	fi
     done
     }
+
+function menuFindLastBackupDate
+    {
+    lookupStatus
+    if [ -n "DUPLICITY_CONFIGURED" ]; then
+	echo "Gathering data: Please Wait"
+	DSTR="dialog  --msgbox"
+
+	doBackupPrePost connect
+	if [ $? -ne 0 ]; then
+	    echo "ERROR connecting to the backup target"
+	    sleep 5
+	    return
+	fi
+
+	dates=$( duplicity collection-status $DUPLICITY_OPT $dup_path/DB  | grep -v Chain | grep -v date | grep 20[0-9][0-9] | sed 's/.*\(....................20[0-9][0-9]\).*/\1/' | { while read one; do date -d"$one"  +%Y-%m-%dT%H:%M:%S; done } | tail -1 )
+	echo dates are: $dates;
+	if [ -z "$dates" ]; then
+	    echo ---------------
+	    echo No backups yet.
+	    echo ---------------
+	    sleep 3
+	    return
+	fi
+	doBackupPrePost disconnect
+	DSTR="$DSTR 'Last backup date: $dates' 7 30 ";
+	echo $DSTR
+	SEL=$(eval "$DSTR" 2>&1 >/dev/tty)
+    fi
+    }
+
 
 function menuRestore
     {
