@@ -3302,7 +3302,7 @@ function vm_prep_cleanFiles
     cxlibs="/usr/local/lib/StPar* /usr/local/centrallix/ /usr/local/libCentrallix*"
     cxinc="/usr/local/include/cxlib/"
     cxetc="/etc/init.d/centrallix"
-    kardiash="/usr/local/src/.initialized /usr/local/src/.cx* /usr/local/src/.mysqlaccess"
+    kardiash="/usr/local/src/.initialized /usr/local/src/.cx* /usr/local/src/.mysqlaccess /usr/local/etc/autossh.conf /usr/local/etc/centrallix.conf /usr/local/etc/cifs.conf /usr/local/etc/duplicity.conf /usr/local/etc/rc.d/"
     gitfiles="/usr/local/src/cx-git /usr/local/src/kardia-git"
 	echo "Cleaning up Filesystem"
 	echo "  Cleaning up history"
