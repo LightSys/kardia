@@ -3695,8 +3695,8 @@ function editCron
 #Autossh autossh
 function menuAutossh
     {
-    lookupStatus
     while true; do
+	lookupStatus
 	HOST=$(/bin/hostname)
 	if [ "$AUTOSSH_ENABLED" = "yes" ]; then
 	    status=enabled
@@ -3754,6 +3754,7 @@ function doStartAutossh
 		#run it
 		$cmd
 		logger -t "kardia.sh" "Starting autossh $AUTOSSH_USER@$AUTOSSH_HOST"
+		sleep 1
 	    fi
 	fi
     else
@@ -3771,6 +3772,7 @@ function doStopAutossh
 	    if [ "$AUTOSSH_RUNNING" = "yes" ]; then
 		killall autossh
 		logger -t "kardia.sh" "Stopping autossh"
+		sleep 1
 	    else
 		echo "Autossh not yet running. Nothing done."
 	    fi
