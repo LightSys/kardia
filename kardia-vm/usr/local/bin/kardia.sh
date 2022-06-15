@@ -3711,6 +3711,7 @@ function menuAutossh
 	else
 	    DSTR="$DSTR Start 'Start Autossh (not running)'"
 	fi
+	DSTR="$DSTR Status 'Show status of autossh for debugging'"
 	DSTR="$DSTR Quit 'Exit Kardia / Centrallix Management'"
 
 	SEL=$(eval "$DSTR" 2>&1 >/dev/tty)
@@ -3726,6 +3727,12 @@ function menuAutossh
 		;;
 	    Stop)
 		doStopAutossh
+		;;
+	    Status)
+		AsRoot systemctl status kardiaVM-startup
+		echo 
+		echo -n "Press enter to continue: > "
+		read line
 		;;
 	    EnableDisable)
 		menuEnableDisableAutossh
