@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # kardia.sh - manage the Kardia / Centrallix VM appliance
-# version: 1.0.9
+# version: 1.0.10
 # os: centos_7
 
 # Some housekeeping stuff.  We may be running under a user account, but
