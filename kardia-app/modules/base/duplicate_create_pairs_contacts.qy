@@ -1,0 +1,68 @@
+$Version=2$
+duplicate_create_pairs_contacts "system/query"
+    {
+    match_dist "query/parameter" { type=integer; default=3; }
+		//TODO: can we add a default match_dist=3? Can we add a minvalue=1?
+
+    sql = " -- Create a temporary collection
+	    declare collection tmp_sorted_duplicates scope application;
+	    delete from collection tmp_sorted_duplicates;
+
+	    insert
+		collection tmp_sorted_duplicates
+	    select
+		p_row_num = dense_rank(:c:p_partner_key),
+		p_partner_key = :c:p_partner_key,
+		p_data = condition(:c:p_contact_type == 'P' or :c:p_contact_type == 'C' or :c:p_contact_type == 'F',
+			-- For phone #s we reverse the strings since the most significant
+			-- part is at the end, and the beginning can have or not have
+			-- country codes and so forth.
+			reverse(
+				lower(replace(replace(replace(replace(replace(replace(
+					isnull(:c:p_phone_country,'') + 
+					isnull(:c:p_phone_area_city,'') + 
+					isnull(:c:p_contact_data,''), 
+					'+', ''), '(', ''), ')', ''), '-', ''), '.', ''), ' ', ''))),
+			-- For everything else we sort by the normal string.
+			lower(replace(replace(replace(replace(replace(replace(
+				isnull(:c:p_phone_country,'') + 
+				isnull(:c:p_phone_area_city,'') + 
+				isnull(:c:p_contact_data,''), 
+				'+', ''), '(', ''), ')', ''), '-', ''), '.', ''), ' ', ''))
+			)
+	    from
+		/apps/kardia/data/Kardia_DB/p_contact_info/rows c
+	    order by
+		condition(:c:p_contact_type == 'P' or :c:p_contact_type == 'C' or :c:p_contact_type == 'F',
+			-- For phone #s we reverse the strings since the most significant
+			-- part is at the end, and the beginning can have or not have
+			-- country codes and so forth.
+			reverse(
+				lower(replace(replace(replace(replace(replace(replace(
+					isnull(:c:p_phone_country,'') + 
+					isnull(:c:p_phone_area_city,'') + 
+					isnull(:c:p_contact_data,''), 
+					'+', ''), '(', ''), ')', ''), '-', ''), '.', ''), ' ', ''))),
+			-- For everything else we sort by the normal string.
+			lower(replace(replace(replace(replace(replace(replace(
+				isnull(:c:p_phone_country,'') + 
+				isnull(:c:p_phone_area_city,'') + 
+				isnull(:c:p_contact_data,''), 
+				'+', ''), '(', ''), ')', ''), '-', ''), '.', ''), ' ', ''))
+			)
+	    ;
+
+	    -- Return the dataset to the caller
+	    select
+		--------return pairs of partner keys to compare------
+		p_partner_key_1 = :i:p_partner_key,
+		p_partner_key_2 = :jj:p_partner_key
+	    from
+		identity collection tmp_sorted_duplicates i,
+		collection tmp_sorted_duplicates jj
+	    where
+		:i:p_row_num > :jj:p_row_num and
+		:i:p_row_num - :jj:p_row_num <= :parameters:match_dist and
+		:i:p_partner_key != :jj:p_partner_key
+	";
+    }

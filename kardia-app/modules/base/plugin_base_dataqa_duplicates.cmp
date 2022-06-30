@@ -1,0 +1,105 @@
+$Version=2$
+plugin_base_dataqa_duplicates "widget/component-decl"
+    {
+    width=958;
+    height=633;
+    title="Duplicate Management";
+
+    dups_vbox "widget/vbox"
+	{
+	x=0; y=0;
+	width=958;
+	height=633;
+	spacing=10;
+
+	dupslbl "widget/component"
+	    {
+	    path="/apps/kardia/modules/base/section_label.cmp";
+	    height=26;
+	    fl_height=0;
+	    text = runclient("Potential Duplicate Partners...");
+	    }
+
+	dupsosrc "widget/osrc"
+	    {
+	    sql = " select
+			:d:p_partner_key,
+			:d:p_dup_partner_key,
+			:d:p_match_quality,
+			match = convert(integer, round(:d:p_match_quality * 100)),
+			disp_name_1 = condition(char_length(rtrim(:p1:p_org_name)) > 0, :p1:p_org_name + ' ' + condition(char_length(:p1:p_given_name + :p1:p_surname) > 0, '- ', ''), '') + isnull(:p1:p_given_name + ' ','') + isnull(:p1:p_surname + ' ',''),
+			disp_name_2 = condition(char_length(rtrim(:p2:p_org_name)) > 0, :p2:p_org_name + ' ' + condition(char_length(:p2:p_given_name + :p2:p_surname) > 0, '- ', ''), '') + isnull(:p2:p_given_name + ' ','') + isnull(:p2:p_surname + ' ',''),
+			loc_1 = :l1:p_city + ', ' + :l1:p_state_province,
+			loc_2 = :l2:p_city + ', ' + :l2:p_state_province,
+			contact_1 = isnull(:c1:p_phone_country + ' ','') + isnull(:c1:p_phone_area_city + ' ','') + isnull(:c1:p_contact_data,''),
+			contact_2 = isnull(:c2:p_phone_country + ' ','') + isnull(:c2:p_phone_area_city + ' ','') + isnull(:c2:p_contact_data,''),
+			ploc_1 = substitute(isnull(:af1:p_format, '[:p_in_care_of]\n[:p_address_1]\n[:p_address_2]\n[:p_address_3]\n[:p_city], [:p_state_province] [:p_postal_code]\n[:p_country_name]'), 'l=pl1,p=p1'),
+			ploc_2 = substitute(isnull(:af2:p_format, '[:p_in_care_of]\n[:p_address_1]\n[:p_address_2]\n[:p_address_3]\n[:p_city], [:p_state_province] [:p_postal_code]\n[:p_country_name]'), 'l=pl2,p=p2')
+		    from
+			/apps/kardia/data/Kardia_DB/p_dup/rows d,
+			/apps/kardia/data/Kardia_DB/p_partner/rows p1,
+			/apps/kardia/data/Kardia_DB/p_partner/rows p2,
+			/apps/kardia/data/Kardia_DB/p_location/rows l1,
+			/apps/kardia/data/Kardia_DB/p_location/rows l2,
+			/apps/kardia/data/Kardia_DB/p_contact_info/rows c1,
+			/apps/kardia/data/Kardia_DB/p_contact_info/rows c2,
+			/apps/kardia/data/Kardia_DB/p_location/rows pl1,
+			/apps/kardia/data/Kardia_DB/p_location/rows pl2,
+			/apps/kardia/data/Kardia_DB/p_country/rows ctry1,
+			/apps/kardia/data/Kardia_DB/p_address_format/rows af1,
+			/apps/kardia/data/Kardia_DB/p_country/rows ctry2,
+			/apps/kardia/data/Kardia_DB/p_address_format/rows af2
+		    where
+			:p1:p_partner_key = :d:p_partner_key and
+			:p2:p_partner_key = :d:p_dup_partner_key and
+			:l1:p_partner_key =* :d:p_partner_key and
+			:l1:p_location_id =* :d:p_location_id and
+			:l1:p_revision_id =* :d:p_revision_id and
+			:l2:p_partner_key =* :d:p_dup_partner_key and
+			:l2:p_location_id =* :d:p_dup_location_id and
+			:l2:p_revision_id =* :d:p_dup_revision_id and
+			:c1:p_partner_key =* :d:p_partner_key and
+			:c1:p_contact_id =* :d:p_contact_id and
+			:c2:p_partner_key =* :d:p_dup_partner_key and
+			:c2:p_contact_id =* :d:p_dup_contact_id and
+			:pl1:p_partner_key =* :d:p_partner_key and
+			:pl2:p_partner_key =* :d:p_dup_partner_key and
+			:pl1:p_country_code *= :ctry1:p_country_code and
+			:af1:p_country_code =* :ctry1:p_country_code and
+			:af1:p_address_set = 'STANDARD' and
+			:pl2:p_country_code *= :ctry2:p_country_code and
+			:af2:p_country_code =* :ctry2:p_country_code and
+			:af2:p_address_set = 'STANDARD'
+		    group by
+			:d:p_match_quality desc,
+			:d:p_partner_key,
+			:d:p_dup_partner_key
+		    order by
+			:d:p_match_quality desc
+		    ";
+	    replicasize=200;
+	    readahead=200;
+
+	    dupstable "widget/table"
+		{
+		height=597;
+		titlebar=no;
+		overlap_scrollbar=yes;
+		demand_scrollbar=yes;
+		rowheight=null;
+		cellvspacing=4;
+		inner_padding=2;
+		colsep=0;
+		row_border_radius=6;
+		row_shadow_radius=2;
+		row_shadow_offset=1;
+		row_shadow_color="#a0a0a0";
+		row_shadow_angle=135;
+
+		t_match "widget/table-column" { title="%"; value=runclient(:dupsosrc:match + '%'); width=122; style=bold; }
+		t_par1 "widget/table-column" { title="Partner"; value=runclient(:dupsosrc:p_partner_key + ' ' + :dupsosrc:disp_name_1); width=122; style=bold; caption_value=runclient(isnull(:dupsosrc:ploc_1, '')); wrap=yes; }
+		t_par2 "widget/table-column" { title="Partner"; value=runclient(:dupsosrc:p_dup_partner_key + ' ' + :dupsosrc:disp_name_2); width=122; style=bold; caption_value=runclient(isnull(:dupsosrc:ploc_2, '')); wrap=yes; }
+		}
+	    }
+	}
+    }

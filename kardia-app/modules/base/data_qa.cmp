@@ -1,0 +1,36 @@
+$Version=2$
+data_qa "widget/component-decl"
+    {
+    width=980; height=680;
+
+    data_qa_tabctl "widget/tab"
+	{
+	x=0; y=0; width=980; height=655;
+	//background="/apps/kardia/images/bg/light_bgnd2.jpg";
+	//inactive_background="/apps/kardia/images/bg/light_bgnd3.jpg";
+	bgcolor="#f8f8f8";
+	inactive_bgcolor="#f0f0f0";
+	border_radius=6;
+	shadow_radius=4;
+	shadow_offset=2;
+	shadow_color="#808080";
+	shadow_angle=135;
+	tab_location=top;
+
+	data_qa_repeat "widget/repeat"
+	    {
+	    sql = "select path = :cx__pathname, module = :cx__pathpart4, component = :cx__pathpart5, :title from object wildcard '/apps/kardia/modules/*/plugin_base_dataqa_*.cmp' order by :sequence";
+
+	    data_qa_tab "widget/tabpage"
+		{
+		title = runserver(:data_qa_repeat:title);
+
+		data_qa_cmp "widget/component"
+		    {
+		    height=633; width=958; x=10; y=10;
+		    path = runserver(:data_qa_repeat:path);
+		    }
+		}
+	    }
+	}
+    }
