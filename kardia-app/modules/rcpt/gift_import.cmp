@@ -1154,7 +1154,7 @@ gift_import "widget/component-decl"
 		    text = runclient(condition(:create_dep_batch_info_osrc:cnt > 1, "Create Deposit Batches", "Create Deposit Batch"));
 		    enabled=runclient(:create_dep_batch_info_osrc:cnt > 0);
 
-		    cdb_doit "widget/connector"
+		    cdb_doit_1 "widget/connector"
 			{
 			event=Click;
 			target=nextbatch;
@@ -1162,11 +1162,23 @@ gift_import "widget/component-decl"
 			ledger=runclient(:gift_import:ledger);
 			cnt=runclient(convert(integer,:cdb_count:value));
 			}
+		    cdb_doit_2 "widget/connector"
+			{
+			event=Click;
+			action=Disable;
+			}
+		    cdb_doit_3 "widget/connector"
+			{
+			event=Click;
+			target=create_dep_batch_cancel;
+			action=Disable;
+			}
 		    }
 		create_dep_batch_cancel "widget/textbutton"
 		    {
 		    width=170;
 		    text = "Cancel";
+		    enabled = runclient(:create_dep_batch_window:is_visible);
 		    cancel_dep_batch_cn "widget/connector" { event=Click; target=create_dep_batch_window; action=Close; }
 		    }
 		}
@@ -1396,7 +1408,7 @@ gift_import "widget/component-decl"
 		    text = runclient(condition(:create_fee_batch_info_osrc:cnt > 1, "Create Fees Batches", "Create Fees Batch"));
 		    enabled=runclient(:create_fee_batch_info_osrc:cnt > 0);
 
-		    cfb_doit "widget/connector"
+		    cfb_doit_1 "widget/connector"
 			{
 			event=Click;
 			target=nextbatch;
@@ -1404,11 +1416,23 @@ gift_import "widget/component-decl"
 			ledger=runclient(:gift_import:ledger);
 			cnt=runclient(convert(integer,:cfb_count:value));
 			}
+		    cfb_doit_2 "widget/connector"
+			{
+			event=Click;
+			action=Disable;
+			}
+		    cfb_doit_3 "widget/connector"
+			{
+			event=Click;
+			target=create_fee_batch_cancel;
+			action=Disable;
+			}
 		    }
 		create_fee_batch_cancel "widget/textbutton"
 		    {
 		    width=170;
 		    text = "Cancel";
+		    enabled = runclient(:create_fee_batch_window:is_visible);
 		    cancel_fee_batch_cn "widget/connector" { event=Click; target=create_fee_batch_window; action=Close; }
 		    }
 		}
@@ -1760,18 +1784,31 @@ gift_import "widget/component-decl"
 		    width=140;
 		    text = "Create Gift Batch";
 		    enabled=runclient(:create_batch_info_osrc:cnt > 0);
-		    cb_doit "widget/connector"
+
+		    cb_doit_1 "widget/connector"
 			{
 			event=Click;
 			target=nextbatch;
 			action=GetBatchNumber;
 			ledger=runclient(:gift_import:ledger);
 			}
+		    cb_doit_2 "widget/connector"
+			{
+			event=Click;
+			action=Disable;
+			}
+		    cb_doit_3 "widget/connector"
+			{
+			event=Click;
+			target=create_batch_cancel;
+			action=Disable;
+			}
 		    }
 		create_batch_cancel "widget/textbutton"
 		    {
 		    width=140;
 		    text = "Cancel";
+		    enabled = runclient(:create_gift_batch_window:is_visible);
 		    cancel_batch_cn "widget/connector" { event=Click; target=create_gift_batch_window; action=Close; }
 		    }
 		}
