@@ -23,8 +23,8 @@ duplicate_create_pairs_surnames "system/query"
 	    -- Return the dataset to the caller
 	    select
 		--------return pairs of partner keys to compare------
-		p_partner_key_1 = :i:p_partner_key,
-		p_partner_key_2 = :jj:p_partner_key
+		p_partner_key_1 = condition(:i:p_partner_key > :jj:p_partner_key, :i:p_partner_key, :jj:p_partner_key),
+		p_partner_key_2 = condition(:i:p_partner_key > :jj:p_partner_key, :jj:p_partner_key, :i:p_partner_key)
 	    from
 		identity collection tmp_sorted_duplicates i,
 		collection tmp_sorted_duplicates jj
