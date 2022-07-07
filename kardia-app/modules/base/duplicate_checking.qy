@@ -30,9 +30,9 @@ update_descriptives_new "system/query"
 		p_gender = :p:p_gender,
 		-- Start of p location.
 		--Concatenate address fields
-		p_address_1 = nth(isnull(:l:p_address_1,'') + isnull(:l:p_address_2,'') + isnull(:l:p_address_3,'') + isnull(:l:p_city,'') + isnull(:l:p_state_province,'') + isnull(:l:p_country_code,'') + isnull(:l:p_postal_code,''), 1),
-		p_address_2 = nth(isnull(:l:p_address_1,'') + isnull(:l:p_address_2,'') + isnull(:l:p_address_3,'') + isnull(:l:p_city,'') + isnull(:l:p_state_province,'') + isnull(:l:p_country_code,'') + isnull(:l:p_postal_code,''), 2),
-		p_address_3 = nth(isnull(:l:p_address_1,'') + isnull(:l:p_address_2,'') + isnull(:l:p_address_3,'') + isnull(:l:p_city,'') + isnull(:l:p_state_province,'') + isnull(:l:p_country_code,'') + isnull(:l:p_postal_code,''), 3),
+		p_address_1 = nth(isnull(:l:p_address_1 + ' ','') + isnull(:l:p_address_2 + ' ','') + isnull(:l:p_address_3 + ' ','') + isnull(:l:p_city + ' ','') + isnull(:l:p_state_province + ' ','') + isnull(:l:p_country_code + ' ','') + isnull(:l:p_postal_code + ' ',''), 1),
+		p_address_2 = nth(isnull(:l:p_address_1 + ' ','') + isnull(:l:p_address_2 + ' ','') + isnull(:l:p_address_3 + ' ','') + isnull(:l:p_city + ' ','') + isnull(:l:p_state_province + ' ','') + isnull(:l:p_country_code + ' ','') + isnull(:l:p_postal_code + ' ',''), 2),
+		p_address_3 = nth(isnull(:l:p_address_1 + ' ','') + isnull(:l:p_address_2 + ' ','') + isnull(:l:p_address_3 + ' ','') + isnull(:l:p_city + ' ','') + isnull(:l:p_state_province + ' ','') + isnull(:l:p_country_code + ' ','') + isnull(:l:p_postal_code + ' ',''), 3),
 		--Start of p contact info
 		--Create phone number fields
 		p_contact_data_phone1 = isnull((select
@@ -121,22 +121,20 @@ update_descriptives_new "system/query"
 	    	collection tmp_partner_condensed
 	    select
 	    	p_partner_key = :p_partner_key,
-		p_name_data =	isnull(:p_given_name, '') +
-				isnull(:p_preferred_name, '') +
-				isnull(:p_surname, '') +
-				isnull(:p_surname_first, '') +
-				isnull(:p_suffix, '') +
-				isnull(:p_org_name, '') +
-				isnull(:p_gender, ''),
-		p_addr_data =	isnull(:p_address_1, '') +
-				isnull(:p_address_2, '') +
-				isnull(:p_address_3, ''),
-		p_cont_data =	isnull(:p_contact_data_phone1, '') +
-				isnull(:p_contact_data_phone2, '') +
-				isnull(:p_contact_data_phone3, '') +
-				isnull(:p_contact_data_email1, '') +
-				isnull(:p_contact_data_email2, '') +
-				isnull(:p_contact_data_email3, '')
+		p_name_data =	isnull(:p_given_name + ' ', '') +
+				condition(rtrim(:p_given_name) = rtrim(:p_preferred_name), '', isnull(:p_preferred_name + ' ', '')) +
+				isnull(:p_surname + ' ', '') +
+				isnull(:p_suffix + ' ', '') +
+				isnull(:p_org_name + ' ', ''),
+		p_addr_data =	isnull(:p_address_1 + ' ', '') +
+				isnull(:p_address_2 + ' ', '') +
+				isnull(:p_address_3 + ' ', ''),
+		p_cont_data =	isnull(:p_contact_data_phone1 + ' ', '') +
+				isnull(:p_contact_data_phone2 + ' ', '') +
+				isnull(:p_contact_data_phone3 + ' ', '') +
+				isnull(:p_contact_data_email1 + ' ', '') +
+				isnull(:p_contact_data_email2 + ' ', '') +
+				isnull(:p_contact_data_email3 + ' ', '')
 	    from
 	    	collection tmp_partner_data
 	    ;
@@ -213,7 +211,7 @@ update_descriptives_new "system/query"
 	    	type = 'P',
 		--perform a weighted average of similarity and fuzzy
 		--priority = 0.2 * cos_compare(:c1:p_data, :c2:p_data) + 0.8 * (lev_compare(:c1:p_data, :c2:p_data, 1063)),
-		priority = constrain(cos_compare(:c1:p_name_data + :c1:p_addr_data, :c2:p_name_data + :c2:p_addr_data), cos_compare(:c1:p_name_data + :c1:p_cont_data, :c2:p_name_data + :c2:p_cont_data), 1.0),
+		priority = constrain(cos_compare(:c1:p_name_data + ' ' + :c1:p_addr_data, :c2:p_name_data + ' ' + :c2:p_addr_data), condition(char_length(rtrim(:c1:p_cont_data + :c2:p_cont_data)) > 1, cos_compare(:c1:p_name_data + ' ' + :c1:p_cont_data, :c2:p_name_data + ' ' + :c2:p_cont_data), square(cos_compare(:c1:p_name_data + ' ' + :c1:p_cont_data, :c2:p_name_data + ' ' + :c2:p_cont_data))), 1.0),
 		p_partner_key_1 = :p:p_partner_key_1,
 		p_location_id_1 = '',
 		p_revision_id_1 = '',
@@ -221,7 +219,11 @@ update_descriptives_new "system/query"
 		p_partner_key_2 = :p:p_partner_key_2,
 		p_location_id_2 = '',
 		p_revision_id_2 = '',
-		p_contact_id_2 = ''
+		p_contact_id_2 = '' --,
+		--ca1 = :c1:p_name_data + :c1:p_addr_data,
+		--ca2 = :c2:p_name_data + :c2:p_addr_data,
+		--cc1 = :c1:p_name_data + :c1:p_cont_data,
+		--cc2 = :c2:p_name_data + :c2:p_cont_data
 	    from
 	        collection tmp_partner_pairs p,
 		collection tmp_partner_condensed c1,

@@ -33,8 +33,8 @@ plugin_base_dataqa_duplicates "widget/component-decl"
 			loc_2 = :l2:p_city + ', ' + :l2:p_state_province,
 			contact_1 = isnull(:c1:p_phone_country + ' ','') + isnull(:c1:p_phone_area_city + ' ','') + isnull(:c1:p_contact_data,''),
 			contact_2 = isnull(:c2:p_phone_country + ' ','') + isnull(:c2:p_phone_area_city + ' ','') + isnull(:c2:p_contact_data,''),
-			ploc_1 = substitute(isnull(:af1:p_format, '[:p_in_care_of]\n[:p_address_1]\n[:p_address_2]\n[:p_address_3]\n[:p_city], [:p_state_province] [:p_postal_code]\n[:p_country_name]'), 'l=pl1,p=p1'),
-			ploc_2 = substitute(isnull(:af2:p_format, '[:p_in_care_of]\n[:p_address_1]\n[:p_address_2]\n[:p_address_3]\n[:p_city], [:p_state_province] [:p_postal_code]\n[:p_country_name]'), 'l=pl2,p=p2')
+			ploc_1 = substitute(isnull(:af1:p_format, '[:p_in_care_of]\n[:p_address_1]\n[:p_address_2]\n[:p_address_3]\n[:p_city], [:p_state_province] [:p_postal_code]\n[:p_country_name]'), 'l=pl1,p=p1,ctry1'),
+			ploc_2 = substitute(isnull(:af2:p_format, '[:p_in_care_of]\n[:p_address_1]\n[:p_address_2]\n[:p_address_3]\n[:p_city], [:p_state_province] [:p_postal_code]\n[:p_country_name]'), 'l=pl2,p=p2,ctry2')
 		    from
 			/apps/kardia/data/Kardia_DB/p_dup/rows d,
 			/apps/kardia/data/Kardia_DB/p_partner/rows p1,

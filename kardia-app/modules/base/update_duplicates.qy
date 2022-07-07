@@ -17,6 +17,7 @@ update_duplicates "system/query"
 		p_dup_revision_id = nullif(:p_revision_id_2, ''),
 		p_contact_id = nullif(:p_contact_id_1, ''),
 		p_dup_contact_id = nullif(:p_contact_id_2, ''),
+		--p_comment = :ca1 + ', ' + :ca2 + ', ' + :cc1 + ', ' + :cc2,
 		s_date_created = getdate(),
 		s_created_by = user_name(),
 		s_date_modified = getdate(),
