@@ -13,6 +13,7 @@ import socket
 import time
 import hashlib
 import binascii
+import re
 
 #  
 #  name: is_ip_address
@@ -54,7 +55,7 @@ def is_ip_address(ip):
 #  
 def reset_files():
 	
-	print("\nResetting files...")
+	print("\nResetting files...\n")
 	
 	# Reset /etc/dhcpcd.conf
 	if os.path.exists(r"/etc/dhcpcd.conf.old"):
@@ -125,12 +126,13 @@ def reset_files():
 #  
 def exit_with_error(msg):
 	sys.exit(print_error(msg))
+	
 
 #  
 #  name: print_instruction
 #  description: prints a blue instruction message
 #  @param msg - the message to print
-#  @return
+#  @return none
 #  
 def print_instruction(msg):
 	print("\x1b[1;37;44m**" + msg.upper() + "**\x1b[0m")
@@ -139,7 +141,7 @@ def print_instruction(msg):
 #  name: print_error
 #  description: prints a red error message
 #  @param msg - the message to print
-#  @return
+#  @return none
 #  
 def print_error(msg):
 	print("\x1b[1;37;41m" + msg + "\x1b[0m")
@@ -148,10 +150,19 @@ def print_error(msg):
 #  name: print_success
 #  description: prints a green success message
 #  @param msg - the message to print
-#  @return
+#  @return none
 #  
 def print_success(msg):
 	print("\x1b[1;32;40m" + msg + "\x1b[0m")
+	
+#  
+#  name: color_input
+#  description: gets input using an orange colored prompt
+#  @param msg - the prompt to print
+#  @return the console input from the user
+#  
+def color_input(msg):
+	return input("\x1b[1;33;40m" + msg + "\x1b[0m")
 
 #  
 #  name: make_backup
@@ -238,32 +249,128 @@ def generate_wpa_psk(ssid, password):
 	'sha1', str.encode(password), str.encode(ssid), 4096, 32)
 	result = str(binascii.hexlify(dk))
 	return result[2 : len(result)-1]
+	
+#  
+#  name: yes_no_prompt
+#  description: Performs validation testing on user input until a y or n
+#  is received
+#  @param msg - the user input prompt
+#  @return 'y' or 'n', depending on user input
+#  
+def yes_no_prompt(msg):
+	result = color_input(msg + " (y/n): ")
+	while result.lower() != "y" and result.lower() != "n":
+		result = color_input("Please enter y or n for your response: ")
+	return result.lower();
 
 ## BEGIN MAIN SCRIPT----------------------------------------------------
 
-atexit.register(reset_files)
+# Print header
+print()
+print("RASPBERRY PI CHECK SCANNER ROUTER SETUP")
+print("(c) 2022 LightSys Technology Services")
+print("---------------------------------------")
+
+# If the device is already configured, check to see if user wants to
+# reconfigure with new settings
+if os.path.exists(r"/etc/systemd/system/check-scanner-autossh.service"):
+	result = yes_no_prompt("\nThis device is already configured for "
+	"check scanner routing. Would you like to redo the setup?")
+	
+	if result == "n":
+		sys.exit()
+	else:
+		reset_files()
+
+
+usb_name = ""
+
+# While a USB setup device has not been selected
+while True:
+	
+	usbs = []
+	
+	# While there are no USBs detected
+	while len(usbs) == 0:
+		try:
+			# Get mounted devices
+			devices = os.popen('sudo blkid').readlines()
+			
+			# Pack USB device info into dictionary list
+			for device in devices:
+				loc = [device.split(':')[0]]
+				if '/dev/sd' not in loc[0]:
+					continue
+				loc += re.findall(r'"[^"]+"',device)
+				columns = ['loc'] + re.findall(r'\b(\w+)=',device)
+				
+				usbs.append(dict(zip(columns,loc)))
+		except:
+			print_error("Failed to get USB devices")
+		
+		# If there are still no USBs detected, repeat
+		if len(usbs) == 0:
+			color_input("\nPlease insert a USB drive with the"
+			"check_scanner_router.config file and press Enter")
+	
+	# Print the list of available devices
+	print("\nAvailable USB devices\n---------------------")
+	
+	index = 1
+	for u in usbs:
+		print(str(index) + ' : ' + u.get('LABEL')[1:len(u.get('LABEL'))-1])
+		index += 1
+	
+	print(str(index) + " : Scan for new USB devices") #Option for rescan
+	print()
+	
+	# Prompt user for selection from list
+	selection = color_input("Enter a number from the list to select "
+	"the device for router setup: ")
+	while selection.isdigit() == False or int(selection) > index or int(
+	selection) <= 0:
+		selection = color_input("Please enter a number from the list "
+		"above: ")
+
+	if int(selection) == index: # Option to repeat scan, return to loop
+		print("\nRepeating scan...")
+	else: # USB device selected, get the device name
+		usb_name = usbs[int(selection) - 1].get('LABEL')[1:len(u.get(
+		'LABEL'))-1]
+		break
+
+print("\nAttempting setup with " + usb_name + "...\n")
 
 # Read configuration settings from the flash drive----------------------
 
-boot_file = open("check-scanner-router.config", "r")
-lines = boot_file.readlines()
+lines = ""
 
-# Read WiFi country code
+# Try to open the .config file and read the setup info
+try:
+	boot_file = open("/media/pi/" + usb_name + "/check_scanner_router."
+	"config", "r")
+	lines = boot_file.readlines()
+except:
+	exit_with_error("File path /media/pi/" + usb_name + "/"
+	"check_scanner_router.config does not exist\nPlease check that the "
+	"file is named correctly and loaded on your USB device")
+
+# Get WiFi country code
 country_code=lines[0][lines[0].index('=')+1 : len(lines[0])].strip().upper()
 print("WLAN Country Code: " + country_code)
 
 if len(country_code) != 2: # Ensure there are two characters
 	exit_with_error("Invalid country code: Code must be 2 letters")
 
-# Read network SSID
+# Get network SSID
 network_name=lines[1][lines[1].index('=')+1 : len(lines[1])].strip()
 print("Network SSID: " + network_name)
 
-# Read network passcode
+# Get network passcode
 network_password=lines[2][lines[2].index('=')+1 : len(lines[2])].strip()
 print("Network Password: " + hide_password(network_password))
 
-# Read static IP address for the check scanner
+# Get static IP address for the check scanner
 static_ip_address=lines[3][lines[3].index('=')+1 : len(lines[3])].strip()
 print("Static IP Address: " + static_ip_address)
 
@@ -273,7 +380,7 @@ if is_ip_address(static_ip_address[0 : static_ip_address.index(
 	exit_with_error("Invalid Static IP Address: Format must be "
 	"\"###.###.###.###/##\"")
 
-# Read specific IP address for the check scanner
+# Get specific IP address for the check scanner
 scanner_ip_address = lines[4][lines[4].index('=')+1 : len(lines[4])].strip()
 print("Scanner IP Address: " + scanner_ip_address)
 
@@ -281,11 +388,11 @@ if is_ip_address(scanner_ip_address) == False:
 	exit_with_error("Invalid Scanner IP Address: Format must be "
 	"\"###.###.###.###\"")
 
-# Read the username for the server
+# Get the username for the server
 server_user=lines[5][lines[5].index('=')+1 : len(lines[5])].strip()
 print("Server Username read: " + server_user)
 
-# Read the IP address of the server
+# Get the IP address of the server
 server_ip=lines[6][lines[6].index('=')+1 : len(lines[6])].strip()
 print("Server IP Address: " + server_ip)
 
@@ -293,7 +400,7 @@ if is_ip_address(server_ip) == False:
 	exit_with_error("Invalid Server IP Address: Format must be "
 	"\"###.###.###.###\"")
 
-# Read the listening port on the server
+# Get the listening port on the server
 server_port = lines[7][lines[7].index('=')+1 : len(lines[7])].strip()
 print("Server Listen Port Number: " + server_port)
 
@@ -301,6 +408,9 @@ if server_port.isdigit() == False or int(server_port) > 65535 or int(
 server_port) <= 1023:
 	exit_with_error("Invalid port number : Port must be integer between"
 	" 1024 and 65535")
+
+# Register reset_files to revert changes if error is encountered
+atexit.register(reset_files)
 
 # Add network info to wpa_supplicant.conf-------------------------------
 
@@ -344,10 +454,10 @@ try:
 	
 	while is_connected() == False:
 		print("Waiting for connection...\n")
-		time.sleep(6)
+		time.sleep(5)
 		pass
 except:
-	exit_with_error("Cannot connect to network."
+	exit_with_error("Cannot connect to network. "
 	"Check SSID and password")
 
 print_success("Connected to " + network_name)
@@ -464,14 +574,11 @@ except:
 	exit_with_error("Failed to establish SSH connection")
 
 # When the connection is terminated, confirm success with user
-result = input("\nWas the connection successful? (y/n): ")
-while result.lower() != "y":
-	if result.lower() == "n":
-		print()
-		exit_with_error("Check your username and server IP address and "
-		"try again")
-	else:
-		result = input("Please enter (y/n) for your response: ")
+result = yes_no_prompt("\nWas the connection successful?")
+if result == "n":
+	print()
+	exit_with_error("Check your username and server IP address and "
+	"try again")
 
 # Create SSH config file
 print("\nCreating SSH configuration file...")
@@ -491,15 +598,12 @@ while (True):
 		print()
 		os.system('sudo ssh-keygen -m pem')
 	except:
-		retry = input("\nKeygen failed: ssh-keygen returned an error. "
-		"Try again? (y/n): ")
-		while retry.lower() != "y":
-			if retry.lower() == "n":
-				print()
-				exit_with_error("Cannot establish autossh with "
-				"key-based authentication")
-			else:
-				retry = input("Please enter (y/n) for your response: ")
+		retry = yes_no_prompt("\nKeygen failed: ssh-keygen returned an error. "
+		"Try again?")
+		if retry == "n":
+			print()
+			exit_with_error("Cannot establish autossh with "
+			"key-based authentication")
 	
 	# Check to ensure keys were successfully generated
 	if os.path.exists(r"/root/.ssh/id_rsa") and os.path.exists(
@@ -507,15 +611,12 @@ while (True):
 		print_success("\nKey generation complete\n")
 		break
 	else:
-		retry = input("\nKeygen failed: Key files not found. "
-		"Try again? (y/n): ")
-		while retry.lower() != "y":
-			if retry.lower() == "n":
-				print()
-				exit_with_error("Cannot establish autossh with "
-				"key-based authentication")
-			else:
-				retry = input("Please enter (y/n) for your response: ")
+		retry = yes_no_prompt("\nKeygen failed: Key files not found. "
+		"Try again?")
+		if retry == "n":
+			print()
+			exit_with_error("Cannot establish autossh with "
+			"key-based authentication")
 
 # Copy public key to server
 try:
@@ -537,13 +638,10 @@ except:
 	exit_with_error("Failed to establish SSH connection")
 
 # When the connection terminates, confirm success with the user
-result = input("\nWere you prompted for a password this time? (y/n): ")
-while result.lower() != "n":
-	if result.lower() == "y":
-		print()
-		exit_with_error("RSA key authentication setup failed")
-	else:
-		result = input("Please enter y/n for your response: ")
+result = yes_no_prompt("\nWere you prompted for a password this time?")
+if result == "y":
+	print()
+	exit_with_error("RSA key authentication setup failed")
 
 print_success("\nKey authentication succeeded")
 
@@ -582,7 +680,8 @@ try:
 	print()
 	print_instruction("Your device will restart in 1 minute to "
 	"apply changes. Cancelling the reboot may cause setup to fail")
-	time.sleep(59)
+	time.sleep(57)
 	atexit.unregister(reset_files) #Disable file reset before reboot
+	print("\nRebooting...\n")
 except:
 	exit_with_error("Failed to reboot")
