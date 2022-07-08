@@ -4,7 +4,7 @@ This software configures a Raspberry Pi 4B to act as a wireless router for the R
 
 ## Instructions
 
-# 1. Creating the .config file
+### 1. Creating the .config file
 
 Download the check_scanner_router.config onto a USB flash drive and open it in a text editor. You should see the following:
 
@@ -26,13 +26,13 @@ Download the check_scanner_router.config onto a USB flash drive and open it in a
 7. On the ServerIP line, replace ##.#.###.## with the IP address of the server
 8. On the ServerPortForCheckScanner line, replace ##### with the server port number you want the check scanner to try to connect to. This must be a port between 1024 and 65535, and preferably it should end in 443. Something like 21443 should work fine.
 
-# 2. Hardware Setup
+### 2. Hardware Setup
 
 1. Attach the check scanner to the Raspberry Pi via an Ethernet cable
 2. Insert the USB drive with the check_scanner_router.config file into one of the USB ports on the Raspberry Pi
 3. Connect power to the Raspberry Pi
 
-# 3. Configuring the Pi
+### 3. Configuring the Pi
 
 The configuration setup script on the Pi will run automatically when it boots up, using any available USB flash drives attached. In order to ensure your setup is successful, only plug in one USB drive at a time to the Pi.
 
