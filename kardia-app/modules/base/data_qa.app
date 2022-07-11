@@ -11,9 +11,12 @@ data_qa "widget/page"
     endorsement_context=runserver("kardia");
     max_requests=9;
 
+    ledger "widget/parameter" { type=string; default=null; }
+
     data_qa_cmp "widget/component"
 	{
 	x=10; y=10; width=980; height=680;
 	path = "/apps/kardia/modules/base/data_qa.cmp";
+	ledger = runserver(:this:ledger);
 	}
     }

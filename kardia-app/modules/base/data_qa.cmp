@@ -3,6 +3,8 @@ data_qa "widget/component-decl"
     {
     width=980; height=680;
 
+    ledger "widget/parameter" { type=string; default=null; }
+
     data_qa_tabctl "widget/tab"
 	{
 	x=0; y=0; width=980; height=655;
@@ -29,6 +31,7 @@ data_qa "widget/component-decl"
 		    {
 		    height=633; width=958; x=10; y=10;
 		    path = runserver(:data_qa_repeat:path);
+		    ledger = runserver(:this:ledger);
 		    }
 		}
 	    }
