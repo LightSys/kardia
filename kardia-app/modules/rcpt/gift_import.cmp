@@ -1213,7 +1213,7 @@ gift_import "widget/component-decl"
 					:eg2:i_eg_deposit_uuid is not null and
 					(:a_batch_number_deposit is null or
 					    (:a_batch_number_deposit >= convert(integer,:parameters:batchno) and :a_batch_number_deposit <= convert(integer,:parameters:endbatchno))) and
-					:a_batch_number is not null and
+					--:a_batch_number is not null and
 					(:eg2:i_eg_deposit_date < :eg:i_eg_deposit_date or
 					    (:eg2:i_eg_deposit_date = :eg:i_eg_deposit_date and :eg2:i_eg_deposit_uuid < :eg:i_eg_deposit_uuid))
 				  group by
@@ -1467,7 +1467,7 @@ gift_import "widget/component-decl"
 					:eg2:i_eg_deposit_uuid is not null and
 					(:a_batch_number_fees is null or
 					    (:a_batch_number_fees >= convert(integer,:parameters:batchno) and :a_batch_number_fees <= convert(integer,:parameters:endbatchno))) and
-					:a_batch_number is not null and
+					--:a_batch_number is not null and
 					(:eg2:i_eg_deposit_date < :eg:i_eg_deposit_date or
 					    (:eg2:i_eg_deposit_date = :eg:i_eg_deposit_date and :eg2:i_eg_deposit_uuid < :eg:i_eg_deposit_uuid))
 				  group by
