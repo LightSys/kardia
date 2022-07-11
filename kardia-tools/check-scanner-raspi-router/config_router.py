@@ -281,7 +281,32 @@ def get_settings_hash(lines):
 		dictionary[line[0:line.index('=')].strip()] = line[line.index('=')+1:len(line)].strip()
 		
 	return dictionary
+
+#  
+#  name: ssh
+#  description: establishes ssh connection to the specified user and ip
+#  @param user - the server profile to connect to ("" if not specified)
+#  @param ip - the ip address of the server
+#  @return none
+#  
+def ssh(user, ip):
+	# Attempt to connect
+	try:
+		print("\nConnecting to " + user + "@" + ip + "...\n")
+		os.system('sudo ssh ' + ip + ' -o ConnectTimeout=5 -t "echo success" -t "exit" > /root/tmp/ssh.log')
+	except:
+		exit("Failed to establish SSH connection")
+
+	# Determine if connection succeeded
+	result = open("ssh.log", "r").read()
+	if "success" in result:
+		print("Connection succeeded")
+	else:
+		exit_with_error("SSH connection failed")
 	
+	# Remove the unneeded log file
+	os.remove(r"/root/tmp/ssh.log")
+
 ## BEGIN MAIN SCRIPT----------------------------------------------------
 
 # Print header
@@ -556,28 +581,6 @@ rc_local.close()
 
 # Set up SSH connection/configuration-----------------------------------
 
-# Verify successful SSH connection to the server
-
-# Attempt to make the connection
-
-try:
-	logging.info("Connecting to " + server_user + "@" + server_ip + "...")
-	print_instruction("Upon successful login, exit the server to "
-	"continue setup")
-	os.system('sudo ssh ' + server_user + '@' + server_ip + ' -o '
-	'ConnectTimeout=5')
-except:
-	exit_with_error("Failed to establish SSH connection")
-
-result = open("ssh.log", "r")
-logging.info(result.readlines())
-
-# When the connection is terminated, confirm success with user
-result = yes_no_prompt("\nWas the connection successful?")
-if result == "n":
-	exit_with_error("Check your username and server IP address and "
-	"try again")
-
 # Create SSH config file
 logging.info("Creating SSH configuration file...")
 ssh_config = open(r"/root/.ssh/config", "w")
@@ -587,30 +590,23 @@ ssh_config.close()
 
 # Generate public/private keys
 
-while (True):
-	# Generate the keys
-	try:
-		print_instruction("Save RSA key in default location. "
-		"Do not enter password. Simply press Enter when prompted")
-		os.system('sudo ssh-keygen -m pem')
-	except:
-		retry = yes_no_prompt("\nKeygen failed: ssh-keygen returned an error. "
-		"Try again?")
-		if retry == "n":
-			exit_with_error("Cannot establish autossh with "
-			"key-based authentication")
-	
-	# Check to ensure keys were successfully generated
-	if os.path.exists(r"/root/.ssh/id_rsa") and os.path.exists(
-	r"/root/.ssh/id_rsa.pub"):
-		logging.info("Key generation complete")
-		break
-	else:
-		retry = yes_no_prompt("Keygen failed: Key files not found. "
-		"Try again?")
-		if retry == "n":
-			exit_with_error("Cannot establish autossh with "
-			"key-based authentication")
+# If keys already exist, erase them
+if os.path.exists(r"/root/.ssh/id_rsa"):
+	os.remove(r"/root/.ssh/id_rsa")
+	os.remove(r"/root/.ssh/id_rsa.pub")
+
+# Generate the keys
+try:
+	os.system("sudo ssh-keygen -q -m pem -N '' -f ~/.ssh/id_rsa")
+except:
+	exit_with_error("Keygen failed: ssh-keygen returned an error")
+
+# Check to ensure keys were successfully generated
+if os.path.exists(r"/root/.ssh/id_rsa") and os.path.exists(
+r"/root/.ssh/id_rsa.pub"):
+	print_success("\nKey generation complete\n")
+else:
+	exit_with_error("\nKeygen failed: Key files not found after generation")
 
 # Copy public key to server
 try:
@@ -621,20 +617,8 @@ except:
 	
 # Verify successful SSH connection to the server with key authentication
 
-# Attempt to connect to the server again
-try:
-	logging.info("Connecting to " + server_ip + " using key "
-	"authentication...")
-	print_instruction("Upon successful login, exit the server to "
-	"continue setup")
-	os.system('sudo ssh ' + server_ip + " -o ConnectTimeout=5")
-except:
-	exit_with_error("Failed to establish SSH connection")
-
-# When the connection terminates, confirm success with the user
-result = yes_no_prompt("\nWere you prompted for a password this time?")
-if result == "y":
-	exit_with_error("RSA key authentication setup failed")
+# Attempt to connect to the server
+ssh("", server_ip)
 
 logging.info("Key authentication succeeded")
 
