@@ -14,6 +14,7 @@ import time
 import hashlib
 import binascii
 import re
+import logging
 
 #  
 #  name: is_ip_address
@@ -55,7 +56,7 @@ def is_ip_address(ip):
 #  
 def reset_files():
 	
-	print("\nResetting files...\n")
+	logging.info("Resetting files...")
 	
 	# Reset /etc/dhcpcd.conf
 	if os.path.exists(r"/etc/dhcpcd.conf.old"):
@@ -125,7 +126,8 @@ def reset_files():
 #  @return none
 #  
 def exit_with_error(msg):
-	sys.exit(print_error(msg))
+	logging.critical(msg)
+	sys.exit(msg)
 	
 #  
 #  name: print_instruction
@@ -134,6 +136,7 @@ def exit_with_error(msg):
 #  @return none
 #  
 def print_instruction(msg):
+	logging.info(msg)
 	print("\x1b[1;37;44m**" + msg.upper() + "**\x1b[0m")
 	
 #  
@@ -143,6 +146,7 @@ def print_instruction(msg):
 #  @return none
 #  
 def print_error(msg):
+	logging.error(msg)
 	print("\x1b[1;37;41m" + msg + "\x1b[0m")
 	
 #  
@@ -152,6 +156,7 @@ def print_error(msg):
 #  @return none
 #  
 def print_success(msg):
+	logging.info(msg)
 	print("\x1b[1;32;40m" + msg + "\x1b[0m")
 	
 #  
@@ -276,7 +281,7 @@ def get_settings_hash(lines):
 		dictionary[line[0:line.index('=')].strip()] = line[line.index('=')+1:len(line)].strip()
 		
 	return dictionary
-	
+
 #  
 #  name: ssh
 #  description: establishes ssh connection to the specified user and ip
@@ -305,10 +310,12 @@ def ssh(user, ip):
 ## BEGIN MAIN SCRIPT----------------------------------------------------
 
 # Print header
-print()
-print("RASPBERRY PI CHECK SCANNER ROUTER SETUP")
-print("(c) 2022 LightSys Technology Services")
-print("---------------------------------------")
+
+logging.basicConfig(filename="RouterConfig.log", level=logging.DEBUG,
+		format="%(asctime)s %(levelname)s %(message)s", filemode="w")
+		
+logging.info("\nRASPBERRY PI CHECK SCANNER ROUTER LOG FILE OUTPUT\n"
+		"--------------------------------------------------")
 
 usb_name = ""
 
@@ -330,16 +337,16 @@ while len(usbs) == 0:
 			
 			usbs.append(dict(zip(columns,loc)))
 	except:
-		print_error("Failed to get USB devices")
+		logging.error("Failed to get USB devices")
 	
 	# If there is still no USB detected, wait 10 seconds and repeat
 	if len(usbs) == 0:
-		print("No USB device found, scanning again in 10 seconds...")
+		logging.warning("No USB device found, scanning again in 10 seconds...")
 		time.sleep(10)
 	
 usb_name = usbs[0].get('LABEL')[1:len(usbs[0].get('LABEL'))-1]
 
-print("\nAttempting setup with " + usb_name + "...\n")
+logging.info("Attempting setup with " + usb_name + "...")
 
 # Read configuration settings from the flash drive----------------------
 
@@ -352,7 +359,7 @@ try:
 	"config", "r")
 except:
 	exit_with_error("File path /media/pi/" + usb_name + "/"
-	"check_scanner_router.config does not exist\nPlease check that the "
+	"check_scanner_router.config does not exist. Please check that the "
 	"file is named correctly and loaded on your USB device")
 
 settings = get_settings_hash(boot_file.readlines())
@@ -360,32 +367,32 @@ settings = get_settings_hash(boot_file.readlines())
 # If the device is already configured
 if os.path.exists(r"/etc/systemd/system/check-scanner-autossh.service"):
 	if settings["Reconfigure"] == "False":
-		print_error("Device is already configured, and Reconfigure is set to \"False\"")
+		logging.error("Device is already configured, and Reconfigure is set to \"False\"")
 		sys.exit()
 	elif settings["Reconfigure"] == "True":
-		print("Reconfiguring device...")
+		logging.info("Reconfiguring device...")
 		reset_files()
 	else:
 		exit_with_error("Invalid Reconfigure setting: Must be \"True\" or \"False\"")
 
 # Get WiFi country code
 country_code = settings["WLANCountry"]
-print("WLAN Country Code: " + country_code)
+logging.info("WLAN Country Code: " + country_code)
 
 if len(country_code) != 2: # Ensure there are two characters
 	exit_with_error("Invalid country code: Code must be 2 letters")
 
 # Get network SSID
 network_name = settings["WiFiNetworkSSID"]
-print("Network SSID: " + network_name)
+logging.info("Network SSID: " + network_name)
 
 # Get network passcode
 network_password = settings["WiFiNetworkPassphrase"]
-print("Network Password: " + hide_password(network_password))
+logging.info("Network Password: " + hide_password(network_password))
 
 # Get static IP address for the check scanner
 static_ip_address = settings["CheckScannerStaticIP"]
-print("Static IP Address: " + static_ip_address)
+logging.info("Static IP Address: " + static_ip_address)
 
 if is_ip_address(static_ip_address[0 : static_ip_address.index(
 '/')]) == False or static_ip_address[static_ip_address.index(
@@ -395,7 +402,7 @@ if is_ip_address(static_ip_address[0 : static_ip_address.index(
 
 # Get specific IP address for the check scanner
 scanner_ip_address = settings["CheckScannerIPAddress"]
-print("Scanner IP Address: " + scanner_ip_address)
+logging.info("Scanner IP Address: " + scanner_ip_address)
 
 if is_ip_address(scanner_ip_address) == False:
 	exit_with_error("Invalid Scanner IP Address: Format must be "
@@ -403,19 +410,20 @@ if is_ip_address(scanner_ip_address) == False:
 
 # Get the username for the server
 server_user = settings["ServerUsername"]
-print("Server Username read: " + server_user)
+logging.info("Server Username read: " + server_user)
 
 # Get the IP address of the server
 server_ip = settings["ServerIP"]
-print("Server IP Address: " + server_ip)
+logging.info("Server IP Address: " + server_ip)
 
 if is_ip_address(server_ip) == False:
 	exit_with_error("Invalid Server IP Address: Format must be "
 	"\"###.###.###.###\"")
+		
 
 # Get the listening port on the server
 server_port = settings["ServerPortForCheckScanner"]
-print("Server Listen Port Number: " + server_port)
+logging.info("Server Listen Port Number: " + server_port)
 
 if server_port.isdigit() == False or int(server_port) > 65535 or int(
 server_port) <= 1023:
@@ -431,7 +439,7 @@ atexit.register(reset_files)
 make_backup(r"/etc/wpa_supplicant/wpa_supplicant.conf")
 
 # Add country code
-print("\nSetting WLAN Country...")
+logging.info("Setting WLAN Country...")
 
 wpa_supplicant = open(r"/etc/wpa_supplicant/wpa_supplicant.conf", "r")
 lines = wpa_supplicant.readlines()
@@ -442,7 +450,7 @@ for i in range(0, len(lines)):
 
 # Add network supplicant information
 
-print("\nCreating WiFi network configuration...")
+logging.info("Creating WiFi network configuration...")
 
 # Add configuration info
 lines.append("\nnetwork={\n")
@@ -461,60 +469,59 @@ wpa_supplicant.close()
 
 # Restart WiFi and wait for connection
 try:
-	print("\nConnecting to network...\n")
+	logging.info("Connecting to network...")
 	os.system('sudo wpa_cli -i wlan0 reconfigure')
-	print()
 	
 	while is_connected() == False:
-		print("Waiting for connection...\n")
+		logging.info("Waiting for connection...")
 		time.sleep(5)
 		pass
 except:
 	exit_with_error("Cannot connect to network. "
 	"Check SSID and password")
 
-print_success("Connected to " + network_name)
+logging.info("Connected to " + network_name)
 
 # Configure DHCP and DNSMASQ--------------------------------------------
 
 # Upgrade all packages and install DNSMASQ package
 try:
-	print("\nUpdating packages...\n")
+	logging.info("Updating packages...")
 	os.system('sudo apt update')
-	print_success("\nPackages updated")
+	logging.info("Packages updated")
 except:
-	print_error("Failed to update packages")
+	logging.error("Failed to update packages")
 	
 try:
-	print("\nUpgrading packages (this may take a few minutes)...\n")
+	logging.info("Upgrading packages (this may take a few minutes)...")
 	os.system('sudo apt upgrade')
-	print_success("\nPackages upgraded")
+	logging.info("Packages upgraded")
 except:
-	print_error("Failed to upgrade packages")
+	logging.error("Failed to upgrade packages")
 	
 try:
-	print("\nInstalling dnsmasq...\n")
+	logging.info("Installing dnsmasq...")
 	os.system('sudo apt install dnsmasq')
-	print_success("\ndnsmasq installation complete")
+	logging.info("dnsmasq installation complete")
 except:
 	exit_with_error("Failed to install dnsmasq package")
 
 # DHCP configuration
 
-print("\nConfiguring dhcp service...")
+logging.info("Configuring dhcp service...")
 
 # Copy current dhcpcd.conf to backup file
 make_backup(r"/etc/dhcpcd.conf")
 
 # Append to dhcpcd.conf
 dhcpcd_conf = open(r"/etc/dhcpcd.conf", "a")
-dhcpcd_conf.write("\n\ninterface eth0\n"
+dhcpcd_conf.write("interface eth0"
 "static ip_address=" + static_ip_address)
 dhcpcd_conf.close()
 
 # DNSMASQ configuration
 
-print("\nConfiguring dnsmasq service...")
+logging.info("Configuring dnsmasq service...")
 
 # Copy current dnsmasq.conf to backup file
 make_backup(r"/etc/dnsmasq.conf")
@@ -529,7 +536,7 @@ dnsmasq_conf.close()
 
 # IPv4 forwarding configuration
 
-print("\nEnabling IPv4 forwarding...")
+logging.info("Enabling IPv4 forwarding...")
 
 # Copy current sysctl.conf to backup file
 make_backup(r"/etc/sysctl.conf")
@@ -549,7 +556,7 @@ sysctl_conf.close()
 
 # Routing table configuration
 
-print("\nAdding routing table info...")
+logging.info("Adding routing table info...")
 
 # Copy current rc.local to backup file
 make_backup(r"/etc/rc.local")
@@ -575,7 +582,7 @@ rc_local.close()
 # Set up SSH connection/configuration-----------------------------------
 
 # Create SSH config file
-print("\nCreating SSH configuration file...")
+logging.info("Creating SSH configuration file...")
 ssh_config = open(r"/root/.ssh/config", "w")
 ssh_config.write("Host " + server_ip + "\nHostName " + server_ip + "\n"
 "IdentityFile ~/.ssh/id_rsa\nUser " + server_user + "\n")
@@ -604,7 +611,7 @@ else:
 # Copy public key to server
 try:
 	os.system('sudo ssh-copy-id ' + server_ip)
-	print_success("\nPublic RSA key copied to server")
+	logging.info("Public RSA key copied to server")
 except:
 	exit_with_error("Failed to copy public key to server")
 	
@@ -613,45 +620,43 @@ except:
 # Attempt to connect to the server
 ssh("", server_ip)
 
-print_success("\nKey authentication succeeded")
+logging.info("Key authentication succeeded")
 
 # Setup autossh Tunnel--------------------------------------------------
 
 # Install autossh package
 try:
-	print("\nInstalling autossh...\n")
+	logging.info("Installing autossh...")
 	os.system('sudo apt install autossh')
-	print_success("\nautossh installation complete")
+	logging.info("autossh installation complete")
 except:
 	exit_with_error("Failed to install autossh package")
 
 # Create autossh systemd service
-print("\nBuilding autossh systemd process file...")
+logging.info("Building autossh systemd process file...")
 build_autossh_service()
 
 # Apply all settings----------------------------------------------------
 
 # Enable and start all services
 try:
-	print("\nEnabling and starting system processes...")
+	logging.info("Enabling and starting system processes...")
 	os.system('sudo systemctl daemon-reload')
 	os.system('sudo service dnsmasq start')
 	os.system('sudo service dhcpcd start')
 	os.system('sudo systemctl enable check-scanner-autossh.service')
 	os.system('sudo systemctl start check-scanner-autossh.service')
-	print_success("\nSystem processes enabled and started\n")
+	logging.info("System processes enabled and started")
 except:
-	print()
-	print_error("Failed to start services")
+	logging.error("Failed to start services")
 
 # Reboot
 try:
 	os.system('sudo shutdown -r +1')
-	print()
 	print_instruction("Your device will restart in 1 minute to "
 	"apply changes. Cancelling the reboot may cause setup to fail")
 	time.sleep(57)
 	atexit.unregister(reset_files) #Disable file reset before reboot
-	print("\nRebooting...\n")
+	logging.info("Rebooting...")
 except:
 	exit_with_error("Failed to reboot")
