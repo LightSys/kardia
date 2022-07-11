@@ -127,7 +127,6 @@ def reset_files():
 def exit_with_error(msg):
 	sys.exit(print_error(msg))
 	
-
 #  
 #  name: print_instruction
 #  description: prints a blue instruction message
@@ -263,6 +262,46 @@ def yes_no_prompt(msg):
 		result = color_input("Please enter y or n for your response: ")
 	return result.lower();
 
+#  
+#  name: get_settings_hash
+#  description: gets dictionary of settings read from the USB drive
+#  @param lines - the lines read from the USB drive
+#  @return dictionary of setting-value pairs
+#  
+def get_settings_hash(lines):
+	
+	dictionary = {}
+	
+	for line in lines:
+		dictionary[line[0:line.index('=')].strip()] = line[line.index('=')+1:len(line)].strip()
+		
+	return dictionary
+	
+#  
+#  name: ssh
+#  description: establishes ssh connection to the specified user and ip
+#  @param user - the server profile to connect to ("" if not specified)
+#  @param ip - the ip address of the server
+#  @return none
+#  
+def ssh(user, ip):
+	# Attempt to connect
+	try:
+		print("\nConnecting to " + user + "@" + ip + "...\n")
+		os.system('sudo ssh ' + ip + ' -o ConnectTimeout=5 -t "echo success" -t "exit" > /root/tmp/ssh.log')
+	except:
+		exit("Failed to establish SSH connection")
+
+	# Determine if connection succeeded
+	result = open("ssh.log", "r").read()
+	if "success" in result:
+		print("Connection succeeded")
+	else:
+		exit_with_error("SSH connection failed")
+	
+	# Remove the unneeded log file
+	os.remove(r"/root/tmp/ssh.log")
+
 ## BEGIN MAIN SCRIPT----------------------------------------------------
 
 # Print header
@@ -271,73 +310,34 @@ print("RASPBERRY PI CHECK SCANNER ROUTER SETUP")
 print("(c) 2022 LightSys Technology Services")
 print("---------------------------------------")
 
-# If the device is already configured, check to see if user wants to
-# reconfigure with new settings
-if os.path.exists(r"/etc/systemd/system/check-scanner-autossh.service"):
-	result = yes_no_prompt("\nThis device is already configured for "
-	"check scanner routing. Would you like to redo the setup?")
-	
-	if result == "n":
-		sys.exit()
-	else:
-		reset_files()
-
-
 usb_name = ""
 
-# While a USB setup device has not been selected
-while True:
-	
-	usbs = []
-	
-	# While there are no USBs detected
-	while len(usbs) == 0:
-		try:
-			# Get mounted devices
-			devices = os.popen('sudo blkid').readlines()
-			
-			# Pack USB device info into dictionary list
-			for device in devices:
-				loc = [device.split(':')[0]]
-				if '/dev/sd' not in loc[0]:
-					continue
-				loc += re.findall(r'"[^"]+"',device)
-				columns = ['loc'] + re.findall(r'\b(\w+)=',device)
-				
-				usbs.append(dict(zip(columns,loc)))
-		except:
-			print_error("Failed to get USB devices")
-		
-		# If there are still no USBs detected, repeat
-		if len(usbs) == 0:
-			color_input("\nPlease insert a USB drive with the"
-			"check_scanner_router.config file and press Enter")
-	
-	# Print the list of available devices
-	print("\nAvailable USB devices\n---------------------")
-	
-	index = 1
-	for u in usbs:
-		print(str(index) + ' : ' + u.get('LABEL')[1:len(u.get('LABEL'))-1])
-		index += 1
-	
-	print(str(index) + " : Scan for new USB devices") #Option for rescan
-	print()
-	
-	# Prompt user for selection from list
-	selection = color_input("Enter a number from the list to select "
-	"the device for router setup: ")
-	while selection.isdigit() == False or int(selection) > index or int(
-	selection) <= 0:
-		selection = color_input("Please enter a number from the list "
-		"above: ")
+usbs = []
 
-	if int(selection) == index: # Option to repeat scan, return to loop
-		print("\nRepeating scan...")
-	else: # USB device selected, get the device name
-		usb_name = usbs[int(selection) - 1].get('LABEL')[1:len(u.get(
-		'LABEL'))-1]
-		break
+# While there are no USBs detected
+while len(usbs) == 0:
+	try:
+		# Get mounted devices
+		devices = os.popen('sudo blkid').readlines()
+		
+		# Pack USB device info into dictionary list
+		for device in devices:
+			loc = [device.split(':')[0]]
+			if '/dev/sd' not in loc[0]:
+				continue
+			loc += re.findall(r'"[^"]+"',device)
+			columns = ['loc'] + re.findall(r'\b(\w+)=',device)
+			
+			usbs.append(dict(zip(columns,loc)))
+	except:
+		print_error("Failed to get USB devices")
+	
+	# If there is still no USB detected, wait 10 seconds and repeat
+	if len(usbs) == 0:
+		print("No USB device found, scanning again in 10 seconds...")
+		time.sleep(10)
+	
+usb_name = usbs[0].get('LABEL')[1:len(usbs[0].get('LABEL'))-1]
 
 print("\nAttempting setup with " + usb_name + "...\n")
 
@@ -346,32 +346,45 @@ print("\nAttempting setup with " + usb_name + "...\n")
 lines = ""
 
 # Try to open the .config file and read the setup info
+boot_file = ""
 try:
 	boot_file = open("/media/pi/" + usb_name + "/check_scanner_router."
 	"config", "r")
-	lines = boot_file.readlines()
 except:
 	exit_with_error("File path /media/pi/" + usb_name + "/"
 	"check_scanner_router.config does not exist\nPlease check that the "
 	"file is named correctly and loaded on your USB device")
 
+settings = get_settings_hash(boot_file.readlines())
+
+# If the device is already configured
+if os.path.exists(r"/etc/systemd/system/check-scanner-autossh.service"):
+	if settings["Reconfigure"] == "False":
+		print_error("Device is already configured, and Reconfigure is set to \"False\"")
+		sys.exit()
+	elif settings["Reconfigure"] == "True":
+		print("Reconfiguring device...")
+		reset_files()
+	else:
+		exit_with_error("Invalid Reconfigure setting: Must be \"True\" or \"False\"")
+
 # Get WiFi country code
-country_code=lines[0][lines[0].index('=')+1 : len(lines[0])].strip().upper()
+country_code = settings["WLANCountry"]
 print("WLAN Country Code: " + country_code)
 
 if len(country_code) != 2: # Ensure there are two characters
 	exit_with_error("Invalid country code: Code must be 2 letters")
 
 # Get network SSID
-network_name=lines[1][lines[1].index('=')+1 : len(lines[1])].strip()
+network_name = settings["WiFiNetworkSSID"]
 print("Network SSID: " + network_name)
 
 # Get network passcode
-network_password=lines[2][lines[2].index('=')+1 : len(lines[2])].strip()
+network_password = settings["WiFiNetworkPassphrase"]
 print("Network Password: " + hide_password(network_password))
 
 # Get static IP address for the check scanner
-static_ip_address=lines[3][lines[3].index('=')+1 : len(lines[3])].strip()
+static_ip_address = settings["CheckScannerStaticIP"]
 print("Static IP Address: " + static_ip_address)
 
 if is_ip_address(static_ip_address[0 : static_ip_address.index(
@@ -381,7 +394,7 @@ if is_ip_address(static_ip_address[0 : static_ip_address.index(
 	"\"###.###.###.###/##\"")
 
 # Get specific IP address for the check scanner
-scanner_ip_address = lines[4][lines[4].index('=')+1 : len(lines[4])].strip()
+scanner_ip_address = settings["CheckScannerIPAddress"]
 print("Scanner IP Address: " + scanner_ip_address)
 
 if is_ip_address(scanner_ip_address) == False:
@@ -389,11 +402,11 @@ if is_ip_address(scanner_ip_address) == False:
 	"\"###.###.###.###\"")
 
 # Get the username for the server
-server_user=lines[5][lines[5].index('=')+1 : len(lines[5])].strip()
+server_user = settings["ServerUsername"]
 print("Server Username read: " + server_user)
 
 # Get the IP address of the server
-server_ip=lines[6][lines[6].index('=')+1 : len(lines[6])].strip()
+server_ip = settings["ServerIP"]
 print("Server IP Address: " + server_ip)
 
 if is_ip_address(server_ip) == False:
@@ -401,7 +414,7 @@ if is_ip_address(server_ip) == False:
 	"\"###.###.###.###\"")
 
 # Get the listening port on the server
-server_port = lines[7][lines[7].index('=')+1 : len(lines[7])].strip()
+server_port = settings["ServerPortForCheckScanner"]
 print("Server Listen Port Number: " + server_port)
 
 if server_port.isdigit() == False or int(server_port) > 65535 or int(
@@ -561,25 +574,6 @@ rc_local.close()
 
 # Set up SSH connection/configuration-----------------------------------
 
-# Verify successful SSH connection to the server
-
-# Attempt to make the connection
-try:
-	print("\nConnecting to " + server_user + "@" + server_ip + "...\n")
-	print_instruction("Upon successful login, exit the server to "
-	"continue setup")
-	os.system('sudo ssh ' + server_user + '@' + server_ip + " -o "
-	"ConnectTimeout=5")
-except:
-	exit_with_error("Failed to establish SSH connection")
-
-# When the connection is terminated, confirm success with user
-result = yes_no_prompt("\nWas the connection successful?")
-if result == "n":
-	print()
-	exit_with_error("Check your username and server IP address and "
-	"try again")
-
 # Create SSH config file
 print("\nCreating SSH configuration file...")
 ssh_config = open(r"/root/.ssh/config", "w")
@@ -589,34 +583,23 @@ ssh_config.close()
 
 # Generate public/private keys
 
-while (True):
-	# Generate the keys
-	try:
-		print()
-		print_instruction("Save RSA key in default location. "
-		"Do not enter password. Simply press Enter when prompted")
-		print()
-		os.system('sudo ssh-keygen -m pem')
-	except:
-		retry = yes_no_prompt("\nKeygen failed: ssh-keygen returned an error. "
-		"Try again?")
-		if retry == "n":
-			print()
-			exit_with_error("Cannot establish autossh with "
-			"key-based authentication")
-	
-	# Check to ensure keys were successfully generated
-	if os.path.exists(r"/root/.ssh/id_rsa") and os.path.exists(
-	r"/root/.ssh/id_rsa.pub"):
-		print_success("\nKey generation complete\n")
-		break
-	else:
-		retry = yes_no_prompt("\nKeygen failed: Key files not found. "
-		"Try again?")
-		if retry == "n":
-			print()
-			exit_with_error("Cannot establish autossh with "
-			"key-based authentication")
+# If keys already exist, erase them
+if os.path.exists(r"/root/.ssh/id_rsa"):
+	os.remove(r"/root/.ssh/id_rsa")
+	os.remove(r"/root/.ssh/id_rsa.pub")
+
+# Generate the keys
+try:
+	os.system("sudo ssh-keygen -q -m pem -N '' -f ~/.ssh/id_rsa")
+except:
+	exit_with_error("Keygen failed: ssh-keygen returned an error")
+
+# Check to ensure keys were successfully generated
+if os.path.exists(r"/root/.ssh/id_rsa") and os.path.exists(
+r"/root/.ssh/id_rsa.pub"):
+	print_success("\nKey generation complete\n")
+else:
+	exit_with_error("\nKeygen failed: Key files not found after generation")
 
 # Copy public key to server
 try:
@@ -627,21 +610,8 @@ except:
 	
 # Verify successful SSH connection to the server with key authentication
 
-# Attempt to connect to the server again
-try:
-	print("\nConnecting to " + server_ip + " using key "
-	"authentication...\n")
-	print_instruction("Upon successful login, exit the server to "
-	"continue setup")
-	os.system('sudo ssh ' + server_ip + " -o ConnectTimeout=5")
-except:
-	exit_with_error("Failed to establish SSH connection")
-
-# When the connection terminates, confirm success with the user
-result = yes_no_prompt("\nWere you prompted for a password this time?")
-if result == "y":
-	print()
-	exit_with_error("RSA key authentication setup failed")
+# Attempt to connect to the server
+ssh("", server_ip)
 
 print_success("\nKey authentication succeeded")
 
