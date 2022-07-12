@@ -8,23 +8,27 @@ This software configures a Raspberry Pi 4B to act as a wireless router for the R
 
 Download the check_scanner_router.config onto a USB flash drive and open it in a text editor. You should see the following:
 
+`Reconfigure=True`\
 `WLANCountry=US`\
 `WiFiNetworkSSID=NetworkName`\
 `WiFiNetworkPassphrase=network-password`\
-`CheckScannerStaticIP=###.###.#.#/##`\
+`CheckScannerRouterIP=###.###.#.#/##`\
 `CheckScannerIPAddress=###.###.#.##`\
 `ServerUsername=UserName`\
+`ServerPassword=server-password`
 `ServerIP=##.#.###.##`\
 `ServerPortForCheckScanner=#####`
 
-1. On the WLANCountry line, replace US with the two-digit country code for your country if it is not the United States
-2. On the WiFiNetworkSSID line, Replace NetworkName with the name of your WiFi network
-3. On the WiFiNetworkPassphrase line, replace network-password with the password to your WiFi network
-4. On the CheckScannerStaticIP line, replace ###.###.#.#/## with the static IP address you want the Rasperry Pi DHCP server to use. Something like 192.168.2.1/24 should work fine
-5. On the CheckScannerIPAddress line, replace ###.###.#.## with the IP address you want the Raspberry Pi DHCP server to assign to the check scanner. Something like 192.168.2.15 should work fine.
-6. On the ServerUsername line, replace UserName with the username of the server profile you want the Pi router to connect to
-7. On the ServerIP line, replace ##.#.###.## with the IP address of the server
-8. On the ServerPortForCheckScanner line, replace ##### with the server port number you want the check scanner to try to connect to. This must be a port between 1024 and 65535, and preferably it should end in 443. Something like 21443 should work fine.
+1. On the Reconfigure line, replace True with False if you do not want an already configured Pi to repeat setup when the USB drive is inserted
+2. On the WLANCountry line, replace US with the two-digit country code for your country if it is not the United States
+3. On the WiFiNetworkSSID line, Replace NetworkName with the name of your WiFi network
+4. On the WiFiNetworkPassphrase line, replace network-password with the password to your WiFi network
+5. On the CheckScannerRouterIP line, replace ###.###.#.#/## with the static IP address you want the Rasperry Pi DHCP server to use. Something like 192.168.2.1/24 should work fine
+6. On the CheckScannerIPAddress line, replace ###.###.#.## with the IP address you want the Raspberry Pi DHCP server to assign to the check scanner. Something like 192.168.2.15 should work fine
+7. On the ServerUsername line, replace UserName with the username of the server profile you want the Pi router to connect to
+8. On the ServerPassword line, replace server-password with the password to the server profile you want the Pi router to connect to
+9. On the ServerIP line, replace ##.#.###.## with the IP address of the server
+10. On the ServerPortForCheckScanner line, replace ##### with the server port number you want the check scanner to try to connect to. This must be a port between 1024 and 65535, and preferably it should end in 443. Something like 21443 should work fine
 
 ### 2. Hardware Setup
 
