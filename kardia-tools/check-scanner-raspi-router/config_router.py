@@ -325,6 +325,7 @@ logging.basicConfig(filename=r"/media/pi/" + usb_name + r"/setup.log",
 level=logging.DEBUG, format="%(asctime)s %(levelname)s %(message)s", 
 filemode="a")
 
+logging.info("START OF NEW LOG ENTRY")
 print_status("Setting up with USB device " + usb_name + "...")
 
 # Read configuration settings from the USB drive------------------------
@@ -423,7 +424,7 @@ try:
 except:
 	exit_with_error("Could not find ServerUsername attribute: check "
 	"attribute name")
-print_status("Server Username read: " + server_user)
+print_status("Server Username: " + server_user)
 
 # Get the password for the server
 try:
@@ -642,34 +643,44 @@ else:
 
 # Copy public key to server---------------------------------------------
 
-# Install sshpass package
-try:
-	print_status("Installing sshpass...")
-	os.system('sudo apt install sshpass -y')
-	print_success("sshpass installation complete")
-except:
-	exit_with_error("Failed to install sshpass package")
+if server_password == "":
+	try:
+		print_status("Copying public key to USB device...")
+		os.system('sudo cp /root/.ssh/id_rsa.pub /media/pi/' + usb_name + '/id_rsa.pub')
+		print_success("Public key copied to USB device")
+	except:
+		print_exception("Failed to copy public key to USB device")
 
-# Copy key to server
-try:
+else:
 	print_status("Copying public key to server...")
-	os.system(
-	'sudo sshpass -p ' + server_password + ' ssh-copy-id ' + server_ip)
-	print_success("Public RSA key copied to server")
-except:
-	exit_with_error("Failed to copy public key to server")
-
-# Uninstall sshpass package, since there is no longer any need for it
-try:
-	print_status("Uninstalling sshpass...")
-	os.system('sudo apt remove sshpass -y')
-	print_success("sshpass uninstalled")
-except:
-	print_exception("Failed to uninstall ssh package")
+	# Install sshpass package
+	try:
+		print_status("Installing sshpass...")
+		os.system('sudo apt install sshpass -y')
+		print_success("sshpass installation complete")
+	except:
+		exit_with_error("Failed to install sshpass package")
 	
-# Verify successful SSH connection to the server with key authentication
-ssh(server_ip)
-print_success("Key authentication to server succeeded")
+	# Copy key to server
+	try:
+		print_status("Copying public key to server...")
+		os.system(
+		'sudo sshpass -p ' + server_password + ' ssh-copy-id ' + server_ip)
+		print_success("Public RSA key copied to server")
+	except:
+		exit_with_error("Failed to copy public key to server")
+	
+	# Uninstall sshpass package, since there is no longer any need for it
+	try:
+		print_status("Uninstalling sshpass...")
+		os.system('sudo apt remove sshpass -y')
+		print_success("sshpass uninstalled")
+	except:
+		print_exception("Failed to uninstall ssh package")
+		
+	# Verify successful SSH connection to the server with key authentication
+	ssh(server_ip)
+	print_success("Key authentication to server succeeded")
 
 # Setup autossh Tunnel--------------------------------------------------
 
