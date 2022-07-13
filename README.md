@@ -15,7 +15,7 @@ Download the check_scanner_router.config onto a USB flash drive and open it in a
 `CheckScannerRouterIP=###.###.#.#/##`\
 `CheckScannerIPAddress=###.###.#.##`\
 `ServerUsername=UserName`\
-`ServerPassword=server-password`
+`ServerPassword=server-password`\
 `ServerIP=##.#.###.##`\
 `ServerPortForCheckScanner=#####`
 
