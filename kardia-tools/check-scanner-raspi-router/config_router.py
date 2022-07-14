@@ -625,14 +625,17 @@ print_status("Creating SSH configuration file...")
 
 # Create SSH config file
 try:
-	os.system("sudo mkdir .ssh")
+	os.system("sudo mkdir /root/.ssh")
 except:
 	exit_with_error("Failed to create .ssh directory")
-	
-ssh_config = open(r"/root/.ssh/config", "w")
-ssh_config.write("Host " + server_ip + "\nHostName " + server_ip + "\n"
-"IdentityFile ~/.ssh/id_rsa\nUser " + server_user + "\n")
-ssh_config.close()
+
+try:
+	ssh_config = open(r"/root/.ssh/config", "w")
+	ssh_config.write("Host " + server_ip + "\nHostName " + server_ip + "\n"
+	"IdentityFile ~/.ssh/id_rsa\nUser " + server_user + "\n")
+	ssh_config.close()
+except:
+	exit_with_error("Failed to create ssh config file")
 
 # Generate public/private keys------------------------------------------
 
