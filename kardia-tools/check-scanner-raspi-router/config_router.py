@@ -265,19 +265,29 @@ def get_settings_hash(lines):
 
 #  
 #  name: ssh
-#  description: establishes ssh connection to the specified user and ip
-#  @param user - the server profile to connect to ("" if not specified)
+#  description: establishes ssh connection to a server
 #  @param ip - the ip address of the server
+#  @param password - the password to the server, or "" if none
 #  @return none
 #  
-def ssh(ip):
-	# Attempt to connect
-	try:
-		print_status("Connecting to " + ip + "...")
-		os.system('sudo ssh ' + ip + ' -o ConnectTimeout=5 -t "echo '
-		'success" -t "exit" > /tmp/ssh.log')
-	except:
-		exit("Failed to establish SSH connection")
+def ssh(ip, password):
+	if password == "": # Attempt to connect with key authentication
+		try:
+			print_status("Connecting to " + ip + " with key...")
+			os.system('sudo ssh ' + ip + ' -o "StrictHostKeyChecking no"'
+			' -o ConnectTimeout=5 -t "echo success" -t "exit" > /tmp/ssh.log')
+		except:
+			exit_with_error("Failed to establish SSH connection with key"
+			" authentication")
+			
+	else: # Attempt to connect with password authentication
+		try:
+			print_status("Connecting to " + ip + " with password...")
+			os.system('sudo sshpass -p ' + password + ' ssh ' + ip + 
+			' -o "StrictHostKeyChecking no" -o ConnectTimeout=5 -t "echo '
+			'success" -t "exit" > /tmp/ssh.log')
+		except:
+			exit_with_error("Failed to establish SSH connection with password")
 
 	# Determine if connection succeeded
 	result = open("/tmp/ssh.log", "r").read()
@@ -614,6 +624,11 @@ rc_local.close()
 print_status("Creating SSH configuration file...")
 
 # Create SSH config file
+try:
+	os.system("sudo mkdir .ssh")
+except:
+	exit_with_error("Failed to create .ssh directory")
+	
 ssh_config = open(r"/root/.ssh/config", "w")
 ssh_config.write("Host " + server_ip + "\nHostName " + server_ip + "\n"
 "IdentityFile ~/.ssh/id_rsa\nUser " + server_user + "\n")
@@ -638,6 +653,7 @@ except:
 if os.path.exists(r"/root/.ssh/id_rsa") and os.path.exists(
 r"/root/.ssh/id_rsa.pub"):
 	print_success("Key generation complete")
+	os.system('service ssh restart')
 else:
 	exit_with_error("Keygen failed: Key files not found after generation")
 
@@ -646,7 +662,8 @@ else:
 if server_password == "":
 	try:
 		print_status("Copying public key to USB device...")
-		os.system('sudo cp /root/.ssh/id_rsa.pub /media/pi/' + usb_name + '/id_rsa.pub')
+		os.system('sudo cp /root/.ssh/id_rsa.pub /media/pi/'
+		 + usb_name + '/id_rsa.pub')
 		print_success("Public key copied to USB device")
 	except:
 		print_exception("Failed to copy public key to USB device")
@@ -660,6 +677,9 @@ else:
 		print_success("sshpass installation complete")
 	except:
 		exit_with_error("Failed to install sshpass package")
+
+	# Add server to known hosts using password login
+	ssh(server_ip, server_password)
 	
 	# Copy key to server
 	try:
@@ -670,7 +690,7 @@ else:
 	except:
 		exit_with_error("Failed to copy public key to server")
 	
-	# Uninstall sshpass package, since there is no longer any need for it
+	# Uninstall sshpass package; there is no longer any need for it
 	try:
 		print_status("Uninstalling sshpass...")
 		os.system('sudo apt remove sshpass -y')
@@ -678,8 +698,8 @@ else:
 	except:
 		print_exception("Failed to uninstall ssh package")
 		
-	# Verify successful SSH connection to the server with key authentication
-	ssh(server_ip)
+	# Verify successful SSH connection to the server with key auth
+	ssh(server_ip, "")
 	print_success("Key authentication to server succeeded")
 
 # Setup autossh Tunnel--------------------------------------------------
