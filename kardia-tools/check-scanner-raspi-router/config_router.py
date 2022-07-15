@@ -5,7 +5,7 @@
 #  
 #  Copyright 2022 LightSys Technology Services
 #
-#  Last Modified 07/15/22 at 10:00 am
+#  Last Modified 07/15/22 at 12:00 pm
 #
 
 import sys
@@ -167,9 +167,17 @@ def print_status(msg):
 #  @param srcfile - the file to be copied
 #  @return none
 #  
-def make_backup(srcfile):
-	file1 = open(srcfile, "r")
-	file2 = open(srcfile + ".old", "w")
+def make_backup(src_file):
+	try:
+		file1 = open(src_file, "r")
+	except:
+		exit_with_error("Failed to read " + src_file)
+		
+	try:
+		file2 = open(src_file + ".old", "w")
+	except:
+		exit_with_error("Failed to make backup file " + src_file + ".old")
+		
 	file2.write(file1.read())
 	file1.close()
 	file2.close()
@@ -482,29 +490,33 @@ make_backup(r"/etc/wpa_supplicant/wpa_supplicant.conf")
 # Add country code
 print_status("Setting WLAN Country...")
 
-wpa_supplicant = open(r"/etc/wpa_supplicant/wpa_supplicant.conf", "r")
-lines = wpa_supplicant.readlines()
+try:
+	wpa_supplicant = open(r"/etc/wpa_supplicant/wpa_supplicant.conf", "r")
+	lines = wpa_supplicant.readlines()
 
-for i in range(0, len(lines)):
-	if "country" in lines[i]:
-		lines[i] = "country=" + country_code + "\n"
+	for i in range(0, len(lines)):
+		if "country" in lines[i]:
+			lines[i] = "country=" + country_code + "\n"
+	
+	# Add network supplicant information
+	print_status("Creating WiFi network configuration...")
+	
+	lines.append("\nnetwork={\n")
+	lines.append("ssid=\"" + network_name + "\"\n")
+	lines.append("scan_ssid=1\n")
+	lines.append("psk=" + generate_wpa_psk(
+	network_name, network_password) + "\n")
+	lines.append("key_mgmt=WPA-PSK\n")
+	lines.append("priority=1\n")
+	lines.append("}")
+	
+	# Write to the file
+	wpa_supplicant = open(r"/etc/wpa_supplicant/wpa_supplicant.conf", "w")
+	wpa_supplicant.writelines(lines)
+	wpa_supplicant.close()
 
-# Add network supplicant information
-print_status("Creating WiFi network configuration...")
-
-lines.append("\nnetwork={\n")
-lines.append("ssid=\"" + network_name + "\"\n")
-lines.append("scan_ssid=1\n")
-lines.append("psk=" + generate_wpa_psk(
-network_name, network_password) + "\n")
-lines.append("key_mgmt=WPA-PSK\n")
-lines.append("priority=1\n")
-lines.append("}")
-
-# Write to the file
-wpa_supplicant = open(r"/etc/wpa_supplicant/wpa_supplicant.conf", "w")
-wpa_supplicant.writelines(lines)
-wpa_supplicant.close()
+except:
+	exit_with_error("Could not open wpa_supplicant.conf")
 
 # Restart WiFi and wait for connection----------------------------------
 
@@ -512,7 +524,7 @@ try:
 	print_status("Connecting to network...")
 	os.system('sudo wpa_cli -i wlan0 reconfigure')
 except:
-	exit_with_error("WLAN configuration error")
+	exit_with_error("WLAN could not be reconfigured")
 	
 tries = 0
 while is_connected() == False:
