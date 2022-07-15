@@ -5,7 +5,7 @@
 #  
 #  Copyright 2022 LightSys Technology Services
 #
-#  Last Modified 07/15/22 at 12:00 pm
+#  Last Modified 07/15/22 at 3:00 pm
 #
 
 import sys
@@ -238,7 +238,7 @@ def is_connected():
 	try:
 		socket.create_connection(("1.1.1.1", 80))
 		return True
-	except OSError:
+	except:
 		pass
 	return False
 
@@ -525,7 +525,9 @@ try:
 	os.system('sudo wpa_cli -i wlan0 reconfigure')
 except:
 	exit_with_error("WLAN could not be reconfigured")
-	
+
+time.sleep(5)
+
 tries = 0
 while is_connected() == False:
 	tries += 1
