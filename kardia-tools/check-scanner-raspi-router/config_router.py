@@ -5,7 +5,7 @@
 #  
 #  Copyright 2022 LightSys Technology Services
 #
-#  Last Modified 07/15/22 at 3:00 pm
+#  Last Modified 07/19/22 at 2:00 pm
 #
 
 import sys
@@ -17,6 +17,8 @@ import hashlib
 import binascii
 import re
 import logging
+
+usb_log = ""
 
 #  
 #  name: is_ip_address
@@ -128,7 +130,7 @@ def reset_files():
 #  @return none
 #  
 def exit_with_error(msg):
-	logging.critical(msg)
+	print_exception(msg)
 	sys.exit(msg)
 	
 #  
@@ -138,7 +140,7 @@ def exit_with_error(msg):
 #  @return none
 #  
 def print_exception(msg):
-	logging.exception(msg)
+	usb_log.exception(msg)
 	print("\x1b[1;37;41m" + msg + "\x1b[0m")
 	
 #  
@@ -148,7 +150,7 @@ def print_exception(msg):
 #  @return none
 #  
 def print_success(msg):
-	logging.info(msg)
+	usb_log.info(msg)
 	print("\x1b[1;32;40m" + msg + "\x1b[0m")
 	
 #  
@@ -158,7 +160,7 @@ def print_success(msg):
 #  @return none
 #
 def print_status(msg):
-	logging.info(msg)
+	usb_log.info(msg)
 	print(msg)
 
 #  
@@ -309,7 +311,30 @@ def ssh(ip, password):
 	# Remove the unneeded log file
 	os.remove(r"/tmp/ssh.log")
 
+#  
+#  name: setup_log
+#  description: sets up logging object
+#  @param name - the name of the logging object
+#  @param log_file - the file to write the log entries to
+#  @param file_mode - the file mode for the log file ("w", "a", etc.)
+#  @return
+#  
+def setup_log(name, log_file, file_mode):
+	formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+	handler = logging.FileHandler(log_file, mode=file_mode)
+	handler.setFormatter(formatter)
+	
+	logger = logging.getLogger(name)
+	logger.setLevel(logging.DEBUG)
+	logger.addHandler(handler)
+	
+	return logger
+	
+
 ## BEGIN MAIN SCRIPT----------------------------------------------------
+
+pi_log = setup_log("usb_setup_log", r"/home/pi/Desktop/"
+"check-scanner-raspi-router/setup.log", "w")
 
 # Find USB device to use for setup--------------------------------------
 
@@ -332,21 +357,32 @@ while len(usbs) == 0:
 			
 			usbs.append(dict(zip(columns,loc)))
 	except:
-		print("Failed to get USB devices")
+		pi_log.exception("Failed to retrieve USB device")
+		print("\x1b[1;37;41m" + "Failed to retrieve USB device" + "\x1b[0m")
 	
 	# If there is still no USB detected, wait 10 seconds and repeat
 	if len(usbs) == 0:
+		pi_log.info("No USB device found, scanning again in 10 seconds...")
 		print("No USB device found, scanning again in 10 seconds...")
 		time.sleep(10)
 	
 usb_name = usbs[0].get('LABEL')[1:len(usbs[0].get('LABEL'))-1]
 
-logging.basicConfig(filename=r"/media/pi/" + usb_name + r"/setup.log", 
-level=logging.DEBUG, format="%(asctime)s %(levelname)s %(message)s", 
-filemode="a")
+pi_log.info("Found USB device " + usb_name + ". Switching log file to USB...")
+print("Found USB device " + usb_name + ". Switching log file to USB...")
 
-logging.info("START OF NEW LOG ENTRY")
+try:
+	usb_log = setup_log("configuration_log", r"/media/pi/" + usb_name + 
+	r"/setup.log", "a")
+except:
+	pi_log.exception("Cannot create log file on USB device. Ensure "
+	"device is not read-only")
+	exit("Cannot create log file on USB device. Ensure "
+	"device is not read-only")
+	
+usb_log.info("-----------------START OF NEW LOG ENTRY-----------------")
 print_status("Setting up with USB device " + usb_name + "...")
+time.sleep(5)
 
 # Read configuration settings from the USB drive------------------------
 
