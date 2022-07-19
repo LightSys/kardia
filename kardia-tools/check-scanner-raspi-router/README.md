@@ -32,13 +32,15 @@ Download the check_scanner_router.config onto a USB flash drive and open it in a
 
 ### 2. Hardware Setup
 
-1. Attach the check scanner to the Raspberry Pi via an Ethernet cable
-2. Insert the USB drive with the check_scanner_router.config file into one of the USB ports on the Raspberry Pi
-3. Connect power to the Raspberry Pi
+1. Insert the USB drive with the check_scanner_router.config file into one of the USB ports on the Raspberry Pi
+2. Connect power to the Raspberry Pi
+3. **DO NOT attach the check scanner to the Raspberry Pi yet. This may interfere with the network setup**
 
 ### 3. Configuring the Pi
 
-The configuration setup script on the Pi will run automatically when it boots up, using any available USB flash drives attached. In order to ensure your setup is successful, only plug in one USB drive at a time to the Pi.
+The configuration setup script on the Pi will run automatically when it boots up, using the first available USB flash drive. In order to ensure your setup is successful, only plug in one USB drive at a time to the Pi.
+
+*Note: If the setup will not start upon inserting a USB drive, there is a setup.log file located in the /home/pi/Desktop/check-scanner-raspi-router folder. You can check this file for any errors that my be occuring.*
 
 Setup can take anywhere from 2 to 20 minutes. At the end of the setup, the Pi will automatically power down, and the green power light will turn off. At this point, it is safe to remove the USB drive. Disconnect and reconnect power to the Pi to start it up again.
 
@@ -46,4 +48,4 @@ You can review the setup process via the setup.log file that the Raspberry Pi wi
 
 If the setup was unsuccessful, the .log file will end with an error message. Solve any issues with the .config file indicated by the error message, then reinsert the flash drive to the Pi and disconnect and reconnect power to reboot the Pi.
 
-If the setup was successful, the .log file will end with "SETUP COMPLETE". Enjoy!
+If the setup was successful, the .log file will end with "SETUP COMPLETE". Connect the check scanner to the Raspberry Pi via an Ethernet cable and enjoy!
