@@ -5,7 +5,7 @@
 #  
 #  Copyright 2022 LightSys Technology Services
 #
-#  Last Modified 07/19/22 at 2:00 pm
+#  Last Modified 07/22/22 at 2:00 pm
 #
 
 import sys
@@ -530,9 +530,9 @@ try:
 	wpa_supplicant = open(r"/etc/wpa_supplicant/wpa_supplicant.conf", "r")
 	lines = wpa_supplicant.readlines()
 
-	for i in range(0, len(lines)):
-		if "country" in lines[i]:
-			lines[i] = "country=" + country_code + "\n"
+	for line in lines:
+		if "country" in line:
+			line = "country=" + country_code + "\n"
 	
 	# Add network supplicant information
 	print_status("Creating WiFi network configuration...")
@@ -577,7 +577,7 @@ while is_connected() == False:
 
 print_success("Connected to " + network_name)
 
-# Upgrade all packages and install DNSMASQ package----------------------
+# Upgrade all packages and install needed packages----------------------
 
 try:
 	print_status("Updating packages...")
@@ -594,37 +594,61 @@ except:
 	print_error("Failed to upgrade packages")
 	
 try:
-	print_status("Installing dnsmasq...")
-	os.system("sudo apt install dnsmasq -y")
-	print_success("dnsmasq installation complete")
+	print_status("Installing udhcpd...")
+	os.system("sudo apt install udhcpd -y")
+	print_success("udhcpd installation complete")
 except:
-	exit_with_error("Failed to install dnsmasq package")
+	exit_with_error("Failed to install udhcpd package")
 
-# Configure DHCP--------------------------------------------------------
+# Configure UDHCPD------------------------------------------------------
 
-print_status("Configuring dhcp service...")
+print_status("Configuring udhcpd service...")
+
+# Copy current udhcpd.conf to backup file
+make_backup(r"/etc/udhcpd.conf")
+make_backup(r"/etc/default/udhcpd")
+
+# Modify udhcpd.conf
+udhcpd_conf = open(r"/etc/udhcpd.conf", "r")
+lines = udhcpd_conf.readlines()
+
+for line in lines:
+	if "start" in line and "#default" in line:
+		line = "start           " + scanner_ip_address + "\n"
+	elif "end" in lines and "#default" in line:
+		line = "end             " + scanner_ip_address + "\n"
+		break
+		
+udhcpd_conf = open(r"/etc/udhcpd.conf", "w")
+udhcpd_conf.writelines(lines)
+udhcpd_conf.close()
+
+# Enable udhcpd
+
+udhcpd_default = open(r"/etc/default/udhcpd", "r")
+lines = udhcpd_default.readlines()
+
+for line in lines:
+	if 'DHCPD_ENABLED="no"' in line:
+		line = '#DHCPD_ENABLED="no"'
+		break
+
+udhcpd_default = open(r"/etc/default/udhcpd", "w")		
+udhcpd_default.writelines(lines)
+udhcpd_default.close()
+		
+# Configure DHCPCD------------------------------------------------------
+
+print_status("Configuring dhcpcd service...")
 
 # Copy current dhcpcd.conf to backup file
 make_backup(r"/etc/dhcpcd.conf")
 
 # Append to dhcpcd.conf
 dhcpcd_conf = open(r"/etc/dhcpcd.conf", "a")
-dhcpcd_conf.write("interface eth0"
-"static ip_address=" + static_ip_address)
+dhcpcd_conf.write("\ninterface eth0")
+dhcpcd_conf.write("\nstatic ip_address=" + static_ip_address)
 dhcpcd_conf.close()
-
-# Configure DNSMASQ-----------------------------------------------------
-
-print_status("Configuring dnsmasq service...")
-
-# Copy current dnsmasq.conf to backup file
-make_backup(r"/etc/dnsmasq.conf")
-
-# Rewrite dnsmasq.conf
-dnsmasq_conf = open(r"/etc/dnsmasq.conf", "w")
-dnsmasq_conf.write("interface=eth0\ndhcp-range="+scanner_ip_address+","
-+scanner_ip_address+",255.255.255.0,30d")
-dnsmasq_conf.close()
 
 # Configure routing-----------------------------------------------------
 
@@ -638,9 +662,9 @@ make_backup(r"/etc/sysctl.conf")
 sysctl_conf = open(r"/etc/sysctl.conf", "r")
 lines = sysctl_conf.readlines()
 
-for i in range(0, len(lines)):
-	if lines[i].strip() == "#net.ipv4.ip_forward=1":
-		lines[i] = "net.ipv4.ip_forward=1\n"
+for line in lines:
+	if "#net.ipv4.ip_forward=1" in line:
+		line = "net.ipv4.ip_forward=1\n"
 		break
 
 sysctl_conf = open(r"/etc/sysctl.conf", "w")
@@ -658,7 +682,7 @@ rc_local = open(r"/etc/rc.local", "r")
 lines = rc_local.readlines()
 
 for i in range(0, len(lines)):
-	if lines[i].strip() == "exit 0":
+	if line.strip() == "exit 0":
 		lines.insert(i, "sudo iptables -t nat -A POSTROUTING -o wlan0 "
 		"-j MASQUERADE\n")
 		lines.insert(i+1, "sudo iptables -A FORWARD -i wlan0 -o eth0 -m"
@@ -777,7 +801,7 @@ build_autossh_service()
 try:
 	print_status("Enabling and starting system processes...")
 	os.system('sudo systemctl daemon-reload')
-	os.system('sudo service dnsmasq start')
+	os.system('sudo service udhcpd start')
 	os.system('sudo service dhcpcd start')
 	os.system('sudo systemctl enable check-scanner-autossh.service')
 	os.system('sudo systemctl start check-scanner-autossh.service')
