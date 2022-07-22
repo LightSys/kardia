@@ -7,7 +7,7 @@
 #  
 #  Copyright 2022 LightSys Technology Services
 #
-#  Last Modified 07/19/22 at 4:00 pm
+#  Last Modified 07/22/22 at 2:00 pm
 #
 
 import sys
@@ -23,9 +23,19 @@ r"/home/pi/Desktop/check-scanner-raspi-router/config_router.py") == False:
 # Add router configuration script to autostart process
 print("Adding command to autostart...")
 try:
-	autostart = open(r"/etc/xdg/lxsession/LXDE-pi/autostart", "a")
-	autostart.write("@lxterminal -e sudo python3 /home/pi/Desktop/"
-	"check-scanner-raspi-router/config_router.py &")
+	autostart = open(r"/etc/xdg/lxsession/LXDE-pi/autostart", "r")
+	lines = autostart.readlines()
+	already_modified = False
+	for line in lines:
+		if "@lxterminal -e sudo python3" in line:
+			already_modified = True
+			break
+			
+	if already_modified == False:
+		autostart = open(r"/etc/xdg/lxsession/LXDE-pi/autostart", "a")
+		autostart.write("@lxterminal -e sudo python3 /home/pi/Desktop/"
+		"check-scanner-raspi-router/config_router.py &\n")
+	
 	autostart.close()
 	
 except:
