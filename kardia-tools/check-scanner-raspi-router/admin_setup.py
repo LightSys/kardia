@@ -7,61 +7,123 @@
 #  
 #  Copyright 2022 LightSys Technology Services
 #
-#  Last Modified 07/22/22 at 2:00 pm
+#  Last Modified 07/25/22 at 5:00 pm
 #
 
 import sys
 import os
 import time
 
-if os.path.exists(
-r"/home/pi/Desktop/check-scanner-raspi-router/config_router.py") == False:
+# Upgrade all packages and install needed packages----------------------
+
+# Update
+print("Updating packages...\n")
+try:
+	os.system("sudo apt update")
+except:
+	print("ERROR: Failed to update packages")
+print("\nPackages updated\n")
+
+# Upgrade
+print("Upgrading packages...\n")
+try:
+	os.system("sudo apt upgrade -y")
+except:
+	print("ERROR: Failed to upgrade packages")
+print("\nPackages upgraded\n")
+
+# dnsmasq
+print("Installing dnsmasq...\n")
+try:
+	os.system("sudo apt install dnsmasq -y")
+except:
+	print("ERROR: Failed to install dnsmasq package")
+print("\ndnsmasq installation complete\n")
+
+# udhcpd
+print("Installing udhcpd...\n")
+try:
+	os.system("sudo apt install udhcpd -y")
+except:
+	print("ERROR: Failed to install udhcpd package")	
+print("\nudhcpd installation complete\n")
+
+# autossh
+print("Installing autossh...\n")
+try:
+	os.system("sudo apt install autosshautossh -y")
+except:
+	print("ERROR: Failed to install autossh package")	
+print("\nautossh installation complete\n")
+
+# Ensure the config_router script is located in the correct folder------
+
+if os.path.exists(r"/home/pi/Desktop/check-scanner-raspi-router/"
+"config_router.py") == False:
 	exit("ERROR: config_router.py not found. Please make sure "
 	"config_router.py is placed in the file path /home/pi/Desktop/"
 	"check-scanner-raspi-router config_router.py")
 
-# Add router configuration script to autostart process
-print("Adding command to autostart...")
+# Add config_router script to autostart process-------------------------
+
+print("Adding command to autostart...\n")
+
+autostart = ""
+
 try:
-	autostart = open(r"/etc/xdg/lxsession/LXDE-pi/autostart", "r")
-	lines = autostart.readlines()
-	already_modified = False
-	for line in lines:
-		if "@lxterminal -e sudo python3" in line:
-			already_modified = True
-			break
-			
-	if already_modified == False:
-		autostart = open(r"/etc/xdg/lxsession/LXDE-pi/autostart", "a")
-		autostart.write("@lxterminal -e sudo python3 /home/pi/Desktop/"
-		"check-scanner-raspi-router/config_router.py &\n")
-	
-	autostart.close()
-	
+	autostart = open(r"/etc/xdg/lxsession/LXDE-pi/autostart", "r")	
 except:
 	exit("ERROR: Could not open autostart")
+	
+lines = autostart.readlines()
 
-print("autostart modification complete")
+# Check if the command has already been added to autostart
+already_modified = False
+for line in lines:
+	if "@lxterminal -e sudo python3" in line: # If so, skip
+		already_modified = True
+		break
 
-# Remove admin network info from wpa_supplicant
-print("Removing wpa_supplicant entry...")
+if already_modified == False: # If not, add the command
+	try:
+		autostart = open(r"/etc/xdg/lxsession/LXDE-pi/autostart", "a")	
+	except:
+		exit("ERROR: Could not open autostart")
+		
+	autostart.write("@lxterminal -e sudo python3 /home/pi/Desktop/"
+	"check-scanner-raspi-router/config_router.py &\n")
+	
+autostart.close()
+
+print("autostart modification complete\n")
+
+# Remove admin network info from wpa_supplicant-------------------------
+
+print("Clearing wpa_supplicant...\n")
+
+wpa_supplicant = ""
+
 try:
 	wpa_supplicant = open(r"/etc/wpa_supplicant/wpa_supplicant.conf", "r")
-	read_lines = wpa_supplicant.readlines()
-	write_lines = ["", "", ""]
+except:
+	exit("ERROR: Could not open wpa_supplicant.conf")
 	
-	for i in range(0, 3):
-		write_lines[i] = read_lines[i]
-	
-	# Write to the file
-	wpa_supplicant = open(r"/etc/wpa_supplicant/wpa_supplicant.conf", "w")
-	wpa_supplicant.writelines(write_lines)
-	wpa_supplicant.close()
+read_lines = wpa_supplicant.readlines()
+write_lines = ["", "", ""]
 
+for i in range(0, 3):
+	write_lines[i] = read_lines[i]
+
+# Write to the file
+try:
+	wpa_supplicant = open(r"/etc/wpa_supplicant/wpa_supplicant.conf", "w")
 except:
 	exit("ERROR: Could not open wpa_supplicant.conf")
 
-print("wpa_supplicant entry removed")
+wpa_supplicant.writelines(write_lines)
+wpa_supplicant.close()
+
+print("wpa_supplicant cleared\n")
 
 # Reboot to apply changes
 print("Setup complete. Rebooting...")
