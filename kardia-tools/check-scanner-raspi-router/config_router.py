@@ -5,7 +5,7 @@
 #  
 #  Copyright 2022 LightSys Technology Services
 #
-#  Last Modified 07/22/22 at 2:00 pm
+#  Last Modified 07/25/22 at 5:00 pm
 #
 
 import sys
@@ -71,6 +71,15 @@ def reset_files():
 		file2.close();
 		os.remove(r"/etc/dhcpcd.conf.old")
 	
+	# Reset /etc/udhcpd.conf
+	if os.path.exists(r"/etc/udhcpd.conf.old"):
+		file1 = open(r"/etc/udhcpd.conf.old", "r")
+		file2 = open(r"/etc/udhcpd.conf", "w")
+		file2.write(file1.read())
+		file1.close();
+		file2.close();
+		os.remove(r"/etc/udhcpd.conf.old")
+		
 	# Reset /etc/dnsmasq.conf
 	if os.path.exists(r"/etc/dnsmasq.conf.old"):
 		file1 = open(r"/etc/dnsmasq.conf.old", "r")
@@ -131,7 +140,11 @@ def reset_files():
 #  
 def exit_with_error(msg):
 	print_exception(msg)
-	sys.exit(msg)
+	time.sleep(3)
+	try:
+		os.system('sudo shutdown') # Shutdown
+	except:
+		exit_with_error("Failed to shutdown")
 	
 #  
 #  name: print_exception
@@ -331,7 +344,10 @@ def setup_log(name, log_file, file_mode):
 	return logger
 	
 
+
+########################################################################
 ## BEGIN MAIN SCRIPT----------------------------------------------------
+########################################################################
 
 pi_log = setup_log("usb_setup_log", r"/home/pi/Desktop/"
 "check-scanner-raspi-router/setup.log", "w")
@@ -368,8 +384,13 @@ while len(usbs) == 0:
 	
 usb_name = usbs[0].get('LABEL')[1:len(usbs[0].get('LABEL'))-1]
 
-pi_log.info("Found USB device " + usb_name + ". Switching log file to USB...")
-print("Found USB device " + usb_name + ". Switching log file to USB...")
+pi_log.info("Found USB device " + usb_name + ". Mounting USB device...")
+print("Found USB device " + usb_name + ". Mounting USB device...")
+
+time.sleep(5)
+
+pi_log.info("Switching log file location to " + usb_name + "...")
+print("Switching log file location to " + usb_name + "...")
 
 try:
 	usb_log = setup_log("configuration_log", r"/media/pi/" + usb_name + 
@@ -382,7 +403,6 @@ except:
 	
 usb_log.info("-----------------START OF NEW LOG ENTRY-----------------")
 print_status("Setting up with USB device " + usb_name + "...")
-time.sleep(5)
 
 # Read configuration settings from the USB drive------------------------
 
@@ -528,36 +548,37 @@ print_status("Setting WLAN Country...")
 
 try:
 	wpa_supplicant = open(r"/etc/wpa_supplicant/wpa_supplicant.conf", "r")
-	lines = wpa_supplicant.readlines()
-
-	for line in lines:
-		if "country" in line:
-			line = "country=" + country_code + "\n"
-	
-	# Add network supplicant information
-	print_status("Creating WiFi network configuration...")
-	
-	lines.append("\nnetwork={\n")
-	lines.append("ssid=\"" + network_name + "\"\n")
-	lines.append("scan_ssid=1\n")
-	lines.append("psk=" + generate_wpa_psk(
-	network_name, network_password) + "\n")
-	lines.append("key_mgmt=WPA-PSK\n")
-	lines.append("priority=1\n")
-	lines.append("}")
-	
-	# Write to the file
-	wpa_supplicant = open(r"/etc/wpa_supplicant/wpa_supplicant.conf", "w")
-	wpa_supplicant.writelines(lines)
-	wpa_supplicant.close()
-
 except:
 	exit_with_error("Could not open wpa_supplicant.conf")
 
+lines = wpa_supplicant.readlines()
+
+for i in range(0, len(lines)):
+	if "country" in lines[i]:
+		lines[i] = "country=" + country_code + "\n"
+
+# Add network supplicant information
+print_status("Creating WiFi network configuration...")
+
+lines.append("\nnetwork={\n")
+lines.append("ssid=\"" + network_name + "\"\n")
+lines.append("scan_ssid=1\n")
+lines.append("psk=" + generate_wpa_psk(
+network_name, network_password) + "\n")
+lines.append("key_mgmt=WPA-PSK\n")
+lines.append("priority=1\n")
+lines.append("}")
+
+# Write to the file
+wpa_supplicant = open(r"/etc/wpa_supplicant/wpa_supplicant.conf", "w")
+wpa_supplicant.writelines(lines)
+wpa_supplicant.close()
+
 # Restart WiFi and wait for connection----------------------------------
 
+print_status("Connecting to network...")
+
 try:
-	print_status("Connecting to network...")
 	os.system('sudo wpa_cli -i wlan0 reconfigure')
 except:
 	exit_with_error("WLAN could not be reconfigured")
@@ -579,64 +600,38 @@ print_success("Connected to " + network_name)
 
 # Upgrade all packages and install needed packages----------------------
 
+# Update
+print_status("Updating packages...")
 try:
-	print_status("Updating packages...")
 	os.system("sudo apt update")
-	print_success("Packages updated")
 except:
 	print_error("Failed to update packages")
-	
+print_success("Packages updated")
+
+# Upgrade
+print_status("Upgrading packages...")
 try:
-	print_status("Upgrading packages...")
 	os.system("sudo apt upgrade -y")
-	print_success("Packages upgraded")
 except:
 	print_error("Failed to upgrade packages")
-	
+print_success("Packages upgraded")
+
+# dnsmasq
+print_status("Installing dnsmasq...")
 try:
-	print_status("Installing udhcpd...")
-	os.system("sudo apt install udhcpd -y")
-	print_success("udhcpd installation complete")
+	os.system("sudo apt install dnsmasq -y")
 except:
-	exit_with_error("Failed to install udhcpd package")
+	exit_with_error("Failed to install dnsmasq package")
+print_success("dnsmasq installation complete")
 
-# Configure UDHCPD------------------------------------------------------
+# udhcpd
+print_status("Installing udhcpd...")
+try:
+	os.system("sudo apt install udhcpd -y")
+except:
+	exit_with_error("Failed to install udhcpd package")	
+print_success("udhcpd installation complete")
 
-print_status("Configuring udhcpd service...")
-
-# Copy current udhcpd.conf to backup file
-make_backup(r"/etc/udhcpd.conf")
-make_backup(r"/etc/default/udhcpd")
-
-# Modify udhcpd.conf
-udhcpd_conf = open(r"/etc/udhcpd.conf", "r")
-lines = udhcpd_conf.readlines()
-
-for line in lines:
-	if "start" in line and "#default" in line:
-		line = "start           " + scanner_ip_address + "\n"
-	elif "end" in lines and "#default" in line:
-		line = "end             " + scanner_ip_address + "\n"
-		break
-		
-udhcpd_conf = open(r"/etc/udhcpd.conf", "w")
-udhcpd_conf.writelines(lines)
-udhcpd_conf.close()
-
-# Enable udhcpd
-
-udhcpd_default = open(r"/etc/default/udhcpd", "r")
-lines = udhcpd_default.readlines()
-
-for line in lines:
-	if 'DHCPD_ENABLED="no"' in line:
-		line = '#DHCPD_ENABLED="no"'
-		break
-
-udhcpd_default = open(r"/etc/default/udhcpd", "w")		
-udhcpd_default.writelines(lines)
-udhcpd_default.close()
-		
 # Configure DHCPCD------------------------------------------------------
 
 print_status("Configuring dhcpcd service...")
@@ -650,6 +645,55 @@ dhcpcd_conf.write("\ninterface eth0")
 dhcpcd_conf.write("\nstatic ip_address=" + static_ip_address)
 dhcpcd_conf.close()
 
+# Configure DNSMASQ-----------------------------------------------------
+
+print_status("Configuring dnsmasq service...")
+
+# Copy current dnsmasq.conf to backup file
+make_backup(r"/etc/dnsmasq.conf")
+
+# Rewrite dnsmasq.conf
+dnsmasq_conf = open(r"/etc/dnsmasq.conf", "w")
+dnsmasq_conf.write("interface=eth0\ndhcp-range="+scanner_ip_address+","
++scanner_ip_address+",255.255.255.0,10d")
+dnsmasq_conf.close()
+
+# Configure UDHCPD------------------------------------------------------
+
+print_status("Configuring udhcpd service...")
+
+# Make backups of udhcpd.conf and default/udhcpd
+make_backup(r"/etc/udhcpd.conf")
+make_backup(r"/etc/default/udhcpd")
+
+# Modify udhcpd.conf
+udhcpd_conf = open(r"/etc/udhcpd.conf", "r")
+lines = udhcpd_conf.readlines()
+
+for i in range(0, len(lines)):
+	if "start" in lines[i] and "#default" in lines[i]:
+		lines[i] = "start           " + scanner_ip_address + "\n"
+	elif "end" in lines[i] and "#default" in lines[i]:
+		lines[i] = "end             " + scanner_ip_address + "\n"
+		break
+		
+udhcpd_conf = open(r"/etc/udhcpd.conf", "w")
+udhcpd_conf.writelines(lines)
+udhcpd_conf.close()
+
+# Enable udhcpd
+udhcpd_default = open(r"/etc/default/udhcpd", "r")
+lines = udhcpd_default.readlines()
+
+for i in range(0, len(lines)):
+	if 'DHCPD_ENABLED="no"' in lines[i]:
+		lines[i] = '#DHCPD_ENABLED="no"\n'
+		break
+
+udhcpd_default = open(r"/etc/default/udhcpd", "w")		
+udhcpd_default.writelines(lines)
+udhcpd_default.close()
+
 # Configure routing-----------------------------------------------------
 
 # IPv4 forwarding configuration
@@ -662,9 +706,9 @@ make_backup(r"/etc/sysctl.conf")
 sysctl_conf = open(r"/etc/sysctl.conf", "r")
 lines = sysctl_conf.readlines()
 
-for line in lines:
-	if "#net.ipv4.ip_forward=1" in line:
-		line = "net.ipv4.ip_forward=1\n"
+for i in range(0, len(lines)):
+	if "#net.ipv4.ip_forward=1" in lines[i]:
+		lines[i] = "net.ipv4.ip_forward=1\n"
 		break
 
 sysctl_conf = open(r"/etc/sysctl.conf", "w")
@@ -682,7 +726,7 @@ rc_local = open(r"/etc/rc.local", "r")
 lines = rc_local.readlines()
 
 for i in range(0, len(lines)):
-	if line.strip() == "exit 0":
+	if lines[i].strip() == "exit 0":
 		lines.insert(i, "sudo iptables -t nat -A POSTROUTING -o wlan0 "
 		"-j MASQUERADE\n")
 		lines.insert(i+1, "sudo iptables -A FORWARD -i wlan0 -o eth0 -m"
@@ -732,50 +776,67 @@ except:
 if os.path.exists(r"/root/.ssh/id_rsa") and os.path.exists(
 r"/root/.ssh/id_rsa.pub"):
 	print_success("Key generation complete")
-	os.system('service ssh restart')
+	
+	try:
+		os.system('service ssh restart')
+	except:
+		print_exception("Failed to restart ssh service")
+
 else:
 	exit_with_error("Keygen failed: Key files not found after generation")
 
-# Copy public key to server---------------------------------------------
+# Copy public key to server or USB device-------------------------------
 
+# If no server password provided in the .config file, copy to USB
 if server_password == "":
+	
+	print_status("Copying public key to USB device...")
+	
 	try:
-		print_status("Copying public key to USB device...")
 		os.system('sudo cp /root/.ssh/id_rsa.pub /media/pi/'
 		 + usb_name + '/id_rsa.pub')
-		print_success("Public key copied to USB device")
 	except:
 		print_exception("Failed to copy public key to USB device")
+		
+	print_success("Public key copied to USB device")
 
+# Else connect to server and copy public key
 else:
+
 	print_status("Copying public key to server...")
+
 	# Install sshpass package
+	print_status("Installing sshpass...")
+	
 	try:
-		print_status("Installing sshpass...")
 		os.system('sudo apt install sshpass -y')
-		print_success("sshpass installation complete")
 	except:
 		exit_with_error("Failed to install sshpass package")
+		
+	print_success("sshpass installation complete")
 
 	# Add server to known hosts using password login
 	ssh(server_ip, server_password)
 	
 	# Copy key to server
+	print_status("Copying public key to server...")
 	try:
-		print_status("Copying public key to server...")
-		os.system(
-		'sudo sshpass -p ' + server_password + ' ssh-copy-id ' + server_ip)
-		print_success("Public RSA key copied to server")
+		os.system('sudo sshpass -p ' + server_password + ' ssh-copy-id ' 
+		+ server_ip)
 	except:
 		exit_with_error("Failed to copy public key to server")
+		
+	print_success("Public RSA key copied to server")
 	
 	# Uninstall sshpass package; there is no longer any need for it
+	print_status("Uninstalling sshpass...")
+	
 	try:
-		print_status("Uninstalling sshpass...")
 		os.system('sudo apt remove sshpass -y')
-		print_success("sshpass uninstalled")
 	except:
 		print_exception("Failed to uninstall ssh package")
+		
+	print_success("sshpass uninstalled")
 		
 	# Verify successful SSH connection to the server with key auth
 	ssh(server_ip, "")
@@ -784,12 +845,14 @@ else:
 # Setup autossh Tunnel--------------------------------------------------
 
 # Install autossh package
+print_status("Installing autossh...")
+
 try:
-	print_status("Installing autossh...")
 	os.system('sudo apt install autossh -y')
-	print_success("autossh installation complete")
 except:
 	exit_with_error("Failed to install autossh package")
+	
+print_success("autossh installation complete")
 
 # Create autossh systemd service
 print_status("Building autossh systemd process file...")
@@ -798,26 +861,26 @@ build_autossh_service()
 # Apply all settings----------------------------------------------------
 
 # Enable and start all services
+print_status("Enabling and starting system processes...")
+
 try:
-	print_status("Enabling and starting system processes...")
 	os.system('sudo systemctl daemon-reload')
 	os.system('sudo service udhcpd start')
 	os.system('sudo service dhcpcd start')
 	os.system('sudo systemctl enable check-scanner-autossh.service')
 	os.system('sudo systemctl start check-scanner-autossh.service')
-	print_success("System processes enabled and started")
 except:
 	print_error("Failed to start services")
+	
+print_success("System processes enabled and started")
+	
+time.sleep(3)
+atexit.unregister(reset_files) # Disable file reset before shutdown
+print_success("SETUP COMPLETE")
+logging.shutdown()
 
 # Shutdown
 try:
-	os.system('sudo shutdown +1')
-	print_success("Your device will shutdown in 1 minute to "
-	"apply changes. Cancelling may cause setup to fail")
-	time.sleep(57)
+	os.system('sudo shutdown')
 except:
-	exit_with_error("Failed to shutdown")
-
-atexit.unregister(reset_files) # Disable file reset before reboot
-print_success("SETUP COMPLETE")
-logging.shutdown()
+	exit("Failed to shutdown")
