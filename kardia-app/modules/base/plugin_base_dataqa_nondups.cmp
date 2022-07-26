@@ -61,6 +61,7 @@ plugin_base_dataqa_nondups "widget/component-decl"
 	    replicasize=200;
 	    readahead=200;
 	    autoquery=oneachreveal;
+	    autoquery_method=refresh;
 
 	    nondupstable "widget/table"
 		{

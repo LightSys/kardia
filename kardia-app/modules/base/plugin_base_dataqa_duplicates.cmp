@@ -8,6 +8,8 @@ plugin_base_dataqa_duplicates "widget/component-decl"
 
     ledger "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
 
+    MergeRequest "widget/component-decl-event" { }
+
     notadup_osrc "widget/osrc"
 	{
 	partner1 "widget/parameter" { type=string; }
@@ -129,6 +131,7 @@ plugin_base_dataqa_duplicates "widget/component-decl"
 	    replicasize=200;
 	    readahead=200;
 	    autoquery=oneachreveal;
+	    autoquery_method=refresh;
 	    send_updates=no;
 
 	    dupsform "widget/form"
@@ -190,7 +193,8 @@ plugin_base_dataqa_duplicates "widget/component-decl"
 			view_2 "widget/textbutton"
 			    {
 			    width=160; height=24;
-			    text = runclient("View Partner " + :dupsosrc:p_partner_key);
+			    text = runclient(condition(:dupsosrc:p_partner_key != :dupsosrc:p_dup_partner_key, "View Partner " + :dupsosrc:p_partner_key, "View Partner ..."));
+			    enabled=runclient(:dupsosrc:p_partner_key != :dupsosrc:p_dup_partner_key);
 
 			    on_view_2 "widget/connector"
 				{
@@ -210,6 +214,7 @@ plugin_base_dataqa_duplicates "widget/component-decl"
 			    {
 			    width=160; height=24;
 			    text = runclient("Not a Duplicate");
+			    enabled = runclient(:dupsosrc:p_partner_key != :dupsosrc:p_dup_partner_key);
 
 			    on_notadup "widget/connector" { event=Click; target=popover_ask_comment; action=Open; IsModal = 1; }
 			    }
@@ -218,6 +223,9 @@ plugin_base_dataqa_duplicates "widget/component-decl"
 			    {
 			    width=160; height=24;
 			    text = runclient("Merge / Relate...");
+			    enabled = runclient(:dupsosrc:p_partner_key != :dupsosrc:p_dup_partner_key);
+
+			    on_merge "widget/connector" { event=Click; target=plugin_base_dataqa_duplicates; action=MergeRequest; partner_a=runclient(:dupsosrc:p_dup_partner_key); partner_b=runclient(:dupsosrc:p_partner_key); }
 			    }
 			}
 		    }

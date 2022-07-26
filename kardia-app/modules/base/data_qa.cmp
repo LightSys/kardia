@@ -36,4 +36,6 @@ data_qa "widget/component-decl"
 		}
 	    }
 	}
+
+    on_merge "widget/connector" { source=data_qa_cmp; event=MergeRequest; target=data_qa_cmp; action=MergeRequest; partner_a=runclient(:partner_a); partner_b=runclient(:partner_b); }
     }

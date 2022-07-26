@@ -1,0 +1,47 @@
+$Version=2$
+plugin_base_merge_payroll "system/query"
+    {
+    partner_a "query/parameter" { type=string; style=strnull; }
+    partner_b "query/parameter" { type=string; style=strnull; }
+
+    sql = " select
+		p_partner_key = :y:p_payee_partner_key,
+		p_data_source = 'Payroll',
+		p_data_key = :y:p_payee_partner_key,
+		p_data_desc = '' + count(1) + ' payroll period' + condition(
+			count(1) == 1,
+			' on ' + dateformat(min(:pp:a_accrual_date), 'dd-MMM-yyyy'),
+			's between ' + dateformat(min(:pp:a_accrual_date), 'dd-MMM-yyyy') + ' and ' + dateformat(max(:pp:a_accrual_date), 'dd-MMM-yyyy')
+			)
+			+ condition(char_length(:y:a_payee_name) > 1, ' as ' + :y:a_payee_name, ''),
+		p_short_data_desc = 'Payroll data',
+		p_date_start = min(:pp:a_accrual_date),
+		p_date_end = max(:pp:a_accrual_date),
+		p_allow_copy = 0,
+		p_allow_multiple = 1,
+		p_allow_delete = 0,
+		p_default_copy = 0,
+		p_default_marriage_copy = 0,
+		p_default_marriage_move = 0,
+		p_default_multiple = 1,
+		p_allow_collate = 0,
+		p_comment = null
+	    from
+		identity /apps/kardia/data/Kardia_DB/a_payroll/rows y,
+		/apps/kardia/data/Kardia_DB/a_payroll_period_payee/rows ppp,
+		/apps/kardia/data/Kardia_DB/a_payroll_period/rows pp
+	    where
+		(:y:p_payee_partner_key = :parameters:partner_a or :y:p_payee_partner_key = :parameters:partner_b) and
+		:ppp:a_ledger_number = :y:a_ledger_number and
+		:ppp:a_payroll_group_id = :y:a_payroll_group_id and
+		:ppp:a_payroll_id = :y:a_payroll_id and
+		:pp:a_ledger_number = :ppp:a_ledger_number and
+		:pp:a_payroll_group_id = :ppp:a_payroll_group_id and
+		:pp:a_payroll_period = :ppp:a_payroll_period and
+		:pp:a_posted = 1
+	    group by
+		:y:p_payee_partner_key
+	    having
+		:p_partner_key is not null
+	    ";
+    }
