@@ -699,6 +699,36 @@ create table p_dup (
 );
 
 
+/* p_merge */
+
+create table p_merge (
+        p_partner_key_a                       char(10)  not null,      /*  --  */
+        p_partner_key_b                       char(10)  not null,      /*  --  */
+        p_data_source                         varchar(16)  not null,   /* The source of the data (gift, address, contact, etc.) --  */
+        p_data_key                            varchar(255)  not null,  /* The primary key or other identifier of the data in question --  */
+        p_data_desc                           varchar(255)  not null,  /* The data's summarized content/value. --  */
+        p_short_data_desc                     varchar(255)  not null,  /* The data's summarized content/value, shortened to be more appropriate for fuzzy string comparison --  */
+        p_date_start                          datetime  null,          /* If we're managing data based on a date range, this is the starting date --  */
+        p_date_end                            datetime  null,          /* If we're managing the data based on date range, this is the ending date --  */
+        p_allow_copy                          bit  not null,           /* 1 if we can make a copy of this data (e.g. addresses, phones, emails), 0 if we can only move it (e.g. gifts, payments, etc.) --  */
+        p_default_copy                        bit  not null,           /* 1 if by default we copy rather than move, 0 if by default we move rather than copy --  */
+        p_default_marriage_copy               bit  not null,           /* 1 if by default we copy this in a marriage merge, 0 if by default we leave it alone --  */
+        p_default_marriage_move               bit  not null,           /* 1 if by default we move this in a marriage merge, 0 if by default we leave it alone --  */
+        p_allow_multiple                      bit  not null,           /* 1 if we can have more than one of these items per partner (addresses, gifts, etc), or 0 if we can only have one per partner (staff, church, person) --  */
+        p_default_multiple                    bit  not null,           /* 1 if we by default keep multiples, or 0 if we by default don't create multiples. --  */
+        p_allow_delete                        bit  not null,           /* 1 if we can delete this item entirely during the merge, or 0 if we cannot delete it --  */
+        p_allow_collate                       bit  not null,           /* 1 if we should look at the "short desc" to see if two of these are identical, 0 if they are never considered identical --  */
+        p_disposition                         varchar(3)  not null,    /* How we're handling this, first char where from (uppercase if copy, lowercase if move), 2nd/3rd chars where to, for example aB means move from a to b, BC means copy from B to C, ABC means copy from A to both B and C. --  */
+        p_comment                             varchar(900)  null,      /* comments about this merge data --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
 /* m_list */
 
 create table m_list (

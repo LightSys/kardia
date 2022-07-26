@@ -131,6 +131,10 @@ drop table p_nondup;
 drop table p_dup;
 
 
+/* p_merge */
+drop table p_merge;
+
+
 /* m_list */
 drop table m_list;
 

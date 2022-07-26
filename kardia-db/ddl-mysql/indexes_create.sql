@@ -197,6 +197,12 @@ create  index p_nondup_rev_idx on p_nondup (p_nondup_partner_key, p_partner_key)
 create  index p_dup_rev_idx on p_dup (p_dup_partner_key, p_partner_key);
 
 
+/* p_merge */
+/* create  index p_merge_pk on p_merge (p_partner_key_a, p_partner_key_b, p_data_source, p_data_key)*/ 
+/* go */
+create  index p_merge_rev_idx on p_merge (p_partner_key_b, p_partner_key_a, p_data_source, p_data_key);
+
+
 /* m_list */
 /* create  index m_list_pk on m_list (m_list_code)*/ 
 /* go */
