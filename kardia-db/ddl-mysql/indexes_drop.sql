@@ -191,6 +191,18 @@ alter table p_partner_search_results drop index p_search_stage_idx;
 alter table p_nondup drop index p_nondup_rev_idx;
 
 
+/* p_dup */
+/* drop index p_dup.p_dup_pk */ 
+/* go */
+alter table p_dup drop index p_dup_rev_idx;
+
+
+/* p_merge */
+/* drop index p_merge.p_merge_pk */ 
+/* go */
+alter table p_merge drop index p_merge_rev_idx;
+
+
 /* m_list */
 /* drop index m_list.m_list_pk */ 
 /* go */

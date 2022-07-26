@@ -127,6 +127,14 @@ drop table p_search_stage_criteria;
 drop table p_nondup;
 
 
+/* p_dup */
+drop table p_dup;
+
+
+/* p_merge */
+drop table p_merge;
+
+
 /* m_list */
 drop table m_list;
 

@@ -1,0 +1,49 @@
+$Version=2$
+plugin_base_merge_subs "system/query"
+    {
+    partner_a "query/parameter" { type=string; style=strnull; }
+    partner_b "query/parameter" { type=string; style=strnull; }
+
+    sql = " select
+		p_partner_key = :lm:p_partner_key,
+		p_data_source = 'Mailing Subs',
+		p_data_key = :lm:p_partner_key,
+		p_data_desc = condition(count(1) >= 1, 'Subscribed to ' + count(1) + ' mailings: ', '')
+		    + sum(condition(row_number(:lm:p_partner_key) <= 5, :lm:m_list_code + ', ', ''))
+		    - ', '
+		    + condition(count(1) > 5, ' and ' + (count(1) - 5) + ' more, ', condition(count(1) == 0, '', ', '))
+		    + (select isnull('' + sum(1) + ' deleted/canceled subscriptions', '') from /apps/kardia/data/Kardia_DB/m_list_membership/rows lm2 where :lm2:p_partner_key = :p:p_partner_key and :lm2:m_member_type = 'M' and :lm2:m_membership_status != 'A')
+		    - ', '
+		    ,
+		p_short_data_desc = isnull(sum(:lm:m_list_code + ',') - ',', ''),
+		p_date_start = min(:lm:s_date_created),
+		p_date_end = max(:lm:s_date_modified),
+		p_allow_copy = 1,
+		p_allow_multiple = 1,
+		p_allow_delete = 0,
+		p_default_copy = 0,
+		p_default_marriage_copy = 0,
+		p_default_marriage_move = 1,
+		p_default_multiple = 1,
+		p_allow_collate = 0,
+		p_comment = null
+	    from
+		/apps/kardia/data/Kardia_DB/p_partner/rows p,
+		identity /apps/kardia/data/Kardia_DB/m_list_membership/rows lm,
+		/apps/kardia/data/Kardia_DB/m_list/rows l
+	    where
+		(:p:p_partner_key = :parameters:partner_a or :p:p_partner_key = :parameters:partner_b) and
+		:lm:p_partner_key =* :p:p_partner_key and
+		:lm:m_membership_status = 'A' and
+		:lm:m_member_type = 'M' and
+		:l:m_list_code = :lm:m_list_code and
+		:l:m_list_type = 'P'
+	    group by
+		:p:p_partner_key
+	    order by
+		:p:p_partner_key,
+		:lm:s_date_created desc
+	    having
+		char_length(:p_data_desc) > 1
+	    ";
+    }

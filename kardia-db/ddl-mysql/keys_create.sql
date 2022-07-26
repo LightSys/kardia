@@ -103,6 +103,12 @@ alter table p_search_stage_criteria
 alter table p_nondup
 	add constraint p_nondup_pk primary key  (p_partner_key, p_nondup_partner_key);
 
+alter table p_dup
+	add constraint p_dup_pk primary key  (p_partner_key, p_dup_partner_key);
+
+alter table p_merge
+	add constraint p_merge_pk primary key  (p_partner_key_a, p_partner_key_b, p_data_source, p_data_key);
+
 alter table m_list
 	add constraint m_list_pk primary key  (m_list_code);
 

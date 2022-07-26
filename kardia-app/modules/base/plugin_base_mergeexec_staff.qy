@@ -1,0 +1,122 @@
+$Version=2$
+plugin_base_mergeexec_staff "system/query"
+    {
+    partner_a "query/parameter" { type=string; style=strnull; }
+    partner_b "query/parameter" { type=string; style=strnull; }
+    partner_c "query/parameter" { type=string; style=strnull; }
+
+    sql = " -- Partner list
+	    declare object info;
+	    select :info:partners = ralign(:parameters:partner_a, 16) + ralign(:parameters:partner_b, 16) + ralign(isnull(:parameters:partner_c, ''), 16);
+
+	    -- Use the update algorithm here because staff data does not allow copying.
+
+	    -- Staff table
+	    update
+		identity /apps/kardia/data/Kardia_DB/p_staff/rows s,
+		/apps/kardia/data/Kardia_DB/p_merge/rows m
+	    set
+		:s:p_partner_key = '#' + condition(ascii(substring(:m:p_disposition, 2, 1)) = 65, :parameters:partner_a, condition(ascii(substring(:m:p_disposition, 2, 1)) = 66, :parameters:partner_b, condition(ascii(substring(:m:p_disposition, 2, 1)) = 67, :parameters:partner_c, NULL)))
+	    where
+		:s:p_partner_key = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, NULL)) and
+		:m:p_data_source = 'Staff' and
+		:m:p_partner_key_a = :parameters:partner_a and
+		:m:p_partner_key_b = :parameters:partner_b
+	    ;
+
+	    -- Mailing lists managed
+	    update
+		identity /apps/kardia/data/Kardia_DB/m_list_membership/rows lm,
+		/apps/kardia/data/Kardia_DB/p_merge/rows m
+	    set
+		:lm:p_partner_key = '#' + condition(ascii(substring(:m:p_disposition, 2, 1)) = 65, :parameters:partner_a, condition(ascii(substring(:m:p_disposition, 2, 1)) = 66, :parameters:partner_b, condition(ascii(substring(:m:p_disposition, 2, 1)) = 67, :parameters:partner_c, NULL)))
+	    where
+		:lm:p_partner_key = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, NULL)) and
+		:lm:m_member_type = 'O' and
+		:m:p_data_source = 'Staff' and
+		:m:p_partner_key_a = :parameters:partner_a and
+		:m:p_partner_key_b = :parameters:partner_b
+	    ;
+
+	    -- Funds managed
+	    update
+		identity /apps/kardia/data/Kardia_DB/a_cc_staff/rows cs,
+		/apps/kardia/data/Kardia_DB/p_merge/rows m
+	    set
+		:cs:p_staff_partner_key = '#' + condition(ascii(substring(:m:p_disposition, 2, 1)) = 65, :parameters:partner_a, condition(ascii(substring(:m:p_disposition, 2, 1)) = 66, :parameters:partner_b, condition(ascii(substring(:m:p_disposition, 2, 1)) = 67, :parameters:partner_c, NULL)))
+	    where
+		:cs:p_staff_partner_key = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, NULL)) and
+		:m:p_data_source = 'Staff' and
+		:m:p_partner_key_a = :parameters:partner_a and
+		:m:p_partner_key_b = :parameters:partner_b
+	    ;
+
+	    -- Reports received
+	    update
+		identity /apps/kardia/data/Kardia_DB/r_group_report/rows gr,
+		/apps/kardia/data/Kardia_DB/p_merge/rows m
+	    set
+		:gr:p_recipient_partner_key = '#' + condition(ascii(substring(:m:p_disposition, 2, 1)) = 65, :parameters:partner_a, condition(ascii(substring(:m:p_disposition, 2, 1)) = 66, :parameters:partner_b, condition(ascii(substring(:m:p_disposition, 2, 1)) = 67, :parameters:partner_c, NULL)))
+	    where
+		:gr:p_recipient_partner_key = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, NULL)) and
+		:m:p_data_source = 'Staff' and
+		:m:p_partner_key_a = :parameters:partner_a and
+		:m:p_partner_key_b = :parameters:partner_b
+	    ;
+
+	    -- Reports received - params
+	    update
+		identity /apps/kardia/data/Kardia_DB/r_group_report_param/rows grp,
+		/apps/kardia/data/Kardia_DB/p_merge/rows m
+	    set
+		:grp:p_recipient_partner_key = '#' + condition(ascii(substring(:m:p_disposition, 2, 1)) = 65, :parameters:partner_a, condition(ascii(substring(:m:p_disposition, 2, 1)) = 66, :parameters:partner_b, condition(ascii(substring(:m:p_disposition, 2, 1)) = 67, :parameters:partner_c, NULL)))
+	    where
+		:grp:p_recipient_partner_key = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, NULL)) and
+		:m:p_data_source = 'Staff' and
+		:m:p_partner_key_a = :parameters:partner_a and
+		:m:p_partner_key_b = :parameters:partner_b
+	    ;
+
+	    -- Reports received - sched
+	    update
+		identity /apps/kardia/data/Kardia_DB/r_group_sched_report/rows gsr,
+		/apps/kardia/data/Kardia_DB/p_merge/rows m
+	    set
+		:gsr:p_recipient_partner_key = '#' + condition(ascii(substring(:m:p_disposition, 2, 1)) = 65, :parameters:partner_a, condition(ascii(substring(:m:p_disposition, 2, 1)) = 66, :parameters:partner_b, condition(ascii(substring(:m:p_disposition, 2, 1)) = 67, :parameters:partner_c, NULL)))
+	    where
+		:gsr:p_recipient_partner_key = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, NULL)) and
+		:m:p_data_source = 'Staff' and
+		:m:p_partner_key_a = :parameters:partner_a and
+		:m:p_partner_key_b = :parameters:partner_b
+	    ;
+
+	    -- Update our temp keys
+	    update /apps/kardia/data/Kardia_DB/p_staff/rows
+		set :p_partner_key = substring(:p_partner_key, 2, 16)
+		where (:p_partner_key = '#' + :parameters:partner_a or :p_partner_key = '#' + :parameters:partner_b or :p_partner_key = '#' + :parameters:partner_c)
+	    ;
+	    update /apps/kardia/data/Kardia_DB/m_list_membership/rows
+		set :p_partner_key = substring(:p_partner_key, 2, 16)
+		where (:p_partner_key = '#' + :parameters:partner_a or :p_partner_key = '#' + :parameters:partner_b or :p_partner_key = '#' + :parameters:partner_c)
+	    ;
+	    update /apps/kardia/data/Kardia_DB/a_cc_staff/rows
+		set :p_staff_partner_key = substring(:p_staff_partner_key, 2, 16)
+		where (:p_staff_partner_key = '#' + :parameters:partner_a or :p_staff_partner_key = '#' + :parameters:partner_b or :p_staff_partner_key = '#' + :parameters:partner_c)
+	    ;
+	    update /apps/kardia/data/Kardia_DB/r_group_report/rows
+		set :p_recipient_partner_key = substring(:p_recipient_partner_key, 2, 16)
+		where (:p_recipient_partner_key = '#' + :parameters:partner_a or :p_recipient_partner_key = '#' + :parameters:partner_b or :p_recipient_partner_key = '#' + :parameters:partner_c)
+	    ;
+	    update /apps/kardia/data/Kardia_DB/r_group_report_param/rows
+		set :p_recipient_partner_key = substring(:p_recipient_partner_key, 2, 16)
+		where (:p_recipient_partner_key = '#' + :parameters:partner_a or :p_recipient_partner_key = '#' + :parameters:partner_b or :p_recipient_partner_key = '#' + :parameters:partner_c)
+	    ;
+	    update /apps/kardia/data/Kardia_DB/r_group_sched_report/rows
+		set :p_recipient_partner_key = substring(:p_recipient_partner_key, 2, 16)
+		where (:p_recipient_partner_key = '#' + :parameters:partner_a or :p_recipient_partner_key = '#' + :parameters:partner_b or :p_recipient_partner_key = '#' + :parameters:partner_c)
+	    ;
+
+	    -- Return
+	    select 1 where 1 = 0
+	    ";
+    }

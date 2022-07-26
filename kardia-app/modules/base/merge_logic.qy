@@ -1,0 +1,458 @@
+$Version=2$
+merge_logic "system/query"
+    {
+    // Basic parameters
+    partner_a "query/parameter" { type=string; style=strnull; }
+    partner_b "query/parameter" { type=string; style=strnull; }
+    partner_c "query/parameter" { type=string; style=strnull; }
+    method "query/parameter" { type=string; style=strnull; }
+    primary "query/parameter" { type=string; style=strnull; }
+    relation "query/parameter" { type=integer; }
+    name "query/parameter" { type=string; style=strnull; }
+
+    // Controls
+    do_reset "query/parameter" { type=integer; default=0; }
+    do_smart "query/parameter" { type=integer; default=0; }
+    do_merge "query/parameter" { type=integer; default=0; }
+    do_ctl_a "query/parameter" { type=integer; default=0; }
+    do_ctl_b "query/parameter" { type=integer; default=0; }
+    do_ctl_c "query/parameter" { type=integer; default=0; }
+    do_source "query/parameter" { type=string; style=strnull; }
+    do_key "query/parameter" { type=string; style=strnull; }
+
+    sql = " declare object info;
+    
+	    -- Setup
+	    select
+		:info:secondary = condition(:parameters:primary = 'A', 'B', 'A'),
+		:info:primary_key = condition(:parameters:primary = 'A', :parameters:partner_a, :parameters:partner_b),
+		:info:secondary_key = condition(:parameters:primary = 'A', :parameters:partner_b, :parameters:partner_a)
+	    ;
+
+	    -------------------- MERGE BEGIN --------------------
+	    -- Traditional merge, mark one obsolete and link them.
+	    update
+		/apps/kardia/data/Kardia_DB/p_partner/rows
+	    set
+		:p_record_status_code = 'M',
+		:p_status_code = 'O',
+		:p_merged_with = :info:primary,
+		:s_date_modified = getdate(),
+		:s_modified_by = user_name()
+	    where
+		:p_partner_key = :info:secondary and
+		:parameters:method = 'M' and
+		:parameters:do_merge = 1
+	    ;
+	    update
+		/apps/kardia/data/Kardia_DB/p_partner/rows
+	    set
+		:p_record_status_code = 'A',
+		:p_status_code = 'A',
+		:p_merged_with = NULL,
+		:s_date_modified = getdate(),
+		:s_modified_by = user_name()
+	    where
+		:p_partner_key = :info:primary and
+		:parameters:method = 'M' and
+		:parameters:do_merge = 1
+	    ;
+
+	    -- Marriage merge, link A and B to C
+	    update
+		/apps/kardia/data/Kardia_DB/p_partner/rows
+	    set
+		:p_parent_key = :parameters:partner_c,
+		:p_partner_class = 'IND',
+		:s_date_modified = getdate(),
+		:s_modified_by = user_name()
+	    where
+		(:p_partner_key = :info:secondary or :p_partner_key = :info:primary) and
+		:parameters:method = 'R' and
+		:parameters:do_merge = 1
+	    ;
+
+	    -- Household, link A and B
+	    update
+		/apps/kardia/data/Kardia_DB/p_partner/rows
+	    set
+		:p_partner_class = 'IND',
+		:p_parent_key = :info:primary,
+		:s_date_modified = getdate(),
+		:s_modified_by = user_name()
+	    where
+		:p_partner_key = :info:secondary and
+		:parameters:method = 'H' and
+		:parameters:do_merge = 1
+	    ;
+	    update
+		/apps/kardia/data/Kardia_DB/p_partner/rows
+	    set
+		:p_partner_class = 'HOU',
+		:p_parent_key = NULL,
+		:s_date_modified = getdate(),
+		:s_modified_by = user_name()
+	    where
+		:p_partner_key = :info:primary and
+		:parameters:method = 'H' and
+		:parameters:do_merge = 1
+	    ;
+
+	    -- Association, link A and B without setting partner class
+	    update
+		/apps/kardia/data/Kardia_DB/p_partner/rows
+	    set
+		:p_parent_key = :info:primary,
+		:s_date_modified = getdate(),
+		:s_modified_by = user_name()
+	    where
+		:p_partner_key = :info:secondary and
+		:parameters:method = 'A' and
+		:parameters:do_merge = 1
+	    ;
+	    update
+		/apps/kardia/data/Kardia_DB/p_partner/rows
+	    set
+		:p_parent_key = NULL,
+		:s_date_modified = getdate(),
+		:s_modified_by = user_name()
+	    where
+		:p_partner_key = :info:primary and
+		:parameters:method = 'A' and
+		:parameters:do_merge = 1
+	    ;
+
+	    -- Now, move the various types of data around.
+	    select
+		*,
+		do_merge = :parameters:do_merge
+	    from
+		wildcard expression ('/apps/kardia/modules/*/plugin_base_mergeexec_*.qy?partner_a=' + :parameters:partner_a + '&partner_b=' + :parameters:partner_b + '&partner_c=' + isnull(:parameters:partner_c, ''))
+	    where
+		:parameters:do_merge = 1
+	    ;
+	    -------------------- MERGE COMPLETE --------------------
+
+	    -- Remove old data
+	    delete
+		/apps/kardia/data/Kardia_DB/p_merge/rows
+	    where
+		(:p_partner_key_a = :parameters:partner_a or :p_partner_key_a = :parameters:partner_b) and
+		(:p_partner_key_b = :parameters:partner_a or :p_partner_key_b = :parameters:partner_b) and
+		(:s_date_modified < dateadd(hour, -12, getdate()) or :parameters:do_reset or :parameters:do_merge)
+	    ;
+
+	    -- Current data set size
+	    select
+		:info:cnt = count(1)
+	    from
+		/apps/kardia/data/Kardia_DB/p_merge/rows
+	    where
+		:p_partner_key_a = :parameters:partner_a and
+		:p_partner_key_b = :parameters:partner_b
+	    ;
+
+	    -- Create/update mergeable data
+	    insert
+		/apps/kardia/data/Kardia_DB/p_merge/rows
+	    select
+		p_partner_key_a = :parameters:partner_a,
+		p_partner_key_b = :parameters:partner_b,
+		:p_data_source,
+		:p_data_key,
+		:p_data_desc,
+		:p_short_data_desc,
+		:p_date_start,
+		:p_date_end,
+		:p_allow_copy,
+		:p_default_copy,
+		:p_default_marriage_copy,
+		:p_default_marriage_move,
+		:p_allow_multiple,
+		:p_default_multiple,
+		:p_allow_delete,
+		:p_allow_collate,
+		p_disposition = condition(:p_partner_key == :parameters:partner_a, 'A', 'B'),
+		:p_comment,
+		s_created_by = user_name(),
+		s_date_created = getdate(),
+		s_modified_by = user_name(),
+		s_date_modified = getdate()
+	    from
+		wildcard expression ('/apps/kardia/modules/*/plugin_base_merge_*.qy?partner_a=' + :parameters:partner_a + '&partner_b=' + :parameters:partner_b)
+	    where
+		:info:cnt = 0
+	--    on duplicate
+	--	:p_partner_key_a, p_partner_key_b, p_data_source, p_data_key
+	--    update set
+	--	:s_modified_by = user_name(),
+	--	:s_date_modified = getdate()
+	    ;
+
+	    -- Smart Copy/Move, copy address/contact for Merge operations
+	    update
+		/apps/kardia/data/Kardia_DB/p_merge/rows m
+	    set
+		:p_disposition = condition(
+				    (	select
+					    1
+					from
+					    /apps/kardia/data/Kardia_DB/p_merge/rows m2
+					where
+					    :m2:p_partner_key_a = :parameters:partner_a and
+					    :m2:p_partner_key_b = :parameters:partner_b and
+					    charindex(:parameters:primary, :m2:p_disposition) > 0 and
+					    :m2:p_data_source = :m:p_data_source
+					having
+					    cos_compare(:m2:p_short_data_desc, :m:p_short_data_desc) > 0.90 or
+					    (:m2:p_default_multiple = 0 and :m2:p_date_end > :m:p_date_end)
+				    ) is null,
+				    :p_disposition + :parameters:primary,
+				    :p_disposition
+				)
+	    where
+		:p_partner_key_a = :parameters:partner_a and
+		:p_partner_key_b = :parameters:partner_b and
+		:parameters:do_smart = 1 and
+		:parameters:method = 'M' and
+		(:parameters:primary = 'A' or :parameters:primary = 'B') and
+		charindex(:parameters:primary, upper(:p_disposition)) = 0 and
+		charindex(:info:secondary, upper(:p_disposition)) > 0 and
+		:p_default_copy = 1 and
+		char_length(:p_short_data_desc) > 1
+	    order by
+		:p_date_end desc
+	    ;
+
+	    -- Smart Copy/Move, move other data for Merge operations
+	    update
+		/apps/kardia/data/Kardia_DB/p_merge/rows m
+	    set
+		:p_disposition = condition(
+				    (	select
+					    1
+					from
+					    /apps/kardia/data/Kardia_DB/p_merge/rows m2
+					where
+					    :m2:p_partner_key_a = :parameters:partner_a and
+					    :m2:p_partner_key_b = :parameters:partner_b and
+					    charindex(:parameters:primary, :m2:p_disposition) > 0 and
+					    :m2:p_data_source = :m:p_data_source and
+					    (:m2:p_allow_multiple = 0 or :m:p_allow_multiple = 0)
+				    ) is null,
+				    lower(substring(:p_disposition, 1, 1)) + substring(:p_disposition, 2, 2) + :parameters:primary,
+				    :p_disposition
+				)
+	    where
+		:p_partner_key_a = :parameters:partner_a and
+		:p_partner_key_b = :parameters:partner_b and
+		:parameters:do_smart = 1 and
+		:parameters:method = 'M' and
+		(:parameters:primary = 'A' or :parameters:primary = 'B') and
+		charindex(:parameters:primary, upper(:p_disposition)) = 0 and
+		charindex(:info:secondary, upper(:p_disposition)) > 0 and
+		:p_default_copy = 0 and
+		char_length(:p_short_data_desc) > 1
+	    ;
+
+	    -- Smart Copy/Move, copy address/contact for Marriage operations
+	    update
+		/apps/kardia/data/Kardia_DB/p_merge/rows m
+	    set
+		:p_disposition = condition(
+				    (	select
+					    1
+					from
+					    /apps/kardia/data/Kardia_DB/p_merge/rows m2
+					where
+					    :m2:p_partner_key_a = :parameters:partner_a and
+					    :m2:p_partner_key_b = :parameters:partner_b and
+					    charindex('C', :m2:p_disposition) > 0 and
+					    :m2:p_data_source = :m:p_data_source
+					having
+					    cos_compare(:m2:p_short_data_desc, :m:p_short_data_desc) > 0.90 or
+					    (:m2:p_default_multiple = 0 and :m2:p_date_end > :m:p_date_end)
+				    ) is null,
+				    :p_disposition + 'C',
+				    :p_disposition
+				)
+	    where
+		:p_partner_key_a = :parameters:partner_a and
+		:p_partner_key_b = :parameters:partner_b and
+		:parameters:do_smart = 1 and
+		:parameters:method = 'R' and
+		charindex(upper(substring(:p_disposition, 1, 1)), 'AB') > 0 and
+		charindex('C', :p_disposition) = 0 and
+		:p_default_copy = 1 and
+		:p_default_marriage_copy = 1 and
+		char_length(:p_short_data_desc) > 1
+	    order by
+		:p_date_end desc
+	    ;
+
+	    -- Smart Copy/Move, move limited other data for Marriage operations
+	    update
+		/apps/kardia/data/Kardia_DB/p_merge/rows m
+	    set
+		:p_disposition = condition(
+				    (	select
+					    1
+					from
+					    /apps/kardia/data/Kardia_DB/p_merge/rows m2
+					where
+					    :m2:p_partner_key_a = :parameters:partner_a and
+					    :m2:p_partner_key_b = :parameters:partner_b and
+					    charindex('C', :m2:p_disposition) > 0 and
+					    :m2:p_data_source = :m:p_data_source and
+					    (:m2:p_allow_multiple = 0 or :m:p_allow_multiple = 0)
+				    ) is null,
+				    lower(substring(:p_disposition, 1, 1)) + substring(:p_disposition, 2, 2) + 'C',
+				    :p_disposition
+				)
+	    where
+		:p_partner_key_a = :parameters:partner_a and
+		:p_partner_key_b = :parameters:partner_b and
+		:parameters:do_smart = 1 and
+		:parameters:method = 'R' and
+		charindex(upper(substring(:p_disposition, 1, 1)), 'AB') > 0 and
+		charindex('C', :p_disposition) = 0 and
+		:p_default_copy = 0 and
+		:p_default_marriage_move = 1 and
+		char_length(:p_short_data_desc) > 1
+	    ;
+
+	    -- Partner A control
+	    update
+		/apps/kardia/data/Kardia_DB/p_merge/rows
+	    set
+		:p_disposition = condition(:p_disposition = 'A',
+				    condition(:p_allow_delete = 1,
+					'a',
+					'A'
+				    ),
+				    condition(:p_disposition = 'a',
+					'A',
+					condition(substring(:p_disposition, 1, 1) = 'a',
+					    condition(:p_allow_copy = 1,
+						'A' + substring(:p_disposition, 2, 3),
+						:p_disposition
+					    ),
+					    condition(substring(:p_disposition, 1, 1) = 'A',
+						'a' + substring(:p_disposition, 2, 3),
+						condition(charindex('A', :p_disposition) > 1,
+						    condition(char_length(:p_disposition) = 2, 
+							upper(replace(:p_disposition, 'A', '')),
+							replace(:p_disposition, 'A', '')
+						    ),
+						    condition(char_length(:p_disposition) = 1 and not :p_default_copy,
+							lower(:p_disposition) + 'A',
+							condition(:p_allow_copy = 1,
+							    :p_disposition + 'A',
+							    substring(:p_disposition, 1, 1) + 'A'
+							)
+						    )
+						)
+					    )
+					)
+				    )
+				)
+	    where
+		:p_partner_key_a = :parameters:partner_a and
+		:p_partner_key_b = :parameters:partner_b and
+		:p_data_source = :parameters:do_source and
+		:p_data_key = :parameters:do_key and
+		:parameters:do_ctl_a = 1
+	    ;
+
+	    -- Partner B control
+	    update
+		/apps/kardia/data/Kardia_DB/p_merge/rows
+	    set
+		:p_disposition = condition(:p_disposition = 'B',
+				    condition(:p_allow_delete = 1,
+					'b',
+					'B'
+				    ),
+				    condition(:p_disposition = 'b',
+					'B',
+					condition(substring(:p_disposition, 1, 1) = 'b',
+					    condition(:p_allow_copy = 1,
+						'B' + substring(:p_disposition, 2, 3),
+						:p_disposition
+					    ),
+					    condition(substring(:p_disposition, 1, 1) = 'B',
+						'b' + substring(:p_disposition, 2, 3),
+						condition(charindex('B', :p_disposition) > 1,
+						    condition(char_length(:p_disposition) = 2, 
+							upper(replace(:p_disposition, 'B', '')),
+							replace(:p_disposition, 'B', '')
+						    ),
+						    condition(char_length(:p_disposition) = 1 and not :p_default_copy,
+							lower(:p_disposition) + 'B',
+							condition(:p_allow_copy = 1,
+							    :p_disposition + 'B',
+							    substring(:p_disposition, 1, 1) + 'B'
+							)
+						    )
+						)
+					    )
+					)
+				    )
+				)
+	    where
+		:p_partner_key_a = :parameters:partner_a and
+		:p_partner_key_b = :parameters:partner_b and
+		:p_data_source = :parameters:do_source and
+		:p_data_key = :parameters:do_key and
+		:parameters:do_ctl_b = 1
+	    ;
+
+	    -- Partner C control
+	    update
+		/apps/kardia/data/Kardia_DB/p_merge/rows
+	    set
+		:p_disposition = condition(:p_disposition = 'C',
+				    condition(:p_allow_delete = 1,
+					'c',
+					'C'
+				    ),
+				    condition(:p_disposition = 'c',
+					'C',
+					condition(substring(:p_disposition, 1, 1) = 'c',
+					    condition(:p_allow_copy = 1,
+						'C' + substring(:p_disposition, 2, 3),
+						:p_disposition
+					    ),
+					    condition(substring(:p_disposition, 1, 1) = 'C',
+						'c' + substring(:p_disposition, 2, 3),
+						condition(charindex('C', :p_disposition) > 1,
+						    condition(char_length(:p_disposition) = 2, 
+							upper(replace(:p_disposition, 'C', '')),
+							replace(:p_disposition, 'C', '')
+						    ),
+						    condition(char_length(:p_disposition) = 1 and not :p_default_copy,
+							lower(:p_disposition) + 'C',
+							condition(:p_allow_copy = 1,
+							    :p_disposition + 'C',
+							    substring(:p_disposition, 1, 1) + 'C'
+							)
+						    )
+						)
+					    )
+					)
+				    )
+				)
+	    where
+		:p_partner_key_a = :parameters:partner_a and
+		:p_partner_key_b = :parameters:partner_b and
+		:p_data_source = :parameters:do_source and
+		:p_data_key = :parameters:do_key and
+		:parameters:do_ctl_c = 1
+	    ;
+
+	    -- Return status
+	    select
+		status = 'complete',
+		do_merge = :parameters:do_merge
+	    ";
+    }
