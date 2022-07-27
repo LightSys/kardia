@@ -222,6 +222,11 @@ check_report "system/report"
 			:c:p_country_code =* :l:p_country_code and
 			:af:p_country_code =* :c:p_country_code and
 			:af:p_address_set = 'STANDARD'
+		ORDER BY
+			:p:p_partner_key asc,
+			:l:p_record_status_code asc
+		LIMIT
+			1
 		");
 		
 		// 

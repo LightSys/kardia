@@ -207,6 +207,10 @@ mailing_report "system/report"
 			" + condition(:this:deliverymode == 'email', " and :ml:m_delivery_method = 'E' ", "") + "
 		GROUP BY
 			:ml:p_partner_key
+		ORDER BY
+			:ml:p_partner_key,
+			charindex(:pl:p_record_status_code, 'IA') asc,
+			:pl:s_date_modified asc
 		HAVING
 			" + condition(:this:only_donors == 1, "(select count(1) from /apps/kardia/data/Kardia_DB/p_donor/rows d where :d:p_partner_key = :this:p_partner_key and :d:a_gl_ledger_number = " + quote(:this:ledger) + " and :d:p_allow_contributions = 1) = 1 and ", "") + "
 			" + condition(:this:only_donors == 0, "(select count(1) from /apps/kardia/data/Kardia_DB/p_donor/rows d where :d:p_partner_key = :this:p_partner_key and :d:a_gl_ledger_number = " + quote(:this:ledger) + " and :d:p_allow_contributions = 1) = 0 and ", "") + "
