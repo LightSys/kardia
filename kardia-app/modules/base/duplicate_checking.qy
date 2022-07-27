@@ -5,6 +5,8 @@ update_descriptives_new "system/query"
     sql = " 
 	-- Create a temporary collection containing partner data
 	    declare collection tmp_partner_data scope query;
+	    declare collection tmp_loc_data scope query;
+	    declare collection tmp_cont_data scope query;
 	    declare collection tmp_partner_condensed scope query;
 	    declare collection tmp_partner_pairs scope query;
 	    declare collection tmp_pcl_duplicates scope query;
@@ -13,6 +15,45 @@ update_descriptives_new "system/query"
 	    delete from collection tmp_partner_condensed;
 	    delete from collection tmp_partner_pairs;
 	    delete from collection tmp_pcl_duplicates;
+
+	    print 'Create tmp_cont_data at ' + dateformat(getdate(), 'hh:mm:ss');
+	    insert
+		collection tmp_cont_data
+	    select
+		:c:p_partner_key,
+		p_contact_data_phone1 = isnull(nth(condition(
+						    :c:p_contact_type = 'P' or :c:p_contact_type = 'C'
+						    , isnull(:c:p_phone_country,'') + isnull(:c:p_phone_area_city,'') + isnull(:c:p_contact_data,'')
+						    , NULL), 1), ''),
+		p_contact_data_phone2 = isnull(nth(condition(
+						    :c:p_contact_type = 'P' or :c:p_contact_type = 'C'
+						    , isnull(:c:p_phone_country,'') + isnull(:c:p_phone_area_city,'') + isnull(:c:p_contact_data,'')
+						    , NULL), 2), ''),
+		p_contact_data_phone3 = isnull(nth(condition(
+						    :c:p_contact_type = 'P' or :c:p_contact_type = 'C'
+						    , isnull(:c:p_phone_country,'') + isnull(:c:p_phone_area_city,'') + isnull(:c:p_contact_data,'')
+						    , NULL), 3), ''),
+		p_contact_data_email1 = isnull(nth(condition(
+						    :c:p_contact_type = 'E'
+						    , isnull(:c:p_contact_data,'')
+						    , NULL), 1), ''),
+		p_contact_data_email2 = isnull(nth(condition(
+						    :c:p_contact_type = 'E'
+						    , isnull(:c:p_contact_data,'')
+						    , NULL), 2), ''),
+		p_contact_data_email3 = isnull(nth(condition(
+						    :c:p_contact_type = 'E'
+						    , isnull(:c:p_contact_data,'')
+						    , NULL), 3), '')
+	    from
+		/apps/kardia/data/Kardia_DB/p_contact_info/rows c
+	    group by
+		:c:p_partner_key
+	    order by
+		:c:p_partner_key,
+		:c:p_contact_id asc,
+		:c:s_date_modified desc
+	    ;
 
 	    print 'Create tmp_partner_data at ' + dateformat(getdate(), 'hh:mm:ss');
 	    insert
@@ -35,78 +76,20 @@ update_descriptives_new "system/query"
 		p_address_3 = nth(isnull(:l:p_address_1 + ' ','') + isnull(:l:p_address_2 + ' ','') + isnull(:l:p_address_3 + ' ','') + isnull(:l:p_city + ' ','') + isnull(:l:p_state_province + ' ','') + isnull(:l:p_country_code + ' ','') + isnull(:l:p_postal_code + ' ',''), 3),
 		--Start of p contact info
 		--Create phone number fields
-		p_contact_data_phone1 = isnull((select
-						nth(isnull(:c2:p_phone_country,'') + isnull(:c2:p_phone_area_city,'') + isnull(:c2:p_contact_data,''), 1)
-					from 
-						/apps/kardia/data/Kardia_DB/p_contact_info/rows c2
-					where
-						:c2:p_partner_key = :p:p_partner_key and
-						(:c2:p_contact_type = 'P' or :c2:p_contact_type = 'C')
-					order by
-						:c2:p_contact_id asc,
-						:c2:s_date_modified desc
-					), ''),
-		p_contact_data_phone2 = isnull((select
-						nth(isnull(:c2:p_phone_country,'') + isnull(:c2:p_phone_area_city,'') + isnull(:c2:p_contact_data,''), 2)
-					from 
-						/apps/kardia/data/Kardia_DB/p_contact_info/rows c2
-					where
-						:c2:p_partner_key = :p:p_partner_key and
-						(:c2:p_contact_type = 'P' or :c2:p_contact_type = 'C')
-					order by
-						:c2:p_contact_id asc,
-						:c2:s_date_modified desc
-					), ''),
-		p_contact_data_phone3 = isnull((select
-						nth(isnull(:c2:p_phone_country,'') + isnull(:c2:p_phone_area_city,'') + isnull(:c2:p_contact_data,''), 3)
-					from 
-						/apps/kardia/data/Kardia_DB/p_contact_info/rows c2
-					where
-						:c2:p_partner_key = :p:p_partner_key and
-						(:c2:p_contact_type = 'P' or :c2:p_contact_type = 'C')
-					order by
-						:c2:p_contact_id asc,
-						:c2:s_date_modified desc
-					), ''),
+		:c:p_contact_data_phone1,
+		:c:p_contact_data_phone2,
+		:c:p_contact_data_phone3,
 		--Create email fields
-		p_contact_data_email1 = isnull((select
-						nth(isnull(:c2:p_contact_data,''), 1)
-					from 
-						/apps/kardia/data/Kardia_DB/p_contact_info/rows c2
-					where
-						:c2:p_partner_key = :p:p_partner_key and
-						:c2:p_contact_type = 'E'
-					order by
-						:c2:p_contact_id asc,
-						:c2:s_date_modified desc
-					), ''),
-		p_contact_data_email2 = isnull((select
-						nth(isnull(:c2:p_contact_data,''), 2)
-					from 
-						/apps/kardia/data/Kardia_DB/p_contact_info/rows c2
-					where
-						:c2:p_partner_key = :p:p_partner_key and
-						:c2:p_contact_type = 'E'
-					order by
-						:c2:p_contact_id asc,
-						:c2:s_date_modified desc
-					), ''),
-		p_contact_data_email3 = isnull((select
-						nth(isnull(:c2:p_contact_data,''), 3)
-					from 
-						/apps/kardia/data/Kardia_DB/p_contact_info/rows c2
-					where
-						:c2:p_partner_key = :p:p_partner_key and
-						:c2:p_contact_type = 'E'
-					order by
-						:c2:p_contact_id asc,
-						:c2:s_date_modified desc
-					), '')
+		:c:p_contact_data_email1,
+		:c:p_contact_data_email2,
+		:c:p_contact_data_email3
 	    from
 		/apps/kardia/data/Kardia_DB/p_partner/rows p,
+		collection tmp_cont_data c,
 		/apps/kardia/data/Kardia_DB/p_location/rows l
 	    where
-		:p:p_partner_key *= :l:p_partner_key
+		:p:p_partner_key *= :l:p_partner_key and
+		:c:p_partner_key =* :p:p_partner_key
 	    group by
 	    	:p:p_partner_key
 	    order by
