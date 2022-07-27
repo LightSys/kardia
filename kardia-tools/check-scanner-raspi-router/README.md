@@ -40,7 +40,7 @@ Download the check_scanner_router.config onto a USB flash drive and open it in a
 
 The configuration setup script on the Pi will run automatically when it boots up, using the first available USB flash drive. **In order to ensure your setup is successful, only plug in one USB drive at a time to the Pi.**
 
-*Note: If the setup will not start upon inserting a USB drive, there is a setup.log file located in the /home/pi/Desktop/check-scanner-raspi-router folder. You can check this file for any errors that may be occuring.*
+*Note: If the setup process will not start upon inserting a USB drive, there is a boot.log file located in the /home/pi/Desktop/check-scanner-raspi-router folder, and it should be copied to the USB device upon insertion. You can check this file for any errors that may be occuring when trying to begin setup.*
 
 Setup can take anywhere from 2 to 30 minutes, depending on your WiFi speed and the number of system updates to perform. At the end of the setup, the Pi will automatically power down, and the green power light will turn off. At this point, it is safe to remove the USB drive. Disconnect and reconnect power to the Pi to start it up again.
 
