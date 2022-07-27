@@ -598,142 +598,170 @@ plugin_base_dataqa_merge "widget/component-decl"
 	    replicasize=200;
 	    readahead=200;
 
-	    data_table "widget/table"
+	    data_table_pane "widget/pane"
 		{
 		height=402;
-		//titlebar=no;
-		overlap_scrollbar=yes;
-		demand_scrollbar=yes;
-		rowheight=null;
-		cellvspacing=4;
-		inner_padding=2;
-		colsep=0;
-		row_border_radius=6;
-		show_selection=no;
-		hdr_background=null;
-		hdr_bgcolor="#a8c1d8";
-		row_shadow_radius=2;
-		row_shadow_offset=1;
-		row_shadow_color="#a0a0a0";
-		row_shadow_angle=135;
-		row1_bgcolor = runclient(condition(charindex(:data_osrc:p_disposition, "A,B,C") > 0, "#ffffff", "#ffffb0"));
-		row2_bgcolor = runclient(condition(charindex(:data_osrc:p_disposition, "A,B,C") > 0, "#f0f0f0", "#ffffb0"));
-		nodata_message="(please select two partners to merge)";
+		style=flat;
 
-		t_type "widget/table-column"
+		par_a_highlight "widget/pane"
 		    {
-		    //title="Data To Merge:";
-		    title="";
-		    value=runclient(:data_osrc:p_data_source);
-		    width=110;
-		    style=bold;
-		    align=center;
-		    }
-		t_check_a "widget/table-column"
-		    {
-		    title=runclient(condition(char_length(:partner_a:value) > 1, :partner_a:value + ":", "A:"));
-		    value=runclient(condition(substring(:data_osrc:p_disposition, 1, 1) == 'A', condition(char_length(:data_osrc:p_disposition) > 1, '/apps/kardia/images/icons/tango-edit-copy-dark.svg', '/sys/images/green_check.gif'), condition(substring(:data_osrc:p_disposition, 1, 1) == 'a', '/apps/kardia/images/icons/tango-edit-cut.svg', condition(charindex('A', substring(:data_osrc:p_disposition, 2, 2)) > 0, '/apps/kardia/images/icons/tango-edit-paste.svg', '/sys/images/tbl_dash.gif'))));
-		    width=70;
-		    style=bold;
-		    align=right;
-		    type=image;
-		    image_maxheight=18;
-		    image_maxwidth=18;
-		    fieldname=ctl_a;
-		    }
-		t_desc_a "widget/table-column"
-		    {
-		    title=runclient(isnull(:partner_a_desc:value, '-'));
-		    value=runclient(condition(charindex('A', upper(:data_osrc:p_disposition)) > 0, :data_osrc:p_data_desc, ''));
-		    width=250;
-		    wrap=yes;
-		    textcolor=runclient(condition(charindex('a', :data_osrc:p_disposition) > 0, '#b0b0b0', null));
-		    caption_textcolor=runclient(condition(:data_osrc:conflict_a is not null, 'red', '#808080'));
-		    caption_value=runclient(isnull(:data_osrc:conflict_a, condition(upper(substring(:data_osrc:p_disposition, 1, 1)) = 'A' and :data_osrc:p_allow_delete, 'Created: ' + :data_osrc:create_date_txt + ', Modified: ' + :data_osrc:modify_date_txt, '')));
-		    caption_style=italic;
-		    }
-		t_check_b "widget/table-column"
-		    {
-		    title=runclient(condition(char_length(:partner_b:value) > 1, :partner_b:value + ":", "B:"));
-		    value=runclient(condition(substring(:data_osrc:p_disposition, 1, 1) == 'B', condition(char_length(:data_osrc:p_disposition) > 1, '/apps/kardia/images/icons/tango-edit-copy-dark.svg', '/sys/images/green_check.gif'), condition(substring(:data_osrc:p_disposition, 1, 1) == 'b', '/apps/kardia/images/icons/tango-edit-cut.svg', condition(charindex('B', substring(:data_osrc:p_disposition, 2, 2)) > 0, '/apps/kardia/images/icons/tango-edit-paste.svg', '/sys/images/tbl_dash.gif'))));
-		    width=70;
-		    style=bold;
-		    align=right;
-		    type=image;
-		    image_maxheight=18;
-		    image_maxwidth=18;
-		    fieldname=ctl_b;
-		    }
-		t_desc_b "widget/table-column"
-		    {
-		    title=runclient(isnull(:partner_b_desc:value, '-'));
-		    value=runclient(condition(charindex('B', upper(:data_osrc:p_disposition)) > 0, :data_osrc:p_data_desc, ''));
-		    width=250;
-		    wrap=yes;
-		    textcolor=runclient(condition(charindex('b', :data_osrc:p_disposition) > 0, '#b0b0b0', null));
-		    caption_textcolor=runclient(condition(:data_osrc:conflict_b is not null, 'red', '#808080'));
-		    caption_value=runclient(isnull(:data_osrc:conflict_b, condition(upper(substring(:data_osrc:p_disposition, 1, 1)) = 'B' and :data_osrc:p_allow_delete, 'Created: ' + :data_osrc:create_date_txt + ', Modified: ' + :data_osrc:modify_date_txt, '')));
-		    caption_style=italic;
-		    }
-		t_check_c "widget/table-column"
-		    {
-		    title=runclient(condition(:merge_method:value == 'R', '', ''));
-		    value=runclient(condition(substring(:data_osrc:p_disposition, 1, 1) == 'C', '/sys/images/green_check.gif', condition(substring(:data_osrc:p_disposition, 1, 1) == 'c', '/apps/kardia/images/icons/tango-edit-cut.svg', condition(charindex('C', substring(:data_osrc:p_disposition, 2, 2)) > 0, '/apps/kardia/images/icons/tango-edit-paste.svg', '/sys/images/tbl_dash.gif'))));
-		    width=70;
-		    style=bold;
-		    align=right;
-		    type=image;
-		    image_maxheight=18;
-		    image_maxwidth=18;
-		    fieldname=ctl_c;
-		    //visible=runclient(:merge_method:value == 'R');
-		    }
-		t_desc_c "widget/table-column"
-		    {
-		    title=runclient(condition(:merge_method:value == 'R', 'Creating a NEW Household Record', ''));
-		    value=runclient(condition(charindex('C', :data_osrc:p_disposition) > 0, :data_osrc:p_data_desc, ''));
-		    width=250;
-		    wrap=yes;
-		    caption_textcolor=runclient(condition(:data_osrc:conflict_c is not null, 'red', '#808080'));
-		    caption_value=runclient(isnull(:data_osrc:conflict_c, condition(upper(substring(:data_osrc:p_disposition, 1, 1)) = 'C' and :data_osrc:p_allow_delete, 'Created: ' + :data_osrc:create_date_txt + ', Modified: ' + :data_osrc:modify_date_txt, '')));
-		    caption_style=italic;
-		    //visible=runclient(:merge_method:value == 'R');
+		    x=107; y=0;
+		    width=283;
+		    height=402;
+		    style=flat;
+		    bgcolor=runclient(condition(:primary:value = 'A', '#c0ffc0', condition(:merge_method:value = 'M' and :primary:value = 'B', '#ffc0c0', "#f8f8f8")));
+		    border_radius=8;
 		    }
 
-		// Click of column A control
-		on_col_a_click "widget/connector"
+		par_b_highlight "widget/pane"
 		    {
-		    event=Click;
-		    event_condition=runclient(:Column == 'ctl_a');
-		    target=logic_osrc;
-		    action=QueryParam;
-		    do_ctl_a=1;
-		    do_source=runclient(:data_osrc:p_data_source);
-		    do_key=runclient(:data_osrc:p_data_key);
+		    x=392; y=0;
+		    width=283;
+		    height=402;
+		    style=flat;
+		    bgcolor=runclient(condition(:primary:value = 'B', '#c0ffc0', condition(:merge_method:value = 'M' and :primary:value = 'A', '#ffc0c0', "#f8f8f8")));
+		    border_radius=8;
 		    }
 
-		// Click of column B control
-		on_col_b_click "widget/connector"
+		data_table "widget/table"
 		    {
-		    event=Click;
-		    event_condition=runclient(:Column == 'ctl_b');
-		    target=logic_osrc;
-		    action=QueryParam;
-		    do_ctl_b=1;
-		    do_source=runclient(:data_osrc:p_data_source);
-		    do_key=runclient(:data_osrc:p_data_key);
-		    }
+		    x=0; y=4;
+		    width=958;
+		    height=398;
+		    //titlebar=no;
+		    overlap_scrollbar=yes;
+		    demand_scrollbar=yes;
+		    rowheight=null;
+		    cellvspacing=4;
+		    inner_padding=2;
+		    colsep=0;
+		    row_border_radius=6;
+		    show_selection=no;
+		    hdr_background=null;
+		    hdr_bgcolor="#a8c1d8";
+		    row_shadow_radius=2;
+		    row_shadow_offset=1;
+		    row_shadow_color="#a0a0a0";
+		    row_shadow_angle=135;
+		    row1_bgcolor = runclient(condition(charindex(:data_osrc:p_disposition, "A,B,C") > 0, "#ffffffc0", "#ffffb0"));
+		    row2_bgcolor = runclient(condition(charindex(:data_osrc:p_disposition, "A,B,C") > 0, "#f0f0f0c0", "#ffffb0"));
+		    nodata_message="(please select two partners to merge)";
 
-		// Click of column C control
-		on_col_c_click "widget/connector"
-		    {
-		    event=Click;
-		    event_condition=runclient(:Column == 'ctl_c');
-		    target=logic_osrc;
-		    action=QueryParam;
-		    do_ctl_c=1;
-		    do_source=runclient(:data_osrc:p_data_source);
-		    do_key=runclient(:data_osrc:p_data_key);
+		    t_type "widget/table-column"
+			{
+			//title="Data To Merge:";
+			title="";
+			value=runclient(:data_osrc:p_data_source);
+			width=110;
+			style=bold;
+			align=center;
+			}
+		    t_check_a "widget/table-column"
+			{
+			title=runclient(condition(char_length(:partner_a:value) > 1, :partner_a:value + ":", "A:"));
+			value=runclient(condition(substring(:data_osrc:p_disposition, 1, 1) == 'A', condition(char_length(:data_osrc:p_disposition) > 1, '/apps/kardia/images/icons/tango-edit-copy-dark.svg', '/sys/images/green_check.gif'), condition(substring(:data_osrc:p_disposition, 1, 1) == 'a', '/apps/kardia/images/icons/tango-edit-cut.svg', condition(charindex('A', substring(:data_osrc:p_disposition, 2, 2)) > 0, '/apps/kardia/images/icons/tango-edit-paste.svg', '/sys/images/tbl_dash.gif'))));
+			width=70;
+			style=bold;
+			align=right;
+			type=image;
+			image_maxheight=18;
+			image_maxwidth=18;
+			fieldname=ctl_a;
+			}
+		    t_desc_a "widget/table-column"
+			{
+			title=runclient(isnull(:partner_a_desc:value, '-'));
+			value=runclient(condition(charindex('A', upper(:data_osrc:p_disposition)) > 0, :data_osrc:p_data_desc, ''));
+			width=250;
+			wrap=yes;
+			textcolor=runclient(condition(charindex('a', :data_osrc:p_disposition) > 0, '#b0b0b0', null));
+			caption_textcolor=runclient(condition(:data_osrc:conflict_a is not null, 'red', '#808080'));
+			caption_value=runclient(isnull(:data_osrc:conflict_a, condition(upper(substring(:data_osrc:p_disposition, 1, 1)) = 'A' and :data_osrc:p_allow_delete, 'Created: ' + :data_osrc:create_date_txt + ', Modified: ' + :data_osrc:modify_date_txt, '')));
+			caption_style=italic;
+			}
+		    t_check_b "widget/table-column"
+			{
+			title=runclient(condition(char_length(:partner_b:value) > 1, :partner_b:value + ":", "B:"));
+			value=runclient(condition(substring(:data_osrc:p_disposition, 1, 1) == 'B', condition(char_length(:data_osrc:p_disposition) > 1, '/apps/kardia/images/icons/tango-edit-copy-dark.svg', '/sys/images/green_check.gif'), condition(substring(:data_osrc:p_disposition, 1, 1) == 'b', '/apps/kardia/images/icons/tango-edit-cut.svg', condition(charindex('B', substring(:data_osrc:p_disposition, 2, 2)) > 0, '/apps/kardia/images/icons/tango-edit-paste.svg', '/sys/images/tbl_dash.gif'))));
+			width=70;
+			style=bold;
+			align=right;
+			type=image;
+			image_maxheight=18;
+			image_maxwidth=18;
+			fieldname=ctl_b;
+			}
+		    t_desc_b "widget/table-column"
+			{
+			title=runclient(isnull(:partner_b_desc:value, '-'));
+			value=runclient(condition(charindex('B', upper(:data_osrc:p_disposition)) > 0, :data_osrc:p_data_desc, ''));
+			width=250;
+			wrap=yes;
+			textcolor=runclient(condition(charindex('b', :data_osrc:p_disposition) > 0, '#b0b0b0', null));
+			caption_textcolor=runclient(condition(:data_osrc:conflict_b is not null, 'red', '#808080'));
+			caption_value=runclient(isnull(:data_osrc:conflict_b, condition(upper(substring(:data_osrc:p_disposition, 1, 1)) = 'B' and :data_osrc:p_allow_delete, 'Created: ' + :data_osrc:create_date_txt + ', Modified: ' + :data_osrc:modify_date_txt, '')));
+			caption_style=italic;
+			}
+		    t_check_c "widget/table-column"
+			{
+			title=runclient(condition(:merge_method:value == 'R', '', ''));
+			value=runclient(condition(substring(:data_osrc:p_disposition, 1, 1) == 'C', '/sys/images/green_check.gif', condition(substring(:data_osrc:p_disposition, 1, 1) == 'c', '/apps/kardia/images/icons/tango-edit-cut.svg', condition(charindex('C', substring(:data_osrc:p_disposition, 2, 2)) > 0, '/apps/kardia/images/icons/tango-edit-paste.svg', '/sys/images/tbl_dash.gif'))));
+			width=70;
+			style=bold;
+			align=right;
+			type=image;
+			image_maxheight=18;
+			image_maxwidth=18;
+			fieldname=ctl_c;
+			//visible=runclient(:merge_method:value == 'R');
+			}
+		    t_desc_c "widget/table-column"
+			{
+			title=runclient(condition(:merge_method:value == 'R', 'Creating a NEW Household Record', ''));
+			value=runclient(condition(charindex('C', :data_osrc:p_disposition) > 0, :data_osrc:p_data_desc, ''));
+			width=250;
+			wrap=yes;
+			caption_textcolor=runclient(condition(:data_osrc:conflict_c is not null, 'red', '#808080'));
+			caption_value=runclient(isnull(:data_osrc:conflict_c, condition(upper(substring(:data_osrc:p_disposition, 1, 1)) = 'C' and :data_osrc:p_allow_delete, 'Created: ' + :data_osrc:create_date_txt + ', Modified: ' + :data_osrc:modify_date_txt, '')));
+			caption_style=italic;
+			//visible=runclient(:merge_method:value == 'R');
+			}
+
+		    // Click of column A control
+		    on_col_a_click "widget/connector"
+			{
+			event=Click;
+			event_condition=runclient(:Column == 'ctl_a');
+			target=logic_osrc;
+			action=QueryParam;
+			do_ctl_a=1;
+			do_source=runclient(:data_osrc:p_data_source);
+			do_key=runclient(:data_osrc:p_data_key);
+			}
+
+		    // Click of column B control
+		    on_col_b_click "widget/connector"
+			{
+			event=Click;
+			event_condition=runclient(:Column == 'ctl_b');
+			target=logic_osrc;
+			action=QueryParam;
+			do_ctl_b=1;
+			do_source=runclient(:data_osrc:p_data_source);
+			do_key=runclient(:data_osrc:p_data_key);
+			}
+
+		    // Click of column C control
+		    on_col_c_click "widget/connector"
+			{
+			event=Click;
+			event_condition=runclient(:Column == 'ctl_c' and :merge_method:value = 'R');
+			target=logic_osrc;
+			action=QueryParam;
+			do_ctl_c=1;
+			do_source=runclient(:data_osrc:p_data_source);
+			do_key=runclient(:data_osrc:p_data_key);
+			}
 		    }
 		}
 	    }
