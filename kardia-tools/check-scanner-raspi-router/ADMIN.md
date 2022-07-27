@@ -15,9 +15,10 @@ When the OS install finishes, follow the prompts to finish setting up the OS:
 
 **DO NOT connect a check scanner to the Pi during this setup. It may interfere with the network configuration.**
 
-After the Pi reboots, download admin_setup.py and config_router.py from Github and place them in a folder called "check-scanner-raspi-router" on the Desktop. The full file paths should be:\
+After the Pi reboots, download admin_setup.py, config_router.py, and validate_setup.py from Github and place them in a folder called "check-scanner-raspi-router" on the Desktop. The full file paths should be:\
 `/home/pi/Desktop/check-scanner-raspi-router/admin_setup.py`\
-`/home/pi/Desktop/check-scanner-raspi-router/config_router.py`
+`/home/pi/Desktop/check-scanner-raspi-router/config_router.py`\
+`/home/pi/Desktop/check-scanner-raspi-router/validate_setup.py
 
 Open the terminal and run the admin_setup.py script with this command:\
 `sudo python3 /home/pi/Desktop/check-scanner-raspi-router/admin_setup.py`
