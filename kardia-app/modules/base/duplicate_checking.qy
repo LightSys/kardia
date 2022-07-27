@@ -2,8 +2,7 @@ $Version=2$
 update_descriptives_new "system/query"
     {
     partner "query/parameter" { type=string; style=strnull; }
-    sql = " 
-	-- Create a temporary collection containing partner data
+    sql = " -- Create a temporary collection containing partner data
 	    declare collection tmp_partner_data scope query;
 	    declare collection tmp_loc_data scope query;
 	    declare collection tmp_cont_data scope query;
@@ -15,6 +14,23 @@ update_descriptives_new "system/query"
 	    delete from collection tmp_partner_condensed;
 	    delete from collection tmp_partner_pairs;
 	    delete from collection tmp_pcl_duplicates;
+
+	    print 'Create tmp_loc_data at ' + dateformat(getdate(), 'hh:mm:ss');
+	    insert
+		collection tmp_loc_data
+	    select
+		:l:p_partner_key,
+		p_address_1 = nth(isnull(:l:p_address_1 + ' ','') + isnull(:l:p_address_2 + ' ','') + isnull(:l:p_address_3 + ' ','') + isnull(:l:p_city + ' ','') + isnull(:l:p_state_province + ' ','') + isnull(:l:p_country_code + ' ','') + isnull(:l:p_postal_code + ' ',''), 1),
+		p_address_2 = nth(isnull(:l:p_address_1 + ' ','') + isnull(:l:p_address_2 + ' ','') + isnull(:l:p_address_3 + ' ','') + isnull(:l:p_city + ' ','') + isnull(:l:p_state_province + ' ','') + isnull(:l:p_country_code + ' ','') + isnull(:l:p_postal_code + ' ',''), 2),
+		p_address_3 = nth(isnull(:l:p_address_1 + ' ','') + isnull(:l:p_address_2 + ' ','') + isnull(:l:p_address_3 + ' ','') + isnull(:l:p_city + ' ','') + isnull(:l:p_state_province + ' ','') + isnull(:l:p_country_code + ' ','') + isnull(:l:p_postal_code + ' ',''), 3)
+	    from
+		/apps/kardia/data/Kardia_DB/p_location/rows l
+	    group by
+	    	:l:p_partner_key
+	    order by
+		:l:p_partner_key asc,
+		:l:s_date_modified desc
+	    ;
 
 	    print 'Create tmp_cont_data at ' + dateformat(getdate(), 'hh:mm:ss');
 	    insert
@@ -71,9 +87,9 @@ update_descriptives_new "system/query"
 		p_gender = :p:p_gender,
 		-- Start of p location.
 		--Concatenate address fields
-		p_address_1 = nth(isnull(:l:p_address_1 + ' ','') + isnull(:l:p_address_2 + ' ','') + isnull(:l:p_address_3 + ' ','') + isnull(:l:p_city + ' ','') + isnull(:l:p_state_province + ' ','') + isnull(:l:p_country_code + ' ','') + isnull(:l:p_postal_code + ' ',''), 1),
-		p_address_2 = nth(isnull(:l:p_address_1 + ' ','') + isnull(:l:p_address_2 + ' ','') + isnull(:l:p_address_3 + ' ','') + isnull(:l:p_city + ' ','') + isnull(:l:p_state_province + ' ','') + isnull(:l:p_country_code + ' ','') + isnull(:l:p_postal_code + ' ',''), 2),
-		p_address_3 = nth(isnull(:l:p_address_1 + ' ','') + isnull(:l:p_address_2 + ' ','') + isnull(:l:p_address_3 + ' ','') + isnull(:l:p_city + ' ','') + isnull(:l:p_state_province + ' ','') + isnull(:l:p_country_code + ' ','') + isnull(:l:p_postal_code + ' ',''), 3),
+		:l:p_address_1,
+		:l:p_address_2,
+		:l:p_address_3,
 		--Start of p contact info
 		--Create phone number fields
 		:c:p_contact_data_phone1,
@@ -86,16 +102,12 @@ update_descriptives_new "system/query"
 	    from
 		/apps/kardia/data/Kardia_DB/p_partner/rows p,
 		collection tmp_cont_data c,
-		/apps/kardia/data/Kardia_DB/p_location/rows l
+		collection tmp_loc_data l
 	    where
-		:p:p_partner_key *= :l:p_partner_key and
+		:l:p_partner_key =* :p:p_partner_key and
 		:c:p_partner_key =* :p:p_partner_key
-	    group by
-	    	:p:p_partner_key
 	    order by
-		:p:p_partner_key asc,
-		:l:p_partner_key asc,
-		:l:s_date_modified desc
+		:p:p_partner_key asc
 	    ;
 
 	-- Creates and fills tmp_partner_condensed by concatenation
