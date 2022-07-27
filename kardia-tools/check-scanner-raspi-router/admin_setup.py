@@ -7,7 +7,10 @@
 #  
 #  Copyright 2022 LightSys Technology Services
 #
-#  Last Modified 07/25/22 at 5:00 pm
+#  Last Modified 07/26/22 at 11:00 am
+#
+#  Description: Updates and installs packages, adds the config_router.py
+#  script to autostart, and clears WPA supplicant info
 #
 
 import sys
@@ -62,7 +65,15 @@ if os.path.exists(r"/home/pi/Desktop/check-scanner-raspi-router/"
 "config_router.py") == False:
 	exit("ERROR: config_router.py not found. Please make sure "
 	"config_router.py is placed in the file path /home/pi/Desktop/"
-	"check-scanner-raspi-router config_router.py")
+	"check-scanner-raspi-router/config_router.py")
+	
+# Ensure the validate_setup script is located in the correct folder-----
+
+if os.path.exists(r"/home/pi/Desktop/check-scanner-raspi-router/"
+"validate_setup.py") == False:
+	exit("ERROR: validate_setup.py not found. Please make sure "
+	"validate_setup.py is placed in the file path /home/pi/Desktop/"
+	"check-scanner-raspi-router/validate_setup.py")
 
 # Add config_router script to autostart process-------------------------
 
