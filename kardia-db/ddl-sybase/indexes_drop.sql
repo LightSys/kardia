@@ -213,6 +213,27 @@ go
 /* go */
 
 
+/* p_nondup */
+/* drop index p_nondup.p_nondup_pk */ 
+/* go */
+drop index p_nondup.p_nondup_rev_idx
+go
+
+
+/* p_dup */
+/* drop index p_dup.p_dup_pk */ 
+/* go */
+drop index p_dup.p_dup_rev_idx
+go
+
+
+/* p_merge */
+/* drop index p_merge.p_merge_pk */ 
+/* go */
+drop index p_merge.p_merge_rev_idx
+go
+
+
 /* m_list */
 /* drop index m_list.m_list_pk */ 
 /* go */
@@ -1490,4 +1511,9 @@ go
 
 /* s_stats_cache */
 /* drop index s_stats_cache.s_stats_cache_pk */ 
+/* go */
+
+
+/* s_document_scanner */
+/* drop index s_document_scanner.s_scanner_pk */ 
 /* go */

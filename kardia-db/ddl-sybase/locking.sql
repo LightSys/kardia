@@ -114,3 +114,16 @@ go
 
 alter table r_group_report_param lock datarows
 go
+
+alter table r_group_sched_param lock datarows
+go
+
+alter table p_nondup lock datarows
+go
+
+alter table p_dup lock datarows
+go
+
+alter table p_merge lock datarows
+go
+

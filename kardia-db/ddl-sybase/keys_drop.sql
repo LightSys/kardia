@@ -258,6 +258,21 @@ alter table p_search_stage_criteria
 go
 
 
+alter table p_nondup
+	drop constraint p_nondup_pk
+go
+
+
+alter table p_dup
+	drop constraint p_dup_pk
+go
+
+
+alter table p_merge
+	drop constraint p_merge_pk
+go
+
+
 alter table m_list
 	drop constraint m_list_pk
 go
@@ -1680,4 +1695,9 @@ go
 
 alter table s_stats_cache
 	drop constraint s_stats_cache_pk
+go
+
+
+alter table s_document_scanner
+	drop constraint s_scanner_pk
 go
