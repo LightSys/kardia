@@ -1,0 +1,36 @@
+$Version=2$
+duplicate_create_pairs_surnames "system/query"
+    {
+    match_dist "query/parameter" { type=integer; default=3; }
+		//TODO: can we add a default match_dist=3? Can we add a minvalue=1?
+
+    sql = " -- Create a temporary collection
+	    declare collection tmp_sorted_duplicates scope query;
+	    delete from collection tmp_sorted_duplicates;
+
+	    insert
+		collection tmp_sorted_duplicates
+	    select
+		p_row_num = dense_rank(:p:p_partner_key),
+		p_partner_key = :p:p_partner_key,
+		p_data = (isnull(:p:p_surname,'') + isnull(:p:p_given_name,'') + isnull(:p:p_preferred_name,'') + isnull(:p:p_org_name,''))
+	    from
+		/apps/kardia/data/Kardia_DB/p_partner/rows p
+	    order by
+		isnull(:p:p_surname,'') + isnull(:p:p_given_name,'') + isnull(:p:p_preferred_name,'') + isnull(:p:p_org_name,'')
+	    ;
+
+	    -- Return the dataset to the caller
+	    select
+		--------return pairs of partner keys to compare------
+		p_partner_key_1 = condition(:i:p_partner_key > :jj:p_partner_key, :i:p_partner_key, :jj:p_partner_key),
+		p_partner_key_2 = condition(:i:p_partner_key > :jj:p_partner_key, :jj:p_partner_key, :i:p_partner_key)
+	    from
+		identity collection tmp_sorted_duplicates i,
+		collection tmp_sorted_duplicates jj
+	    where
+		:i:p_row_num > :jj:p_row_num and
+		:i:p_row_num - :jj:p_row_num <= :parameters:match_dist and
+		:i:p_partner_key != :jj:p_partner_key
+	";
+    }

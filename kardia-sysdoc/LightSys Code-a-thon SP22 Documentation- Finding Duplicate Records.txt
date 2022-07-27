@@ -1,0 +1,102 @@
+# Reviewing Documentation:
+* Previous documentation packets can be found on the riot session.
+* READMEs can be located within most GitHub directories
+* Test cases are found under centrallix/centrallix/tests/ in either the duplicate-checking or in the utf-8-duplicate-checking branches of Centrallix on GitHub.
+* All relevant C files are located under the Centrallix GitHub repository
+* All relevant queries (.qy files) are located under the Kardia GitHub Repository
+
+# Queries and Functions Added/Edited:
+* levenshtein() takes two strings for Levenshtein analysis: modified to be SQL callable
+
+# Files Added/Edited:
+* Created new branch on the Centrallix GitHub Repository: "utf-8-duplicate-checking"
+* The original "duplicate-checking" and "utf-8" branches were merged into this new branch for development.
+* The "duplicate_checking.qy" query file1 was edited to include support for a new table used in flagging nonduplicates (see later pages of this documentation)
+* The "duplicate_create_pairs.qy" was edited so that the first partner key selected from the data is always greater than the second partner key
+
+# Existing Issues: 
+* Still need to test UTF-8 to see if it will consistently run across all platforms at all times
+* Tested on Greek and Latin, no other test cases.
+* It is possible that mixing numbers or one set of locale symbols (i.e. Cyrillic) with other locale symbols may cause problems
+* Similarity function may treat some characters the same due to being mapped to the same byte by different scripts.
+
+
+# Implementing UTF-8 Compatibility <DONE>:
+Creation and merging of new branch in Centrallix Repository 
+* Began by creating a new branch (utf-8-duplicate-checking) for prototyping
+* Merged the duplicate-checking and utf-8 branches of Centrallix into this new branch
+* Merge conflicts were resolved: Most content from both branches kept
+
+# Updating Levenshtein for UTF-8
+* Levenshtein analysis was reevaluated updated along with the method for similarity analysis and the fuzzy-compare query
+* Levenshtein method revised by converting input string into a wide char string using the mbstowcs()  or multi-byte-string to wide character string function before feeding into standard Levenshtein algorithm.
+* Similarity function2 tweaked by using a 256-size character frequency table rather than a 36-size table (previous version, only letters and numbers).
+* Larger table size allowed mapping of UTF-8 characters to a new index in the 256-size character frequency table
+* Multi-byte characters were converted to single-byte characters via this process
+* Last byte in each character was bit-reversed, then all bytes within that character were put together bitwise by an exclusive or.
+	* Tested Latin and Greek character sets for functionality.
+	* Mild modification of fuzzy_compare() to compensate for new charset length.
+* levenshtein() added to SQL as a query-callable function
+
+
+# False Positives From Shared Last Names: <INCOMPLETE>
+* Current solution: manually mark as a nonduplicate using the below.
+
+# Parent-Partner Key Issue/Nonduplicate Flagging: <DONE>
+Use of table for comparing potential duplicates 
+* Table formatted and implemented by project owner (Mr. Greg Beeley), provided below and via the riot chat, used to record nonduplicates:
+1. p_partner_key
+2. p_nondup_partner_key
+3. p_comment
+4. s_date_created
+5. s_created_by
+6. s_date_modified
+7. s_modified_by
+8. __cx_osml_control
+9. 
+10. primary key unique index (p_partner_key, p_dup_partner_key)
+11. additional unique index (p_dup_partner_key, p_partner_key) 
+* Looks for forward and backwards relationships: "For example, if you find a potential dup between key 1000 and key 1001, you need to search the above table with (p_partner_key = 1000 and p_nondup_partner_key = 1001) as well as (p_partner_key = 1001 and p_nondup_partner_key = 1000)" (Mr. Beeley, from chat)
+* Always looks to see if key 1 (p_partner_key_1) is < key 2 (p_partner_key_2) in duplicate_checking.qy
+
+
+# Implementation of new query for flag checking
+* After testing the table against the algorithm, the "create tmp_pcl_duplicates by weighted average" part of the duplicate_checking.qy query was edited to flag nonduplicate values using the "p_nondup_partner_key" field of the above table.
+* Flagged nonduplicates are deleted from tmp_pcl_duplicates before returning it normally
+
+# Granting users ability to flag "duplicate" results as nonduplicates
+* Currently, existing edit functions and manual entry are used to flag "duplicate" entries as nonduplicates and prevent them from being shown.
+* In the future, implement a query, script, or GUI element to do this automatically
+
+#Fix for repeating rows issue:
+* After testing, duplicate_checking.qy was recoded to patch the repeating rows issue.
+
+
+# Future project suggestions:
+Clean Up Excess Code
+* It has been observed through testing that there are some files/queries that are currently unused, and that appear to have been copied into other code, making them unnecessary. Removing these would reduce confusion while navigating files, during testing, and with final product.
+* A list (though not comprehensive) of known excess code is below:
+* letter_frequency (replaced by similarity query): centrallix/centrallix/test (duplicate-checking and utf-8-duplicate-checking branches)
+
+Nonduplicate Flagging (UI)
+* Add UI and widget elements for the nonduplicate flagging operation so that users can directly mark person and partner entries as not duplicates.
+
+Optimize Functions and Algorithms
+* Previous teams suggested fine-tuning averages between fuzzy_compare() and similarity(), and also revise calculations for tmp_pcl_duplicates by altering the value of various coefficients.
+* They also suggested adding a minvalue or default value for the match_dist parameter of duplicate_create_pairs.qy, suggesting values minvalue 1, match_dist 3
+* It was suggested that when using fuzzy_compare() to analyze fields, duplicate_checking.qy should check each field separately rather than all at once.
+* The current algorithm for UTF-8 compatibility uses a 256-size table to map some UTF-8 values- this may need to be expanded for currently unmapped UTF-8 characters.
+* Testing new character support is needed
+* Additionally, reexamining the algorithm structure may be needed after further testing
+
+Prevent False Positives From Matching Names
+* The previous team encountered a number of false positives during duplicate checks because of shared last names. Finding a fix for this may be difficult and unnecessary once the nonduplicate flagging features are complete.
+Adding a compression function:
+* It would be efficient to add a function that preprocesses strings to replace some characters (uppercase, accent variants) so the algorithm can treat them as similar, improving speed.
+* Multiple may be needed for each locale and language, making this an ongoing process
+* It may become necessary to prompt users to choose one specific to their region.
+1 Located in kardia/kardia-app/modules/base/duplicate_checking.qy and used to analyze data for duplicates and send results to user.
+2 Works by counting and comparing frequency occurrences of each letter
+
+
+

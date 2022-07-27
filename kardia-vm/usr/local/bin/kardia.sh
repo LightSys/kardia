@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # kardia.sh - manage the Kardia / Centrallix VM appliance
-# version: 1.0.9
+# version: 1.0.10
 # os: centos_7
 
 # Some housekeeping stuff.  We may be running under a user account, but
@@ -95,7 +95,7 @@ function insertLine
 
 BASEDIR=/usr/local
 USER=$(/usr/bin/id -un)
-VERSION="1.3"
+VERSION="1.5"
 sTITLE="Kardia/Centrallix VM Appliance $VERSION  (C) LightSys"
 Root || TITLE="[$USER]  $sTITLE"
 Root && TITLE="** ROOT **  $sTITLE"
@@ -134,7 +134,7 @@ if Root; then
 	fi
 	psphome2=/usr/local/etc/pam-script.d/pam_script_passwd
 	if [ ! -f "$psphome2" ]; then
-	    ln -s "$psphome" "$psphome"
+	    ln -s "$psphome" "$psphome" 2>/dev/null
 	fi
     fi
 fi
@@ -629,6 +629,7 @@ function doGiveUserKardiaSysadmin
 	    return
 	fi
 	echo "insert into s_sec_endorsement (s_endorsement,s_context, s_subject, s_date_created, s_created_by, s_date_modified, s_modified_by) values ('kardia:sys_admin','kardia','u:THEUSER',curdate(),'THEUSER',curdate(),'THEUSER');" | sed "s/THEUSER/$TUSER/g" | mysql -u root Kardia_DB 2> /dev/null
+	[ $? -ne 0 ] && logger -t "doGiveUserKardiaSysadmin" "MySQL failed.  Trying to add permissions for the Kardia user. Probably because the kardia tables are not yet loaded.  Ignore for now."
     }
 
 function doGiveAllSysadmsSysadmin
@@ -711,8 +712,41 @@ function menuUsers
     done
     #create the kardia user if we need to do that
     doCreateKardiaUnixUser
+    return 0 #This fixes an error if the burried mysql-function errors out
     }
 
+#Do partition, lvm and filesystem resize
+function doResize
+    {
+	dialog --backtitle "$TITLE" --title "Resize the VM" --yes-label Resize --no-label Skip --yesno "This option will resize the VM image.  Before running this, you should have powered down the VM, added space to the disk image, and then brought the image back up.  Then, running this resize should increase the disk size.\n\nThe easiest way to add space is by using the truncate command.  In Windows, use the Linux subsystem to get a linux prompt where you can use truncate.  A command like this:\n\n  'truncate +500M KardiaVM.hdd'\n\nWhere KardiaVM.hdd is the drive image you are trying to increase and the 500M is the amount we want to increase it by.  Remember, 500MB is lost to other partitions.  7G will only give your machine 6.5G of space." 0 0
+	if [ "$?" = 0 ]; then
+	    #Do the resize
+	    DRIVE=$(pvdisplay | grep dev | sed 's/.* \//\//')
+	    NUMBER=$(echo "$DRIVE" | sed 's/\([^0-9]*\)\([0-9]*\)/\2/')
+	    DISK=$(echo "$DRIVE" | sed 's/\([^0-9]*\)\([0-9]*\)/\1/')
+	    EXTENDED=$(sfdisk -l $DISK | grep -i extended | sed 's/ .*//' | sed 's/[^0-9]*//')
+	    logger -t "Kardia.sh-Resize" "Resizing: Drive=$DRIVE Disk=$DISK Number=$NUMBER EXTENDED=$EXTENDED"
+	    if [ -n "$EXTENDED" ]; then
+		logger -t "Kardia.sh-Resize" "repartitioning extended partition using sfdisk"
+		echo ", +" | sfdisk -N $EXTENDED $DISK --force --no-reread
+	    fi
+	    logger -t "Kardia.sh-Resize" "repartitioning using sfdisk"
+	    echo ", +" | sfdisk -N $NUMBER $DISK --force --no-reread
+	    partprobe
+	    LV=$(lvdisplay | grep Path | sed 's/[^\/]*//')
+	    VG=$(dirname $LV)
+	    logger -t "Kardia.sh-Resize" "Resizing Physical Volume: $DRIVE"
+	    pvresize $DRIVE
+	    logger -t "Kardia.sh-Resize" "resizing Logival Volume: $LV"
+	    lvextend -l +100%FREE $LV
+	    logger -t "Kardia.sh-Resize" "Growing the filesystem"
+	    xfs_growfs $LV 2>/dev/null  #xfs
+	    resize2fs $LV  2>/dev/null #ext4
+
+	    echo -n "Done.  Press enter to continue > "
+	    read line
+	fi
+    }
 
 # Do updates (yum update)
 function doUpdates
@@ -734,6 +768,15 @@ function checkAndInstallRequiredPackages
 	YUMTMPFILE="$$-YUM.tmp"
 	rpm -qa > $YUMTMPFILE
 	NOTFOUNDLIST=""
+
+	#Auto add repo stuff
+	if [ `which dnf 2> /dev/null` ]; then
+	     #install epel
+	     dnf -y install epel-release
+	     #activate powertools
+	     dnf config-manager --set-enabled powertools
+	fi
+
 	for a in $( cat /usr/local/src/kardia-git/kardia-vm/rpms_needed.txt ); do
 	    if [ -z "`grep $a $YUMTMPFILE`" ]; then
 		NOTFOUNDLIST="$NOTFOUNDLIST $a" 
@@ -833,6 +876,8 @@ function menuSystem
 	DSTR="$DSTR RootPass 'Change Root Password'"
 	DSTR="$DSTR Updates 'Download and Install OS Updates'"
 	DSTR="$DSTR Timezone 'Set the System Time Zone'"
+	DSTR="$DSTR Resize 'Resize the Virtual Machine'"
+	DSTR="$DSTR Autossh 'Configure Autossh'"
         Rootable && DSTR="$DSTR Wizard 'Re-Run the Initial Setup Wizard'"
 	DSTR="$DSTR Quit 'Exit Kardia / Centrallix Management'"
 
@@ -847,6 +892,12 @@ function menuSystem
 	    Shutdown)
 		shutdown -h now
 		exit
+		;;
+	    Resize)
+		AsRoot doResize
+		;;
+	    Autossh)
+		 menuAutossh
 		;;
 	    RootPass)
 		passwd
@@ -896,13 +947,13 @@ function repoSetStatus
     RVAL=$?
     if [ "$RVAL" = "0" ]; then
 	if [ "$N_CXUSER" = "" ]; then
-	    doGit config remote.origin.url "git://$CX_GITREPO"
+	    doGit config remote.origin.url "https://$CX_GITREPO"
 	else
 	    doGit config remote.origin.url "https://$N_CXUSER@$CX_GITREPO"
 	fi
 	cd "$1/kardia-git"
 	if [ "$N_CXUSER" = "" ]; then
-	    doGit config remote.origin.url "git://$K_GITREPO"
+	    doGit config remote.origin.url "https://$K_GITREPO"
 	else
 	    doGit config remote.origin.url "https://$N_CXUSER@$K_GITREPO"
 	fi
@@ -952,6 +1003,11 @@ function repoCommit
 	echo "You cannot commit changes as 'root'.  Switching user..."
 	sleep 1
     fi
+    #Preserve group ownership of the git directory
+    chgrp -R kardia_src .
+    #Preserve group write permissions on the git directory
+    chmod -R g+w .
+
     AsUser doGit commit -a
     RVAL=$?
     sleep 1
@@ -969,6 +1025,11 @@ function repoCommitFiles
     /bin/rm -f "$TMPNAME" 2>/dev/null
     touch "$TMPNAME"
     cd "$REPO"
+    #Preserve group ownership of the git directory
+    chgrp -R kardia_src .
+    #Preserve group write permissions on the git directory
+    chmod -R g+w .
+
     git status | while read POUND V1 V2 V3; do
 	if [ "$POUND" = "#" ]; then
 	    FILE=""
@@ -1072,6 +1133,11 @@ function repoAddFile
 function repoPush
     {
     cd "$1"
+    #Preserve group ownership of the git directory
+    chgrp -R kardia_src .
+    #Preserve group write permissions on the git directory
+    chmod -R g+w .
+
     PUSHTO=$(git config --get remote.origin.url 2>/dev/null)
 
     # Temporarily set origin to the shared repo?  Sometimes we have to
@@ -1130,6 +1196,11 @@ function repoPull
     echo "    TO:   $1"
     echo ""
     doGit pull origin
+    #Preserve group ownership of the git directory
+    chgrp -R kardia_src .
+    #Preserve group write permissions on the git directory
+    chmod -R g+w .
+
     RVAL=$?
     git config remote.origin.url "$PULLFROM"
     echo ""
@@ -1153,8 +1224,8 @@ function repoSetOrigin
 	CXORIGIN="$BASEDIR/src/cx-git"
 	KORIGIN="$BASEDIR/src/kardia-git"
     elif [ "$2" = "READONLY" ]; then
-	CXORIGIN="git://$CX_GITREPO"
-	KORIGIN="git://$K_GITREPO"
+	CXORIGIN="https://$CX_GITREPO"
+	KORIGIN="https://$K_GITREPO"
     else
 	CXORIGIN="https://$2@CX_GITREPO"
 	KORIGIN="https://$2@$K_GITREPO"
@@ -1182,8 +1253,8 @@ function repoInitUser
 	CXORIGIN="$BASEDIR/src/cx-git"
 	KORIGIN="$BASEDIR/src/kardia-git"
     elif [ "$2" = "READONLY" ]; then
-	CXORIGIN="git://$CX_GITREPO"
-	KORIGIN="git://$K_GITREPO"
+	CXORIGIN="https://$CX_GITREPO"
+	KORIGIN="https://$K_GITREPO"
     else
 	CXORIGIN="https://$2@$CX_GITREPO"
 	KORIGIN="https://$2@$K_GITREPO"
@@ -1209,8 +1280,8 @@ function repoInitShared
     KORIGIN=$(cd $BASEDIR/src/kardia-git 2>/dev/null; git config --get remote.origin.url 2>/dev/null)
     CXMETHOD=${CXORIGIN%%:*}
     if [ "$CXMETHOD" != "https" ]; then
-	CXORIGIN="git://$CX_GITREPO"
-	KORIGIN="git://$K_GITREPO"
+	CXORIGIN="https://$CX_GITREPO"
+	KORIGIN="https://$K_GITREPO"
     fi
     [ -z "$CXORIGIN" ] && repoSetOrigin
     [ -z "$KORIGIN" ] && repoSetOrigin
@@ -1235,7 +1306,7 @@ function repoInitShared
     ln -s ../../../kardia-git/kardia-app kardia
 
     # Set repo permissions to allow updates
-    cd cx-git
+    cd $BASEDIR/src/cx-git
     doGit config receive.denyCurrentBranch ignore
     cd ../kardia-git
     doGit config receive.denyCurrentBranch ignore
@@ -1896,11 +1967,32 @@ function lookupStatus
     ETCDIR=$( dirname $CXETC )
     export DUPLICITY_CONF=$ETCDIR/duplicity.conf
     if [ -e "$DUPLICITY_CONF" ]; then
+	export DUPLICITY_TARGET=$(grep TARGET $DUPLICITY_CONF | sed 's/.*=//')
+	export DUPLICITY_CONFIGURED=$(grep CONFIGURED $DUPLICITY_CONF | sed 's/.*=//')
 	export DUPLICITY_USER=$(grep USER $DUPLICITY_CONF | sed 's/.*=//')
 	export DUPLICITY_HOST=$(grep HOST $DUPLICITY_CONF | sed 's/.*=//')
 	export DUPLICITY_PORT=$(grep PORT $DUPLICITY_CONF | sed 's/.*=//')
 	export DUPLICITY_PATH=$(grep PATH $DUPLICITY_CONF | sed 's/.*=//')
+	export DUPLICITY_UUID=$(grep UUID $DUPLICITY_CONF | sed 's/.*=//')
+	export DUPLICITY_KEY=$(grep KEY $DUPLICITY_CONF | sed 's/.*=//')
+	export DUPLICITY_OLDEY=$(grep OLDEY $DUPLICITY_CONF | sed 's/.*=//')
 	export DUPLICITY_ENABLED=$(grep ENABLED $DUPLICITY_CONF | sed 's/.*=//')
+	if [ -z "$DUPLICITY_KEY" ]; then
+	    export DUPLICITY_OPT="--no-encryption"
+	fi
+    fi
+    export AUTOSSH_CONF=$ETCDIR/autossh.conf
+    if [ -e "$AUTOSSH_CONF" ]; then
+	export AUTOSSH_USER=$(grep USER $AUTOSSH_CONF | sed 's/.*=//')
+	export AUTOSSH_HOST=$(grep HOST $AUTOSSH_CONF | sed 's/.*=//')
+	export AUTOSSH_PORT=$(grep PORT $AUTOSSH_CONF | sed 's/.*=//')
+	export AUTOSSH_BASE=$(grep BASE $AUTOSSH_CONF | sed 's/.*=//')
+	export AUTOSSH_ENABLED=$(grep ENABLED $AUTOSSH_CONF | sed 's/.*=//')
+    fi
+    if [ -n "`pgrep autossh`" ]; then
+	AUTOSSH_RUNNING=yes
+    else
+	AUTOSSH_RUNNING=no
     fi
     }
 
@@ -2266,11 +2358,11 @@ function menuWorkflowMode
 	for HOMEDIR in /home/*; do
 	    if [ -d "$HOMEDIR/cx-git" ]; then
 		cd "$HOMEDIR/cx-git"
-		doGit config remote.origin.url "git://$CX_GITREPO"
+		doGit config remote.origin.url "https://$CX_GITREPO"
 	    fi
 	    if [ -d "$HOMEDIR/kardia-git" ]; then
 		cd "$HOMEDIR/kardia-git"
-		doGit config remote.origin.url "git://$K_GITREPO"
+		doGit config remote.origin.url "https://$K_GITREPO"
 	    fi
 	done
 	echo "Press ENTER to continue..."
@@ -2726,7 +2818,7 @@ function menuDevel
 		doBuild
 		;;
 	    DBBuild)
-		doDataBuild
+		AsRoot doDataBuild
 		;;
 	esac
     done
@@ -2976,7 +3068,7 @@ function doCxkUpdates
 	doBuild
     fi
     if [ "${CXKSEL%%Data*}" != "$SEL" ]; then
-	doDataBuild
+	AsRoot doDataBuild
     fi
     }
 
@@ -3020,8 +3112,6 @@ function doSystemUpdate
     if [ "${SEL%%Menus*}" != "$SEL" ]; then
 	AsRoot UpdateMenus
     fi
-    # copy the cron files and make sure they are updated
-    AsRoot doCopyCronFiles
     }
 
 ########################
@@ -3077,7 +3167,7 @@ function vm_prep_cleanYum
 function vm_prep_setupEtc
 {
 	mkdir -p /etc/samba /etc/pam-script /etc/systemd/system
-	files="issue.kardia issue.kardia-init pam.d/system-auth.kardia samba/smb.conf.noshares samba/smb.conf.onerepo samba/smb.conf.userrepo ssh/sshd_config.kardia pam-script/pam_script_passwd pam.d/system-auth.kardia systemd/system/centrallix.service logrotate.d/centrallix"
+	files="issue.kardia issue.kardia-init pam.d/system-auth.kardia samba/smb.conf.noshares samba/smb.conf.onerepo samba/smb.conf.userrepo ssh/sshd_config.kardia pam-script/pam_script_passwd pam.d/system-auth.kardia systemd/system/kardiaVM-startup.service systemd/system/centrallix.service logrotate.d/centrallix dracut.conf.d/kardia_vm.conf"
 	directory="/usr/local/src/kardia-git/kardia-vm/etc/"
 	echo "Settting Up the ETC directory"
 	for file in $files; do
@@ -3120,6 +3210,10 @@ function vm_prep_setupEtc
 	echo "$N_HOST" > /etc/hostname
 	/bin/hostname "$N_HOST"
 	echo
+
+	####################
+	# make sure the startup service runs
+	systemctl enable kardiaVM-startup
 }
 
 ###########
@@ -3210,7 +3304,7 @@ function vm_prep_cleanFiles
     cxlibs="/usr/local/lib/StPar* /usr/local/centrallix/ /usr/local/libCentrallix*"
     cxinc="/usr/local/include/cxlib/"
     cxetc="/etc/init.d/centrallix"
-    kardiash="/usr/local/src/.initialized /usr/local/src/.cx* /usr/local/src/.mysqlaccess"
+    kardiash="/usr/local/src/.initialized /usr/local/src/.cx* /usr/local/src/.mysqlaccess /usr/local/etc/autossh.conf /usr/local/etc/centrallix.conf /usr/local/etc/cifs.conf /usr/local/etc/duplicity.conf /usr/local/etc/rc.d/"
     gitfiles="/usr/local/src/cx-git /usr/local/src/kardia-git"
 	echo "Cleaning up Filesystem"
 	echo "  Cleaning up history"
@@ -3393,45 +3487,446 @@ function doCreateKardiaUnixUser
 	fi
     }
 
-#Set up the cron files for kardia from git
-function doCopyCronFiles
+
+#readCron - Pass filename first, followed by the command (in case no such cron exists yet)
+# readCron /etc/cron.kardia.d/backup /usr/local/bin/kardia.sh doBackup
+function readCron
     {
-    if [ -d /usr/local/src/kardia-git/kardia-vm/ ]; then
-	#copy this, deleting any cron files that do not exist on git
-	rsync -ra --delete /usr/local/src/kardia-git/kardia-vm/etc/cron.kardia.d/ /etc/cron.kardia.d/
-	doCreateMissingCronFiles
-	doCleanBadCronFiles
+    #first parameter is the filename
+    cronFile="$1"
+    shift
+    sentCommand="$*"
+    if [ -n "$cronFile" -a -e "$cronFile" ]; then
+	#We were passed a cron file and it exists
+	while read a b c d e f g; do 
+	    export cron_hour="$a" 
+	    export cron_minute="$b"
+	    export cron_week="$c" 
+	    export cron_month="$d" 
+	    export cron_day="$e" 
+	    export cron_who="$f" 
+	    export cron_command="$g" 
+	done < $cronFile
+	#echo "$cron_hour $cron_minute $cron_day $cron_week $cron_month $cron_who $cron_command"
+    else
+	#defaults
+	export cron_hour=22
+	export cron_minute=15
+	export cron_week="*"
+	export cron_month="*"
+	export cron_day="Mon,Tue,Wed,Thu,Fri"
+	export cron_who=root
+	export cron_command=sentCommand
+    fi
+    export cron_Sun=off
+    export cron_Mon=off
+    export cron_Tue=off
+    export cron_Wed=off
+    export cron_Thu=off
+    export cron_Fri=off
+    export cron_Sat=off
+    alldays=$(echo $cron_day | sed 's/,/ /g')
+    for oneday in $alldays; do
+	case $oneday in
+	    0|7|Sun)
+		cron_Sun=on
+		;;
+	    1|Mon)
+		cron_Mon=on
+		;;
+	    2|Tue)
+		cron_Tue=on
+		;;
+	    3|Wed)
+		cron_Wed=on
+		;;
+	    4|Thu)
+		cron_Thu=on
+		;;
+	    5|Fri)
+		cron_Fri=on
+		;;
+	    6|Sat)
+		cron_Sat=on
+		;;
+	esac
+		
+    done
+    }
+
+function writeCron
+    {
+    #first parameter is the filename
+    cronFile="$1"
+    shift
+    sentCommand="$*"
+    #use the command in the cronfile if we did not pass one in
+    if [ -z "$sentCommand" ]; then
+	sentCommand=$cron_command
+    fi
+
+    if [ -n "$cronFile" ]; then
+	#make the directory if it does not yet exist
+	cronDir=`basename $cronFile`
+	mkdir -p $cronDir
+
+#Make sure we have the paths set up for the cron and other default info
+cat > $cronFile << EOF
+SHELL=/bin/bash
+PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
+MAILTO=root
+EOF
+#Now, put the cron command into the file
+	echo "$cron_hour $cron_minute $cron_week $cron_month $cron_day $cron_who $sentCommand" >> $cronFile
     fi
     }
 
-#Erase any broken links to kardia.cron.d 
-function doCleanBadCronFiles
+#editCronFull - Pass filename first, followed by the command (in case no such cron exists yet)
+# editCronFull /etc/cron.d/backup /usr/local/bin/kardia.sh doAutoBackup
+function editCronFull
     {
-    for onecron in /etc/cron.d/*; do
-        if [ -L "$onecron" ]; then
-	    if [ ! -e "$onecron" ]; then
-		echo link $onecron is broken removing
-		rm -f $onecron
+    #first parameter is the filename
+    cronFile="$1"
+    shift
+    sentCommand="$*"
+
+    #read the cronfile
+    readCron "$cronFile" "$sentCommand"
+
+    DSTR="dialog --title 'Edit Cron $cronFile' --backtitle '$TITLE' --form"
+    DSTR="$DSTR 'Edit Cron' 0 0 0"
+    DSTR="$DSTR 'Hour(s):' 3 1 '$cron_hour' 3 36 30 0"
+    DSTR="$DSTR 'Minute(s):' 5 1 '$cron_minute' 5 36 30 0"
+    DSTR="$DSTR 'Day(s):' 7 1 '$cron_day' 7 36 30 0"
+    DSTR="$DSTR 'Week:' 9 1 '$cron_week' 9 36 30 0"
+    DSTR="$DSTR 'Month:' 11 1 '$cron_month' 11 36 30 0"
+
+    eval "$DSTR" 2>&1 >/dev/tty |
+	{
+	read cron_hour; read cron_minute; read cron_day; read cron_week; read cron_month; 
+	if [ -z "$cron_hour" -a -z "$cron_minute" ]; then
+	    #they probably canceled
+	    return
+	fi
+	if [ -z "$cron_hour" ]; then
+	    echo "Invalid hour."; sleep 2; return
+	fi
+	if [ -z "$cron_minute" ]; then
+	    echo "Invalid minute."; sleep 2; return
+	fi
+	if [ -z "$cron_day" ]; then
+	    echo "Invalid day."; sleep 2; return
+	fi
+	if [ -z "$cron_week" ]; then
+	    echo "Invalid week."; sleep 2; return
+	fi
+	if [ -z "$cron_month" ]; then
+	    echo "Invalid month."; sleep 2; return
+	fi
+	writeCron "$cronFile" "$sentCommand"
+
+	}
+    }
+
+#editCronTime - needs to have the cron file read before this is called
+function editCronTime
+    {
+    DSTR="dialog --title 'Edit Cron $cronFile' --backtitle '$TITLE' --form"
+    DSTR="$DSTR 'Edit Cron' 0 0 0"
+    DSTR="$DSTR 'Hour(s):' 3 1 '$cron_hour' 3 36 30 0"
+    DSTR="$DSTR 'Minute(s):' 5 1 '$cron_minute' 5 36 30 0"
+
+    SEL=$(eval "$DSTR" 2>&1 >/dev/tty)
+    if [ $? -eq 0 ]; then
+	set $SEL
+	cron_hour=$1
+	cron_minute=$2
+    else
+	return 1
+    fi
+    }
+
+#editCronDays - needs to have the cron file read before this is called
+function editCronDays
+    {
+
+    DSTR="dialog --title 'Edit Cron $cronFile' --backtitle '$TITLE'"
+    DSTR="$DSTR --checklist 'Select The Days for the cron job' 0 0 0"
+    DSTR="$DSTR Sun Sunday $cron_Sun"
+    DSTR="$DSTR Mon Monday $cron_Mon"
+    DSTR="$DSTR Tue Tuesday $cron_Tue"
+    DSTR="$DSTR Wed Wednesday $cron_Wed"
+    DSTR="$DSTR Thu Thursday $cron_Thu"
+    DSTR="$DSTR Fri Friday $cron_Fri"
+    DSTR="$DSTR Sat Saturday $cron_Sat"
+
+    daystr=""
+    Chosen=$(eval "$DSTR" 2>&1 >/dev/tty)
+    if [ $? -eq 0 ]; then
+	for a in $Chosen; do
+	    [ -n "$daystr" ] && daystr="$daystr,"
+	    daystr="$daystr$a"
+	done
+	cron_day=$daystr
+    else
+	#return an error code so we know it was canceled
+	return 1
+    fi
+    }
+
+function editCron
+    {
+    cronFile="$1"
+    shift
+    sentCommand="$*"
+
+    #read the cronfile
+    readCron "$cronFile" "$sentCommand"
+
+    editCronTime
+
+    if [ $? -eq 0 ]; then
+	editCronDays
+	if [ $? -eq 0 ]; then
+	    writeCron "$cronFile" "$sentCommand"
+	fi
+    fi
+
+    }
+
+#Autossh autossh
+function menuAutossh
+    {
+    while true; do
+	lookupStatus
+	HOST=$(/bin/hostname)
+	if [ "$AUTOSSH_ENABLED" = "yes" ]; then
+	    status=enabled
+	else
+	    status=disabled
+	fi
+	DSTR="dialog --backtitle '$TITLE' --title 'Autossh' --cancel-label 'Back' --menu 'Administrate Autossh' 20 72 14" 
+	DSTR="$DSTR Configure 'Configure Autossh'"
+	DSTR="$DSTR EnableDisable 'Enable / Disable Autossh($status)'"
+	if [ "$AUTOSSH_RUNNING" = "yes" ]; then
+	    DSTR="$DSTR Stop 'Stop Autossh (running)'"
+	else
+	    DSTR="$DSTR Start 'Start Autossh (not running)'"
+	fi
+	DSTR="$DSTR Status 'Show status of autossh for debugging'"
+	DSTR="$DSTR Quit 'Exit Kardia / Centrallix Management'"
+
+	SEL=$(eval "$DSTR" 2>&1 >/dev/tty)
+	case "$SEL" in
+	    Quit)
+		exit
+		;;
+	    Configure)
+		menuConfigureAutossh
+		;;
+	    Start)
+		doStartAutossh
+		;;
+	    Stop)
+		doStopAutossh
+		;;
+	    Status)
+		AsRoot systemctl status kardiaVM-startup
+		echo 
+		echo -n "Press enter to continue: > "
+		read line
+		;;
+	    EnableDisable)
+		menuEnableDisableAutossh
+		;;
+	    '')
+		break
+		;;
+	esac
+    done
+    }
+
+function doStartAutossh
+    {
+    lookupStatus
+    if [ "$AUTOSSH_ENABLED" = "yes" ]; then
+	autossh=$(which autossh 2>/dev/null)
+	if [ -n $autossh ]; then
+	    #we are ready to run it
+	    LSSH=$(($AUTOSSH_BASE + 22))
+	    LWEB=$(($AUTOSSH_BASE + 80))
+	    LSSL=$(($AUTOSSH_BASE + 43))
+	    cmd="$autossh -f -M 0 -p $AUTOSSH_PORT $AUTOSSH_USER@$AUTOSSH_HOST -N -R $LSSH:localhost:22 -R $LWEB:localhost:843 -R $LSSL:localhost:800"
+	    if [ "$AUTOSSH_RUNNING" = "yes" ]; then
+		echo "Autossh already running.  Please stop it first"
+	    else
+		#run it
+		$cmd
+		logger -t "kardia.sh" "Starting autossh $AUTOSSH_USER@$AUTOSSH_HOST"
+		sleep 1
 	    fi
+	fi
+    else
+	echo "Autossh is disabled via configuration.  Please enable it and try again"
+	sleep 2
+    fi
+    }
+
+function doStopAutossh
+    {
+    lookupStatus
+    if [ "$AUTOSSH_ENABLED" = "yes" ]; then
+	autossh=$(which autossh 2>/dev/null)
+	if [ -n $autossh ]; then
+	    if [ "$AUTOSSH_RUNNING" = "yes" ]; then
+		killall autossh
+		logger -t "kardia.sh" "Stopping autossh"
+		sleep 1
+	    else
+		echo "Autossh not yet running. Nothing done."
+	    fi
+	fi
+    else
+	echo "Autossh is disabled via configuration.  Please enable it and try again"
+	sleep 2
+    fi
+    }
+
+function menuEnableDisableAutossh
+    {
+    lookupStatus
+    if [ "$AUTOSSH_ENABLED" = "yes" ]; then
+	en=on
+	ds=off
+    else
+	en=off
+	ds=on
+    fi
+    DSTR="dialog --backtitle '$TITLE' --title 'Enable/Disable Autossh' --radiolist 'Autossh:' 16 72 10"
+    DSTR="$DSTR enabled 'Enable Autossh' $en"
+    DSTR="$DSTR disabled 'Disable Autossh' $ds"
+
+    SEL=$(eval "$DSTR" 2>&1 >/dev/tty)
+    
+    if [ -n "$SEL" ]; then
+	#we have chosen one of them
+	if [ "$SEL" = "enabled" ]; then
+	    export AUTOSSH_ENABLED=yes
+	    doWriteAutosshConfiguration
+	    #enable it, then start it
+	    doStartAutossh
+	    echo "Enabled at boot.  Starting autossh now"
+	else
+	    #stop it while it is enabled, then disable it
+	    doStopAutossh
+	    #Now, change the configuration
+	    export AUTOSSH_ENABLED=no
+	    doWriteAutosshConfiguration
+	    echo "Disabled at boot.  Stopping autossh now"
+	fi
+	sleep 2 
+    fi
+    }
+
+function doWriteAutosshConfiguration
+    {
+	if [ -n "$AUTOSSH_USER" -a -n "$AUTOSSH_HOST" -a -n "$AUTOSSH_BASE" ]; then
+	    echo "USER=$AUTOSSH_USER" >$AUTOSSH_CONF
+	    echo "HOST=$AUTOSSH_HOST" >>$AUTOSSH_CONF
+	    echo "PORT=$AUTOSSH_PORT" >>$AUTOSSH_CONF
+	    echo "BASE=$AUTOSSH_BASE" >>$AUTOSSH_CONF
+	    echo "ENABLED=$AUTOSSH_ENABLED" >>$AUTOSSH_CONF
+	fi
+    }
+
+function menuConfigureAutossh
+    {
+    while true; do
+	lookupStatus
+	DSTR="dialog --title 'Configure AutoSSH' --backtitle 'Configure AutoSSH' --form"
+	DSTR="$DSTR 'Configure AutoSSH to allow remote connections to this host.' 0 0 0"
+	DSTR="$DSTR 'DestUser:' 1 1 '$AUTOSSH_USER' 1 26 30 0"
+	DSTR="$DSTR 'DestHost:' 3 1 '$AUTOSSH_HOST' 3 26 30 0"
+	DSTR="$DSTR 'DestPort:' 5 1 '$AUTOSSH_PORT' 5 26 5 0"
+	DSTR="$DSTR 'DestBasePort:' 7 1 '$AUTOSSH_BASE' 7 26 30 0"
+
+	echo $DSTR
+ 
+	ANS=$(eval "$DSTR" 2>&1 >/dev/tty | 
+	    {
+	    read N_USER; read N_HOST; read N_PORT; read N_BASE
+	    if [ -z "$N_USER" -a -z "$N_HOST" -a -z "$N_BASE" ]; then
+		return 0 #We are canceling out, or nothing defined	
+	    fi
+	    #We need to test before we commit
+	    #try a silent ssh that would fail if something wrong to get an error
+	    #if the error is such that we need a key, try doing ssh-copy-id
+	    #see where we go from that
+
+	    echo Testing settings
+	    target="$N_USER@$N_HOST"
+	    working=$( ssh -oBatchMode=yes -oStrictHostKeyChecking=no -oConnectTimeout=3 -p $N_PORT $target ls 2>&1 )
+	    #track the response
+	    response=$?
+	    #echo working = $working
+	    #echo response = $response
+	    #we are looking for "Permission denied (publickey,password)."
+	    
+	    if [ $response -ne 0 ]; then
+		if [ -n "$( echo $working | grep publickey )" ]; then
+		    echo ---------------------------------------------------
+		    echo Trying to push the id to the server with ssh-copy-id
+		    echo Enter the password for $N_USER if prompted for it
+		    echo ---------------------------------------------------
+		    #create an RSA key if we need one
+		    if [ ! -e ~/.ssh/id_rsa ]; then
+			# generate a ssh key for this user
+			ssh-keygen -q -t rsa -N "" -f ~/.ssh/id_rsa
+		    fi
+		    #we believe we can fix it by doing ssh-copy-id
+		    ssh-copy-id -p $N_PORT $target
+		    export hostfile=~/.ssh/known_hosts
+		    ( cat $hostfile; ssh-keyscan -p$N_PORT $N_HOST )2>/dev/null|  sort -u > $hostfile
+		    echo ---------------------------------------------------
+		    echo We will return to the menu and try again now that
+		    echo We think it is fixed.
+		    AUTOSSH_USER=$N_USER;
+		    AUTOSSH_PORT=$N_PORT;
+		    AUTOSSH_HOST=$N_HOST;
+		    AUTOSSH_PATH=$N_BASE;
+		    doWriteAutosshConfiguration
+		    set +x
+		    sleep 2
+		else
+		    echo There is an error we cannot fix:
+		    echo "ERROR: $working"
+		    exit
+		fi
+	    else
+		if [ -n "$N_USER" -a -n "$N_HOST" -a -n "$N_BASE" ]; then
+		    AUTOSSH_USER=$N_USER;
+		    AUTOSSH_PORT=$N_PORT;
+		    AUTOSSH_HOST=$N_HOST;
+		    AUTOSSH_PATH=$N_BASE;
+		    doWriteAutosshConfiguration
+		    return 0
+		else
+		    echo Missing some settings - not saved 1>&2
+		    sleep 2
+		    break
+		    return 1
+		fi
+
+	    fi
+	    return 1
+	    } 1>&2)
+	if [ $? -eq 0 ]; then
+	    break	
 	fi
     done
     }
 
-#Add any missing crontabs that should be there
-function doCreateMissingCronFiles
-    {
-    for onecron in /etc/cron.kardia.d/*; do
-        if [ -e "$onecron" ]; then
-	    dest_b=`basename $onecron`
-	    dest_full="/etc/cron.d/$dest_b"
-
-	    if [ ! -L "$dest_full" ]; then
-		echo cron file $dest_full does not exist.  Creating link
-		ln -s $onecron $dest_full
-	    fi
-	fi
-    done
-    }
+#Backup
 
 function menuConfigureBackup
     {
@@ -3450,6 +3945,8 @@ function menuConfigureBackup
 	    {
 	    read N_USER; read N_HOST; read N_PORT; read N_PATH
 	    if [ -z "$N_USER" -a -z "$N_HOST" -a -z "$N_PATH" ]; then
+		echo "Missing information. No port, user, or host"
+		sleep 1
 		return 0 #We are canceling out, or nothing defined	
 	    fi
 	    #We need to test before we commit
@@ -3482,6 +3979,7 @@ function menuConfigureBackup
 		    DUPLICITY_PORT=$N_PORT;
 		    DUPLICITY_HOST=$N_HOST;
 		    DUPLICITY_PATH=$N_PATH;
+		    DUPLICITY_CONFIGURED=yes
 		    doWriteBackupConfiguration
 		    sleep 2
 		else
@@ -3495,6 +3993,7 @@ function menuConfigureBackup
 		    DUPLICITY_PORT=$N_PORT;
 		    DUPLICITY_HOST=$N_HOST;
 		    DUPLICITY_PATH=$N_PATH;
+		    DUPLICITY_CONFIGURED=yes
 		    doWriteBackupConfiguration
 		    return 0
 		else
@@ -3539,15 +4038,101 @@ function menuEnableDisableBackup
     fi
     }
 
+function menuChooseBackupTarget
+    {
+    lookupStatus
+
+    ssh=off
+    local=off
+    cifs=off
+    case $DUPLICITY_TARGET in
+	SSH)
+	    ssh=on
+	    ;;
+	LOCAL)
+	    local=on
+	    ;;
+	CIFS)
+	    cifs=on
+	    ;;
+    esac
+   
+    DSTR="dialog --backtitle '$TITLE' --title 'Backup Target' --radiolist 'Duplicity target:' 16 72 10"
+    DSTR="$DSTR ssh 'Use duplicity over ssh' $ssh"
+    DSTR="$DSTR local 'Use a local (usb or detachable) disk' $local"
+    DSTR="$DSTR cifs 'Use a windows file-share ' $cifs"
+    
+    SEL=$(eval "$DSTR" 2>&1 >/dev/tty)
+
+    if [ -n "$SEL" ]; then
+	#we have chosen one of them
+	case $SEL in
+	    ssh)
+		DUPLICITY_TARGET=SSH
+		;;
+	    local)
+		DUPLICITY_TARGET=LOCAL
+		;;
+	    cifs)
+		DUPLICITY_TARGET=CIFS
+		;;
+
+	esac
+	
+	doWriteBackupConfiguration
+    fi
+    }
+
+function menuSelectTargetDrive
+    {
+    lookupStatus
+    UUIDS=$(lsblk -f | egrep "ext|xfs" | grep -v / | cut -c 32-70)
+    
+
+    DSTR="dialog --backtitle '$TITLE' --title 'Backup Drive' --radiolist 'Duplicity drive:' 16 72 10"
+    count=0
+    for uuid in $UUIDS; do
+	disk=$(blkid --uuid $uuid)
+	label=$(e2label $disk)
+	disk=$(basename $disk)
+	onoff=off
+	if [ "$uuid" = $DUPLICITY_UUID ]; then
+	    onoff=on
+	fi
+	if [ -n "$disk" ]; then
+	    ((count+=1))
+	    DSTR="$DSTR $disk '$uuid $label' $onoff"
+	fi
+    done
+
+    SEL=""
+    if [ $count -gt 0 ]; then
+	SEL=$(eval "$DSTR" 2>&1 >/dev/tty)
+    fi
+
+    if [ -n "$SEL" ]; then
+	#SEL should be the disk we want
+	#find the UUID that belongs to the disk
+	UUID=$(lsblk -f | egrep "ext|xfs" | grep -v / | grep $SEL | cut -c 32-70)
+
+	DUPLICITY_UUID=$UUID
+	DUPLICITY_CONFIGURED=yes
+	doWriteBackupConfiguration
+    fi
+    }
+
 function doWriteBackupConfiguration
     {
-	if [ -n "$DUPLICITY_USER" -a -n "$DUPLICITY_HOST" -a -n "$DUPLICITY_PATH" ]; then
-	    echo "USER=$DUPLICITY_USER" >$DUPLICITY_CONF
-	    echo "HOST=$DUPLICITY_HOST" >>$DUPLICITY_CONF
-	    echo "PORT=$DUPLICITY_PORT" >>$DUPLICITY_CONF
-	    echo "PATH=$DUPLICITY_PATH" >>$DUPLICITY_CONF
-	    echo "ENABLED=$DUPLICITY_ENABLED" >>$DUPLICITY_CONF
-	fi
+	echo "TARGET=$DUPLICITY_TARGET" >$DUPLICITY_CONF
+	echo "CONFIGURED=$DUPLICITY_CONFIGURED" >>$DUPLICITY_CONF
+	echo "USER=$DUPLICITY_USER" >>$DUPLICITY_CONF
+	echo "HOST=$DUPLICITY_HOST" >>$DUPLICITY_CONF
+	echo "PORT=$DUPLICITY_PORT" >>$DUPLICITY_CONF
+	echo "PATH=$DUPLICITY_PATH" >>$DUPLICITY_CONF
+	echo "UUID=$DUPLICITY_UUID" >>$DUPLICITY_CONF
+	echo "KEY=$DUPLICITY_KEY" >>$DUPLICITY_CONF
+	echo "OLDEY=$DUPLICITY_OLDEY" >>$DUPLICITY_CONF
+	echo "ENABLED=$DUPLICITY_ENABLED" >>$DUPLICITY_CONF
     }
 
 function menuBackup
@@ -3566,44 +4151,125 @@ function menuBackup
 
 	DSTR="dialog --no-cancel --backtitle '$TITLE' --menu 'Backup Menu' 0 0 0"
 	DSTR="$DSTR Alter 'Backup ($status)'"
+	DSTR="$DSTR Target 'Choose Backup target ($DUPLICITY_TARGET)'"
 	DSTR="$DSTR Config 'Configure Backup'"
+	DSTR="$DSTR Key 'Encryption Key'"
+	DSTR="$DSTR Cron 'Configure automatic backup times'"
 	DSTR="$DSTR Do 'Do Backup'"
+	DSTR="$DSTR Last 'Find last backup date'"
+	DSTR="$DSTR '---' '------'"
 	DSTR="$DSTR Restore 'Restore from Backup'"
+	NeedsUmount=$( df | grep /mnt/backup )
+	if [ -n "$NeedsUmount" ]; then
+	    #something was left mounted on /mnt/backup.  Give an option to unmount it
+	DSTR="$DSTR '---' '------'"
+	DSTR="$DSTR Umount 'Unmount the backup directory'"
+	fi
 	DSTR="$DSTR Back 'Go back one menu'"
 
+	echo $DSTR
 	SEL=$(eval "$DSTR" 2>&1 >/dev/tty)
 
 	if [ "$SEL" = "Config" ]; then 
-	    menuConfigureBackup
+	    case $DUPLICITY_TARGET in
+		SSH)
+		    menuConfigureBackup
+		;;
+		CIFS)
+		    menuCIFSCredentials
+		;;
+		LOCAL)
+		    menuSelectTargetDrive
+		;;
+	    esac
 	    continue
 	fi
-	if [ "$SEL" = "Do" ]; then
+	case $SEL in
+	    Key)
+	    menuBackupPassphrase
+	    continue
+	    ;;
+	Do)
 	    doBackup
 	    echo backin up
 	    continue
-	fi
-	if [ "$SEL" = "Restore" ]; then
+	    ;;
+	Target)
+	    menuChooseBackupTarget
+	    continue
+	    ;;
+	Restore)
 	    menuRestore
 	    continue
-	fi
-	if [ "$SEL" = "Alter" ]; then
+	    ;;
+	Cron)
+	    editCron /etc/cron.d/kardia_backup /usr/local/bin/kardia.sh doAutoBackup
+	    ;;
+	Alter)
 	    menuEnableDisableBackup
 	    #lookupStatus
-	fi
-	if [ "$SEL" = "Back" ]; then 
+	    ;;
+	Umount)
+	    doBackupPrePost disconnect
+	    #lookupStatus
+	    ;;
+	Last)
+	    menuFindLastBackupDate
+	    continue
+	    ;;
+	Back)
 	    return
-	fi
+	    ;;
+	esac
     done
     }
+
+function menuFindLastBackupDate
+    {
+    lookupStatus
+    if [ -n "DUPLICITY_CONFIGURED" ]; then
+	echo "Gathering data: Please Wait"
+	DSTR="dialog  --msgbox"
+
+	doBackupPrePost connect
+	if [ $? -ne 0 ]; then
+	    echo "ERROR connecting to the backup target"
+	    sleep 5
+	    return
+	fi
+
+	dates=$( duplicity collection-status $DUPLICITY_OPT $dup_path/DB  | grep -v Chain | grep -v date | grep 20[0-9][0-9] | sed 's/.*\(....................20[0-9][0-9]\).*/\1/' | { while read one; do date -d"$one"  +%Y-%m-%dT%H:%M:%S; done } | tail -1 )
+	echo dates are: $dates;
+	if [ -z "$dates" ]; then
+	    echo ---------------
+	    echo No backups yet.
+	    echo ---------------
+	    sleep 3
+	    return
+	fi
+	doBackupPrePost disconnect
+	DSTR="$DSTR 'Last backup date: $dates' 7 30 ";
+	echo $DSTR
+	SEL=$(eval "$DSTR" 2>&1 >/dev/tty)
+    fi
+    }
+
 
 function menuRestore
     {
     lookupStatus
-    if [ -n "DUPLICITY_USER" -a -n "DUPLICITY_HOST" -a -n "DUPLICITY_PATH" ]; then
+    if [ -n "DUPLICITY_CONFIGURED" ]; then
 	echo "Gathering data: Please Wait"
 	DSTR="dialog --backtitle '$TITLE' --menu 'Choose an item to restore' 0 0 0"
-	dup_path="scp://$DUPLICITY_USER@$DUPLICITY_HOST:$DUPLICITY_PORT//$DUPLICITY_PATH"
-	dates=$( duplicity collection-status $dup_path/DB --no-encryption | grep -v Chain | grep -v date | grep 20[0-9][0-9] | sed 's/.*\(....................20[0-9][0-9]\).*/\1/' | { while read one; do date -d"$one"  +%Y-%m-%dT%H:%M:%S; done } )
+
+	doBackupPrePost connect
+	if [ $? -ne 0 ]; then
+	    echo "ERROR connecting to the backup target"
+	    sleep 5
+	    return
+	fi
+
+	dates=$( duplicity collection-status $DUPLICITY_OPT $dup_path/DB  | grep -v Chain | grep -v date | grep 20[0-9][0-9] | sed 's/.*\(....................20[0-9][0-9]\).*/\1/' | { while read one; do date -d"$one"  +%Y-%m-%dT%H:%M:%S; done } )
 	echo $dates;
 	if [ -z "$dates" ]; then
 	    echo -----------------------------------
@@ -3619,14 +4285,13 @@ function menuRestore
 	echo $SEL
 	if [ -n "$SEL" ]; then
 	    #We are trying to restore a backup
-	    dup_path="scp://$DUPLICITY_USER@$DUPLICITY_HOST:$DUPLICITY_PORT//$DUPLICITY_PATH"
 
 	    export DBDUMP="/tmp/mysql.tmp"
 
 	    #echo Dumping mysql
 	    #mysqldump -u root -h localhost --databases Kardia_DB --complete-insert --skip-extended-insert --add-drop-database > "$DBDUMP"
 	    echo recovering mysql sql file from $SEL
-	    #duplicity $DBDUMP $dup_path/DB --force --no-encryption --time $SEL
+	    #duplicity $DBDUMP $dup_path/DB --force $DUPLICITY_OPT --time $SEL
 	    restoreOneDir $dup_path/DB $DBDUMP $SEL
 
 	    echo Restoring etc from $SEL
@@ -3635,17 +4300,17 @@ function menuRestore
 
 	    #restore the data directory
 	    echo Restoring data from $SEL
-	    #duplicity $dup_path/data $KSRC/kardia-app/data --force --no-encryption --time $SEL
+	    #duplicity $dup_path/data $KSRC/kardia-app/data --force $DUPLICITY_OPT --time $SEL
 	    restoreOneDir $dup_path/data $KSRC/kardia-app/data $SEL
 
 	    #restore the files directory
 	    echo Restoring files from $SEL
-	    #duplicity $dup_path/files $KSRC/kardia-app/files --force --no-encryption --time $SEL
+	    #duplicity $dup_path/files $KSRC/kardia-app/files --force $DUPLICITY_OPT --time $SEL
 	    restoreOneDir $dup_path/files $KSRC/kardia-app/files $SEL
 
 	    #restore the tpl directory
 	    echo Restoring tpl from $SEL
-	    #duplicity $dup_path/tpl $KSRC/kardia-app/tpl --force --no-encryption --time $SEL
+	    #duplicity $dup_path/tpl $KSRC/kardia-app/tpl --force $DUPLICITY_OPT --time $SEL
 	    restoreOneDir $dup_path/tpl $KSRC/kardia-app/tpl $SEL
 
 	    echo restoring MYSQL database from sql file
@@ -3655,6 +4320,7 @@ function menuRestore
 	    echo -n "Press enter to continue"
 	    read line
 	fi
+	doBackupPrePost disconnect
     fi
     }
 
@@ -3669,7 +4335,7 @@ function restoreOneDir
 	    #if we fail, put the old stuff back
 	    rm -rf /tmp/old 2>/dev/null
 	    mv $dest /tmp/old
-	    duplicity $source $dest --no-encryption --time $time
+	    duplicity $source $dest $DUPLICITY_OPT --time $time
 	    if [ -d "$dest" -o -e "$dest" ]; then
 		#success!
 		rm -rf /tmp/old
@@ -3684,48 +4350,396 @@ function restoreOneDir
 	fi
     }
 
-function doBackup
+function doAutoBackup
+    {
+    doBackup quiet
+    }
+
+function doBackupPrePost
+    {
+    Mode=$1
+    Testing="$2"
+    lookupStatus
+    [ -z "$Testing" ] && echo Duplicity Mode: $Mode
+
+    case $Mode in
+	connect)
+	    #Unmount before backing up if we need to do so, if we were left mounted, we will fail at this point 
+	    NeedsDisconnect=$(df | grep /mnt/backup)
+	    [ -n "$NeedsDisconnect" ] && doBackupPrePost disconnect quiet
+
+	    #We are connecting.  Set up for the backup
+	    case $DUPLICITY_TARGET in
+		SSH)
+		    target="$DUPLICITY_USER@$DUPLICITY_HOST"
+		    err=$(ssh -oBatchMode=yes -oStrictHostKeyChecking=no -p $DUPLICITY_PORT $target ls 2>&1)
+		    if [ $? -eq 0 ]; then
+			#tested fine
+			logger -t doBackupPrePost "SSH test successful.  Continuing to do backup."
+		    else
+			#failed test
+			logger -t doBackupPrePost "SSH test FAILED.  Backup process will end here."
+			[ "$Testing" = "testing" ] && echo $err
+			return 1
+		    fi
+		    dup_path="scp://$DUPLICITY_USER@$DUPLICITY_HOST:$DUPLICITY_PORT//$DUPLICITY_PATH"
+		;;
+		CIFS)
+		    #mount the directory
+		    dup_path="file:///mnt/backup/kardia-vm"
+		    readCIFSCredentials
+
+		    if [ -e "$CIFS_CONF" ]; then
+			#the config file exists.
+
+			mkdir -p /mnt/backup
+			logger -t doBackupPrePost "Mounting CIFS (windows networking) drive for duplicity"
+
+
+			err=$(mount -t cifs $DUPLICITY_PATH /mnt/backup -o credentials=$CIFS_CONF 2>&1 )
+			if [ $? -gt 0 ]; then
+			    logger -t doBackupPrePost "Network mount failed.  The backup stops here. $err"
+			    [ "$Testing" = "testing" ] && echo $err
+			    return 1
+			fi
+		    else
+			logger -t doBackupPrePost "No CIFS configuration. Cannot continue without authentication"
+		    fi
+		;;
+		LOCAL)
+		    #mount the local directory
+		    mkdir -p /mnt/backup
+		    logger -t doBackupPrePost "Mounting local drive for duplicity"
+		    err=$(mount UUID=$DUPLICITY_UUID /mnt/backup 2>&1 )
+		    if [ $? -gt 0 ]; then
+			logger -t doBackupPrePost "Local mount failed.  The backup stops here."
+			[ "$Testing" = "testing" ] && echo $err
+			return 1
+		    fi
+		    dup_path="file:///mnt/backup/kardia-vm"
+		;;
+	    esac
+
+	    export PASSPHRASE=$DUPLICITY_KEY
+	    ;;
+	disconnect)
+	    #We are connecting.  Set up for the backup
+	    case $DUPLICITY_TARGET in
+		SSH)
+		    [ -z "$Testing" ] && logger -t doBackupPrePost "Duplicity over SSH has completed."
+		;;
+		CIFS)
+		    #umount the directory
+		    [ -z "$Testing" ] && logger -t doBackupPrePost "Unmounting network drive for duplicity"
+		    umount /mnt/backup
+		    if [ $? -gt 0 ]; then
+			[ -z "$Testing" ] && logger -t doBackupPrePost "Network unmount failed. Not sure what to do.  Moving on with life"
+			return 1
+		    fi
+		    [ -z "$Testing" ] && logger -t doBackupPrePost "Duplicity backup to windows share completed."
+		;;
+		LOCAL)
+		    #umount the local directory
+		    [ -z "$Testing" ] && logger -t doBackupPrePost "Unmounting local drive for duplicity"
+		    umount /mnt/backup
+		    if [ $? -gt 0 ]; then
+			[ -z "$Testing" ] && logger -t doBackupPrePost "Local unmount failed. Not sure what to do.  Moving on with life"
+			return 1
+		    fi
+		    [ -z "$Testing" ] && logger -t doBackupPrePost "Duplicity backup to local drive completed."
+		;;
+	    esac
+	    unset PASSPHRASE
+	    ;;
+	testing)
+	    #set -x
+	    echo Connecting
+	    c_err=$(doBackupPrePost connect testing)
+	    c_erval=$?
+	    [ $c_erval -eq 0 ] && echo " Perfect!"
+	    [ $c_erval -ne 0 ] && echo " Oops!"
+	    echo Disconnecting
+	    d_err=$(doBackupPrePost disconnect testing)
+	    d_erval=$?
+	    [ $d_erval -eq 0 ] && echo " Perfect!"
+	    [ $d_erval -ne 0 ] && echo " Oops!"
+	    if [ "$c_erval" -ne 0 ]; then
+		#there was a connect error.  Return an error code and print the message
+		echo "$c_err"
+		return 1
+	    fi
+	    ;;
+    esac
+    }
+
+function menuBackupPassphrase
     {
     lookupStatus
 
-    if [ "$DUPLICITY_ENABLED" = "yes" ]; then
-	if [ -n "DUPLICITY_USER" -a -n "DUPLICITY_HOST" -a -n "DUPLICITY_PATH" ]; then
-	    target="$DUPLICITY_USER@$DUPLICITY_HOST"
-	    if [ "`ssh -oBatchMode=yes -oStrictHostKeyChecking=no -p $DUPLICITY_PORT $target ls `" ]; then
-		dup_path="scp://$DUPLICITY_USER@$DUPLICITY_HOST:$DUPLICITY_PORT//$DUPLICITY_PATH"
+    edit=false
+    if [ -z "$DUPLICITY_KEY" ]; then
+	#when we have no key, go straight into edit mode
+	edit=true
+    fi
+    orig_DUPLICITY_KEY="$DUPLICITY_KEY"
 
+    notDone=1
+    while [ $notDone -gt 0 ]; do
+	if [ "$edit" = "true" ]; then
+	    DSTR="dialog --title 'Encryption Key' --extra-button --backtitle 'Key' --extra-label 'Generate Random' --form"
+	    DSTR="$DSTR 'Make sure you make a copy of this key and store it elsewhere.  If you need to rebuild the VM,"
+	    DSTR="$DSTR you will need this key to restore from backup.' 0 0 0"
+	    DSTR="$DSTR 'KEY' 1 1 '$DUPLICITY_KEY' 1 26 30 0"
+	else
+	    DSTR="dialog --title 'Encryption Key' --extra-button --backtitle 'Key' --extra-label 'Edit' --yesno"
+	    DSTR="$DSTR 'Make sure you make a copy of this key and store it elsewhere.  If you need to rebuild the VM,"
+	    DSTR="$DSTR you will need this key to restore from backup.  \n\nEncryption Key: $DUPLICITY_KEY' 0 0"
+	fi
+
+	SEL=$(eval "$DSTR" 2>&1 >/dev/tty)
+	#eval "$DSTR" 2>&1 >/dev/tty
+	
+	button=$? 
+	#button now holds which button was selected.  0=ok, 1=cancel, 3=other
+	if [ "$SEL" = "" ]; then
+	    #no data passed.
+	    echo nothing
+	fi
+	if [ $button -eq 0 ]; then
+	    #OK was chosen
+	    if [ "$edit" = "true" ]; then
+		#we are editing it, update the value
+		if [ "$SEL" != "$orig_DUPLICITY_KEY" ]; then
+		    if [ -n "$orig_DUPLICITY_KEY" ]; then
+			#There is a pre-existing key we are replacing.  Verify
+			
+			DSTR="dialog --backtitle '$TITLE' --title 'Replace Key' --radiolist 'Replace Key:\n\n"
+			DSTR="$DSTR Never replace your key if you have actual backups that are encrypted with an actual key."
+			DSTR="$DSTR If you do, it makes a key-mismatch and all old, and all new backups will fail.  The"
+			DSTR="$DSTR only way to recover is by either deleting all backups, or by deleting any new backups done with"
+			DSTR="$DSTR the new key, and reverting to the old key.\n\nIf you have no key yet, or have not made any"
+			DSTR="$DSTR backups using the old key, you are OK.\n' 18 78 14"
+			DSTR="$DSTR keep 'Keep your current key' on"
+			DSTR="$DSTR replace 'Replace your key and invalidate ALL previous backups' off"
+
+			AREYOUSURE=$(eval "$DSTR" 2>&1 >/dev/tty)
+			worked=$?
+			echo $AREYOUSURE
+		    else
+			#there was no key previously.  Assigning a new one
+			worked=0
+			AREYOUSURE="replace"
+		    fi
+		    if [ "$worked" = 0 -a "$AREYOUSURE" = "replace" ]; then
+			echo "Key replaced"
+			DUPLICITY_OLDEY=$DUPLICITY_KEY
+			DUPLICITY_KEY=$SEL
+		    else
+			echo "Key not changed"
+			return 1
+		    fi
+		fi
+	    fi
+	    notDone=0 #break out of the loop
+	    doWriteBackupConfiguration
+	fi
+	if [ $button -eq 1 ]; then
+	    #cancel was chosen
+	    return 1
+	fi
+	if [ $button -eq 3 ]; then
+	    #optional button was chosen
+	    #  Either generate a random key (edit=true)
+	    #  or go into edit mode (edit=false)
+	    if [ "$edit" = "false" ]; then
+		#go into edit mode
+		edit=true
+	    else
+		#generate was selected, generate a new key
+		DUPLICITY_KEY=$(cat /dev/urandom | tr -dc '[:alpha:]' | fold -w ${1:-30} | head -n 1)
+		echo $DUPLICITY_KEY
+	    fi
+	fi
+    done
+    }
+
+function readCIFSCredentials
+    {
+    
+    if [ -z "$ETCDIR" ]; then
+	lookupStatus
+    fi
+
+    export CIFS_CONF=$ETCDIR/cifs.conf
+    
+    if [ -e "$CIFS_CONF" ]; then
+	export CIFS_USER=$(grep username $CIFS_CONF | sed 's/.*=//')
+	export CIFS_PASS=$(grep password $CIFS_CONF | sed 's/.*=//')
+    fi
+    }
+
+function doWriteCIFSCredentials
+    {
+    if [ -z "$ETCDIR" ]; then
+	lookupStatus
+    fi
+
+    export CIFS_CONF=$ETCDIR/cifs.conf
+    
+    echo "username=$CIFS_USER" >$CIFS_CONF
+    echo "password=$CIFS_PASS" >>$CIFS_CONF
+    chmod 700 $CIFS_CONF
+    }
+
+#Get CIFS credentials for mounting a backup file. /usr/local/etc/cifs.conf
+function menuCIFSCredentials
+    {
+    option=$1
+    if [ -z "$option" ]; then
+	option=menu
+    fi
+
+    readCIFSCredentials
+
+    completed=false
+    while [ "$completed" = "false" ]; do
+	#loop through, giving the various menus	
+	case "$option" in
+	    menu)
+		DSTR="dialog --title 'CIFS Credentials'  --extra-button --extra-label 'Password' --form"
+		DSTR="$DSTR 'Configure the network path where the backup will be stored.\n"
+		DSTR="$DSTR A valid network path would look like: //server/share\n' 0 0 0"
+		DSTR="$DSTR 'Network Path:' 1 1 '$DUPLICITY_PATH' 1 20 40 0"
+		DSTR="$DSTR 'Username:' 3 1 '$CIFS_USER' 3 20 40 0"
+
+		SEL=$(eval $DSTR 2>&1 >/dev/tty)
+		response=$?
+		
+		if [ $response = 0 -o $response = 3 ]; then
+		    #ok or password was pressed.
+		    set $SEL
+		    DUPLICITY_PATH=$1
+		    CIFS_USER=$2
+		fi
+		if [ $response = 0 ]; then
+		    completed=true #so we exit
+		    #write the CIFS credential file
+		    doWriteCIFSCredentials
+		    DUPLICITY_CONFIGURED=yes
+		    #We also changed DUPLICITY variables save that
+		    doWriteBackupConfiguration
+
+		    #Now we need to test
+		    err=$(doBackupPrePost testing)
+		    if [ $? -ne 0 ]; then
+			#Somethig did not work
+			echo "ERROR: something did not work.  The error was:"
+			echo "  $err"
+			echo "Please check your path and network credentials and try again"
+			echo -n "Press enter to continue: > "
+			read line
+			completed=false
+		    fi
+		fi
+		if [ $response = 1 ]; then
+		    #cancel
+		    completed=true #exit
+		fi
+		if [ $response = 3 ]; then
+		    #change password
+		    option=password
+		fi
+	    ;;
+	    password)
+		DSTR="dialog --title 'Password' --clear --insecure --passwordbox 'Enter Password' 10 30 '$CIFS_PASS'"
+		SEL=$(eval $DSTR 2>&1 >/dev/tty)
+
+		if [ $? = 0 ]; then
+		    CIFS_PASS=$SEL
+		    option=menu
+		else
+		    echo "Skipping password change"
+		fi
+	    ;;
+	esac
+    done
+    }
+
+
+function doBackup
+    {
+    quiet="$1"
+
+    if Root; then
+	#all is right with the world
+	echo
+    else
+	echo -------------------
+	echo "Backup must be run as root.  Both for permissions, and for the configuration files"
+	echo ------------------
+	sleep 5
+	return 1
+    fi
+
+    lookupStatus
+
+    if [ "$DUPLICITY_ENABLED" = "yes" ]; then
+	if [ "$DUPLICITY_CONFIGURED" ]; then
+
+	    doBackupPrePost connect
+	    if [ $? -eq 0 ]; then
 		export DBDUMP="/tmp/mysql.tmp"
 
+		#Back up the mysql database
 		echo Dumping mysql
+		logger -t doBackup "Dumping mysql"
 		mysqldump -u root -h localhost --databases Kardia_DB --complete-insert --skip-extended-insert --add-drop-database > "$DBDUMP"
 		echo Backing up mysql
-		duplicity $DBDUMP $dup_path/DB --no-encryption
+		logger -t doBackup "Backing up mysql"
+		duplicity $DUPLICITY_OPT $DBDUMP $dup_path/DB 
 
-		echo backing up etc
 		#backup the etc directory
-		duplicity $ETCDIR $dup_path/etc --no-encryption
+		echo backing up etc
+		logger -t doBackup "backing up etc"
+		duplicity $DUPLICITY_OPT $ETCDIR $dup_path/etc
+
 		#backup the data directory
 		echo backing up data
-		duplicity $KSRC/kardia-app/data $dup_path/data --no-encryption
+		logger -t doBackup "backing up data"
+		duplicity $DUPLICITY_OPT $KSRC/kardia-app/data $dup_path/data
+
 		#backup the files directory
 		echo backing up files
-		duplicity $KSRC/kardia-app/files $dup_path/files --no-encryption
+		logger -t doBackup "backing up files"
+		duplicity $DUPLICITY_OPT $KSRC/kardia-app/files $dup_path/files
+
 		#backup the tpl directory
 		echo backing up tpl
-		duplicity $KSRC/kardia-app/tpl $dup_path/tpl --no-encryption
+		logger -t doBackup  "backing up tpl"
+		duplicity $DUPLICITY_OPT $KSRC/kardia-app/tpl $dup_path/tpl
+
+		doBackupPrePost disconnect
 	    else
 		echo --------------------------------
-		echo "There was an error testing SSH"
-		echo "Please check your configuration and network connection"
+		[ "$DUPLICITY_TARGET" = "SSH" ] && echo "There was an error testing SSH"
+		[ "$DUPLICITY_TARGET" = "SSH" ] && echo "Please check your configuration and network connection"
+		[ "$DUPLICITY_TARGET" = "LOCAL" ] && echo "There was an error connecting to the local backup drive"
+		[ "$DUPLICITY_TARGET" = "LOCAL" ] && echo "Verify it is connected to the machine"
+		[ "$DUPLICITY_TARGET" = "CIFS" ] && echo "There was an error connecting to the windows share"
+		[ "$DUPLICITY_TARGET" = "CIFS" ] && echo "Please check your configuration and network connection"
 		exit
 	    fi
 	else
-	    echo "Backup is not yet configured.  Please configure it"
-	    sleep 5
+	    if [ -z "$quiet" ]; then
+		echo "Backup is not yet configured.  Please configure it"
+		sleep 5
+	    fi
 	fi
     else
-	echo "Backup is disabled.  Please enable first"
-	sleep 5
+	if [ -z "$quiet" ]; then
+	    echo "Backup is disabled.  Please enable first"
+	    sleep 5
+	fi
     fi
     }
 
@@ -3745,6 +4759,16 @@ function displyCentrallixConnectInfo
     URL:   https://$IPADDR:$CXSSLPORT/" 0 0
     }
 
+function doOnBoot
+    {
+    lookupStatus
+
+    logger -t "kardia.sh" "Running kardia.sh doOnBoot"
+    if [ "$AUTOSSH_ENABLED" = "yes" ]; then
+	doStartAutossh
+    fi
+    }
+
 function doSetupGuideUser
     {
     lookupStatus
@@ -3753,7 +4777,7 @@ function doSetupGuideUser
 	dialog --backtitle "$TITLE" --title "Step Ten:  Build and Run Centrallix/Kardia" --yes-label Build --no-label Skip --yesno "Finally, you can build and run Centrallix and Kardia.  This will compile the source code in the shared repository, install Centrallix, build the Kardia database, and start the Centrallix server on port $CXPORT." 0 0
 	if [ "$?" = 0 ]; then
 	    doBuild
-	    doDataBuild
+	    AsRoot doDataBuild
 	    cxStart
 	    lookupStatus
 	    dialog --backtitle "$TITLE" --title "Centrallix Started" --msgbox "Centrallix is started and is running on the following port:
@@ -3771,7 +4795,7 @@ URL:   http://$IPADDR:$CXPORT/" 0 0
 	dialog --backtitle "$TITLE" --title "Step Eleven:  Build and Run Centrallix/Kardia" --yes-label Build --no-label Skip --yesno "Finally, you can build and run Centrallix and Kardia.  This will compile the source code in $USER's repository, install Centrallix, build the Kardia database, and start the Centrallix server on port $CXPORT." 0 0
 	if [ "$?" = 0 ]; then
 	    doBuild
-	    doDataBuild
+	    AsRoot doDataBuild
 	    cxStart
 	    lookupStatus
 	    dialog --backtitle "$TITLE" --title "Centrallix Started" --msgbox "Centrallix is started and is running on the following port:
@@ -4082,7 +5106,7 @@ function sg11RootBuildRun
     dialog --backtitle "$TITLE" --title "Step $STEPNUM:  Build and Run Centrallix/Kardia" --yes-label Build --no-label Skip --yesno "Finally, you can build and run Centrallix and Kardia.  This will compile the source code, install Centrallix, build the Kardia database, and start the Centrallix server on port 800." 0 0
     if [ "$?" = 0 ]; then
 	doBuild
-	doDataBuild
+	AsRoot doDataBuild
 	cxStart
 	lookupStatus
 	dialog --backtitle "$TITLE" --title "Centrallix Started" --msgbox "Centrallix is started and is running on the following port:

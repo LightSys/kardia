@@ -42,7 +42,7 @@ class EmailReportSender(ReportSender):
         return msg
 
     # contact_info is assumed to be a string email
-    def send_report(self, report_path, scheduled_report, kardia_user_agent):
+    def send_report(self, report_path, scheduled_report, kardia_user_agent, dry_run):
         if not scheduled_report.recipient_contact_info:
             return SendingInfo(
                 SentStatus.INVALID_EMAIL_ERROR,
@@ -64,6 +64,12 @@ class EmailReportSender(ReportSender):
             )
 
         msg = self._build_email_msg(email_text, kardia_user_agent, report_path)
+
+        if dry_run:
+            print(f"Would send to {scheduled_report.recipient_contact_info}")
+            print(f"{email_text}")
+            print("---------------------------------------------")
+            return SendingInfo(SentStatus.SENT, datetime.now())
 
         try:
             smtp = smtplib.SMTP(**self.smtp_params)

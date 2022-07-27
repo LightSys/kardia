@@ -1,0 +1,34 @@
+$Version=2$
+plugin_base_merge_person "system/query"
+    {
+    partner_a "query/parameter" { type=string; style=strnull; }
+    partner_b "query/parameter" { type=string; style=strnull; }
+
+    sql = " select
+		p_partner_key = :p:p_partner_key,
+		p_data_source = 'Person',
+		p_data_key = :p:p_partner_key,
+		p_data_desc = 'Person Info'
+		    + condition(char_length(:p:p_previous_surname) > 1, ', previous surname ' + :p_previous_surname, '')
+		    + condition(:p:p_date_of_birth is not null, ', birth date ' + dateformat(:p_date_of_birth, 'dd-MMM-yyyy'), '')
+		    ,
+		p_short_data_desc = condition(char_length(:p:p_previous_surname) > 1, :p_previous_surname, 'no prevous surname')
+		    + condition(:p:p_date_of_birth is not null, ' ' + dateformat(:p_date_of_birth, 'dd-MMM-yyyy'), ' no birthdate')
+		    ,
+		p_date_start = null,
+		p_date_end = null,
+		p_allow_copy = 1,
+		p_allow_multiple = 0,
+		p_allow_delete = 1,
+		p_default_copy = 1,
+		p_default_marriage_copy = 0,
+		p_default_marriage_move = 0,
+		p_default_multiple = 0,
+		p_allow_collate = 1,
+		p_comment = null
+	    from
+		identity /apps/kardia/data/Kardia_DB/p_person/rows p
+	    where
+		(:p:p_partner_key = :parameters:partner_a or :p:p_partner_key = :parameters:partner_b)
+	    ";
+    }

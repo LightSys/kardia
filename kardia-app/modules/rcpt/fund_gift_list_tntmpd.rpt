@@ -26,6 +26,10 @@ fund_gift_list_tntmpd "system/report"
     tntabbrev "report/parameter" { type=string; default=runserver(isnull((select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'TntAbbrev' and :a_ledger_number = :this:ledger), /apps/kardia/data/Site.struct:site_name)); }
     tntcode "report/parameter" { type=string; default=runserver(isnull((select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'TntCode' and :a_ledger_number = :this:ledger), /apps/kardia/data/Site.struct:site_name)); }
 
+    // Out parameters
+    rowcount "report/parameter" { type=integer; direction=out; default=runserver(isnull(:gift_qy:all_cnt, 0)); }
+    is_empty "report/parameter" { type=integer; direction=out; default=runserver(condition(isnull(:gift_qy:all_cnt, 0) == 0, 1, 0)); }
+
     // What costctrs are we reporting on?
     cclist_qy "report/query"
 	{
@@ -159,6 +163,8 @@ fund_gift_list_tntmpd "system/report"
 		ORDER BY
 			isnull(:g:a_gift_postmark_date, :g:a_gift_received_date)
 		";
+
+	all_cnt "report/aggregate" { compute="count(:amount)"; reset=0; }
 	}
 
     ginfo_qy "report/query"

@@ -662,6 +662,73 @@ create table p_search_stage_criteria (
 );
 
 
+/* p_nondup */
+
+create table p_nondup (
+        p_partner_key                         char(10)  not null,      /*  --  */
+        p_nondup_partner_key                  char(10)  not null,      /*  --  */
+        p_comment                             varchar(900)  null,      /* comments about this pair of partner keys --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* p_dup */
+
+create table p_dup (
+        p_partner_key                         char(10)  not null,      /*  --  */
+        p_dup_partner_key                     char(10)  not null,      /*  --  */
+        p_match_quality                       float  not null,         /* The degree of match for the potential duplicates (0.0 ~ 1.0) --  */
+        p_location_id                         integer  null,           /* If this is a duplicate location (same partner), this is the location ID. --  */
+        p_dup_location_id                     integer  null,           /*  --  */
+        p_revision_id                         integer  null,           /*  --  */
+        p_dup_revision_id                     integer  null,           /*  --  */
+        p_contact_id                          integer  null,           /* If this is a duplicate contact record (same partner), this is the contact ID. --  */
+        p_dup_contact_id                      integer  null,           /*  --  */
+        p_comment                             varchar(900)  null,      /* comments about this potential duplicate --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* p_merge */
+
+create table p_merge (
+        p_partner_key_a                       char(10)  not null,      /*  --  */
+        p_partner_key_b                       char(10)  not null,      /*  --  */
+        p_data_source                         varchar(16)  not null,   /* The source of the data (gift, address, contact, etc.) --  */
+        p_data_key                            varchar(255)  not null,  /* The primary key or other identifier of the data in question --  */
+        p_data_desc                           varchar(255)  not null,  /* The data's summarized content/value. --  */
+        p_short_data_desc                     varchar(255)  not null,  /* The data's summarized content/value, shortened to be more appropriate for fuzzy string comparison --  */
+        p_date_start                          datetime  null,          /* If we're managing data based on a date range, this is the starting date --  */
+        p_date_end                            datetime  null,          /* If we're managing the data based on date range, this is the ending date --  */
+        p_allow_copy                          bit  not null,           /* 1 if we can make a copy of this data (e.g. addresses, phones, emails), 0 if we can only move it (e.g. gifts, payments, etc.) --  */
+        p_default_copy                        bit  not null,           /* 1 if by default we copy rather than move, 0 if by default we move rather than copy --  */
+        p_default_marriage_copy               bit  not null,           /* 1 if by default we copy this in a marriage merge, 0 if by default we leave it alone --  */
+        p_default_marriage_move               bit  not null,           /* 1 if by default we move this in a marriage merge, 0 if by default we leave it alone --  */
+        p_allow_multiple                      bit  not null,           /* 1 if we can have more than one of these items per partner (addresses, gifts, etc), or 0 if we can only have one per partner (staff, church, person) --  */
+        p_default_multiple                    bit  not null,           /* 1 if we by default keep multiples, or 0 if we by default don't create multiples. --  */
+        p_allow_delete                        bit  not null,           /* 1 if we can delete this item entirely during the merge, or 0 if we cannot delete it --  */
+        p_allow_collate                       bit  not null,           /* 1 if we should look at the "short desc" to see if two of these are identical, 0 if they are never considered identical --  */
+        p_disposition                         varchar(3)  not null,    /* How we're handling this, first char where from (uppercase if copy, lowercase if move), 2nd/3rd chars where to, for example aB means move from a to b, BC means copy from B to C, ABC means copy from A to both B and C. --  */
+        p_comment                             varchar(900)  null,      /* comments about this merge data --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
 /* m_list */
 
 create table m_list (
@@ -1755,6 +1822,7 @@ create table r_group (
         r_group_file                          varchar(255)  not null,  /* file name of the .rpt file in the above module. --  */
         r_group_template_file                 varchar(255)  null,      /* file name of a mail merge / template document (txt file) to be used --  */
         r_is_active                           bit,                     /* Whether or not the group is 'active'. Kardia may come with many preconfigured report groups that are not activated by the user yet. --  */
+        r_send_empty                          bit,                     /* Whether or not to send an "empty" report with no data internally. Only supported for reports that have an is_empty out parameter. --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -3058,6 +3126,9 @@ create table a_subtrx_gift_item (
         a_foreign_currency_exch_rate          float  null,             /* Foreign currency effective exchange rate --  */
         a_foreign_currency_date               float  null,             /* Foreign currency effective date for exchange rate --  */
         a_recv_document_id                    varchar(64)  null,       /* Check number, transaction number, etc., for received gift. --  */
+        a_account_hash                        varchar(256)  null,      /* Argon2id hash of the routing number and account number. --  */
+        a_check_front_image                   varchar(256)  null,      /* Image of the front of the check (relative to /apps/kardia/files/rcpt/check_images) --  */
+        a_check_back_image                    varchar(256)  null,      /* Image of the back of the check (relative to /apps/kardia/files/rcpt/check_images) --  */
         a_posted                              bit  default 0,          /* Has this transaction been posted (in this table)? --  */
         a_posted_to_gl                        bit  default 0,          /* Has this transaction been posted to the GL - yes (1) or no (0)? --  */
         a_gift_admin_fee                      float  null,             /* Total administration fee percent to use (optionally specified by user) --  */
@@ -4420,6 +4491,28 @@ create table s_stats_cache (
         s_money_value                         decimal(14,4)  null,     /* currency value of the statistic --  */
         s_double_value                        float  null,             /* floating point value of the statistic --  */
         s_datetime_value                      datetime  null,          /* date/time value of the statistic --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* s_document_scanner */
+
+create table s_document_scanner (
+        s_scanner_id                          integer  not null,       /* unique ID of the scanner --  */
+        s_scanner_desc                        varchar(255)  not null,  /* description of this scanner --  */
+        s_scanner_type                        char(3)  not null,       /* type/protocol of scanner. Currently supported: CHK - Check Scanner using DM check-reader server. --  */
+        s_scanner_host                        varchar(255)  null,      /* network address (IP address) of the scanner. For CHK, this is the address of the check-reader server. --  */
+        s_scanner_port                        integer  null,           /* network port of the scanner, if needed. --  */
+        s_scanner_auth_user                   varchar(255)  null,      /* username to authenticate to scanner server, if needed. (unused for CHK) --  */
+        s_scanner_auth_token                  varchar(255)  null,      /* token/password to authenticate to scanner server, if needed. (token is used for CHK) --  */
+        s_scanner_id_on_server                varchar(255)  null,      /* unique identifier for this scanner, if needed, on the document scanner server. For CHK, this is the profile ID. --  */
+        s_date_last_used                      datetime  null,          /* date/time this scanner was last used --  */
+        s_last_used_by                        varchar(20)  null,       /* username that last used this scanner --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */

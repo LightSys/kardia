@@ -1,0 +1,88 @@
+$Version=2$
+plugin_base_mergeexec_relate "system/query"
+    {
+    partner_a "query/parameter" { type=string; style=strnull; }
+    partner_b "query/parameter" { type=string; style=strnull; }
+    partner_c "query/parameter" { type=string; style=strnull; }
+
+    sql = " -- Partner list
+	    declare object info;
+	    select :info:partners = ralign(:parameters:partner_a, 16) + ralign(:parameters:partner_b, 16) + ralign(isnull(:parameters:partner_c, ''), 16);
+
+	    -- Phase One, copy
+	    insert
+		/apps/kardia/data/Kardia_DB/p_partner_relationship/rows
+	    select
+		p_partner_key = condition(:r:p_partner_key = ltrim(substring(:info:partners, (charindex(upper(substring(:m:p_disposition, 1, 1)), 'ABC') - 1)*16 + 1, 16))
+				    , '#' + ltrim(substring(:info:partners, (charindex(:abc:letter, 'ABC') - 1)*16 + 1, 16))
+				    , '#' + :r:p_partner_key),
+		:r:p_relation_type,
+		p_relation_key = condition(:r:p_relation_key = ltrim(substring(:info:partners, (charindex(upper(substring(:m:p_disposition, 1, 1)), 'ABC') - 1)*16 + 1, 16))
+				    , '#' + ltrim(substring(:info:partners, (charindex(:abc:letter, 'ABC') - 1)*16 + 1, 16))
+				    , '#' + :r:p_relation_key),
+		:r:p_relation_comments,
+		:r:p_relation_start_date,
+		:r:p_relation_end_date,
+		:r:s_date_created,
+		:r:s_created_by,
+		:r:s_date_modified,
+		:r:s_modified_by
+	    from
+		/apps/kardia/modules/base/abc.csv/rows abc,
+		/apps/kardia/data/Kardia_DB/p_merge/rows m,
+		/apps/kardia/data/Kardia_DB/p_partner_relationship/rows r
+	    where
+		:m:p_data_source = 'Relationship' and
+		:m:p_partner_key_a = :parameters:partner_a and
+		:m:p_partner_key_b = :parameters:partner_b and
+		charindex(:abc:letter, :m:p_disposition) >= 2 and
+		(:r:p_partner_key = ltrim(substring(:info:partners, (charindex(upper(substring(:m:p_disposition, 1, 1)), 'ABC') - 1)*16 + 1, 16)) or
+		 :r:p_relation_key = ltrim(substring(:info:partners, (charindex(upper(substring(:m:p_disposition, 1, 1)), 'ABC') - 1)*16 + 1, 16))) and
+		:r:name = replace(:m:p_data_key, ':', '|')
+	    ;
+
+	    -- Phase Two, delete/cut
+	    delete
+		identity /apps/kardia/data/Kardia_DB/p_partner_relationship/rows r,
+		/apps/kardia/data/Kardia_DB/p_merge/rows m,
+		/apps/kardia/data/Kardia_DB/m_list/rows l
+	    where
+		:m:p_data_source = 'Relationship' and
+		:m:p_partner_key_a = :parameters:partner_a and
+		:m:p_partner_key_b = :parameters:partner_b and
+		ascii(:m:p_disposition) > 96 and
+		(:r:p_partner_key = ltrim(substring(:info:partners, (charindex(upper(substring(:m:p_disposition, 1, 1)), 'ABC') - 1)*16 + 1, 16)) or
+		 :r:p_relation_key = ltrim(substring(:info:partners, (charindex(upper(substring(:m:p_disposition, 1, 1)), 'ABC') - 1)*16 + 1, 16))) and
+		:r:name = replace(:m:p_data_key, ':', '|')
+	    ;
+
+	    -- Phase Three, correct our temporary keys
+	    update
+		/apps/kardia/data/Kardia_DB/p_partner_relationship/rows
+	    set
+		:p_partner_key = condition(substring(:p_partner_key, 1, 1) = '#', substring(rtrim(:p_partner_key), 2, 16), :p_partner_key)
+	    where
+		(:p_partner_key = '#' + :parameters:partner_a or :p_partner_key = '#' + :parameters:partner_b or :p_partner_key = '#' + :parameters:partner_c
+		 or :p_relation_key = '#' + :parameters:partner_a or :p_relation_key = '#' + :parameters:partner_b or :p_relation_key = '#' + :parameters:partner_c)
+	    ;
+	    update
+		/apps/kardia/data/Kardia_DB/p_partner_relationship/rows
+	    set
+		:p_relation_key = condition(substring(:p_relation_key, 1, 1) = '#', substring(rtrim(:p_relation_key), 2, 16), :p_relation_key)
+	    where
+		(:p_partner_key = :parameters:partner_a or :p_partner_key = :parameters:partner_b or :p_partner_key = :parameters:partner_c
+		 or :p_relation_key = '#' + :parameters:partner_a or :p_relation_key = '#' + :parameters:partner_b or :p_relation_key = '#' + :parameters:partner_c)
+	    ;
+
+	    -- Phase four, clean up anything that would not copy over (conflicting records)
+	    delete
+		/apps/kardia/data/Kardia_DB/p_partner_relationship/rows
+	    where
+		(:p_partner_key = '#' + :parameters:partner_a or :p_partner_key = '#' + :parameters:partner_b or :p_partner_key = '#' + :parameters:partner_c
+		 or :p_relation_key = '#' + :parameters:partner_a or :p_relation_key = '#' + :parameters:partner_b or :p_relation_key = '#' + :parameters:partner_c)
+	    ;
+
+	    -- Return
+	    select 1 where 1 = 0
+	    ";
+    }

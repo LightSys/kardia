@@ -19,6 +19,7 @@ api_report "system/querytree"
                 recipient_partner_key = :gsr:p_recipient_partner_key,
                 recipient_email = :gsr:r_group_sched_address,
                 template_file = :report_group:r_group_template_file,
+                send_if_empty = :report_group:r_send_empty,
                 sent_status = :gsr:r_group_sched_status,
                 sent_error = :gsr:r_group_sched_error,
                 sent_date = :gsr:r_group_sched_sent_date,

@@ -646,11 +646,11 @@ gift_import "widget/component-decl"
 			{
 			sql = "	select
 					imported = (select count(1) from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows where :a_batch_number is not null),
-					ready = (select count(1) from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows where :a_batch_number is null and :i_eg_donormap_confidence == 2 and :i_eg_fundmap_confidence == 2 and :i_eg_acctmap_confidence == 2 and :i_eg_status == 'paid'),
-					need_qa = (select count(1) from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows where :a_batch_number is null and (isnull(:i_eg_donormap_confidence,0) < 2 or isnull(:i_eg_fundmap_confidence,0) < 2 or isnull(:i_eg_acctmap_confidence,0) < 2) and :i_eg_status == 'paid'),
-					pending = (select count(1) from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows where :i_eg_status == 'pending' or :i_eg_status = 'cleared'),
+					ready = (select count(1) from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows where :a_batch_number is null and :i_eg_donormap_confidence == 2 and :i_eg_fundmap_confidence == 2 and :i_eg_acctmap_confidence == 2 and :i_eg_status == 'paid' and dateadd(day, 90, :i_eg_gift_trx_date) > getdate() ),
+					need_qa = (select count(1) from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows where :a_batch_number is null and (isnull(:i_eg_donormap_confidence,0) < 2 or isnull(:i_eg_fundmap_confidence,0) < 2 or isnull(:i_eg_acctmap_confidence,0) < 2) and :i_eg_status == 'paid' and dateadd(day, 90, :i_eg_gift_trx_date) > getdate() ),
+					pending = (select count(1) from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows where :i_eg_status == 'pending' or :i_eg_status = 'cleared' and dateadd(day, 90, :i_eg_gift_trx_date) > getdate() ),
 					mostrecent = (select substring(convert(string,max(:i_eg_gift_trx_date)),1,11) from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows ),
-					notimpamount = (select sum(:i_eg_gift_amount) from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows where :a_batch_number is null and :i_eg_status != 'returned' )
+					notimpamount = (select sum(:i_eg_gift_amount) from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows where :a_batch_number is null and :i_eg_status != 'returned' and dateadd(day, 90, :i_eg_gift_trx_date) > getdate() )
 				";
 			autoquery = onfirstreveal;
 			readahead = 2;
@@ -1154,7 +1154,7 @@ gift_import "widget/component-decl"
 		    text = runclient(condition(:create_dep_batch_info_osrc:cnt > 1, "Create Deposit Batches", "Create Deposit Batch"));
 		    enabled=runclient(:create_dep_batch_info_osrc:cnt > 0);
 
-		    cdb_doit "widget/connector"
+		    cdb_doit_1 "widget/connector"
 			{
 			event=Click;
 			target=nextbatch;
@@ -1162,11 +1162,23 @@ gift_import "widget/component-decl"
 			ledger=runclient(:gift_import:ledger);
 			cnt=runclient(convert(integer,:cdb_count:value));
 			}
+		    cdb_doit_2 "widget/connector"
+			{
+			event=Click;
+			action=Disable;
+			}
+		    cdb_doit_3 "widget/connector"
+			{
+			event=Click;
+			target=create_dep_batch_cancel;
+			action=Disable;
+			}
 		    }
 		create_dep_batch_cancel "widget/textbutton"
 		    {
 		    width=170;
 		    text = "Cancel";
+		    enabled = runclient(:create_dep_batch_window:is_visible);
 		    cancel_dep_batch_cn "widget/connector" { event=Click; target=create_dep_batch_window; action=Close; }
 		    }
 		}
@@ -1201,7 +1213,7 @@ gift_import "widget/component-decl"
 					:eg2:i_eg_deposit_uuid is not null and
 					(:a_batch_number_deposit is null or
 					    (:a_batch_number_deposit >= convert(integer,:parameters:batchno) and :a_batch_number_deposit <= convert(integer,:parameters:endbatchno))) and
-					:a_batch_number is not null and
+					--:a_batch_number is not null and
 					(:eg2:i_eg_deposit_date < :eg:i_eg_deposit_date or
 					    (:eg2:i_eg_deposit_date = :eg:i_eg_deposit_date and :eg2:i_eg_deposit_uuid < :eg:i_eg_deposit_uuid))
 				  group by
@@ -1396,7 +1408,7 @@ gift_import "widget/component-decl"
 		    text = runclient(condition(:create_fee_batch_info_osrc:cnt > 1, "Create Fees Batches", "Create Fees Batch"));
 		    enabled=runclient(:create_fee_batch_info_osrc:cnt > 0);
 
-		    cfb_doit "widget/connector"
+		    cfb_doit_1 "widget/connector"
 			{
 			event=Click;
 			target=nextbatch;
@@ -1404,11 +1416,23 @@ gift_import "widget/component-decl"
 			ledger=runclient(:gift_import:ledger);
 			cnt=runclient(convert(integer,:cfb_count:value));
 			}
+		    cfb_doit_2 "widget/connector"
+			{
+			event=Click;
+			action=Disable;
+			}
+		    cfb_doit_3 "widget/connector"
+			{
+			event=Click;
+			target=create_fee_batch_cancel;
+			action=Disable;
+			}
 		    }
 		create_fee_batch_cancel "widget/textbutton"
 		    {
 		    width=170;
 		    text = "Cancel";
+		    enabled = runclient(:create_fee_batch_window:is_visible);
 		    cancel_fee_batch_cn "widget/connector" { event=Click; target=create_fee_batch_window; action=Close; }
 		    }
 		}
@@ -1443,7 +1467,7 @@ gift_import "widget/component-decl"
 					:eg2:i_eg_deposit_uuid is not null and
 					(:a_batch_number_fees is null or
 					    (:a_batch_number_fees >= convert(integer,:parameters:batchno) and :a_batch_number_fees <= convert(integer,:parameters:endbatchno))) and
-					:a_batch_number is not null and
+					--:a_batch_number is not null and
 					(:eg2:i_eg_deposit_date < :eg:i_eg_deposit_date or
 					    (:eg2:i_eg_deposit_date = :eg:i_eg_deposit_date and :eg2:i_eg_deposit_uuid < :eg:i_eg_deposit_uuid))
 				  group by
@@ -1670,28 +1694,32 @@ gift_import "widget/component-decl"
 		cb_sp3 "widget/parameter" { param_name=period; type=string; default=runclient(:gift_import:period); }
 		cb_sp4 "widget/parameter" { param_name=ledger; type=string; default=runclient(:gift_import:ledger); }
 
-		sql = runserver("
-			select
+		sql = " select
 				cnt = count(1),
-				mindate = substring(convert(string,min(:i_eg_gift_trx_date)),1,11),
-				maxdate = substring(convert(string,max(:i_eg_gift_trx_date)),1,11),
-				totalamt = isnull(sum(:i_eg_gift_amount),$0),
+				mindate = substring(convert(string,min(:eg:i_eg_gift_trx_date)),1,11),
+				min_in_period = condition(min(:eg:i_eg_gift_trx_date) >= :p:a_start_date and min(:eg:i_eg_gift_trx_date) <= :p:a_end_date, 1, 0),
+				maxdate = substring(convert(string,max(:eg:i_eg_gift_trx_date)),1,11),
+				max_in_period = condition(max(:eg:i_eg_gift_trx_date) >= :p:a_start_date and max(:eg:i_eg_gift_trx_date) <= :p:a_end_date, 1, 0),
+				totalamt = isnull(sum(:eg:i_eg_gift_amount),$0),
 				period = :parameters:period,
 				ledger = :parameters:ledger,
 				batchno = '',
 				batchname = 'Electronic Giving ' + substring(convert(string,getdate()),1,11)
 			from
-				/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows
+				/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows eg,
+				/apps/kardia/data/Kardia_DB/a_period/rows p
 			where
-				:a_ledger_number = " + quote(:this:ledger) + " and
-				(:parameters:ptime is null or :parameters:ptime = '0' or substring(:parameters:ptime,7,1) = 'M' or (dateadd(hour, convert(integer, substring(:parameters:ptime,1,6)), :i_eg_gift_trx_date) > getdate())) and
-				(char_length(:parameters:ptime) < 8 or (datepart(year,dateadd(month, convert(integer,substring(:parameters:ptime,8,1)), :i_eg_gift_trx_date)) == datepart(year,getdate()) and datepart(month,dateadd(month, convert(integer,substring(:parameters:ptime,8,1)), :i_eg_gift_trx_date)) == datepart(month,getdate()))) and
-				:a_batch_number is null and
-				:i_eg_donormap_confidence = 2 and
-				:i_eg_fundmap_confidence = 2 and
-				:i_eg_acctmap_confidence = 2 and
-				:i_eg_status = 'paid'
-			");
+				:eg:a_ledger_number = :parameters:ledger and
+				(:parameters:ptime is null or :parameters:ptime = '0' or substring(:parameters:ptime,7,1) = 'M' or (dateadd(hour, convert(integer, substring(:parameters:ptime,1,6)), :eg:i_eg_gift_trx_date) > getdate())) and
+				(char_length(:parameters:ptime) < 8 or (datepart(year,dateadd(month, convert(integer,substring(:parameters:ptime,8,1)), :i_eg_gift_trx_date)) == datepart(year,getdate()) and datepart(month,dateadd(month, convert(integer,substring(:parameters:ptime,8,1)), :eg:i_eg_gift_trx_date)) == datepart(month,getdate()))) and
+				:eg:a_batch_number is null and
+				:eg:i_eg_donormap_confidence = 2 and
+				:eg:i_eg_fundmap_confidence = 2 and
+				:eg:i_eg_acctmap_confidence = 2 and
+				:eg:i_eg_status = 'paid' and
+				:p:a_ledger_number = :parameters:ledger and
+				:p:a_period = :parameters:period
+			";
 		autoquery = oneachreveal;
 		replicasize=2;
 		readahead=2;
@@ -1701,8 +1729,20 @@ gift_import "widget/component-decl"
 		    cb_ledger "widget/component" { path="/sys/cmp/smart_field.cmp"; field=ledger; text="Ledger:"; ctl_type=label; }
 		    cb_period "widget/component" { path="/sys/cmp/smart_field.cmp"; field=period; text="Period:"; ctl_type=label; }
 		    cb_count "widget/component" { path="/sys/cmp/smart_field.cmp"; field=cnt; text="Gift Count:"; ctl_type=label; }
-		    cb_start "widget/component" { path="/sys/cmp/smart_field.cmp"; field=mindate; text="Starting:"; ctl_type=label; }
-		    cb_end "widget/component" { path="/sys/cmp/smart_field.cmp"; field=maxdate; text="Ending:"; ctl_type=label; }
+		    cb_start_hbox "widget/hbox"
+			{
+			height=20;
+			spacing=10;
+			cb_start "widget/component" { width=200; path="/sys/cmp/smart_field.cmp"; field=mindate; text="Starting:"; ctl_type=label; }
+			warn_start "widget/label" { width=200; y=3; fgcolor=black; value=runclient(condition(isnull(:create_batch_info_osrc:min_in_period, 1) != 1, '(not in selected period)', '')); }
+			}
+		    cb_end_hbox "widget/hbox"
+			{
+			height=20;
+			spacing=10;
+			cb_end "widget/component" { width=200; path="/sys/cmp/smart_field.cmp"; field=maxdate; text="Ending:"; ctl_type=label; }
+			warn_end "widget/label" { width=200; y=3; fgcolor=black; value=runclient(condition(isnull(:create_batch_info_osrc:max_in_period, 1) != 1, '(not in selected period)', '')); }
+			}
 		    cb_amt "widget/component" { path="/sys/cmp/smart_field.cmp"; field=totalamt; text="Total Given:"; ctl_type=label; }
 		    cb_batchno "widget/component"
 			{
@@ -1744,18 +1784,31 @@ gift_import "widget/component-decl"
 		    width=140;
 		    text = "Create Gift Batch";
 		    enabled=runclient(:create_batch_info_osrc:cnt > 0);
-		    cb_doit "widget/connector"
+
+		    cb_doit_1 "widget/connector"
 			{
 			event=Click;
 			target=nextbatch;
 			action=GetBatchNumber;
 			ledger=runclient(:gift_import:ledger);
 			}
+		    cb_doit_2 "widget/connector"
+			{
+			event=Click;
+			action=Disable;
+			}
+		    cb_doit_3 "widget/connector"
+			{
+			event=Click;
+			target=create_batch_cancel;
+			action=Disable;
+			}
 		    }
 		create_batch_cancel "widget/textbutton"
 		    {
 		    width=140;
 		    text = "Cancel";
+		    enabled = runclient(:create_gift_batch_window:is_visible);
 		    cancel_batch_cn "widget/connector" { event=Click; target=create_gift_batch_window; action=Close; }
 		    }
 		}

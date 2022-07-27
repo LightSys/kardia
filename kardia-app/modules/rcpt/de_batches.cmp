@@ -88,7 +88,7 @@ de_batches "widget/component-decl"
 
 	unpost_req_cmp "widget/component"
 	    {
-	    path = "unpost_req_de.cmp";
+	    path = "/apps/kardia/modules/rcpt/unpost_req_de.cmp";
 	    }
 
 	unpostde_win "widget/childwindow"
