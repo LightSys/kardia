@@ -59,9 +59,11 @@ plugin_base_dataqa_duplicates "widget/component-decl"
 	    showassoc "widget/parameter" { type=integer; default=runclient(:show_assoc:value); }
 	    showrel "widget/parameter" { type=integer; default=runclient(:show_rel:value); }
 	    showmerge "widget/parameter" { type=integer; default=runclient(:show_merge:value); }
+	    do_query "widget/parameter" { type=string; param_name=query; }
 
 	    sql = " declare collection rels scope application;
 		    declare collection reltype scope application;
+		    declare object info;
 
 		    delete from collection rels;
 		    delete from collection reltype;
@@ -84,6 +86,22 @@ plugin_base_dataqa_duplicates "widget/component-decl"
 			:p_relation_type
 		    from
 			/apps/kardia/data/Kardia_DB/p_partner_relationship/rows
+		    ;
+
+		    select
+			:info:partnerlist = NULL
+		    ;
+
+		    select
+			:info:partnerlist = sum(:p_partner_key + ',') - ','
+		    from
+			/apps/kardia/data/Kardia_DB/p_partner/rows p
+		    where
+			(charindex(upper(:parameters:query), upper(:p_given_name)) > 0 or
+			 charindex(upper(:parameters:query), upper(:p_surname)) > 0 or
+			 charindex(upper(:parameters:query), upper(:p_preferred_name)) > 0 or
+			 charindex(upper(:parameters:query), upper(:p_org_name)) > 0) and
+			char_length(:parameters:query) >= 3
 		    ;
 
 		    select
@@ -123,6 +141,7 @@ plugin_base_dataqa_duplicates "widget/component-decl"
 			/apps/kardia/data/Kardia_DB/p_address_format/rows af2,
 			/apps/kardia/data/Kardia_DB/p_nondup/rows nd
 		    where
+			(:info:partnerlist is null or charindex(',' + rtrim(:d:p_partner_key) + ',', ',' + :info:partnerlist + ',') > 0 or charindex(',' + rtrim(:d:p_dup_partner_key) + ',', ',' + :info:partnerlist + ',') > 0) and
 			:p1:p_partner_key = :d:p_partner_key and
 			:p2:p_partner_key = :d:p_dup_partner_key and
 			--:l1:p_partner_key =* :d:p_partner_key and
@@ -277,12 +296,10 @@ plugin_base_dataqa_duplicates "widget/component-decl"
 		    on_search "widget/connector"
 			{
 			event=Search;
+			event_condition=runclient(char_length(:query) = 0 or char_length(:query) >= 3);
 			target=dupsosrc;
-			action=QueryText;
+			action=QueryParam;
 			query=runclient(:query);
-			use_having=1;
-			cx__case_insensitive = 1;
-			field_list="*disp_name_1*,*disp_name_2*,*ploc_1*,*ploc_2*";
 			}
 		    }
 
