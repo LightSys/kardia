@@ -80,16 +80,14 @@ plugin_base_mergeexec_subs "system/query"
 	    set
 		:p_partner_key = substring(rtrim(:p_partner_key), 2, 16)
 	    where
-		substring(:p_partner_key, 1, 1) = '#' and
-		(:p_partner_key = '#' + :parameters:partner_a or :p_partner_key = '#' + :parameters:partner_b or :p_partner_key = '#' + :parameters:partner_c)
+		(:p_partner_key = '#' + rtrim(:parameters:partner_a) or :p_partner_key = '#' + rtrim(:parameters:partner_b) or :p_partner_key = '#' + rtrim(:parameters:partner_c))
 	    ;
 
 	    -- Phase four, clean up anything that would not copy over (conflicting records)
 	    delete
 		/apps/kardia/data/Kardia_DB/m_list_membership/rows
 	    where
-		substring(:p_partner_key, 1, 1) = '#' and
-		(:p_partner_key = '#' + :parameters:partner_a or :p_partner_key = '#' + :parameters:partner_b or :p_partner_key = '#' + :parameters:partner_c)
+		(:p_partner_key = '#' + rtrim(:parameters:partner_a) or :p_partner_key = '#' + rtrim(:parameters:partner_b) or :p_partner_key = '#' + rtrim(:parameters:partner_c))
 	    ;
 
 	    -- Return

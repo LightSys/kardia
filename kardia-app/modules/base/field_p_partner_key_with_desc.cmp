@@ -14,6 +14,10 @@ field_p_partner_key_with_desc "widget/component-decl"
 
     Description "widget/component-decl-event" { }
 
+    Refresh "widget/component-decl-action" { }
+
+    onRefresh "widget/connector" { event=Refresh; target=pdesc_osrc; action=Refresh; }
+
     expose_events_for = partner_key;
     expose_actions_for = partner_key;
     expose_properties_for = partner_key;
@@ -68,6 +72,7 @@ field_p_partner_key_with_desc "widget/component-decl"
 	    partner "widget/parameter" { type=string; default=runclient(:partner_key:content); }
 	    sql = " select
 			:p1:p_partner_key,
+			:p1:p_status_code,
 			disp_name = condition(char_length(rtrim(:p1:p_org_name)) > 0, :p1:p_org_name + ' ' + condition(char_length(:p1:p_given_name + :p1:p_surname) > 0, '- ', ''), '') + isnull(:p1:p_given_name + ' ','') + isnull(:p1:p_surname + ' ',''),
 			ploc = substitute(isnull(:af1:p_format, '[:p_in_care_of]\n[:p_address_1]\n[:p_address_2]\n[:p_address_3]\n[:p_city], [:p_state_province] [:p_postal_code]\n[:p_country_name]'), 'l=pl1,p=p1,ctry1')
 		    from
@@ -89,6 +94,7 @@ field_p_partner_key_with_desc "widget/component-decl"
 		target=field_p_partner_key_with_desc;
 		action=Description;
 		Text=runclient(replace(:pdesc_osrc:disp_name + ' / ' + :pdesc_osrc:ploc, '\n', ' '));
+		Status=runclient(:pdesc_osrc:p_status_code);
 		Addr=runclient(replace(:pdesc_osrc:ploc, '\n', ' '));
 		NameID=runclient(:pdesc_osrc:disp_name + ' (' + :pdesc_osrc:p_partner_key + ')');
 		Name=runclient(:pdesc_osrc:disp_name);
@@ -100,7 +106,7 @@ field_p_partner_key_with_desc "widget/component-decl"
 		height=20;
 		fl_width=100;
 		valign=middle;
-		value=runclient(replace(:pdesc_osrc:disp_name + ' / ' + :pdesc_osrc:ploc, '\n', ' '));
+		value=runclient(replace(:pdesc_osrc:disp_name + ' / ' + :pdesc_osrc:ploc + condition(:pdesc_osrc:p_status_code = 'O', ' (obsolete)', ''), '\n', ' '));
 		}
 	    }
 	}

@@ -8,7 +8,7 @@ plugin_base_merge_addr "system/query"
 		p_partner_key = :pl:p_partner_key,
 		p_data_source = 'Address',
 		p_data_key = :pl:p_partner_key + ':' + :pl:p_location_id, --replace(:pl:name, '|', ':'),
-		p_data_desc = substitute(isnull(:af:p_format, '[:p_in_care_of]\n[:p_address_1]\n[:p_address_2]\n[:p_address_3]\n[:p_city], [:p_state_province] [:p_postal_code]\n[:p_country_name]'), 'l=pl,p=pl,ctry') + condition(:pl:p_record_status_code = 'I', '\n(inactive)', ''),
+		p_data_desc = substitute(isnull(:af:p_format, '[:p_in_care_of]\n[:p_address_1]\n[:p_address_2]\n[:p_address_3]\n[:p_city], [:p_state_province] [:p_postal_code]\n[:p_country_name]'), 'l=pl,p=pl,ctry') + condition(:pl:p_record_status_code = 'I', '\n(inactive)', '') + condition(:pl:p_record_status_code = 'O', '\n(obsolete)', ''),
 		p_short_data_desc = substitute(isnull(:af:p_format, '[:p_in_care_of]\n[:p_address_1]\n[:p_address_2]\n[:p_address_3]\n[:p_city], [:p_state_province] [:p_postal_code]\n[:p_country_name]'), 'l=pl,p=pl,ctry'),
 		p_date_start = :pl:s_date_created,
 		p_date_end = :pl:s_date_modified,
@@ -28,7 +28,7 @@ plugin_base_merge_addr "system/query"
 	    where
 		(:pl:p_partner_key = :parameters:partner_a or :pl:p_partner_key = :parameters:partner_b) and
 		:pl:p_revision_id = 0 and
-		(:pl:p_record_status_code = 'A' or :pl:p_record_status_code = 'I') and
+		(:pl:p_record_status_code = 'A' or :pl:p_record_status_code = 'I' or :pl:p_record_status_code = 'O') and
 		:pl:p_country_code *= :ctry:p_country_code and
 		:af:p_country_code =* :ctry:p_country_code and
 		:af:p_address_set = 'STANDARD'

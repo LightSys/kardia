@@ -11,9 +11,9 @@ plugin_base_merge_subs "system/query"
 		p_data_desc = condition(count(1) >= 1, 'Subscribed to ' + count(1) + ' mailings: ', '')
 		    + sum(condition(row_number(:lm:p_partner_key) <= 5, :lm:m_list_code + ', ', ''))
 		    - ', '
-		    + condition(count(1) > 5, ' and ' + (count(1) - 5) + ' more, ', condition(count(1) == 0, '', ', '))
+		    + condition(count(1) > 5, ' and ' + (count(1) - 5) + ' more; ', condition(count(1) == 0, '', '; '))
 		    + (select isnull('' + sum(1) + ' deleted/canceled subscriptions', '') from /apps/kardia/data/Kardia_DB/m_list_membership/rows lm2 where :lm2:p_partner_key = :p:p_partner_key and :lm2:m_member_type = 'M' and :lm2:m_membership_status != 'A')
-		    - ', '
+		    - '; '
 		    ,
 		p_short_data_desc = isnull(sum(:lm:m_list_code + ',') - ',', ''),
 		p_date_start = min(:lm:s_date_created),

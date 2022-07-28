@@ -7,7 +7,7 @@ merge_logic "system/query"
     partner_c "query/parameter" { type=string; style=strnull; }
     method "query/parameter" { type=string; style=strnull; }
     primary "query/parameter" { type=string; style=strnull; }
-    relation "query/parameter" { type=integer; }
+    relation "query/parameter" { type=string; style=strnull; }
     name "query/parameter" { type=string; style=strnull; }
 
     // Controls
@@ -36,11 +36,11 @@ merge_logic "system/query"
 	    set
 		:p_record_status_code = 'M',
 		:p_status_code = 'O',
-		:p_merged_with = :info:primary,
+		:p_merged_with = :info:primary_key,
 		:s_date_modified = getdate(),
 		:s_modified_by = user_name()
 	    where
-		:p_partner_key = :info:secondary and
+		:p_partner_key = :info:secondary_key and
 		:parameters:method = 'M' and
 		:parameters:do_merge = 1
 	    ;
@@ -53,7 +53,7 @@ merge_logic "system/query"
 		:s_date_modified = getdate(),
 		:s_modified_by = user_name()
 	    where
-		:p_partner_key = :info:primary and
+		:p_partner_key = :info:primary_key and
 		:parameters:method = 'M' and
 		:parameters:do_merge = 1
 	    ;
@@ -67,7 +67,7 @@ merge_logic "system/query"
 		:s_date_modified = getdate(),
 		:s_modified_by = user_name()
 	    where
-		(:p_partner_key = :info:secondary or :p_partner_key = :info:primary) and
+		(:p_partner_key = :info:secondary_key or :p_partner_key = :info:primary_key) and
 		:parameters:method = 'R' and
 		:parameters:do_merge = 1
 	    ;
@@ -77,11 +77,11 @@ merge_logic "system/query"
 		/apps/kardia/data/Kardia_DB/p_partner/rows
 	    set
 		:p_partner_class = 'IND',
-		:p_parent_key = :info:primary,
+		:p_parent_key = :info:primary_key,
 		:s_date_modified = getdate(),
 		:s_modified_by = user_name()
 	    where
-		:p_partner_key = :info:secondary and
+		:p_partner_key = :info:secondary_key and
 		:parameters:method = 'H' and
 		:parameters:do_merge = 1
 	    ;
@@ -93,7 +93,7 @@ merge_logic "system/query"
 		:s_date_modified = getdate(),
 		:s_modified_by = user_name()
 	    where
-		:p_partner_key = :info:primary and
+		:p_partner_key = :info:primary_key and
 		:parameters:method = 'H' and
 		:parameters:do_merge = 1
 	    ;
@@ -102,11 +102,11 @@ merge_logic "system/query"
 	    update
 		/apps/kardia/data/Kardia_DB/p_partner/rows
 	    set
-		:p_parent_key = :info:primary,
+		:p_parent_key = :info:primary_key,
 		:s_date_modified = getdate(),
 		:s_modified_by = user_name()
 	    where
-		:p_partner_key = :info:secondary and
+		:p_partner_key = :info:secondary_key and
 		:parameters:method = 'A' and
 		:parameters:do_merge = 1
 	    ;
@@ -117,9 +117,24 @@ merge_logic "system/query"
 		:s_date_modified = getdate(),
 		:s_modified_by = user_name()
 	    where
-		:p_partner_key = :info:primary and
+		:p_partner_key = :info:primary_key and
 		:parameters:method = 'A' and
 		:parameters:do_merge = 1
+	    ;
+
+	    -- Relationship creation
+	    insert
+		/apps/kardia/data/Kardia_DB/p_partner_relationship/rows
+	    select
+		p_partner_key = condition(substring(:parameters:relation,1,1) = 'F', :parameters:partner_a, :parameters:partner_b),
+		p_relation_type = convert(integer, substring(:parameters:relation, 2, 10)),
+		p_relation_key = condition(substring(:parameters:relation,1,1) = 'F', :parameters:partner_b, :parameters:partner_a),
+		s_created_by = user_name(),
+		s_date_created = getdate(),
+		s_modified_by = user_name(),
+		s_date_modified = getdate()
+	    where
+		:parameters:relation is not null
 	    ;
 
 	    -- Now, move the various types of data around.
@@ -452,7 +467,8 @@ merge_logic "system/query"
 
 	    -- Return status
 	    select
+		name = 'status',
 		status = 'complete',
-		do_merge = :parameters:do_merge
+		merge_complete = :parameters:do_merge
 	    ";
     }

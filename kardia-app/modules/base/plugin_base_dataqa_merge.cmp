@@ -11,8 +11,8 @@ plugin_base_dataqa_merge "widget/component-decl"
     MergeRequest "widget/component-decl-action" { }
 
     on_MergeRequest_0 "widget/connector" { event=MergeRequest; target=merge_form; action=New; }
-    on_MergeRequest_1 "widget/connector" { event=MergeRequest; target=partner_a; action=SetValue; Value=runclient(:partner_a); }
-    on_MergeRequest_2 "widget/connector" { event=MergeRequest; target=partner_b; action=SetValue; Value=runclient(:partner_b); }
+    on_MergeRequest_1 "widget/connector" { event=MergeRequest; target=partner_a; action=SetValue; Value=runclient(:partner_a); event_delay=0.2; }
+    on_MergeRequest_2 "widget/connector" { event=MergeRequest; target=partner_b; action=SetValue; Value=runclient(:partner_b); event_delay=0.2; }
 
     merge_vbox "widget/vbox"
 	{
@@ -39,7 +39,7 @@ plugin_base_dataqa_merge "widget/component-decl"
 		height=26;
 		style=flat;
 		border_radius=8;
-		bgcolor=runclient(condition(:primary:value = 'A', '#c0ffc0', condition(:merge_method:value = 'M' and :primary:value = 'B', '#ffc0c0', "#e8e8e8")));
+		bgcolor=runclient(condition(:primary:value = 'A', '#c0ffc0', condition(:merge_method:value = 'M' and :primary:value = 'B', '#ffc8b8', "#e8e8e8")));
 
 		partner_a_hbox "widget/hbox"
 		    {
@@ -87,7 +87,7 @@ plugin_base_dataqa_merge "widget/component-decl"
 			    event=Description;
 			    target=partner_a_desc;
 			    action=SetValue;
-			    Value=runclient(:Text);
+			    Value=runclient(:Text + condition(:Status = 'O', ' (obsolete)', ''));
 			    }
 
 			on_a_name "widget/connector"
@@ -153,7 +153,7 @@ plugin_base_dataqa_merge "widget/component-decl"
 		height=26;
 		style=flat;
 		border_radius=8;
-		bgcolor=runclient(condition(:primary:value = 'B', '#c0ffc0', condition(:merge_method:value = 'M' and :primary:value = 'A', '#ffc0c0', "#e8e8e8")));
+		bgcolor=runclient(condition(:primary:value = 'B', '#c0ffc0', condition(:merge_method:value = 'M' and :primary:value = 'A', '#ffc8b8', "#e8e8e8")));
 
 		partner_b_hbox "widget/hbox"
 		    {
@@ -201,7 +201,7 @@ plugin_base_dataqa_merge "widget/component-decl"
 			    event=Description;
 			    target=partner_b_desc;
 			    action=SetValue;
-			    Value=runclient(:Text);
+			    Value=runclient(:Text + condition(:Status = 'O', ' (obsolete)', ''));
 			    }
 
 			on_b_name "widget/connector"
@@ -431,7 +431,7 @@ plugin_base_dataqa_merge "widget/component-decl"
 			    from
 				/apps/kardia/data/Kardia_DB/p_partner_relationship_type/rows rt
 			    where
-				:rt:p_relation_type = substring(:parameters:type, 2, 10)
+				:rt:p_relation_type = convert(integer,substring(:parameters:type, 2, 10))
 			    ";
 		    autoquery=never;
 		    replicasize=2;
@@ -532,6 +532,58 @@ plugin_base_dataqa_merge "widget/component-decl"
 		target=data_osrc; 
 		action=Refresh;
 		}
+
+	    on_merge_done_1 "widget/connector"
+		{
+		event=EndQuery;
+		event_condition=runclient(:logic_osrc:merge_complete = 1);
+		target=merge_method;
+		action=SetValue;
+		Value=runclient(null);
+		}
+
+	    on_merge_done_2 "widget/connector"
+		{
+		event=EndQuery;
+		event_condition=runclient(:logic_osrc:merge_complete = 1);
+		target=relation;
+		action=SetValue;
+		Value=runclient(null);
+		}
+
+	    on_merge_done_3 "widget/connector"
+		{
+		event=EndQuery;
+		event_condition=runclient(:logic_osrc:merge_complete = 1);
+		target=primary;
+		action=SetValue;
+		Value=runclient(null);
+		}
+
+	    on_merge_done_4 "widget/connector"
+		{
+		event=EndQuery;
+		event_condition=runclient(:logic_osrc:merge_complete = 1);
+		target=partner_a;
+		action=Refresh;
+		}
+
+	    on_merge_done_5 "widget/connector"
+		{
+		event=EndQuery;
+		event_condition=runclient(:logic_osrc:merge_complete = 1);
+		target=partner_b;
+		action=Refresh;
+		}
+
+	    on_merge_done_6 "widget/connector"
+		{
+		event=EndQuery;
+		event_condition=runclient(:logic_osrc:merge_complete = 1);
+		target=plugin_base_dataqa_merge;
+		action=Alert;
+		Message=runclient("Merge complete.");
+		}
 	    }
 
 	data_osrc "widget/osrc"
@@ -609,17 +661,27 @@ plugin_base_dataqa_merge "widget/component-decl"
 		    width=283;
 		    height=402;
 		    style=flat;
-		    bgcolor=runclient(condition(:primary:value = 'A', '#c0ffc0', condition(:merge_method:value = 'M' and :primary:value = 'B', '#ffc0c0', "#f8f8f8")));
+		    bgcolor=runclient(condition(:primary:value = 'A', '#c0ffc0', condition(:merge_method:value = 'M' and :primary:value = 'B', '#ffc8b8', "#f8f8f8")));
 		    border_radius=8;
 		    }
 
 		par_b_highlight "widget/pane"
 		    {
-		    x=392; y=0;
+		    x=394; y=0;
 		    width=283;
 		    height=402;
 		    style=flat;
-		    bgcolor=runclient(condition(:primary:value = 'B', '#c0ffc0', condition(:merge_method:value = 'M' and :primary:value = 'A', '#ffc0c0', "#f8f8f8")));
+		    bgcolor=runclient(condition(:primary:value = 'B', '#c0ffc0', condition(:merge_method:value = 'M' and :primary:value = 'A', '#ffc8b8', "#f8f8f8")));
+		    border_radius=8;
+		    }
+
+		par_c_highlight "widget/pane"
+		    {
+		    x=681; y=0;
+		    width=277;
+		    height=402;
+		    style=flat;
+		    bgcolor=runclient(condition(:merge_method:value = 'R', '#ffffc0', "#f8f8f8"));
 		    border_radius=8;
 		    }
 
@@ -840,6 +902,7 @@ plugin_base_dataqa_merge "widget/component-decl"
 	partner_osrc "widget/osrc"
 	    {
 	    sql = "select * from /apps/kardia/data/Kardia_DB/p_partner/rows";
+	    baseobj = "/apps/kardia/data/Kardia_DB/p_partner/rows";
 	    autoquery=never;
 	    readahead=2;
 	    replicasize=2;
