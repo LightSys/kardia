@@ -78,6 +78,7 @@ plugin_base_dataqa_nondups "widget/component-decl"
 		row_shadow_offset=1;
 		row_shadow_color="#a0a0a0";
 		row_shadow_angle=135;
+		nodata_message="(no non-duplicates to show)";
 
 		t_par2 "widget/table-column" { title="Partner"; value=runclient(:nondupsosrc:p_nondup_partner_key + ' ' + :nondupsosrc:disp_name_2); width=250; style=bold; caption_value=runclient(isnull(:nondupsosrc:ploc_2, '')); wrap=yes; }
 		t_par1 "widget/table-column" { title="Partner"; value=runclient(:nondupsosrc:p_partner_key + ' ' + :nondupsosrc:disp_name_1); width=250; style=bold; caption_value=runclient(isnull(:nondupsosrc:ploc_1, '')); wrap=yes; }

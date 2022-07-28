@@ -838,6 +838,7 @@ plugin_base_dataqa_merge "widget/component-decl"
 		{
 		text = "Reset";
 		width=130; height=24;
+		enabled = runclient(char_length(:partner_a:value) > 1 and char_length(:partner_b:value) > 1);
 
 		on_reset "widget/connector" { event=Click; target=logic_osrc; action=QueryParam; do_reset=1; }
 		}

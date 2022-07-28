@@ -93,7 +93,11 @@ plugin_base_dataqa_duplicates "widget/component-decl"
 		    ;
 
 		    select
-			:info:partnerlist = sum(:p_partner_key + ',') - ','
+			:info:partnerlist = condition(
+						char_length(:parameters:query) >= 3,
+						isnull(sum(:p_partner_key + ',') - ',', ''),
+						null
+					    )
 		    from
 			/apps/kardia/data/Kardia_DB/p_partner/rows p
 		    where
@@ -203,6 +207,7 @@ plugin_base_dataqa_duplicates "widget/component-decl"
 		row_shadow_offset=1;
 		row_shadow_color="#a0a0a0";
 		row_shadow_angle=135;
+		nodata_message="(no duplicates to show)";
 
 		//t_match "widget/table-column" { title="%"; value=runclient(:dupsosrc:match + '%'); width=60; style=bold; }
 		t_match "widget/table-column" { width=80; title = "%"; type=progress; padding=4; style=bold; fieldname=match; bar_color=runclient(condition(:dupsosrc:match >= 0.90, '#59b550', condition(:dupsosrc:match < 0.80, '#d96066', '#DDB261'))); bar_padding=3; bar_textcolor=black; }
