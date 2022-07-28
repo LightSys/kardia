@@ -8,7 +8,7 @@ This software configures a Raspberry Pi 4B to act as a wireless router for the R
 
 Download the check_scanner_router.config onto a USB flash drive and open it in a text editor. You should see the following:
 
-`Reconfigure=True`\
+`Reconfigure=False`\
 `WLANCountry=US`\
 `WiFiNetworkSSID=NetworkName`\
 `WiFiNetworkPassphrase=network-password`\
@@ -19,7 +19,7 @@ Download the check_scanner_router.config onto a USB flash drive and open it in a
 `ServerIP=##.#.###.##`\
 `ServerPortForCheckScanner=#####`
 
-1. On the Reconfigure line, replace "True" with "False" if you do not want an already configured Raspberry Pi to repeat setup when the USB drive is inserted
+1. On the Reconfigure line, replace "False" with "True" if you want an already configured Raspberry Pi to repeat setup when the USB drive is inserted
 2. On the WLANCountry line, replace "US" with the two-digit country code for your country if it is not the United States
 3. On the WiFiNetworkSSID line, replace "NetworkName" with the name of your WiFi network
 4. On the WiFiNetworkPassphrase line, replace "network-password" with the password to your WiFi network
