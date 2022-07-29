@@ -40,7 +40,7 @@ Download the check_scanner_router.config onto a USB flash drive and open it in a
 
 The configuration setup script on the Pi will run automatically when it boots up, using the first available USB flash drive. **In order to ensure your setup is successful, only plug in one USB drive at a time to the Pi.**
 
-When the Raspberry Pi boots up, the LED light will turn on. The LED has 5 different states that show the current operation of the Pi.\
+When the Raspberry Pi boots up, the LED light will turn on. The LED has 5 different states that show the current operation of the Pi.
 1. Off (no light) - the Raspberry Pi is powered off
 2. Waiting (Blinking: Long-Long-Long-Long) - the Raspberry Pi is not configured and is waiting for a USB device to be inserted
 3. Configuring (Blinking: Long-Short-Long-Short) - the Raspberry Pi is being configured
