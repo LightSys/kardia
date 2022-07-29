@@ -7,7 +7,7 @@
 #  
 #  Copyright 2022 LightSys Technology Services
 #
-#  Last Modified 07/26/22 at 11:00 am
+#  Last Modified 07/29/22 at 12:00 pm
 #
 #  Description: Reads configuration settings from a USB device to set up
 #  Raspberry Pi for Ethernet-to-WiFi routing for check scanners. Meant
@@ -24,9 +24,13 @@ import binascii
 import re
 import logging
 import validate_setup
+import RPi.GPIO as GPIO
+import threading
 
-usb_log = ""
-pi_log = ""
+usb_log = "" # log file on USB device
+pi_log = "" # log file on Raspberry Pi
+LED_PIN = 11 # GPIO pin for the LED
+led_thread = "" # thread to control the LED
 
 #  
 #  name: is_ip_address
@@ -161,14 +165,25 @@ def reset_files():
 #  @return none
 #  
 def exit_with_error(msg):
+	global stop_led_thread
+	
 	print_exception(msg)
+	
+	# Reset and shutdown logging
+	reset_files()
 	print_status("Shutting down...")
 	logging.shutdown()
-	time.sleep(3)
+	
+	# Kill the LED thread
+	stop_led_thread = True
+	led_thread.join()
+	GPIO.cleanup()
+	
+	# Shutdown Pi
 	try:
-		os.system('sudo shutdown now') # Shutdown
+		os.system('sudo shutdown now')
 	except:
-		exit_with_error("Failed to shutdown")
+		sys.exit("Failed to shutdown")
 	
 #  
 #  name: print_exception
@@ -388,7 +403,7 @@ def ssh(ip, password):
 #  @param name - the name of the logging object
 #  @param log_file - the file to write the log entries to
 #  @param file_mode - the file mode for the log file ("w", "a", etc.)
-#  @return
+#  @return the created logging object
 #  
 def setup_log(name, log_file, file_mode):
 	formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
@@ -400,11 +415,71 @@ def setup_log(name, log_file, file_mode):
 	logger.addHandler(handler)
 	
 	return logger
+	
+#  
+#  name: control_led
+#  description: target method for thread to control LED signals
+#  @param led_state - the signal to use for the LED
+#  @return none
+#  
+def control_led(led_state):
+	global stop_led_thread
+	
+	LONG_TIME = 1.25
+	SHORT_TIME = 0.2
+	
+	# If already configured but configuration invalid, use fast blinks
+	if led_state == "error":
+		while True:
+			GPIO.output(LED_PIN, GPIO.HIGH)
+			time.sleep(SHORT_TIME)
+			GPIO.output(LED_PIN, GPIO.LOW)
+			time.sleep(SHORT_TIME)
+			if stop_led_thread: # Signal to stop the thread
+				GPIO.output(LED_PIN, GPIO.LOW)
+				break
+	
+	# If already configured and configuration is valid, use solid light		
+	elif led_state == "operating":
+		while True:
+			GPIO.output(LED_PIN, GPIO.HIGH)
+			time.sleep(LONG_TIME)
+			if stop_led_thread: # Signal to stop the thread
+				GPIO.output(LED_PIN, GPIO.LOW)
+				break
+	
+	# If waiting for configuration, use slow blinks
+	elif led_state == "waiting":
+		while True:
+			GPIO.output(LED_PIN, GPIO.HIGH)
+			time.sleep(LONG_TIME)
+			GPIO.output(LED_PIN, GPIO.LOW)
+			time.sleep(SHORT_TIME)
+			if stop_led_thread: # Signal to stop the thread
+				GPIO.output(LED_PIN, GPIO.LOW)
+				break
+		
+	# If being configured, use alternating short and long blinks		
+	else:
+		while True:
+			GPIO.output(LED_PIN, GPIO.HIGH)
+			time.sleep(SHORT_TIME)
+			GPIO.output(LED_PIN, GPIO.LOW)
+			time.sleep(SHORT_TIME)
+			GPIO.output(LED_PIN, GPIO.HIGH)
+			time.sleep(LONG_TIME)
+			GPIO.output(LED_PIN, GPIO.LOW)
+			time.sleep(SHORT_TIME)
+			if stop_led_thread: # Signal to stop the thread
+				GPIO.output(LED_PIN, GPIO.LOW)
+				break
 
 
 ########################################################################
 # BEGIN MAIN SCRIPT-----------------------------------------------------
 ########################################################################
+
+# Setup logging and start LED-------------------------------------------
 
 # Setup the log file on the Pi
 pi_log = setup_log("usb_setup_log", r"/home/pi/Desktop/"
@@ -412,16 +487,43 @@ pi_log = setup_log("usb_setup_log", r"/home/pi/Desktop/"
 
 pi_log.info("---------BOOT LOG FOR RASPI CHECK SCANNER ROUTER---------")
 
+# Setup GPIO LED pin
+print_pi_log("Setting up GPIO...")
+GPIO.setmode(GPIO.BOARD)
+GPIO.setwarnings(False)
+GPIO.setup(LED_PIN, GPIO.OUT)
+
 # If the device is already configured, validate the configuration
+validated = False
 if os.path.exists(r"/etc/systemd/system/check-scanner-autossh.service"):
-	print_pi_log("Device is already configured. Running validation check...")
-	
+	print_pi_log("Device is already configured. Running validation check...")	
 	result = validate_setup.main()
 	
+	stop_led_thread = False
+	
+	# If configuration is invalid
 	if "ERROR" in result:
 		print_pi_log("ERROR IN CURRENT CONFIGURATION: " + result[7:])
+		print_pi_log("Starting LED in \"error\" state...")
+		led_thread = threading.Thread(target=control_led, args=("error",))
+	# Else configuration is valid
 	else:
 		print_pi_log("Current configuration is valid: " + result)
+		print_pi_log("Starting LED in \"operating\" state...")
+		led_thread = threading.Thread(target=control_led, args=("operating",))
+		validated = True
+	
+	# Start LED thread
+	led_thread.setDaemon(False)
+	led_thread.start()
+
+# Else the device is not configured. Start LED thread
+else:
+	stop_led_thread = False
+	print_pi_log("Starting LED in \"waiting\" state...")
+	led_thread = threading.Thread(target=control_led, args=("waiting",))	
+	led_thread.setDaemon(False)
+	led_thread.start()
 
 # Find USB device to use for setup--------------------------------------
 
@@ -447,15 +549,29 @@ while len(usbs) == 0:
 	except:
 		print_pi_log("Failed to retrieve USB device")
 	
-	# If there is still no USB detected, wait 10 seconds and repeat.
+	# If there is no USB detected, wait 10 seconds and repeat.
 	# Wait up to 2 minutes for a USB device, then exit.
-	if len(usbs) == 0 and tries <= 11:
+	if len(usbs) == 0 and tries <= 11: # Keep scanning
 		print_pi_log("No USB device found, scanning again in 10 seconds...")
 		tries += 1
-		time.sleep(10)	
-	elif tries > 11:
+		time.sleep(10)
+	elif tries > 11: # Timeout
 		print_pi_log("Timed out after 2 minutes: No USB device found")
-		exit()
+		
+		if validated: # If a valid configuration exists, exit the script
+			sys.exit()
+		else: # Else, shutdown the Pi
+			print_pi_log("Shutting down...")
+			logging.shutdown()
+			
+			stop_led_thread = True
+			led_thread.join()
+			GPIO.cleanup()
+			
+			try:
+				os.system('sudo shutdown now')
+			except:
+				sys.exit("Failed to shutdown")
 
 # Get the name of the connected USB drive
 usb_name = usbs[0].get('LABEL')[1:len(usbs[0].get('LABEL'))-1]
@@ -464,16 +580,16 @@ print_pi_log("Found USB device " + usb_name + ". Mounting USB device...")
 
 time.sleep(5) # Wait for the device to finish mounting
 
+# Set up the log file on the USB device
 print_pi_log("Switching log file location to " + usb_name + "...")
 
-# Set up the log file on the USB device
 try:
 	usb_log = setup_log("configuration_log", r"/media/pi/" + usb_name + 
 	r"/setup.log", "a")
 except:
 	pi_log.exception("Cannot create log file on USB device. Ensure "
 	"device is not read-only")
-	exit()
+	sys.exit()
 
 # Copy Pi log onto USB drive
 try:
@@ -481,7 +597,8 @@ try:
 	'boot.log /media/pi/' + usb_name + '/boot.log')
 except:
 	print_exception("Failed to copy boot log to USB device " + usb_name)
-	
+
+# Start USB log entry
 usb_log.info("-----------------START OF NEW LOG ENTRY-----------------")
 print_status("Setting up with USB device " + usb_name + "...")
 
@@ -503,6 +620,7 @@ print_success("Configuration file read")
 
 # If the device is already configured, check the Reconfigure value
 if os.path.exists(r"/etc/systemd/system/check-scanner-autossh.service"):
+	# Make sure Reconfigure attribute is set correctly
 	try:
 		reconfig = settings["Reconfigure"]
 	except:
@@ -510,14 +628,24 @@ if os.path.exists(r"/etc/systemd/system/check-scanner-autossh.service"):
 		"attribute name")
 		
 	if reconfig == "False": # Do not reconfigure the device
-		exit_with_error("Device is already configured, and Reconfigure "
+		print_status("Device is already configured, and Reconfigure "
 		"is set to \"False\"")
+		sys.exit()
 	elif reconfig == "True": # Reset files to defaults and reconfigure
-		print_status("Reconfiguring device...")
+		print_status("Reconfiguring Raspberry Pi device...")
 		reset_files()
 	else: # Invalid value
 		exit_with_error("\"" + reconfig + "\" is not a valid Reconfigure "
 		"setting: Must be True or False")
+		
+# Stop current LED code and start "configuring" LED code
+stop_led_thread = True
+led_thread.join()
+print_status("Starting LED in \"configuring\" state...")
+stop_led_thread = False
+led_thread = threading.Thread(target=control_led, args=("configuring",))	
+led_thread.setDaemon(False)
+led_thread.start()
 
 # Get WiFi country code
 try:
@@ -981,7 +1109,6 @@ print_success("System processes enabled and started")
 # Validate setup--------------------------------------------------------
 
 print_status("Device is configured. Running validation check...")
-
 result = validate_setup.main()
 
 if "ERROR" in result:
@@ -989,13 +1116,21 @@ if "ERROR" in result:
 else:
 	print_success("Configuration is valid: " + result)
 
-# Shutdown--------------------------------------------------------------
-time.sleep(3)
-atexit.unregister(reset_files) # Disable file reset before shutdown
+# SETUP COMPLETE: Shutdown----------------------------------------------
+
+# Shutdown logging
 print_success("SETUP COMPLETE")
 logging.shutdown()
 
+atexit.unregister(reset_files) # Disable file reset
+
+# Stop LED thread
+stop_led_thread = True
+led_thread.join()
+GPIO.cleanup()
+
+# Shutdown
 try:
 	os.system('sudo shutdown now')
 except:
-	exit("Failed to shutdown")
+	sys.exit("Failed to shutdown")

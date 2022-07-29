@@ -7,7 +7,7 @@
 #  
 #  Copyright 2022 LightSys Technology Services
 #
-#  Last Modified 07/26/22 at 11:00 am
+#  Last Modified 07/27/22 at 4:00 pm
 #
 #  Description: Updates and installs packages, adds the config_router.py
 #  script to autostart, and clears WPA supplicant info
