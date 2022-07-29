@@ -40,12 +40,21 @@ Download the check_scanner_router.config onto a USB flash drive and open it in a
 
 The configuration setup script on the Pi will run automatically when it boots up, using the first available USB flash drive. **In order to ensure your setup is successful, only plug in one USB drive at a time to the Pi.**
 
-*Note: If the setup process will not start upon inserting a USB drive, there is a boot.log file located in the /home/pi/Desktop/check-scanner-raspi-router folder, and it should be copied to the USB device upon insertion. You can check this file for any errors that may be occuring when trying to begin setup.*
+When the Raspberry Pi boots up, the LED light will turn on. The LED has 5 different states that show the current operation of the Pi.\
+1. Off (no light) - the Raspberry Pi is powered off
+2. Waiting (Blinking: Long-Long-Long-Long) - the Raspberry Pi is not configured and is waiting for a USB device to be inserted
+3. Configuring (Blinking: Long-Short-Long-Short) - the Raspberry Pi is being configured
+4. Operating (Solid light, no blinking) - the Raspberry Pi is configured and is operating correctly
+5. Error (Blinking: Short-Short-Short-Short) - The Raspberry Pi is configured, but there is an error in the configuration
 
-Setup can take anywhere from 2 to 30 minutes, depending on your WiFi speed and the number of system updates to perform. At the end of the setup, the Pi will automatically power down, and the green power light will turn off. At this point, it is safe to remove the USB drive. Disconnect and reconnect power to the Pi to start it up again.
+*Note: If a USB device is not inserted within 2 minutes of the Pi powering on, the Pi will stop scanning for USB drives. Afterward, if the Pi is in a Waiting or Error state, it will immediately shut down. If the Pi is in an Operating state, its function will continue normally.*
+
+Setup can take anywhere from 2 to 30 minutes, depending on your WiFi speed and the number of system updates to perform. At the end of the setup, the Pi will automatically power down, and the LED will turn off. At this point, it is safe to remove the USB drive. Disconnect and reconnect power to the Pi to start it up again.
 
 You can review the setup process via the setup.log file that the Raspberry Pi will generate on the USB flash drive.
 
-If the setup was unsuccessful, the .log file will end with an error message. Solve any issues with the .config file indicated by the error message, then reinsert the flash drive to the Pi and disconnect and reconnect power to reboot the Pi.
+*Note: If the LED does not indicate a "Configuring" state upon inserting a USB drive, there is a boot.log file located in the /home/pi/Desktop/check-scanner-raspi-router folder, and it should be copied to the USB device upon insertion. You can check this file as well as setup.log for any errors that may be occuring when trying to begin setup.*
 
-If the setup was successful, the .log file will end with "SETUP COMPLETE". Connect the check scanner to the Raspberry Pi via an Ethernet cable and enjoy!
+If the setup encounters an error, the setup.log file will end with an error message, and all changes on the Pi will be reverted. Solve any issues with the check_scanner_router.config file indicated by the error message, then reinsert the USB drive to the Pi. Disconnect and reconnect power to restart setup.
+
+If the setup is successful, the setup.log file will end with "SETUP COMPLETE". Upon turning the Pi back on, the LED should indicate an "Operating" state, signified by an unblinking light. Connect the check scanner to the Raspberry Pi via an Ethernet cable and enjoy!
