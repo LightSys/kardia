@@ -7,7 +7,7 @@
 #  
 #  Copyright 2022 LightSys Technology Services
 #
-#  Last Modified 07/26/22 at 11:00 am
+#  Last Modified 07/29/22 at 5:00 pm
 #
 #  Description: Checks router configuration settings to ensure setup
 #  was successful
@@ -280,7 +280,7 @@ def main():
 	"RemainAfterExit=yes" not in lines[7] or
 	'Environment="AUTOSSH_GATETIME=0"' not in lines[8] or
 	'Environment="AUTOSSH_POLL=60"' not in lines[9] or
-	'ExecStart=/usr/bin/autossh -N -o "ServerAliveInterval 30" -o "ServerAliveCountMax 3" -R 0:localhost:22 -R 21443:192.168.2.15:443 10.5.128.92 -o "ExitOnForwardFailure yes"' not in lines [10] or
+	'ExecStart=/usr/bin/autossh -N -o "ServerAliveInterval 30" -o "ServerAliveCountMax 3" -R 0:localhost:22' not in lines [10] or
 	"Restart=always" not in lines[11] or
 	"RestartSec=60" not in lines[12] or
 	"[Install]" not in lines[14] or
