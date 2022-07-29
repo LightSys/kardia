@@ -7,7 +7,7 @@
 #  
 #  Copyright 2022 LightSys Technology Services
 #
-#  Last Modified 07/29/22 at 12:00 pm
+#  Last Modified 07/29/22 at 5:00 pm
 #
 #  Description: Reads configuration settings from a USB device to set up
 #  Raspberry Pi for Ethernet-to-WiFi routing for check scanners. Meant
@@ -369,7 +369,7 @@ def ssh(ip, password):
 			' -o ConnectTimeout=5 -t "echo success" -t "exit" > /tmp/ssh.log')
 		except:
 			exit_with_error("Failed to establish SSH connection with key"
-			" authentication")
+			" authentication: Check server username, IP address, and password")
 			
 	else: # Attempt to connect with password authentication
 		print_status("Connecting to " + ip + " with password...")
@@ -378,7 +378,8 @@ def ssh(ip, password):
 			' -o "StrictHostKeyChecking no" -o ConnectTimeout=5 -t "echo '
 			'success" -t "exit" > /tmp/ssh.log')
 		except:
-			exit_with_error("Failed to establish SSH connection with password")
+			exit_with_error("Failed to establish SSH connection with password"
+			": Check server username, IP address, and password")
 
 	# Determine if connection succeeded
 	try:
@@ -389,7 +390,8 @@ def ssh(ip, password):
 	if "success" in result:
 		print_success("Connection succeeded")
 	else:
-		exit_with_error("SSH connection failed")
+		exit_with_error("SSH connection failed: Check server username,"
+		" IP address, and password")
 	
 	# Remove the unneeded log file
 	try:
@@ -612,7 +614,7 @@ try:
 	"config", "r")
 except:
 	exit_with_error("File path /media/pi/" + usb_name + "/"
-	"check_scanner_router.config does not exist. Please check that the "
+	"check_scanner_router.config does not exist. Check that the "
 	"file is named correctly and loaded on your USB device")
 
 settings = get_settings_hash(boot_file.readlines())
@@ -1028,7 +1030,8 @@ if server_password == "":
 		os.system('sudo cp /root/.ssh/id_rsa.pub /media/pi/'
 		 + usb_name + '/id_rsa.pub')
 	except:
-		print_exception("Failed to copy public key to USB device")
+		print_exception("Failed to copy public key to USB device: Ensure"
+		"device is not read-only and remains connected until setup completes")
 		
 	print_success("Public key copied to USB device")
 
@@ -1055,7 +1058,8 @@ else:
 		os.system('sudo sshpass -p ' + server_password + ' ssh-copy-id ' 
 		+ server_ip)
 	except:
-		exit_with_error("Failed to copy public key to server")
+		exit_with_error("Failed to copy public key to server: Check"
+		"server username, IP address, and password")
 		
 	print_success("Public RSA key copied to server")
 	
