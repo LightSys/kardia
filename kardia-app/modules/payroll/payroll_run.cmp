@@ -924,31 +924,71 @@ payroll_run "widget/component-decl"
 			    value=runclient('Location: ' + :payeelist_osrc:p_country_code + ' / ' + :payeelist_osrc:p_state_province + '; Status: ' + condition(:payeelist_osrc:a_is_employee, 'Employee, ', 'Contractor, ') + condition(:payeelist_osrc:a_is_fica, 'FICA, ', 'SECA, ') + condition(:payeelist_osrc:a_is_salaried, 'Salaried, ', 'Hourly, ') + condition(:payeelist_osrc:a_is_exempt, 'WH Exempt, ', 'WH Nonexempt, ') - ', ');
 			    }
 
-			edit_btn "widget/textbutton"
+			payee_ctls_hbox "widget/hbox"
 			    {
-			    x=207; y=28; width=130; height=24;
-			    text = runclient(condition(:period_osrc:glcnt > 0, "Review Payroll", "Edit Payroll"));
-			    //enabled = runclient(:payrollcnt_form:txt == 'Yes');
-			    edit_cn "widget/connector"
-				{
-				event=Click;
-				target=payroll_run;
-				action=Launch;
-				Name=runclient('pay_detail_window');
-				Source=runclient('/apps/kardia/modules/payroll/pay_form.app');
-				Multi=1;
-				Width=800;
-				Height=700;
+			    x=0; y=30;
+			    width=544;
+			    height=24;
+			    align=center;
+			    spacing=10;
 
-				payperiod = runclient(:period_osrc:a_payroll_period);
-				period = runclient(:period_osrc:a_period);
-				ref_period = runclient(:period_osrc:a_ref_period);
-				prev_period = runclient(:period_osrc:prev_period);
-				ledger = runclient(:ledger_osrc:a_ledger_number);
-				payrollid = runclient(:payeelist_osrc:a_payroll_id);
-				groupid = runclient(:payeelist_osrc:a_payroll_group_id);
-				readonly = runclient(condition(:period_osrc:glcnt > 0, 1, 0));
+			    edit_btn "widget/textbutton"
+				{
+				width=130; height=24;
+				text = runclient(condition(:period_osrc:glcnt > 0, "Review Payroll", "Edit Payroll"));
+				//enabled = runclient(:payrollcnt_form:txt == 'Yes');
+				edit_cn "widget/connector"
+				    {
+				    event=Click;
+				    target=payroll_run;
+				    action=Launch;
+				    Name=runclient('pay_detail_window');
+				    Source=runclient('/apps/kardia/modules/payroll/pay_form.app');
+				    Multi=1;
+				    Width=800;
+				    Height=700;
+
+				    payperiod = runclient(:period_osrc:a_payroll_period);
+				    period = runclient(:period_osrc:a_period);
+				    ref_period = runclient(:period_osrc:a_ref_period);
+				    prev_period = runclient(:period_osrc:prev_period);
+				    ledger = runclient(:ledger_osrc:a_ledger_number);
+				    payrollid = runclient(:payeelist_osrc:a_payroll_id);
+				    groupid = runclient(:payeelist_osrc:a_payroll_group_id);
+				    readonly = runclient(condition(:period_osrc:glcnt > 0, 1, 0));
+				    }
 				}
+
+			    deletepayee_btn "widget/textbutton"
+				{
+				width=130; height=24;
+				text = "Remove Payee";
+				enabled = runclient(not (:period_osrc:glcnt > 0));
+
+				on_deletepayee "widget/connector"
+				    {
+				    event=Click;
+				    event_confirm=runclient("Remove payee from this pay period?");
+				    target=remove_payee_cmp;
+				    action=RemovePayee;
+				    ledger=runclient(:ledger:value);
+				    paygroup=runclient(:payeelist_osrc:a_payroll_group_id);
+				    payee=runclient(:payeelist_osrc:a_payroll_id);
+				    period=runclient(:period_osrc:a_payroll_period);
+				    }
+				}
+			    }
+			}
+
+		    remove_payee_cmp "widget/component"
+			{
+			path="remove_payee.cmp";
+
+			on_removed "widget/connector"
+			    {
+			    event=PayeeRemoved;
+			    target=payeelist_osrc;
+			    action=Refresh;
 			    }
 			}
 		    }
