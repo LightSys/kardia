@@ -256,9 +256,9 @@ pay_detail_cmp "widget/component-decl"
 			pp_state "widget/component" { width=90; label_width=55; height=24; field=p_state_province; text="St/Prov:"; ctl_type=editbox; path="/sys/cmp/smart_field.cmp"; pps_hints "widget/hints" { allowchars="ABCDEFGHIJKLMNOPQRSTUVWXYZ"; } }
 			pp_country "widget/component" { width=200; label_width=70; height=24; field=p_country_code; text="Country:"; ctl_type=dropdown; path="/sys/cmp/smart_field.cmp"; sql = "select :p_country_code + ' - ' + :p_country_name, :p_country_code from /apps/kardia/data/Kardia_DB/p_country/rows order by :p_country_code"; }
 			pp_empl "widget/component" { width=120; label_width=90; height=24; field=a_is_employee; text="Employee?"; ctl_type=checkbox; path="/sys/cmp/smart_field.cmp"; }
-			pp_fica "widget/component" { width=80; label_width=50; height=24; field=a_is_fica; text="FICA?"; ctl_type=checkbox; path="/sys/cmp/smart_field.cmp"; }
-			pp_exem "widget/component" { width=100; label_width=70; height=24; field=a_is_exempt; text="Exempt?"; ctl_type=checkbox; path="/sys/cmp/smart_field.cmp"; }
-			pp_sal "widget/component" { width=100; label_width=70; height=24; field=a_is_salaried; text="Salaried?"; ctl_type=checkbox; path="/sys/cmp/smart_field.cmp"; }
+			pp_fica "widget/component" { width=65; label_width=50; height=24; field=a_is_fica; text="FICA?"; ctl_type=checkbox; path="/sys/cmp/smart_field.cmp"; }
+			pp_exem "widget/component" { width=85; label_width=70; height=24; field=a_is_exempt; text="Exempt?"; ctl_type=checkbox; path="/sys/cmp/smart_field.cmp"; }
+			pp_sal "widget/component" { width=90; label_width=70; height=24; field=a_is_salaried; text="Salaried?"; ctl_type=checkbox; path="/sys/cmp/smart_field.cmp"; }
 
 			save_btn "widget/component" { width=18; height=18; y=1; path = "/sys/cmp/save_btn.cmp"; }
 
@@ -266,7 +266,46 @@ pay_detail_cmp "widget/component-decl"
 
 			cancel_btn "widget/component" { width=18; height=18; y=1; path = "/sys/cmp/cancel_btn.cmp"; }
 
+			sc_sep2 "widget/autolayoutspacer" { width=10; }
+
+			delete_btn "widget/imagebutton"
+			    {
+			    width=18;
+			    height=18;
+			    y=1;
+			    image="/sys/images/ico24a.gif";
+			    pointimage="/sys/images/ico24b.gif";
+			    clickimage="/sys/images/ico24c.gif";
+			    disabledimage="/sys/images/ico24d.gif";
+			    tooltip = runserver("Remove Payee");
+			    enabled = runclient(:payee_period_form:is_editable);
+
+			    on_delete "widget/connector"
+				{
+				event="Click";
+				event_confirm=runclient("Remove payee from this pay period?");
+				target=remove_payee_cmp;
+				action=RemovePayee;
+				ledger=runclient(:ledger:value);
+				paygroup=runclient(:payee_period_osrc:a_payroll_group_id);
+				payee=runclient(:payee_period_osrc:a_payroll_id);
+				period=runclient(:payee_period_osrc:a_payroll_period);
+				}
+			    }
+
 			pp_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
+
+			remove_payee_cmp "widget/component"
+			    {
+			    path="remove_payee.cmp";
+
+			    on_removed "widget/connector"
+				{
+				event=PayeeRemoved;
+				target=payee_period_osrc;
+				action=Refresh;
+				}
+			    }
 			}
 		    }
 		}
