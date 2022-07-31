@@ -5,7 +5,10 @@ plugin_base_mergeexec_crm "system/query"
     partner_b "query/parameter" { type=string; style=strnull; }
     partner_c "query/parameter" { type=string; style=strnull; }
 
-    sql = " -- Partner list
+    sql = " -- Data for correlating contact ID changes
+	    declare collection merge_contmap scope application;
+
+	    -- Partner list
 	    declare object info;
 	    select :info:partners = ralign(:parameters:partner_a, 16) + ralign(:parameters:partner_b, 16) + ralign(isnull(:parameters:partner_c, ''), 16);
 
@@ -16,23 +19,27 @@ plugin_base_mergeexec_crm "system/query"
 		identity /apps/kardia/data/Kardia_DB/e_ack/rows a,
 		/apps/kardia/data/Kardia_DB/p_merge/rows m
 	    set
-		:a:p_dn_partner_key = '#' + condition(ascii(substring(:m:p_disposition, 2, 1)) = 65, :parameters:partner_a, condition(ascii(substring(:m:p_disposition, 2, 1)) = 66, :parameters:partner_b, condition(ascii(substring(:m:p_disposition, 2, 1)) = 67, :parameters:partner_c, NULL))),
-		:a:e_object_id = replace(:a:e_object_id, :a:p_dn_partner_key, '#' + condition(ascii(substring(:m:p_disposition, 2, 1)) = 65, :parameters:partner_a, condition(ascii(substring(:m:p_disposition, 2, 1)) = 66, :parameters:partner_b, condition(ascii(substring(:m:p_disposition, 2, 1)) = 67, :parameters:partner_c, NULL))))
+		:a:e_object_id = replace(:a:e_object_id, '|' + :a:p_dn_partner_key, '|#' + condition(ascii(substring(:m:p_disposition, 2, 1)) = 65, :parameters:partner_a, condition(ascii(substring(:m:p_disposition, 2, 1)) = 66, :parameters:partner_b, condition(ascii(substring(:m:p_disposition, 2, 1)) = 67, :parameters:partner_c, NULL)))),
+		:a:p_dn_partner_key = '#' + condition(ascii(substring(:m:p_disposition, 2, 1)) = 65, :parameters:partner_a, condition(ascii(substring(:m:p_disposition, 2, 1)) = 66, :parameters:partner_b, condition(ascii(substring(:m:p_disposition, 2, 1)) = 67, :parameters:partner_c, NULL)))
 	    where
-		:a:p_dn_partner_key = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, NULL)) and
+		:a:p_dn_partner_key = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, condition(ascii(:m:p_disposition) = 99, :parameters:partner_c, convert(string,NULL)))) and
 		:m:p_data_source = 'CRM Data' and
 		:m:p_partner_key_a = :parameters:partner_a and
 		:m:p_partner_key_b = :parameters:partner_b
 	    ;
 
-	    -- Contact History
+	    print 'Contact map (in CRM merge): ' + (select isnull(sum('' + :src + ':' + :srcid + ' -> ' + :dst + ':' + :dstid + ', ') - ', ', '(none)') from collection merge_contmap);
+
+	    -- Contact History; also update p_contact_id to be consistent with changes in
+	    -- ID numbering on contact info records.
 	    update
 		identity /apps/kardia/data/Kardia_DB/e_contact_history/rows ch,
 		/apps/kardia/data/Kardia_DB/p_merge/rows m
 	    set
+		:ch:p_contact_id = condition(:ch:p_contact_id is null, NULL, (select :cm:dstid from collection merge_contmap cm where :cm:dst = condition(ascii(substring(:m:p_disposition, 2, 1)) = 65, :parameters:partner_a, condition(ascii(substring(:m:p_disposition, 2, 1)) = 66, :parameters:partner_b, condition(ascii(substring(:m:p_disposition, 2, 1)) = 67, :parameters:partner_c, NULL))) and :cm:src = :ch:p_partner_key and :cm:srcid = :ch:p_contact_id)),
 		:ch:p_partner_key = '#' + condition(ascii(substring(:m:p_disposition, 2, 1)) = 65, :parameters:partner_a, condition(ascii(substring(:m:p_disposition, 2, 1)) = 66, :parameters:partner_b, condition(ascii(substring(:m:p_disposition, 2, 1)) = 67, :parameters:partner_c, NULL)))
 	    where
-		:ch:p_partner_key = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, NULL)) and
+		:ch:p_partner_key = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, condition(ascii(:m:p_disposition) = 99, :parameters:partner_c, convert(string,NULL)))) and
 		:m:p_data_source = 'CRM Data' and
 		:m:p_partner_key_a = :parameters:partner_a and
 		:m:p_partner_key_b = :parameters:partner_b
@@ -45,20 +52,22 @@ plugin_base_mergeexec_crm "system/query"
 	    set
 		:t:e_todo_partner = '#' + condition(ascii(substring(:m:p_disposition, 2, 1)) = 65, :parameters:partner_a, condition(ascii(substring(:m:p_disposition, 2, 1)) = 66, :parameters:partner_b, condition(ascii(substring(:m:p_disposition, 2, 1)) = 67, :parameters:partner_c, NULL)))
 	    where
-		:t:e_todo_partner = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, NULL)) and
+		:t:e_todo_partner = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, condition(ascii(:m:p_disposition) = 99, :parameters:partner_c, convert(string,NULL)))) and
 		:m:p_data_source = 'CRM Data' and
 		:m:p_partner_key_a = :parameters:partner_a and
 		:m:p_partner_key_b = :parameters:partner_b
 	    ;
 
-	    -- Contact autorecord settings
+	    -- Contact autorecord settings, and adjust e_contact_id based on any changes to
+	    -- the ID in a new contact record.
 	    update
 		identity /apps/kardia/data/Kardia_DB/e_contact_autorecord/rows ca,
 		/apps/kardia/data/Kardia_DB/p_merge/rows m
 	    set
-		:ca:p_partner_key = '#' + condition(ascii(substring(:m:p_disposition, 2, 1)) = 65, :parameters:partner_a, condition(ascii(substring(:m:p_disposition, 2, 1)) = 66, :parameters:partner_b, condition(ascii(substring(:m:p_disposition, 2, 1)) = 67, :parameters:partner_c, NULL)))
+		:ca:p_partner_key = '#' + condition(ascii(substring(:m:p_disposition, 2, 1)) = 65, :parameters:partner_a, condition(ascii(substring(:m:p_disposition, 2, 1)) = 66, :parameters:partner_b, condition(ascii(substring(:m:p_disposition, 2, 1)) = 67, :parameters:partner_c, NULL))),
+		:ca:e_contact_id = condition(:ca:e_contact_id = -1, -1, isnull((select :cm:dstid from collection merge_contmap cm where :cm:dst = condition(ascii(substring(:m:p_disposition, 2, 1)) = 65, :parameters:partner_a, condition(ascii(substring(:m:p_disposition, 2, 1)) = 66, :parameters:partner_b, condition(ascii(substring(:m:p_disposition, 2, 1)) = 67, :parameters:partner_c, NULL))) and :cm:src = :ca:p_partner_key and :cm:srcid = :ca:e_contact_id), -1))
 	    where
-		:ca:p_partner_key = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, NULL)) and
+		:ca:p_partner_key = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, condition(ascii(:m:p_disposition) = 99, :parameters:partner_c, convert(string,NULL)))) and
 		:m:p_data_source = 'CRM Data' and
 		:m:p_partner_key_a = :parameters:partner_a and
 		:m:p_partner_key_b = :parameters:partner_b
@@ -71,7 +80,7 @@ plugin_base_mergeexec_crm "system/query"
 	    set
 		:pe:p_partner_key = '#' + condition(ascii(substring(:m:p_disposition, 2, 1)) = 65, :parameters:partner_a, condition(ascii(substring(:m:p_disposition, 2, 1)) = 66, :parameters:partner_b, condition(ascii(substring(:m:p_disposition, 2, 1)) = 67, :parameters:partner_c, NULL)))
 	    where
-		:pe:p_partner_key = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, NULL)) and
+		:pe:p_partner_key = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, condition(ascii(:m:p_disposition) = 99, :parameters:partner_c, convert(string,NULL)))) and
 		:m:p_data_source = 'CRM Data' and
 		:m:p_partner_key_a = :parameters:partner_a and
 		:m:p_partner_key_b = :parameters:partner_b
@@ -84,7 +93,7 @@ plugin_base_mergeexec_crm "system/query"
 	    set
 		:per:p_partner_key = '#' + condition(ascii(substring(:m:p_disposition, 2, 1)) = 65, :parameters:partner_a, condition(ascii(substring(:m:p_disposition, 2, 1)) = 66, :parameters:partner_b, condition(ascii(substring(:m:p_disposition, 2, 1)) = 67, :parameters:partner_c, NULL)))
 	    where
-		:per:p_partner_key = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, NULL)) and
+		:per:p_partner_key = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, condition(ascii(:m:p_disposition) = 99, :parameters:partner_c, convert(string,NULL)))) and
 		:m:p_data_source = 'CRM Data' and
 		:m:p_partner_key_a = :parameters:partner_a and
 		:m:p_partner_key_b = :parameters:partner_b
@@ -97,7 +106,7 @@ plugin_base_mergeexec_crm "system/query"
 	    set
 		:pd:p_partner_key = '#' + condition(ascii(substring(:m:p_disposition, 2, 1)) = 65, :parameters:partner_a, condition(ascii(substring(:m:p_disposition, 2, 1)) = 66, :parameters:partner_b, condition(ascii(substring(:m:p_disposition, 2, 1)) = 67, :parameters:partner_c, NULL)))
 	    where
-		:pd:p_partner_key = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, NULL)) and
+		:pd:p_partner_key = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, condition(ascii(:m:p_disposition) = 99, :parameters:partner_c, convert(string,NULL)))) and
 		:m:p_data_source = 'CRM Data' and
 		:m:p_partner_key_a = :parameters:partner_a and
 		:m:p_partner_key_b = :parameters:partner_b
@@ -110,7 +119,7 @@ plugin_base_mergeexec_crm "system/query"
 	    set
 		:c:p_partner_key = '#' + condition(ascii(substring(:m:p_disposition, 2, 1)) = 65, :parameters:partner_a, condition(ascii(substring(:m:p_disposition, 2, 1)) = 66, :parameters:partner_b, condition(ascii(substring(:m:p_disposition, 2, 1)) = 67, :parameters:partner_c, NULL)))
 	    where
-		:c:p_partner_key = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, NULL)) and
+		:c:p_partner_key = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, condition(ascii(:m:p_disposition) = 99, :parameters:partner_c, convert(string,NULL)))) and
 		:m:p_data_source = 'CRM Data' and
 		:m:p_partner_key_a = :parameters:partner_a and
 		:m:p_partner_key_b = :parameters:partner_b
@@ -123,7 +132,7 @@ plugin_base_mergeexec_crm "system/query"
 	    set
 		:t:p_partner_key = '#' + condition(ascii(substring(:m:p_disposition, 2, 1)) = 65, :parameters:partner_a, condition(ascii(substring(:m:p_disposition, 2, 1)) = 66, :parameters:partner_b, condition(ascii(substring(:m:p_disposition, 2, 1)) = 67, :parameters:partner_c, NULL)))
 	    where
-		:t:p_partner_key = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, NULL)) and
+		:t:p_partner_key = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, condition(ascii(:m:p_disposition) = 99, :parameters:partner_c, convert(string,NULL)))) and
 		:m:p_data_source = 'CRM Data' and
 		:m:p_partner_key_a = :parameters:partner_a and
 		:m:p_partner_key_b = :parameters:partner_b
@@ -136,7 +145,7 @@ plugin_base_mergeexec_crm "system/query"
 	    set
 		:di:p_partner_key = '#' + condition(ascii(substring(:m:p_disposition, 2, 1)) = 65, :parameters:partner_a, condition(ascii(substring(:m:p_disposition, 2, 1)) = 66, :parameters:partner_b, condition(ascii(substring(:m:p_disposition, 2, 1)) = 67, :parameters:partner_c, NULL)))
 	    where
-		:di:p_partner_key = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, NULL)) and
+		:di:p_partner_key = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, condition(ascii(:m:p_disposition) = 99, :parameters:partner_c, convert(string,NULL)))) and
 		:m:p_data_source = 'CRM Data' and
 		:m:p_partner_key_a = :parameters:partner_a and
 		:m:p_partner_key_b = :parameters:partner_b
@@ -149,7 +158,7 @@ plugin_base_mergeexec_crm "system/query"
 	    set
 		:dg:p_partner_key = '#' + condition(ascii(substring(:m:p_disposition, 2, 1)) = 65, :parameters:partner_a, condition(ascii(substring(:m:p_disposition, 2, 1)) = 66, :parameters:partner_b, condition(ascii(substring(:m:p_disposition, 2, 1)) = 67, :parameters:partner_c, NULL)))
 	    where
-		:dg:p_partner_key = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, NULL)) and
+		:dg:p_partner_key = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, condition(ascii(:m:p_disposition) = 99, :parameters:partner_c, convert(string,NULL)))) and
 		:m:p_data_source = 'CRM Data' and
 		:m:p_partner_key_a = :parameters:partner_a and
 		:m:p_partner_key_b = :parameters:partner_b
@@ -159,8 +168,8 @@ plugin_base_mergeexec_crm "system/query"
 	    update
 		/apps/kardia/data/Kardia_DB/e_ack/rows
 	    set
-		:p_dn_partner_key = substring(:p_dn_partner_key, 2, 16),
-		:e_object_id = replace(:e_object_id, :p_dn_partner_key, substring(:p_dn_partner_key, 2, 16))
+		:e_object_id = replace(:e_object_id, :p_dn_partner_key, substring(:p_dn_partner_key, 2, 16)),
+		:p_dn_partner_key = substring(:p_dn_partner_key, 2, 16)
 	    where
 		(:p_dn_partner_key = '#' + :parameters:partner_a or :p_dn_partner_key = '#' + :parameters:partner_b or :p_dn_partner_key = '#' + :parameters:partner_c)
 	    ;

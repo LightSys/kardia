@@ -5,7 +5,12 @@ plugin_base_mergeexec_contact "system/query"
     partner_b "query/parameter" { type=string; style=strnull; }
     partner_c "query/parameter" { type=string; style=strnull; }
 
-    sql = " -- Partner list
+    sql = " -- Collection for doing later new vs old contact correlation
+	    declare collection merge_contmap scope application;
+	    declare collection merge_addrmap scope application;
+	    delete from collection merge_contmap;
+
+	    -- Partner list
 	    declare object info;
 	    select :info:partners = ralign(:parameters:partner_a, 16) + ralign(:parameters:partner_b, 16) + ralign(isnull(:parameters:partner_c, ''), 16);
 
@@ -15,7 +20,7 @@ plugin_base_mergeexec_contact "system/query"
 	    select
 		p_partner_key = ltrim(substring(:info:partners, (charindex(:abc:letter, 'ABC') - 1)*16 + 1, 16)),
 		:c:p_contact_type,
-		p_location_id = NULL,
+		p_location_id = condition(:c:p_location_id >= 'A' and :c:p_location_id <= 'Z', :c:p_location_id, (select '' + :am:dstid from collection merge_addrmap am where :am:dst = ltrim(substring(:info:partners, (charindex(:abc:letter, 'ABC') - 1)*16 + 1, 16)) and :am:src = :c:p_partner_key and :am:srcid = convert(integer, :c:p_location_id))),
 		:c:p_phone_country,
 		:c:p_phone_area_city,
 		:c:p_contact_data,
@@ -37,6 +42,36 @@ plugin_base_mergeexec_contact "system/query"
 		:c:p_partner_key = ltrim(substring(:info:partners, (charindex(upper(substring(:m:p_disposition, 1, 1)), 'ABC') - 1)*16 + 1, 16)) and
 		:c:name = replace(:m:p_data_key, ':', '|')
 	    ;
+
+	    -- Populate the contact map, for transition of other records that rely
+	    -- on the contact id
+	    insert
+		collection merge_contmap
+	    select
+		src = :c1:p_partner_key,
+		dst = :c2:p_partner_key,
+		srcid = :c1:p_contact_id,
+		dstid = :c2:p_contact_id
+	    from
+		/apps/kardia/modules/base/abc.csv/rows abc,
+		/apps/kardia/data/Kardia_DB/p_merge/rows m,
+		/apps/kardia/data/Kardia_DB/p_contact_info/rows c1,
+		/apps/kardia/data/Kardia_DB/p_contact_info/rows c2
+	    where
+		:m:p_data_source = 'Contact' and
+		:m:p_partner_key_a = :parameters:partner_a and
+		:m:p_partner_key_b = :parameters:partner_b and
+		charindex(:abc:letter, :m:p_disposition) >= 2 and
+		:c1:p_partner_key = ltrim(substring(:info:partners, (charindex(upper(substring(:m:p_disposition, 1, 1)), 'ABC') - 1)*16 + 1, 16)) and
+		:c1:p_contact_id = convert(integer, substring(:m:p_data_key, charindex(':', :m:p_data_key) + 1, 16)) and
+		:c2:p_partner_key = ltrim(substring(:info:partners, (charindex(:abc:letter, 'ABC') - 1)*16 + 1, 16)) and
+		:c2:p_contact_type = :c1:p_contact_type and
+		isnull(:c2:p_phone_country, '') = isnull(:c1:p_phone_country, '') and
+		isnull(:c2:p_phone_area_city, '') = isnull(:c1:p_phone_area_city, '') and
+		isnull(:c2:p_contact_data, '') = isnull(:c1:p_contact_data, '')
+	    ;
+
+	    print 'Contact map: ' + (select isnull(sum('' + :src + ':' + :srcid + ' -> ' + :dst + ':' + :dstid + ', ') - ', ', '(none)') from collection merge_contmap);
 
 	    -- Phase Two, delete/cut
 	    delete

@@ -3,6 +3,7 @@ plugin_base_merge_collab "system/query"
     {
     partner_a "query/parameter" { type=string; style=strnull; }
     partner_b "query/parameter" { type=string; style=strnull; }
+    partner_c "query/parameter" { type=string; style=strnull; }
 
     sql = " select
 		p_partner_key = :c:e_collaborator,
@@ -24,7 +25,7 @@ plugin_base_merge_collab "system/query"
 	    from
 		identity /apps/kardia/data/Kardia_DB/e_collaborator/rows c
 	    where
-		(:c:e_collaborator = :parameters:partner_a or :c:e_collaborator = :parameters:partner_b)
+		(:c:e_collaborator = :parameters:partner_a or :c:e_collaborator = :parameters:partner_b or :c:e_collaborator = :parameters:partner_c)
 	    group by
 		:c:e_collaborator
 	    having

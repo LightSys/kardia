@@ -106,6 +106,7 @@ field_p_partner_key_with_desc "widget/component-decl"
 		height=20;
 		fl_width=100;
 		valign=middle;
+		font_size=11;
 		value=runclient(replace(:pdesc_osrc:disp_name + ' / ' + :pdesc_osrc:ploc + condition(:pdesc_osrc:p_status_code = 'O', ' (obsolete)', ''), '\n', ' '));
 		}
 	    }

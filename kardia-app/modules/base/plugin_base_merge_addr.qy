@@ -3,6 +3,7 @@ plugin_base_merge_addr "system/query"
     {
     partner_a "query/parameter" { type=string; style=strnull; }
     partner_b "query/parameter" { type=string; style=strnull; }
+    partner_c "query/parameter" { type=string; style=strnull; }
 
     sql = " select
 		p_partner_key = :pl:p_partner_key,
@@ -26,7 +27,7 @@ plugin_base_merge_addr "system/query"
 		/apps/kardia/data/Kardia_DB/p_country/rows ctry,
 		/apps/kardia/data/Kardia_DB/p_address_format/rows af
 	    where
-		(:pl:p_partner_key = :parameters:partner_a or :pl:p_partner_key = :parameters:partner_b) and
+		(:pl:p_partner_key = :parameters:partner_a or :pl:p_partner_key = :parameters:partner_b or :pl:p_partner_key = :parameters:partner_c) and
 		:pl:p_revision_id = 0 and
 		(:pl:p_record_status_code = 'A' or :pl:p_record_status_code = 'I' or :pl:p_record_status_code = 'O') and
 		:pl:p_country_code *= :ctry:p_country_code and
