@@ -5,7 +5,11 @@ plugin_base_mergeexec_addr "system/query"
     partner_b "query/parameter" { type=string; style=strnull; }
     partner_c "query/parameter" { type=string; style=strnull; }
 
-    sql = " -- Partner list
+    sql = " -- Collection for doing later new vs old address correlation
+	    declare collection merge_addrmap scope application;
+	    delete from collection merge_addrmap;
+
+	    -- Partner list
 	    declare object info;
 	    select :info:partners = ralign(:parameters:partner_a, 16) + ralign(:parameters:partner_b, 16) + ralign(isnull(:parameters:partner_c, ''), 16);
 
@@ -74,6 +78,35 @@ plugin_base_mergeexec_addr "system/query"
 		--:l:name = replace(:m:p_data_key, ':', '|')
 	    ;
 
+	    -- Populate the address map
+	    insert
+		collection merge_addrmap
+	    select
+		src = :l1:p_partner_key,
+		dst = :l2:p_partner_key,
+		srcid = :l1:p_location_id,
+		dstid = :l2:p_location_id
+	    from
+		/apps/kardia/modules/base/abc.csv/rows abc,
+		/apps/kardia/data/Kardia_DB/p_merge/rows m,
+		/apps/kardia/data/Kardia_DB/p_location/rows l1,
+		/apps/kardia/data/Kardia_DB/p_location/rows l2
+	    where
+		:m:p_data_source = 'Address' and
+		:m:p_partner_key_a = :parameters:partner_a and
+		:m:p_partner_key_b = :parameters:partner_b and
+		charindex(:abc:letter, :m:p_disposition) >= 2 and
+		:l1:p_partner_key = ltrim(substring(:info:partners, (charindex(upper(substring(:m:p_disposition, 1, 1)), 'ABC') - 1)*16 + 1, 16)) and
+		:l1:p_location_id = convert(integer, substring(:m:p_data_key, charindex(':', :m:p_data_key) + 1, 16)) and
+		:l2:p_partner_key = ltrim(substring(:info:partners, (charindex(:abc:letter, 'ABC') - 1)*16 + 1, 16)) and
+		:l2:p_location_type = :l1:p_location_type and
+		isnull(:l2:p_address_1, '') = isnull(:l1:p_address_1, '') and
+		isnull(:l2:p_city, '') = isnull(:l1:p_city, '') and
+		isnull(:l2:p_state_province, '') = isnull(:l1:p_state_province, '') and
+		:l1:p_revision_id = 0 and
+		:l2:p_revision_id = 0
+	    ;
+
 	    -- Phase Two, delete/cut
 	    delete
 		identity /apps/kardia/data/Kardia_DB/p_location/rows l,
@@ -103,7 +136,7 @@ plugin_base_mergeexec_addr "system/query"
 		:m:p_data_source = 'Address' and
 		:m:p_partner_key_a = :parameters:partner_a and
 		:m:p_partner_key_b = :parameters:partner_b and
-		:l:p_partner_key = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, NULL)) and
+		:l:p_partner_key = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, condition(ascii(:m:p_disposition) = 99, :parameters:partner_c, convert(string,NULL)))) and
 		:l:p_record_status_code = 'I'
 	    ;
 

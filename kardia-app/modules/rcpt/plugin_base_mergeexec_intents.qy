@@ -18,7 +18,7 @@ plugin_base_mergeexec_intents "system/query"
 	    set
 		:p:p_donor_partner_id = '#' + condition(ascii(substring(:m:p_disposition, 2, 1)) = 65, :parameters:partner_a, condition(ascii(substring(:m:p_disposition, 2, 1)) = 66, :parameters:partner_b, condition(ascii(substring(:m:p_disposition, 2, 1)) = 67, :parameters:partner_c, NULL)))
 	    where
-		:p:p_donor_partner_id = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, NULL)) and
+		:p:p_donor_partner_id = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, condition(ascii(:m:p_disposition) = 99, :parameters:partner_c, convert(string,NULL)))) and
 		:m:p_data_source = 'Giver Intent' and
 		:m:p_partner_key_a = :parameters:partner_a and
 		:m:p_partner_key_b = :parameters:partner_b

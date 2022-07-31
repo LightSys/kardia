@@ -15,10 +15,10 @@ plugin_base_mergeexec_collabhist "system/query"
 		identity /apps/kardia/data/Kardia_DB/e_ack/rows a,
 		/apps/kardia/data/Kardia_DB/p_merge/rows m
 	    set
-		:a:e_whom = '#' + condition(ascii(substring(:m:p_disposition, 2, 1)) = 65, :parameters:partner_a, condition(ascii(substring(:m:p_disposition, 2, 1)) = 66, :parameters:partner_b, condition(ascii(substring(:m:p_disposition, 2, 1)) = 67, :parameters:partner_c, NULL))),
-		:a:e_object_id = replace(:a:e_object_id, :a:e_whom, '#' + condition(ascii(substring(:m:p_disposition, 2, 1)) = 65, :parameters:partner_a, condition(ascii(substring(:m:p_disposition, 2, 1)) = 66, :parameters:partner_b, condition(ascii(substring(:m:p_disposition, 2, 1)) = 67, :parameters:partner_c, NULL))))
+		:a:e_object_id = replace(:a:e_object_id, rtrim(:a:e_whom) + '|', '#' + condition(ascii(substring(:m:p_disposition, 2, 1)) = 65, :parameters:partner_a, condition(ascii(substring(:m:p_disposition, 2, 1)) = 66, :parameters:partner_b, condition(ascii(substring(:m:p_disposition, 2, 1)) = 67, :parameters:partner_c, NULL))) + '|'),
+		:a:e_whom = '#' + condition(ascii(substring(:m:p_disposition, 2, 1)) = 65, :parameters:partner_a, condition(ascii(substring(:m:p_disposition, 2, 1)) = 66, :parameters:partner_b, condition(ascii(substring(:m:p_disposition, 2, 1)) = 67, :parameters:partner_c, NULL)))
 	    where
-		:a:e_whom = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, NULL)) and
+		:a:e_whom = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, condition(ascii(:m:p_disposition) = 99, :parameters:partner_c, convert(string,NULL)))) and
 		:m:p_data_source = 'CRM CollabHist' and
 		:m:p_partner_key_a = :parameters:partner_a and
 		:m:p_partner_key_b = :parameters:partner_b
@@ -31,7 +31,7 @@ plugin_base_mergeexec_collabhist "system/query"
 	    set
 		:ch:e_whom = '#' + condition(ascii(substring(:m:p_disposition, 2, 1)) = 65, :parameters:partner_a, condition(ascii(substring(:m:p_disposition, 2, 1)) = 66, :parameters:partner_b, condition(ascii(substring(:m:p_disposition, 2, 1)) = 67, :parameters:partner_c, NULL)))
 	    where
-		:ch:e_whom = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, NULL)) and
+		:ch:e_whom = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, condition(ascii(:m:p_disposition) = 99, :parameters:partner_c, convert(string,NULL)))) and
 		:m:p_data_source = 'CRM CollabHist' and
 		:m:p_partner_key_a = :parameters:partner_a and
 		:m:p_partner_key_b = :parameters:partner_b
@@ -44,7 +44,7 @@ plugin_base_mergeexec_collabhist "system/query"
 	    set
 		:t:e_todo_collaborator = '#' + condition(ascii(substring(:m:p_disposition, 2, 1)) = 65, :parameters:partner_a, condition(ascii(substring(:m:p_disposition, 2, 1)) = 66, :parameters:partner_b, condition(ascii(substring(:m:p_disposition, 2, 1)) = 67, :parameters:partner_c, NULL)))
 	    where
-		:t:e_todo_collaborator = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, NULL)) and
+		:t:e_todo_collaborator = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, condition(ascii(:m:p_disposition) = 99, :parameters:partner_c, convert(string,NULL)))) and
 		:t:e_todo_status = 'C' and
 		:m:p_data_source = 'CRM CollabHist' and
 		:m:p_partner_key_a = :parameters:partner_a and
@@ -58,7 +58,7 @@ plugin_base_mergeexec_collabhist "system/query"
 	    set
 		:dc:e_collaborator = '#' + condition(ascii(substring(:m:p_disposition, 2, 1)) = 65, :parameters:partner_a, condition(ascii(substring(:m:p_disposition, 2, 1)) = 66, :parameters:partner_b, condition(ascii(substring(:m:p_disposition, 2, 1)) = 67, :parameters:partner_c, NULL)))
 	    where
-		:dc:e_collaborator = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, NULL)) and
+		:dc:e_collaborator = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, condition(ascii(:m:p_disposition) = 99, :parameters:partner_c, convert(string,NULL)))) and
 		:m:p_data_source = 'CRM CollabHist' and
 		:m:p_partner_key_a = :parameters:partner_a and
 		:m:p_partner_key_b = :parameters:partner_b
@@ -71,7 +71,7 @@ plugin_base_mergeexec_collabhist "system/query"
 	    set
 		:dc:e_target_collaborator = '#' + condition(ascii(substring(:m:p_disposition, 2, 1)) = 65, :parameters:partner_a, condition(ascii(substring(:m:p_disposition, 2, 1)) = 66, :parameters:partner_b, condition(ascii(substring(:m:p_disposition, 2, 1)) = 67, :parameters:partner_c, NULL)))
 	    where
-		:dc:e_target_collaborator = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, NULL)) and
+		:dc:e_target_collaborator = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, condition(ascii(:m:p_disposition) = 99, :parameters:partner_c, convert(string,NULL)))) and
 		:m:p_data_source = 'CRM CollabHist' and
 		:m:p_partner_key_a = :parameters:partner_a and
 		:m:p_partner_key_b = :parameters:partner_b
@@ -84,7 +84,7 @@ plugin_base_mergeexec_collabhist "system/query"
 	    set
 		:ca:e_collaborator_id = '#' + condition(ascii(substring(:m:p_disposition, 2, 1)) = 65, :parameters:partner_a, condition(ascii(substring(:m:p_disposition, 2, 1)) = 66, :parameters:partner_b, condition(ascii(substring(:m:p_disposition, 2, 1)) = 67, :parameters:partner_c, NULL)))
 	    where
-		:ca:e_collaborator_id = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, NULL)) and
+		:ca:e_collaborator_id = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, condition(ascii(:m:p_disposition) = 99, :parameters:partner_c, convert(string,NULL)))) and
 		:m:p_data_source = 'CRM CollabHist' and
 		:m:p_partner_key_a = :parameters:partner_a and
 		:m:p_partner_key_b = :parameters:partner_b
@@ -97,7 +97,7 @@ plugin_base_mergeexec_collabhist "system/query"
 	    set
 		:pe:e_started_by = '#' + condition(ascii(substring(:m:p_disposition, 2, 1)) = 65, :parameters:partner_a, condition(ascii(substring(:m:p_disposition, 2, 1)) = 66, :parameters:partner_b, condition(ascii(substring(:m:p_disposition, 2, 1)) = 67, :parameters:partner_c, NULL)))
 	    where
-		:pe:e_started_by = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, NULL)) and
+		:pe:e_started_by = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, condition(ascii(:m:p_disposition) = 99, :parameters:partner_c, convert(string,NULL)))) and
 		:m:p_data_source = 'CRM CollabHist' and
 		:m:p_partner_key_a = :parameters:partner_a and
 		:m:p_partner_key_b = :parameters:partner_b
@@ -110,7 +110,7 @@ plugin_base_mergeexec_collabhist "system/query"
 	    set
 		:pe:e_completed_by = '#' + condition(ascii(substring(:m:p_disposition, 2, 1)) = 65, :parameters:partner_a, condition(ascii(substring(:m:p_disposition, 2, 1)) = 66, :parameters:partner_b, condition(ascii(substring(:m:p_disposition, 2, 1)) = 67, :parameters:partner_c, NULL)))
 	    where
-		:pe:e_completed_by = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, NULL)) and
+		:pe:e_completed_by = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, condition(ascii(:m:p_disposition) = 99, :parameters:partner_c, convert(string,NULL)))) and
 		:m:p_data_source = 'CRM CollabHist' and
 		:m:p_partner_key_a = :parameters:partner_a and
 		:m:p_partner_key_b = :parameters:partner_b
@@ -123,7 +123,7 @@ plugin_base_mergeexec_collabhist "system/query"
 	    set
 		:pe:e_exited_by = '#' + condition(ascii(substring(:m:p_disposition, 2, 1)) = 65, :parameters:partner_a, condition(ascii(substring(:m:p_disposition, 2, 1)) = 66, :parameters:partner_b, condition(ascii(substring(:m:p_disposition, 2, 1)) = 67, :parameters:partner_c, NULL)))
 	    where
-		:pe:e_exited_by = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, NULL)) and
+		:pe:e_exited_by = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, condition(ascii(:m:p_disposition) = 99, :parameters:partner_c, convert(string,NULL)))) and
 		:m:p_data_source = 'CRM CollabHist' and
 		:m:p_partner_key_a = :parameters:partner_a and
 		:m:p_partner_key_b = :parameters:partner_b
@@ -136,7 +136,7 @@ plugin_base_mergeexec_collabhist "system/query"
 	    set
 		:per:e_completed_by = '#' + condition(ascii(substring(:m:p_disposition, 2, 1)) = 65, :parameters:partner_a, condition(ascii(substring(:m:p_disposition, 2, 1)) = 66, :parameters:partner_b, condition(ascii(substring(:m:p_disposition, 2, 1)) = 67, :parameters:partner_c, NULL)))
 	    where
-		:per:e_completed_by = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, NULL)) and
+		:per:e_completed_by = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, condition(ascii(:m:p_disposition) = 99, :parameters:partner_c, convert(string,NULL)))) and
 		:m:p_data_source = 'CRM CollabHist' and
 		:m:p_partner_key_a = :parameters:partner_a and
 		:m:p_partner_key_b = :parameters:partner_b
@@ -149,7 +149,7 @@ plugin_base_mergeexec_collabhist "system/query"
 	    set
 		:per:e_waived_by = '#' + condition(ascii(substring(:m:p_disposition, 2, 1)) = 65, :parameters:partner_a, condition(ascii(substring(:m:p_disposition, 2, 1)) = 66, :parameters:partner_b, condition(ascii(substring(:m:p_disposition, 2, 1)) = 67, :parameters:partner_c, NULL)))
 	    where
-		:per:e_waived_by = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, NULL)) and
+		:per:e_waived_by = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, condition(ascii(:m:p_disposition) = 99, :parameters:partner_c, convert(string,NULL)))) and
 		:m:p_data_source = 'CRM CollabHist' and
 		:m:p_partner_key_a = :parameters:partner_a and
 		:m:p_partner_key_b = :parameters:partner_b
@@ -162,7 +162,7 @@ plugin_base_mergeexec_collabhist "system/query"
 	    set
 		:doc:e_uploading_collaborator = '#' + condition(ascii(substring(:m:p_disposition, 2, 1)) = 65, :parameters:partner_a, condition(ascii(substring(:m:p_disposition, 2, 1)) = 66, :parameters:partner_b, condition(ascii(substring(:m:p_disposition, 2, 1)) = 67, :parameters:partner_c, NULL)))
 	    where
-		:doc:e_uploading_collaborator = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, NULL)) and
+		:doc:e_uploading_collaborator = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, condition(ascii(:m:p_disposition) = 99, :parameters:partner_c, convert(string,NULL)))) and
 		:m:p_data_source = 'CRM CollabHist' and
 		:m:p_partner_key_a = :parameters:partner_a and
 		:m:p_partner_key_b = :parameters:partner_b
@@ -172,8 +172,8 @@ plugin_base_mergeexec_collabhist "system/query"
 	    update
 		/apps/kardia/data/Kardia_DB/e_ack/rows
 	    set
-		:e_whom = substring(:e_whom, 2, 16),
-		:e_object_id = replace(:e_object_id, :e_whom, substring(:e_whom, 2, 16))
+		:e_object_id = replace(:e_object_id, :e_whom, substring(:e_whom, 2, 16)),
+		:e_whom = substring(:e_whom, 2, 16)
 	    where
 		(:e_whom = '#' + :parameters:partner_a or :e_whom = '#' + :parameters:partner_b or :e_whom = '#' + :parameters:partner_c)
 	    ;

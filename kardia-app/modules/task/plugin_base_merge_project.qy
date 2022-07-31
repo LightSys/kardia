@@ -3,6 +3,7 @@ plugin_base_merge_project "system/query"
     {
     partner_a "query/parameter" { type=string; style=strnull; }
     partner_b "query/parameter" { type=string; style=strnull; }
+    partner_c "query/parameter" { type=string; style=strnull; }
 
     sql = " select
 		p_partner_key = :p:p_partner_key,
@@ -28,7 +29,7 @@ plugin_base_merge_project "system/query"
 	    from
 		identity /apps/kardia/data/Kardia_DB/t_participant/rows p
 	    where
-		(:p:p_partner_key = :parameters:partner_a or :p:p_partner_key = :parameters:partner_b)
+		(:p:p_partner_key = :parameters:partner_a or :p:p_partner_key = :parameters:partner_b or :p:p_partner_key = :parameters:partner_c)
 	    having
 		char_length(:p_data_desc) > 1
 	    ";

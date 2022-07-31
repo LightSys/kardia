@@ -11,8 +11,10 @@ plugin_base_dataqa_merge "widget/component-decl"
     MergeRequest "widget/component-decl-action" { }
 
     on_MergeRequest_0 "widget/connector" { event=MergeRequest; target=merge_form; action=New; }
-    on_MergeRequest_1 "widget/connector" { event=MergeRequest; target=partner_a; action=SetValue; Value=runclient(:partner_a); event_delay=0.2; }
-    on_MergeRequest_2 "widget/connector" { event=MergeRequest; target=partner_b; action=SetValue; Value=runclient(:partner_b); event_delay=0.2; }
+    on_MergeRequest_1 "widget/connector" { event=MergeRequest; target=partner_a; action=SetValue; Value=runclient(:partner_a); event_delay=0.25; }
+    on_MergeRequest_2 "widget/connector" { event=MergeRequest; target=partner_b; action=SetValue; Value=runclient(:partner_b); event_delay=0.25; }
+
+    used_partner_c_desc "widget/variable" { type=string; value=null; }
 
     merge_vbox "widget/vbox"
 	{
@@ -80,6 +82,13 @@ plugin_base_dataqa_merge "widget/component-decl"
 			    event_condition=runclient(char_length(:merge_method:value) > 0);
 			    target=assoc_osrc;
 			    action=QueryParam;
+			    }
+
+			on_a_clear_form "widget/connector"
+			    {
+			    event=DataChange;
+			    target=partner_form;
+			    action=Clear;
 			    }
 
 			on_a_desc "widget/connector"
@@ -196,6 +205,13 @@ plugin_base_dataqa_merge "widget/component-decl"
 			    action=QueryParam;
 			    }
 
+			on_b_clear_form "widget/connector"
+			    {
+			    event=DataChange;
+			    target=partner_form;
+			    action=Clear;
+			    }
+
 			on_b_desc "widget/connector"
 			    {
 			    event=Description;
@@ -272,12 +288,19 @@ plugin_base_dataqa_merge "widget/component-decl"
 		    width=580;
 		    path="/sys/cmp/smart_field.cmp";
 		    ctl_type=dropdown;
-		    sql="select 'Merge: merge data and mark one partner obsolete.', 'M'; select 'Marriage: create a household record and connect the two partners to the household.', 'R'; select 'Household: rearrange data and create a household/individual association.', 'H'; select 'Associate: rearrange data and connect the two partners as parts of one entity.', 'A'; select 'None: only rearrange data, if needed.', 'N'";
+		    sql = " select 'Merge: merge data and mark one partner obsolete.', 'M';
+			    select 'Marriage: create a household record and connect the two partners to the household.', 'R';
+			    select 'Household: rearrange data and create a household/individual association.', 'H';
+			    select 'Associate: rearrange data and connect the two partners as parts of one entity.', 'A';
+			    select 'None: only rearrange data, if needed.', 'N'";
 		    numdisplay=10;
 		    text="Merge Method:";
 		    field=merge_method;
 
-		    on_method_change "widget/connector" { event=DataChange; target=assoc_osrc; action=QueryParam; }
+		    on_method_change_1 "widget/connector" { event=DataChange; target=assoc_osrc; action=QueryParam; }
+
+		    on_method_change_2 "widget/connector" { event=DataChange; event_delay=0.1; event_condition=runclient(:merge_method:value != 'N' and char_length(:partner_c:value) > 1); target=logic_osrc; action=QueryParam; do_reset=1; }
+		    on_method_change_3 "widget/connector" { event=DataChange; event_condition=runclient(:merge_method:value != 'N'); target=partner_form; action=Clear; }
 		    }
 
 		assoc_osrc "widget/osrc"
@@ -539,7 +562,7 @@ plugin_base_dataqa_merge "widget/component-decl"
 		event_condition=runclient(:logic_osrc:merge_complete = 1);
 		target=merge_method;
 		action=SetValue;
-		Value=runclient(null);
+		Value=runclient('N');
 		}
 
 	    on_merge_done_2 "widget/connector"
@@ -553,6 +576,7 @@ plugin_base_dataqa_merge "widget/component-decl"
 
 	    on_merge_done_3 "widget/connector"
 		{
+		condition=0;
 		event=EndQuery;
 		event_condition=runclient(:logic_osrc:merge_complete = 1);
 		target=primary;
@@ -577,6 +601,15 @@ plugin_base_dataqa_merge "widget/component-decl"
 		}
 
 	    on_merge_done_6 "widget/connector"
+		{
+		event=EndQuery;
+		event_condition=runclient(:logic_osrc:merge_complete = 1);
+		target=used_partner_c_desc;
+		action=SetValue;
+		Value=runclient(:logic_osrc:used_partner_c_desc);
+		}
+
+	    on_merge_done_7 "widget/connector"
 		{
 		event=EndQuery;
 		event_condition=runclient(:logic_osrc:merge_complete = 1);
@@ -766,8 +799,9 @@ plugin_base_dataqa_merge "widget/component-decl"
 			}
 		    t_check_c "widget/table-column"
 			{
-			title=runclient(condition(:merge_method:value == 'R', '', ''));
-			value=runclient(condition(substring(:data_osrc:p_disposition, 1, 1) == 'C', '/sys/images/green_check.gif', condition(substring(:data_osrc:p_disposition, 1, 1) == 'c', '/apps/kardia/images/icons/tango-edit-cut.svg', condition(charindex('C', substring(:data_osrc:p_disposition, 2, 2)) > 0, '/apps/kardia/images/icons/tango-edit-paste.svg', '/sys/images/tbl_dash.gif'))));
+			title=runclient(condition(char_length(:partner_c:value) > 1, :partner_c:value + ':', ''));
+			//:logic_osrc:merge_complete = 1 and :logic_osrc:used_method = 'R' and :partner_a:value = :logic_osrc:used_partner_a and :partner_b:value = :logic_osrc:used_partner_b, :logic_osrc:used_partner_c + ':', ''));
+			value=runclient(condition(char_length(:partner_c:value) > 1 or :merge_method:value = 'R', condition(substring(:data_osrc:p_disposition, 1, 1) == 'C', '/sys/images/green_check.gif', condition(substring(:data_osrc:p_disposition, 1, 1) == 'c', '/apps/kardia/images/icons/tango-edit-cut.svg', condition(charindex('C', substring(:data_osrc:p_disposition, 2, 2)) > 0, '/apps/kardia/images/icons/tango-edit-paste.svg', '/sys/images/tbl_dash.gif'))), '/sys/images/trans_1.gif'));
 			width=70;
 			style=bold;
 			align=right;
@@ -779,12 +813,13 @@ plugin_base_dataqa_merge "widget/component-decl"
 			}
 		    t_desc_c "widget/table-column"
 			{
-			title=runclient(condition(:merge_method:value == 'R', 'Creating a NEW Household Record', ''));
-			value=runclient(condition(charindex('C', :data_osrc:p_disposition) > 0, :data_osrc:p_data_desc, ''));
+			title=runclient(condition(:merge_method:value == 'R', 'Creating a NEW Household Record', condition(char_length(:partner_c:value) > 1, :used_partner_c_desc:value, '')));
+			//title=runclient(condition(:merge_method:value == 'R', 'Creating a NEW Household Record', condition(:logic_osrc:merge_complete = 1 and :logic_osrc:used_method = 'R' and :partner_a:value = :logic_osrc:used_partner_a and :partner_b:value = :logic_osrc:used_partner_b, :logic_osrc:used_partner_c_desc, '')));
+			value=runclient(condition((char_length(:partner_c:value) > 1 or :merge_method:value = 'R') and charindex('C', upper(:data_osrc:p_disposition)) > 0, :data_osrc:p_data_desc, ''));
 			width=250;
 			wrap=yes;
 			caption_textcolor=runclient(condition(:data_osrc:conflict_c is not null, 'red', '#808080'));
-			caption_value=runclient(isnull(:data_osrc:conflict_c, condition(upper(substring(:data_osrc:p_disposition, 1, 1)) = 'C' and :data_osrc:p_allow_delete, 'Created: ' + :data_osrc:create_date_txt + ', Modified: ' + :data_osrc:modify_date_txt, '')));
+			caption_value=runclient(condition(char_length(:partner_c:value) > 1 or :merge_method:value = 'R', isnull(:data_osrc:conflict_c, condition(upper(substring(:data_osrc:p_disposition, 1, 1)) = 'C' and :data_osrc:p_allow_delete, 'Created: ' + :data_osrc:create_date_txt + ', Modified: ' + :data_osrc:modify_date_txt, '')), ''));
 			caption_style=italic;
 			//visible=runclient(:merge_method:value == 'R');
 			}
@@ -817,7 +852,8 @@ plugin_base_dataqa_merge "widget/component-decl"
 		    on_col_c_click "widget/connector"
 			{
 			event=Click;
-			event_condition=runclient(:Column == 'ctl_c' and :merge_method:value = 'R');
+			event_condition=runclient(:Column == 'ctl_c' and char_length(:partner_c:value) > 1);
+			//(:merge_method:value = 'R' or (:logic_osrc:merge_complete = 1 and :logic_osrc:used_method = 'R' and :merge_method:value = 'N' and :partner_a:value = :logic_osrc:used_partner_a and :partner_b:value = :logic_osrc:used_partner_b)));
 			target=logic_osrc;
 			action=QueryParam;
 			do_ctl_c=1;

@@ -18,7 +18,7 @@ plugin_base_mergeexec_hr "system/query"
 	    set
 		:hs:p_partner_key = '#' + condition(ascii(substring(:m:p_disposition, 2, 1)) = 65, :parameters:partner_a, condition(ascii(substring(:m:p_disposition, 2, 1)) = 66, :parameters:partner_b, condition(ascii(substring(:m:p_disposition, 2, 1)) = 67, :parameters:partner_c, NULL)))
 	    where
-		:hs:p_partner_key = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, NULL)) and
+		:hs:p_partner_key = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, condition(ascii(:m:p_disposition) = 99, :parameters:partner_c, convert(string,NULL)))) and
 		:m:p_data_source = 'HR' and
 		:m:p_partner_key_a = :parameters:partner_a and
 		:m:p_partner_key_b = :parameters:partner_b
@@ -31,7 +31,7 @@ plugin_base_mergeexec_hr "system/query"
 	    set
 		:hgm:p_partner_key = '#' + condition(ascii(substring(:m:p_disposition, 2, 1)) = 65, :parameters:partner_a, condition(ascii(substring(:m:p_disposition, 2, 1)) = 66, :parameters:partner_b, condition(ascii(substring(:m:p_disposition, 2, 1)) = 67, :parameters:partner_c, NULL)))
 	    where
-		:hgm:p_partner_key = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, NULL)) and
+		:hgm:p_partner_key = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, condition(ascii(:m:p_disposition) = 99, :parameters:partner_c, convert(string,NULL)))) and
 		:m:p_data_source = 'HR' and
 		:m:p_partner_key_a = :parameters:partner_a and
 		:m:p_partner_key_b = :parameters:partner_b
@@ -44,7 +44,7 @@ plugin_base_mergeexec_hr "system/query"
 	    set
 		:hwr:p_partner_key = '#' + condition(ascii(substring(:m:p_disposition, 2, 1)) = 65, :parameters:partner_a, condition(ascii(substring(:m:p_disposition, 2, 1)) = 66, :parameters:partner_b, condition(ascii(substring(:m:p_disposition, 2, 1)) = 67, :parameters:partner_c, NULL)))
 	    where
-		:hwr:p_partner_key = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, NULL)) and
+		:hwr:p_partner_key = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, condition(ascii(:m:p_disposition) = 99, :parameters:partner_c, convert(string,NULL)))) and
 		:m:p_data_source = 'HR' and
 		:m:p_partner_key_a = :parameters:partner_a and
 		:m:p_partner_key_b = :parameters:partner_b
@@ -57,7 +57,7 @@ plugin_base_mergeexec_hr "system/query"
 	    set
 		:hwt:p_partner_key = '#' + condition(ascii(substring(:m:p_disposition, 2, 1)) = 65, :parameters:partner_a, condition(ascii(substring(:m:p_disposition, 2, 1)) = 66, :parameters:partner_b, condition(ascii(substring(:m:p_disposition, 2, 1)) = 67, :parameters:partner_c, NULL)))
 	    where
-		:hwt:p_partner_key = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, NULL)) and
+		:hwt:p_partner_key = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, condition(ascii(:m:p_disposition) = 99, :parameters:partner_c, convert(string,NULL)))) and
 		:m:p_data_source = 'HR' and
 		:m:p_partner_key_a = :parameters:partner_a and
 		:m:p_partner_key_b = :parameters:partner_b
@@ -70,7 +70,7 @@ plugin_base_mergeexec_hr "system/query"
 	    set
 		:hb:p_partner_key = '#' + condition(ascii(substring(:m:p_disposition, 2, 1)) = 65, :parameters:partner_a, condition(ascii(substring(:m:p_disposition, 2, 1)) = 66, :parameters:partner_b, condition(ascii(substring(:m:p_disposition, 2, 1)) = 67, :parameters:partner_c, NULL)))
 	    where
-		:hb:p_partner_key = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, NULL)) and
+		:hb:p_partner_key = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, condition(ascii(:m:p_disposition) = 99, :parameters:partner_c, convert(string,NULL)))) and
 		:m:p_data_source = 'HR' and
 		:m:p_partner_key_a = :parameters:partner_a and
 		:m:p_partner_key_b = :parameters:partner_b
@@ -84,7 +84,7 @@ plugin_base_mergeexec_hr "system/query"
 		:hbs:p_partner_key = '#' + condition(ascii(substring(:m:p_disposition, 2, 1)) = 65, :parameters:partner_a, condition(ascii(substring(:m:p_disposition, 2, 1)) = 66, :parameters:partner_b, condition(ascii(substring(:m:p_disposition, 2, 1)) = 67, :parameters:partner_c, NULL)))
 	    where
 		:hbs:p_partner_key is not null and
-		:hbs:p_partner_key = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, NULL)) and
+		:hbs:p_partner_key = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, condition(ascii(:m:p_disposition) = 99, :parameters:partner_c, convert(string,NULL)))) and
 		:m:p_data_source = 'HR' and
 		:m:p_partner_key_a = :parameters:partner_a and
 		:m:p_partner_key_b = :parameters:partner_b
