@@ -82,27 +82,36 @@ def _process_scheduled_report(scheduled_report: ScheduledReport, generated_repor
             "continuing on to next scheduled report...", False)
 
 
-config = None
+connection_config = None
 try:
     syslog.openlog(ident="kardia_python_send_reports")
-    config = toml.load("config.toml")
+    connection_config = toml.load("config.toml")
 except Exception:
     _handle_error("Error opening log or configuration, quitting", True)
 
-# Set defaults for new config items that might not be set in config.toml
-config = {
-    "dry_run": False,
-    **config
-}
-
 kardia_client = None
+config = None
+try:
+    kardia_client = RestAPIKardiaClient(connection_config["kardia_url"], connection_config["user"], connection_config["pw"])
+    config = kardia_client.get_config()
+
+    # Check required config values
+    if ("generated_report_osml_dir" not in config) or (not config["generated_report_osml_dir"]):
+        _handle_error("No configuration in Kardia for what OSML directory to store generated reports in, quitting", True)
+
+    # Set config defaults
+    config = {
+        "dry_run": False,
+        **config
+    }
+except Exception:
+    _handle_error("Error requesting configuration from Kardia, quitting", True)
+
 report_sender = None
 batches = None
 
 try:
-    kardia_client = RestAPIKardiaClient(config["kardia_url"], config["user"], config["pw"])
-    report_sender = EmailReportSender(config["email"]["smtp"])
-
+    report_sender = EmailReportSender(config["email"])
     scheduled_report_filters = _get_scheduled_report_filters()
 
     on_individual_report_error = lambda report_id: _handle_error((f"Error getting information for scheduled report "
