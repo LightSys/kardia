@@ -95,9 +95,9 @@ class RestAPIKardiaClient(KardiaClient):
             config["email"]["host"] = config_json["ReportsHost"]["s_config_value"]
         if "ReportsPort" in config_json:
             config["email"]["port"] = int(config_json["ReportsPort"]["s_config_value"])
-        if "ReportsHostname" in config_json:
+        if ("ReportsHostname" in config_json) and (config_json["ReportsHostname"]["s_config_value"] != ""):
             config["email"]["local_hostname"] = config_json["ReportsHostname"]["s_config_value"]
-        if "ReportsTimeout" in config_json:
+        if ("ReportsTimeout" in config_json) and (config_json["ReportsTimeout"]["s_config_value"] != ""):
             config["email"]["timeout"] = int(config_json["ReportsTimeout"]["s_config_value"])
 
         return config

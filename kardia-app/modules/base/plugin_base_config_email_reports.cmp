@@ -33,8 +33,8 @@ plugin_base_config_email_reports "widget/component-decl"
 				email_reports_email_label "widget/label" { height=15; text="What SMTP settings to use when sending report emails? See https://docs.python.org/3/library/smtplib.html#smtplib.SMTP for more info"; }
 				email_reports_host "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="ReportsHost"; text="Host:"; width=500; ctl_type=editbox; }
 				email_reports_port "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="ReportsPort"; text="Port:"; width=500; ctl_type=editbox; emr_port_hints "widget/hints" { allowchars="0123456789"; } }
-				email_reports_hostname "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="ReportsHostname"; text="Local hostname:"; width=500; ctl_type=editbox; }
-				email_reports_timeout "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="ReportsTimeout"; text="Timeout:"; width=500; ctl_type=editbox; emr_timeout_hints "widget/hints" { allowchars="0123456789"; } }
+				email_reports_hostname "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="ReportsHostname"; text="Our hostname:"; empty_desc="optional"; width=500; ctl_type=editbox; }
+				email_reports_timeout "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="ReportsTimeout"; text="Timeout (secs):"; empty_desc="optional"; width=500; ctl_type=editbox; emr_timeout_hints "widget/hints" { allowchars="0123456789"; } }
 				}
 			}
 
