@@ -37,7 +37,7 @@ class RestAPIKardiaClient(KardiaClient):
         # Centrallix JSON just uses 0 for false, 1 for true, None for null
         if value is None:
             return None
-        elif value == 0:
+        elif value == 0 or value == "0":
             return False
         else:
             return True
@@ -78,6 +78,31 @@ class RestAPIKardiaClient(KardiaClient):
     def get_user_agent(self):
         app_info_json = self._make_api_request(self.kardia.app_info.getAppInfo)
         return KardiaUserAgent(app_info_json["app_name"], app_info_json["app_version"])
+
+
+    def get_config(self):
+        self.kardia.config.setParams(res_attrs="basic")
+        config_json = self._make_api_request(self.kardia.config.getConfig)
+        config = {
+            "email": {}
+        }
+
+        if "ReportsDryRun" in config_json:
+            config["dry_run"] = self._get_centrallix_bool(config_json["ReportsDryRun"]["s_config_value"])
+        if "ReportsDir" in config_json:
+            config["generated_report_osml_dir"] = config_json["ReportsDir"]["s_config_value"]
+        if "ReportsHost" in config_json:
+            config["email"]["host"] = config_json["ReportsHost"]["s_config_value"]
+        if "ReportsPort" in config_json:
+            config["email"]["port"] = int(config_json["ReportsPort"]["s_config_value"])
+        if ("ReportsHostname" in config_json) and (config_json["ReportsHostname"]["s_config_value"] != ""):
+            config["email"]["local_hostname"] = config_json["ReportsHostname"]["s_config_value"]
+        if ("ReportsTimeout" in config_json) and (config_json["ReportsTimeout"]["s_config_value"] != ""):
+            config["email"]["timeout"] = int(config_json["ReportsTimeout"]["s_config_value"])
+
+        return config
+
+
 
     def get_scheduled_reports_to_be_sent(self, filters, on_individual_report_error):
         self.kardia.report.setParams(res_attrs="basic")
