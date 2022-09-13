@@ -10,7 +10,7 @@ giving_history "system/query"
 		name = :g:name,
 		date = dateformat(isnull(:g:a_gift_postmark_date, :g:a_gift_received_date), 'dd-MMM-yyyy'),
 		amount = :g:a_amount,
-		itemdesig = nth(:i:a_cost_center + ' ' + :c:a_cc_desc + '\n', 1) + isnull(nth(:i:a_cost_center + ' ' + :c:a_cc_desc + '\n', 2), '') + condition(nth(:i:a_cost_center, 4) is not null, '(and ' + (count(1) - 2) + ' more desig.)', isnull(nth(:i:a_cost_center + ' ' + :c:a_cc_desc + '\n', 3), '')), 
+		itemdesig = nth(:i:a_fund + ' ' + :c:a_fund_desc + '\n', 1) + isnull(nth(:i:a_fund + ' ' + :c:a_fund_desc + '\n', 2), '') + condition(nth(:i:a_fund, 4) is not null, '(and ' + (count(1) - 2) + ' more desig.)', isnull(nth(:i:a_fund + ' ' + :c:a_fund_desc + '\n', 3), '')), 
 		itemamt = nth('' + :i:a_amount + '\n', 1) + isnull(nth('' + :i:a_amount + '\n', 2), '') + condition(nth(:i:a_amount, 4) is not null, '' + (sum(:i:a_amount) - nth(:i:a_amount, 1) - nth(:i:a_amount, 2)), isnull(nth('' + :i:a_amount + '\n', 3), '')),
 		receipt = :g:a_receipt_number,
 		ledger = :g:a_ledger_number,
@@ -25,7 +25,7 @@ giving_history "system/query"
 	    from
 		/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g,
 		/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i,
-		/apps/kardia/data/Kardia_DB/a_cost_center/rows c
+		/apps/kardia/data/Kardia_DB/a_fund/rows c
 	    where
 		(:g:p_donor_partner_id = :parameters:partner or :g:p_donor_partner_id = :parameters:ackpartner or :g:p_ack_partner_id = :parameters:partner or :g:p_ack_partner_id = :parameters:ackpartner) and
 		:g:a_ledger_number = :parameters:ledger and
@@ -34,7 +34,7 @@ giving_history "system/query"
 		:i:a_gift_number = :g:a_gift_number and
 		:g:a_posted = 1 and
 		:c:a_ledger_number = :i:a_ledger_number and
-		:c:a_cost_center = :i:a_cost_center
+		:c:a_fund = :i:a_fund
 	    group by
 		:g:a_batch_number desc,
 		:g:a_gift_number desc

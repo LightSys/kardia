@@ -115,9 +115,9 @@ post_batch "widget/component-decl"
 			/apps/kardia/data/Kardia_DB/a_transaction/rows
 		SELECT
 			a_amount = $0 - sum(:t:a_amount),
-			a_comment = '' + count(1) + ' transactions for ' + :c:a_bal_cost_center,
+			a_comment = '' + count(1) + ' transactions for ' + :c:a_bal_fund,
 			a_account_code = '1900',
-			a_cost_center=:c:a_bal_cost_center,
+			a_fund=:c:a_bal_fund,
 			:t:a_journal_number,
 			:t:a_batch_number,
 			:t:a_ledger_number,
@@ -146,20 +146,20 @@ post_batch "widget/component-decl"
 			s_modified_by = user_name()
 		FROM
 			/apps/kardia/data/Kardia_DB/a_transaction/rows t,
-			/apps/kardia/data/Kardia_DB/a_cost_center/rows c
+			/apps/kardia/data/Kardia_DB/a_fund/rows c
 		WHERE
 			:t:a_ledger_number = :parameters:a_ledger_number and 
 			:t:a_batch_number = :parameters:a_batch_number and
 			:t:a_period = :parameters:a_period and
 			:t:a_ledger_number = :c:a_ledger_number and
-			:t:a_cost_center = :c:a_cost_center
+			:t:a_fund = :c:a_fund
 		GROUP BY
 			:t:a_ledger_number,
 			:t:a_batch_number,
 			:t:a_journal_number,
-			:c:a_bal_cost_center
+			:c:a_bal_fund
 		ORDER BY
-			:t:a_cost_center
+			:t:a_fund
 		HAVING
 			:a_amount != $0
 		";

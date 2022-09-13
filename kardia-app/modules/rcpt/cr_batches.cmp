@@ -570,7 +570,7 @@ cr_batches "widget/component-decl"
 
 		    sql = " select
 				gt_amt = sum(:i:a_amount),
-				gt_type = :gt:a_payment_cost_center + '/' + :gt:a_payment_account_code + ' ' + :gt:a_gift_payment_type_desc
+				gt_type = :gt:a_payment_fund + '/' + :gt:a_payment_account_code + ' ' + :gt:a_gift_payment_type_desc
 			    from
 				identity /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i,
 				/apps/kardia/data/Kardia_DB/a_gift_payment_type/rows gt

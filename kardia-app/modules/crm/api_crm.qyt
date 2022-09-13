@@ -624,7 +624,7 @@ api_crm "system/querytree"
 			    DECLARE COLLECTION tmp_collection SCOPE APPLICATION ;
 
 			    SELECT
-				:activity:cclist = isnull( (select sum(:cc:a_ledger_number + '|' + :cc:a_cost_center + ',') - ',' from /apps/kardia/data/Kardia_DB/a_cc_staff/rows cs, /apps/kardia/data/Kardia_DB/a_cost_center/rows cc where :cs:p_staff_partner_key = :s:p_partner_key and (:cc:a_bal_cost_center = :cs:a_cost_center or :cc:a_cost_center = :cs:a_cost_center) and :cc:a_ledger_number = :cs:a_ledger_number), '')
+				:activity:fundlist = isnull( (select sum(:cc:a_ledger_number + '|' + :cc:a_fund + ',') - ',' from /apps/kardia/data/Kardia_DB/a_fund_staff/rows cs, /apps/kardia/data/Kardia_DB/a_fund/rows cc where :cs:p_staff_partner_key = :s:p_partner_key and (:cc:a_bal_fund = :cs:a_fund or :cc:a_fund = :cs:a_fund) and :cc:a_ledger_number = :cs:a_ledger_number), '')
 			    FROM
 				/apps/kardia/data/Kardia_DB/p_staff/rows s,
 				/apps/kardia/data/Kardia_DB/p_partner/rows p
@@ -638,7 +638,7 @@ api_crm "system/querytree"
 			    SELECT
 				:activity:group_id = 1
 			    FROM
-				identity '/apps/kardia/modules/crm/timeline.qy?partner_key=" + escape(:eng_list:partner_id, "'", "") + "&my_cclist='
+				identity '/apps/kardia/modules/crm/timeline.qy?partner_key=" + escape(:eng_list:partner_id, "'", "") + "&my_fundlist='
 			    ;
 			    
 			    SELECT

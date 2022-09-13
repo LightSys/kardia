@@ -51,9 +51,9 @@ plugin_base_merge_gifts "system/query"
 		:p_data_desc = :p_data_desc +
 		    isnull(' to ' + (
 			select
-			    --sum('' + condition(dense_rank(first(:g2:a_cost_center)) <= 5, '' + first(:g2:a_cost_center) + ' (' + count(1) + '), ', row_number(first(:g2:a_cost_center))))
-			    --sum(first(:g2:a_cost_center) + ' (' + count(1) + '), ')
-			    sum(first(:g2:a_cost_center) + ', ')
+			    --sum('' + condition(dense_rank(first(:g2:a_fund)) <= 5, '' + first(:g2:a_fund) + ' (' + count(1) + '), ', row_number(first(:g2:a_fund))))
+			    --sum(first(:g2:a_fund) + ' (' + count(1) + '), ')
+			    sum(first(:g2:a_fund) + ', ')
 			    - ', '
 			    -- + condition(count(count(1)) > 5, ' and ' + (count(count(1)) - 5) + ' more', '')
 			from
@@ -61,7 +61,7 @@ plugin_base_merge_gifts "system/query"
 			where
 			    :g2:p_dn_donor_partner_id = :g:p_partner_key
 			group by
-			    :g2:a_cost_center
+			    :g2:a_fund
 		    ), '')
 	    ;
 

@@ -35,7 +35,7 @@ financial_statement_cmp "widget/component-decl"
 	    pn_sep1 "widget/pane" { height=2; style=lowered; }
 
 	    f_ledger "widget/component" { width=350; height=24; path="/sys/cmp/smart_field.cmp"; field='ledger'; ctl_type=label; text='Ledger:'; value=runserver(:this:ledger); form=report_form; label_width=120; }
-	    f_costctr "widget/component" { width=350; height=24; path="/apps/kardia/modules/base/editbox_tree.cmp"; field="costctr"; popup_source=runserver("/apps/kardia/modules/gl/costctrs.qyt/" + :this:ledger + "/"); popup_text="Choose Cost Center:"; text="Cost Center:"; attach_point=editbox; empty_desc = "required"; label_width=120; }
+	    f_fund "widget/component" { width=350; height=24; path="/apps/kardia/modules/base/editbox_tree.cmp"; field="fund"; popup_source=runserver("/apps/kardia/modules/gl/funds.qyt/" + :this:ledger + "/"); popup_text="Choose Fund:"; text="Fund:"; attach_point=editbox; empty_desc = "required"; label_width=120; }
 	    f_year "widget/component"
 		{ 
 		width=350; height=24; 
@@ -64,7 +64,7 @@ financial_statement_cmp "widget/component-decl"
 	    {
 	    x=650; y=52; width=120; height=24;
 	    text="Print";
-	    //enabled=runclient(char_length(:f_year:value) > 0 and char_length(:report_form:period) > 0 and char_length(:report_form:costctr) > 0);
+	    //enabled=runclient(char_length(:f_year:value) > 0 and char_length(:report_form:period) > 0 and char_length(:report_form:fund) > 0);
 	    rpt_print_cn "widget/connector" { event="Click"; target="report_form"; action="Submit"; Target=runclient("page"); NewPage=runclient(1); Source=runclient("/apps/kardia/modules/payroll/financial_statement.rpt"); Width=runclient(800); Height=runclient(600); UseragentResize=runclient(1); UseragentMenu=runclient(1); }
 	    }
 	rpt_cancel "widget/textbutton"
@@ -77,8 +77,8 @@ financial_statement_cmp "widget/component-decl"
 
     missionary_osrc "widget/osrc"
 	{
-	sql = "SELECT :c:a_cost_center, :c:a_cc_desc, cctxt = :c:a_cost_center + ' - ' + :c:a_cc_desc, paynames = sum(:y:a_payee_name + ',') - ',', paycnt = count(:y:a_payroll_id)  FROM IDENTITY /apps/kardia/data/Kardia_DB/a_cost_center/rows c, /apps/kardia/data/Kardia_DB/a_payroll/rows y  WHERE :c:a_cost_center = :c:a_bal_cost_center and :c:a_cost_center_class = 'MIS' and :c:a_ledger_number *= :y:a_ledger_number and :c:a_cost_center *= :y:a_cost_center  GROUP BY :c:a_cost_center";
-	baseobj = "/apps/kardia/data/Kardia_DB/a_cost_center/rows";
+	sql = "SELECT :c:a_fund, :c:a_fund_desc, cctxt = :c:a_fund + ' - ' + :c:a_fund_desc, paynames = sum(:y:a_payee_name + ',') - ',', paycnt = count(:y:a_payroll_id)  FROM IDENTITY /apps/kardia/data/Kardia_DB/a_fund/rows c, /apps/kardia/data/Kardia_DB/a_payroll/rows y  WHERE :c:a_fund = :c:a_bal_fund and :c:a_fund_class = 'MIS' and :c:a_ledger_number *= :y:a_ledger_number and :c:a_fund *= :y:a_fund  GROUP BY :c:a_fund";
+	baseobj = "/apps/kardia/data/Kardia_DB/a_fund/rows";
 	autoquery=never;
 	replicasize=150;
 	readahead=25;
@@ -97,15 +97,15 @@ financial_statement_cmp "widget/component-decl"
 	    {
 	    event=DataFocusChanged;
 	    action=SetValue;
-	    target=f_costctr;
-	    Value = runclient(:missionary_osrc:a_cost_center);
+	    target=f_fund;
+	    Value = runclient(:missionary_osrc:a_fund);
 	    }
 	dfc_cn2 "widget/connector"
 	    {
 	    event=DataFocusChanged;
 	    action = SetValueDescription;
-	    target=f_costctr;
-	    Description = runclient(:missionary_osrc:a_cc_desc);
+	    target=f_fund;
+	    Description = runclient(:missionary_osrc:a_fund_desc);
 	    }
 
 	payee_form "widget/form"
@@ -134,7 +134,7 @@ financial_statement_cmp "widget/component-decl"
 		mode=dynamicrow;
 		fl_height = 100;
 
-		t_cc "widget/table-column" { title="Cost Center / Fund"; fieldname="cctxt"; width=300; }
+		t_cc "widget/table-column" { title="Fund"; fieldname="cctxt"; width=300; }
 		t_paycnt "widget/table-column" { title="# Payees"; fieldname="paycnt"; width=40; }
 		t_paynames "widget/table-column" { title="Payroll Names"; fieldname="paynames"; width=420; }
 		}

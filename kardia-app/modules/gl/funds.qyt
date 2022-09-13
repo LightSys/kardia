@@ -1,0 +1,29 @@
+$Version=2$
+funds "system/querytree"
+    {
+    ledgers "system/querytree"
+	{
+	source="/apps/kardia/data/Kardia_DB/a_ledger/rows";
+	where="1==1";
+
+	ccprefix "system/querytree"
+	    {
+	    source="/apps/kardia/data/Kardia_DB/a_fund_prefix/rows";
+	    where="char_length(rtrim(:a_fund_prefix)) >= 1 and :a_ledger_number = ::a_ledger_number";
+
+	    cctop "system/querytree"
+		{
+		source="/apps/kardia/data/Kardia_DB/a_fund/rows";
+		where=":a_ledger_number = ::a_ledger_number and :a_parent_fund is NULL and ::a_fund_prefix = substring(:a_fund,1,char_length(::a_fund_prefix))";
+
+		cctree "system/querytree"
+		    {
+		    source="/apps/kardia/data/Kardia_DB/a_fund/rows";
+		    where=":a_parent_fund = ::a_fund and :a_ledger_number = ::a_ledger_number";
+		    recurse = cctree;
+		    known_leaf=":a_is_balancing = 0";
+		    }
+		}
+	    }
+	}
+    }

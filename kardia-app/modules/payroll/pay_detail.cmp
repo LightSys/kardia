@@ -50,7 +50,7 @@ pay_detail_cmp "widget/component-decl"
 	payee_pid "widget/parameter" { param_name=a_payroll_id; type=integer; default=null; }
 	payee_gid "widget/parameter" { param_name=a_payroll_group_id; type=integer; default=null; }
 
-	sql = "SELECT :a:a_cost_center, :a:a_ledger_number, :a:a_payroll_id, :a:a_payroll_group_id, ptxt = condition(char_length(:a:a_payee_name) > 0, :a:a_payee_name, :p:p_surname + ', ' + :p:p_given_name), startdate = '' + datepart(month, :a_start_date) + '/' + datepart(day, :a_start_date) + '/' + datepart(year, :a_start_date), enddate = '' + datepart(month, :a_end_date) + '/' + datepart(day, :a_end_date) + '/' + datepart(year, :a_end_date) FROM IDENTITY /apps/kardia/data/Kardia_DB/a_payroll/rows a, /apps/kardia/data/Kardia_DB/p_partner/rows p  WHERE :p:p_partner_key = :a:p_payee_partner_key and :a:a_payroll_id = :parameters:a_payroll_id and :a:a_payroll_group_id = :parameters:a_payroll_group_id";
+	sql = "SELECT :a:a_fund, :a:a_ledger_number, :a:a_payroll_id, :a:a_payroll_group_id, ptxt = condition(char_length(:a:a_payee_name) > 0, :a:a_payee_name, :p:p_surname + ', ' + :p:p_given_name), startdate = '' + datepart(month, :a_start_date) + '/' + datepart(day, :a_start_date) + '/' + datepart(year, :a_start_date), enddate = '' + datepart(month, :a_end_date) + '/' + datepart(day, :a_end_date) + '/' + datepart(year, :a_end_date) FROM IDENTITY /apps/kardia/data/Kardia_DB/a_payroll/rows a, /apps/kardia/data/Kardia_DB/p_partner/rows p  WHERE :p:p_partner_key = :a:p_payee_partner_key and :a:a_payroll_id = :parameters:a_payroll_id and :a:a_payroll_group_id = :parameters:a_payroll_group_id";
 	baseobj = "/apps/kardia/data/Kardia_DB/a_payroll/rows";
 	autoquery=never;
 	replicasize=300;
@@ -68,9 +68,9 @@ pay_detail_cmp "widget/component-decl"
 	set_dd "widget/connector"
 	    {
 	    event=EndQuery;
-	    target=f_a_costctr;
+	    target=f_a_fund;
 	    action=SetItems;
-	    SQL=runclient("select label=:a_cost_center + ' - ' + :a_cc_desc, value=:a_cost_center from /apps/kardia/data/Kardia_DB/a_cost_center/rows where :a_bal_cost_center = " + quote(:payee_osrc:a_cost_center) + " and :a_ledger_number = " + quote(:ledger_osrc:a_ledger_number));
+	    SQL=runclient("select label=:a_fund + ' - ' + :a_fund_desc, value=:a_fund from /apps/kardia/data/Kardia_DB/a_fund/rows where :a_bal_fund = " + quote(:payee_osrc:a_fund) + " and :a_ledger_number = " + quote(:ledger_osrc:a_ledger_number));
 	    }
 	}
 
@@ -319,7 +319,7 @@ pay_detail_cmp "widget/component-decl"
 			:i:a_payroll_id,
 			:i:a_payroll_group_id,
 			:p:a_payee_name,
-			txt = isnull(' Fund: ' + :i:a_ref_cost_center,'') + isnull(' Acct: ' + :i:a_ref_account_code,'') + isnull(' XfrFund: ' + :i:a_xfer_cost_center,'') + isnull(' XfrAcct: ' + :i:a_xfer_account_code,'') + isnull(' Min: ' + :i:a_minimum_amount,'') + isnull(' Allowances: ' + :i:a_allowances,'') + isnull(' DepAllow: ' + :i:a_dependent_allowances,'') + isnull(' Status: ' + :fs:a_desc, ''),
+			txt = isnull(' Fund: ' + :i:a_ref_fund,'') + isnull(' Acct: ' + :i:a_ref_account_code,'') + isnull(' XfrFund: ' + :i:a_xfer_fund,'') + isnull(' XfrAcct: ' + :i:a_xfer_account_code,'') + isnull(' Min: ' + :i:a_minimum_amount,'') + isnull(' Allowances: ' + :i:a_allowances,'') + isnull(' DepAllow: ' + :i:a_dependent_allowances,'') + isnull(' Status: ' + :fs:a_desc, ''),
 			:i:a_target_amount,
 			:i:a_actual_amount,
 			:i:a_minimum_amount,
@@ -331,8 +331,8 @@ pay_detail_cmp "widget/component-decl"
 			:a_allowances,
 			:a_dependent_allowances,
 			a_fs_desc = :fs:a_desc,
-			:i:a_ref_cost_center,
-			a_xfer_cost_center = isnull(:i:a_xfer_cost_center, :it:a_xfer_cost_center),
+			:i:a_ref_fund,
+			a_xfer_fund = isnull(:i:a_xfer_fund, :it:a_xfer_fund),
 			a_ref_account_code = isnull(:i:a_ref_account_code, :it:a_ref_account_code),
 			a_xfer_account_code = isnull(:i:a_xfer_account_code, :it:a_xfer_account_code),
 			:i:a_payroll_item_type_code,
@@ -434,17 +434,17 @@ pay_detail_cmp "widget/component-decl"
 		object_name = "Pay Item";
 		}
 
-	    payitem_costctr "widget/variable"
+	    payitem_fund "widget/variable"
 		{
-		fieldname=a_ref_cost_center;
+		fieldname=a_ref_fund;
 
 		set_def_cc "widget/connector"
 		    {
 		    source=payitem_form;
 		    event=BeforeSave;
-		    event_condition=runclient((not (char_length(:f_a_costctr:value) > 0)) and (not (char_length(:f_m_ref_cc:content) > 0)) and (not (char_length(:f_r_ref_cc:content) > 0)));
+		    event_condition=runclient((not (char_length(:f_a_fund:value) > 0)) and (not (char_length(:f_m_ref_cc:content) > 0)) and (not (char_length(:f_r_ref_cc:content) > 0)));
 		    action=SetValue;
-		    Value=runclient(:payee_osrc:a_cost_center);
+		    Value=runclient(:payee_osrc:a_fund);
 		    }
 		}
 
@@ -452,7 +452,7 @@ pay_detail_cmp "widget/component-decl"
 		{
 		condition=runserver(:this:by_item_type != 0);
 
-		sql = runserver("SELECT :a_cost_center, :a_ledger_number, :a_payroll_id, :a_payroll_group_id FROM /apps/kardia/data/Kardia_DB/a_payroll/rows a  WHERE :a:a_ledger_number = " + quote(:this:ledger));
+		sql = runserver("SELECT :a_fund, :a_ledger_number, :a_payroll_id, :a_payroll_group_id FROM /apps/kardia/data/Kardia_DB/a_payroll/rows a  WHERE :a:a_ledger_number = " + quote(:this:ledger));
 		baseobj = "/apps/kardia/data/Kardia_DB/a_payroll/rows";
 		autoquery=never;
 		replicasize=10;
@@ -546,7 +546,7 @@ pay_detail_cmp "widget/component-decl"
 			cellsize=20;
 			spacing=4;
 
-			f_a_costctr "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_ref_cost_center; text="Fund:"; ctl_type="dropdown"; tooltip="Subsidiary fund to source available funds from.  Leave blank to use the main fund."; label_width=100; }
+			f_a_fund "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_ref_fund; text="Fund:"; ctl_type="dropdown"; tooltip="Subsidiary fund to source available funds from.  Leave blank to use the main fund."; label_width=100; }
 			f_a_amt "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_target_amount; text="Required:"; ctl_type="editbox"; tooltip="Total amount required in fund for full pay"; label_width=100; }
 			f_a_minamt "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_minimum_amount; text="Min. Left:"; ctl_type="editbox"; tooltip="Minimum to leave in fund"; label_width=100; }
 			}
@@ -564,7 +564,7 @@ pay_detail_cmp "widget/component-decl"
 			spacing=4;
 
 			f_b_exp_acct "widget/component" { path="/apps/kardia/modules/base/editbox_tree.cmp"; field=a_ref_account_code; text="Expense Acct:"; tooltip="GL Account for expense in this fund"; label_width=100; popup_source = runserver("/apps/kardia/modules/gl/accounts.qyt/" + :this:ledger + "/"); popup_text="Select Account:"; }
-			f_b_xfer_cc "widget/component" { path="/apps/kardia/modules/base/editbox_tree.cmp"; field=a_xfer_cost_center; text="Xfer Costctr:"; tooltip="Fund receiving benefit transfer"; label_width=100; popup_source = runserver("/apps/kardia/modules/gl/costctrs.qyt/" + :this:ledger + "/"); popup_text="Select Cost Center:"; }
+			f_b_xfer_cc "widget/component" { path="/apps/kardia/modules/base/editbox_tree.cmp"; field=a_xfer_fund; text="Xfer Fund:"; tooltip="Fund receiving benefit transfer"; label_width=100; popup_source = runserver("/apps/kardia/modules/gl/funds.qyt/" + :this:ledger + "/"); popup_text="Select Fund:"; }
 			f_b_xfer_acct "widget/component" { path="/apps/kardia/modules/base/editbox_tree.cmp"; field=a_xfer_account_code; text="Xfer Account:"; tooltip="GL Account for receiving fund"; label_width=100; popup_source = runserver("/apps/kardia/modules/gl/accounts.qyt/" + :this:ledger + "/"); popup_text="Select Account:"; }
 			f_b_amt "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_target_amount; text="Amount:"; ctl_type="editbox"; tooltip="Amount to transfer."; label_width=100; }
 			}
@@ -638,7 +638,7 @@ pay_detail_cmp "widget/component-decl"
 			cellsize=26;
 			spacing=4;
 
-			f_m_ref_cc "widget/component" { path="/apps/kardia/modules/base/editbox_tree.cmp"; field=a_ref_cost_center; text="Fund:"; tooltip="Cost center holding payable"; label_width=100; popup_source = runserver("/apps/kardia/modules/gl/costctrs.qyt/" + :this:ledger + "/"); popup_text="Select Cost Center:"; }
+			f_m_ref_cc "widget/component" { path="/apps/kardia/modules/base/editbox_tree.cmp"; field=a_ref_fund; text="Fund:"; tooltip="Fund holding payable"; label_width=100; popup_source = runserver("/apps/kardia/modules/gl/funds.qyt/" + :this:ledger + "/"); popup_text="Select Fund:"; }
 			f_m_ref_acct "widget/component" { path="/apps/kardia/modules/base/editbox_tree.cmp"; field=a_ref_account_code; text="Account:"; tooltip="GL Liability Account for payable"; label_width=100; popup_source = runserver("/apps/kardia/modules/gl/accounts.qyt/" + :this:ledger + "/"); popup_text="Select Account:"; }
 			}
 		    }
@@ -669,7 +669,7 @@ pay_detail_cmp "widget/component-decl"
 			spacing=4;
 
 			f_p_exp_acct"widget/component" { path="/apps/kardia/modules/base/editbox_tree.cmp"; field=a_ref_account_code; text="Expense Acct:"; tooltip="GL Account for expense in this fund"; label_width=100; popup_source = runserver("/apps/kardia/modules/gl/accounts.qyt/" + :this:ledger + "/"); popup_text="Select Account:"; }
-			f_p_xfer_cc "widget/component" { path="/apps/kardia/modules/base/editbox_tree.cmp"; field=a_xfer_cost_center; text="Xfer Costctr:"; tooltip="Receiving fund's cost center"; label_width=100; popup_source = runserver("/apps/kardia/modules/gl/costctrs.qyt/" + :this:ledger + "/"); popup_text="Select Cost Center:"; }
+			f_p_xfer_cc "widget/component" { path="/apps/kardia/modules/base/editbox_tree.cmp"; field=a_xfer_fund; text="Xfer Fund:"; tooltip="Receiving fund's code"; label_width=100; popup_source = runserver("/apps/kardia/modules/gl/funds.qyt/" + :this:ledger + "/"); popup_text="Select Fund:"; }
 			f_p_xfer_acct"widget/component" { path="/apps/kardia/modules/base/editbox_tree.cmp"; field=a_xfer_account_code; text="Xfer Account:"; tooltip="GL Account for receiving fund"; label_width=100; popup_source = runserver("/apps/kardia/modules/gl/accounts.qyt/" + :this:ledger + "/"); popup_text="Select Account:"; }
 			f_p_amt "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_target_amount; text="Amount:"; ctl_type="editbox"; tooltip="Amount to transfer."; label_width=100; }
 			}
@@ -685,7 +685,7 @@ pay_detail_cmp "widget/component-decl"
 			cellsize=26;
 			spacing=4;
 
-			f_r_ref_cc "widget/component" { path="/apps/kardia/modules/base/editbox_tree.cmp"; field=a_ref_cost_center; text="Fund:"; tooltip="Cost center holding receivable"; label_width=100; popup_source = runserver("/apps/kardia/modules/gl/costctrs.qyt/" + :this:ledger + "/"); popup_text="Select Cost Center:"; }
+			f_r_ref_cc "widget/component" { path="/apps/kardia/modules/base/editbox_tree.cmp"; field=a_ref_fund; text="Fund:"; tooltip="Fund holding receivable"; label_width=100; popup_source = runserver("/apps/kardia/modules/gl/funds.qyt/" + :this:ledger + "/"); popup_text="Select Fund:"; }
 			f_r_ref_acct "widget/component" { path="/apps/kardia/modules/base/editbox_tree.cmp"; field=a_ref_account_code; text="Account:"; tooltip="GL Asset Account for receivable"; label_width=100; popup_source = runserver("/apps/kardia/modules/gl/accounts.qyt/" + :this:ledger + "/"); popup_text="Select Account:"; }
 			}
 		    }

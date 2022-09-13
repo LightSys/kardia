@@ -49,7 +49,7 @@ cc_acct_edit "widget/component-decl"
 
 	tab_sel_cc "widget/tabpage"
 	    {
-	    title = "CostCtr";
+	    title = "Fund";
 	    }
 
 	tab_sel_acct "widget/tabpage"
@@ -74,8 +74,8 @@ cc_acct_edit "widget/component-decl"
 
 	list_osrc "widget/osrc"
 	    {
-	    sql = runserver("select * from /apps/kardia/data/Kardia_DB/a_cc_acct/rows where :a_ledger_number = '" + :this:ledger + "'");
-	    baseobj = "/apps/kardia/data/Kardia_DB/a_cc_acct/rows";
+	    sql = runserver("select * from /apps/kardia/data/Kardia_DB/a_fund_acct/rows where :a_ledger_number = '" + :this:ledger + "'");
+	    baseobj = "/apps/kardia/data/Kardia_DB/a_fund_acct/rows";
 	    replicasize=100;
 	    readahead=50;
 	    autoquery=oneachreveal;
@@ -85,7 +85,7 @@ cc_acct_edit "widget/component-decl"
 		x=0;y=0;width=748 - 270 - 10 - 2; height=352;
 
 		t_period "widget/table-column" { fieldname="a_period"; title="Period"; }
-		t_costctr "widget/table-column" { fieldname="a_cost_center"; title="CostCtr"; }
+		t_fund "widget/table-column" { fieldname="a_fund"; title="Fund"; }
 		t_glacct "widget/table-column" { fieldname="a_account_code"; title="Account"; }
 		t_openbal "widget/table-column" { fieldname="a_opening_balance"; title="Opening Bal"; }
 		t_curbal "widget/table-column" { fieldname="a_current_balance"; title="Current Bal"; }

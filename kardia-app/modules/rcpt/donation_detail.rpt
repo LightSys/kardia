@@ -122,15 +122,15 @@ donation_detail "system/report"
 		select
 			:d:a_amount,
 			check = :d:a_recv_document_id,
-			:d:a_cost_center,
+			:d:a_fund,
 			:d:a_account_code,
 			:d:a_comment,
-			:c:a_cc_desc,
+			:c:a_fund_desc,
 			:a:a_acct_desc,
 			:d:a_split_number
 		from
 			/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows d,
-			/apps/kardia/data/Kardia_DB/a_cost_center/rows c,
+			/apps/kardia/data/Kardia_DB/a_fund/rows c,
 			/apps/kardia/data/Kardia_DB/a_account/rows a
 		where
 			:d:a_ledger_number = :this:ledger and
@@ -140,7 +140,7 @@ donation_detail "system/report"
 			:a:a_ledger_number = :d:a_ledger_number and
 			:a:a_account_code = :d:a_account_code and
 			:c:a_ledger_number = :d:a_ledger_number and
-			:c:a_cost_center = :d:a_cost_center
+			:c:a_fund = :d:a_fund
 		order by
 			:d:a_split_number
 		");
@@ -242,8 +242,8 @@ donation_detail "system/report"
 		i_rcptno "report/table-cell" { value=runserver(''); align=left; }
 		i_cnt "report/table-cell" { value=runserver(''); align=left; font=helvetica; }
 		i_ck "report/table-cell" { marginleft=0.0; value=runserver(:item_qy:check); align=left; }
-		i_date "report/table-cell" { marginleft=0.0; value=runserver(:item_qy:a_cost_center + (' ' * (8 - char_length(:item_qy:a_cost_center))) + :item_qy:a_account_code); align=left; }
-		i_donor "report/table-cell" { marginleft=0.0; value=runserver(:item_qy:a_cc_desc + ' / ' + :item_qy:a_acct_desc); align=left; font=helvetica; }
+		i_date "report/table-cell" { marginleft=0.0; value=runserver(:item_qy:a_fund + (' ' * (8 - char_length(:item_qy:a_fund))) + :item_qy:a_account_code); align=left; }
+		i_donor "report/table-cell" { marginleft=0.0; value=runserver(:item_qy:a_fund_desc + ' / ' + :item_qy:a_acct_desc); align=left; font=helvetica; }
 		i_desc "report/table-cell" { value=runserver(:item_qy:a_comment); align=left; font=helvetica; }
 		i_rcpt "report/table-cell" { value=runserver(''); align=left; font=helvetica; }
 		i_don "report/table-cell" { value=runserver(:item_qy:a_amount); align=right; }

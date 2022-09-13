@@ -49,7 +49,7 @@ deposit_detail "system/report"
 
     fund_qy "report/query"
 	{
-	sql = "select * from /apps/kardia/data/Kardia_DB/a_cost_center/rows where :a_cost_center = :config_qy:RcptCashFund and :a_ledger_number = :this:ledger";
+	sql = "select * from /apps/kardia/data/Kardia_DB/a_fund/rows where :a_fund = :config_qy:RcptCashFund and :a_ledger_number = :this:ledger";
 	}
 
 

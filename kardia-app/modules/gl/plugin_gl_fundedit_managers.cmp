@@ -53,7 +53,7 @@ plugin_gl_fundedit_managers "widget/component-decl"
 	    {
 	    sql = " SELECT
 			:cs:a_ledger_number,
-			:cs:a_cost_center,
+			:cs:a_fund,
 			:cs:p_staff_partner_key,
 			:cs:s_date_created,
 			:cs:s_created_by,
@@ -70,9 +70,9 @@ plugin_gl_fundedit_managers "widget/component-decl"
 			disp_name_and_id = :cs:p_staff_partner_key + ' - ' + condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name + ' ' + condition(char_length(:p:p_given_name + :p:p_surname) > 0, '- ', ''), '') + isnull(:p:p_given_name + ' ','') + isnull(:p:p_surname + ' ',''),
 			disp_name = condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name + ' ' + condition(char_length(:p:p_given_name + :p:p_surname) > 0, '- ', ''), '') + isnull(:p:p_given_name + ' ','') + isnull(:p:p_surname + ' ',''),
 			web = condition(char_length(:s:p_kardiaweb_login) > 0, 'Y', 'N'),
-			reports = (select sum(:rp:r_group_name + ',') - ',' from /apps/kardia/data/Kardia_DB/r_group_report_param/rows rp, /apps/kardia/data/Kardia_DB/r_group_report/rows r where :rp:p_recipient_partner_key = :cs:p_staff_partner_key and :rp:r_param_name = 'costctr' and :rp:r_param_value = :cs:a_cost_center and :r:r_group_name = :rp:r_group_name and :r:r_delivery_method = :rp:r_delivery_method and :r:p_recipient_partner_key = :rp:p_recipient_partner_key and :r:r_report_id = :rp:r_report_id and :r:r_is_active = 1)
+			reports = (select sum(:rp:r_group_name + ',') - ',' from /apps/kardia/data/Kardia_DB/r_group_report_param/rows rp, /apps/kardia/data/Kardia_DB/r_group_report/rows r where :rp:p_recipient_partner_key = :cs:p_staff_partner_key and :rp:r_param_name = 'fund' and :rp:r_param_value = :cs:a_fund and :r:r_group_name = :rp:r_group_name and :r:r_delivery_method = :rp:r_delivery_method and :r:p_recipient_partner_key = :rp:p_recipient_partner_key and :r:r_report_id = :rp:r_report_id and :r:r_is_active = 1)
 		    FROM
-			IDENTITY /apps/kardia/data/Kardia_DB/a_cc_staff/rows cs,
+			IDENTITY /apps/kardia/data/Kardia_DB/a_fund_staff/rows cs,
 			/apps/kardia/data/Kardia_DB/p_staff/rows s,
 			/apps/kardia/data/Kardia_DB/p_partner/rows p,
 			/apps/kardia/data/Kardia_DB/p_contact_info/rows ci1,
@@ -89,10 +89,10 @@ plugin_gl_fundedit_managers "widget/component-decl"
 			:ci2:p_contact_id =* :s:p_preferred_email_id
 		    GROUP BY
 			:cs:a_ledger_number,
-			:cs:a_cost_center,
+			:cs:a_fund,
 			:cs:p_staff_partner_key
 		    ";
-	    baseobj="/apps/kardia/data/Kardia_DB/a_cc_staff/rows";
+	    baseobj="/apps/kardia/data/Kardia_DB/a_fund_staff/rows";
 	    replicasize=25;
 	    readahead=25;
 
@@ -102,21 +102,21 @@ plugin_gl_fundedit_managers "widget/component-decl"
 		target = fund_osrc;
 		key_objname = cs;
 		key_1 = a_ledger_number;
-		key_2 = a_cost_center;
+		key_2 = a_fund;
 		target_key_1 = a_ledger_number;
-		target_key_2 = a_cost_center;
+		target_key_2 = a_fund;
 		revealed_only = yes;
 		}
 
 	    mgr_form "widget/form"
 		{
-		form_txt "widget/label" { value=runclient(condition(:fund_osrc:a_cost_center = :fund_osrc:a_bal_cost_center, "Set up what staff members are in charge of managing this fund, and thus can receive reports for this fund.", "Please set up managers on main funds only - not on sub funds.")); height=32; }
+		form_txt "widget/label" { value=runclient(condition(:fund_osrc:a_fund = :fund_osrc:a_bal_fund, "Set up what staff members are in charge of managing this fund, and thus can receive reports for this fund.", "Please set up managers on main funds only - not on sub funds.")); height=32; }
 
 		mgr_pane "widget/pane"
 		    {
 		    height=250;
 		    style=flat;
-		    enabled=runclient(:fund_osrc:a_cost_center = :fund_osrc:a_bal_cost_center);
+		    enabled=runclient(:fund_osrc:a_fund = :fund_osrc:a_bal_fund);
 
 		    mgr_vbox "widget/vbox"
 			{
@@ -251,7 +251,7 @@ plugin_gl_fundedit_managers "widget/component-decl"
 	    spacing=6;
 	    cellsize=20;
 
-	    info_lbl "widget/label" { height=32; value=runclient("Click the checkboxes for the reports that " + :mgr_osrc:disp_name + " should receive for fund " + :fund_osrc:a_cost_center + ", and click Close."); }
+	    info_lbl "widget/label" { height=32; value=runclient("Click the checkboxes for the reports that " + :mgr_osrc:disp_name + " should receive for fund " + :fund_osrc:a_fund + ", and click Close."); }
 
 	    reports_osrc "widget/osrc"
 		{
@@ -272,7 +272,7 @@ plugin_gl_fundedit_managers "widget/component-decl"
 			    :r:r_delivery_method = :rp:r_delivery_method and
 			    :r:r_report_id = :rp:r_report_id and
 			    :gp:r_group_name = :g:r_group_name and
-			    :gp:r_param_name = 'costctr' and
+			    :gp:r_param_name = 'fund' and
 			    :gp:r_is_report_param = 1
 			group by
 			    :g:r_group_name
@@ -288,7 +288,7 @@ plugin_gl_fundedit_managers "widget/component-decl"
 		    key_1=p_recipient_partner_key;
 		    target_key_1=p_staff_partner_key;
 		    key_2=r_param_value;
-		    target_key_2=a_cost_center;
+		    target_key_2=a_fund;
 		    revealed_only=yes;
 		    }
 
@@ -312,8 +312,8 @@ plugin_gl_fundedit_managers "widget/component-decl"
 
 			// Parameters to ConnectReport
 			method=runclient('E');
-			param=runclient('costctr');
-			value=runclient(:fund_osrc:a_cost_center);
+			param=runclient('fund');
+			value=runclient(:fund_osrc:a_fund);
 			report_group=runclient(:reports_osrc:r_group_name);
 			partner=runclient(:mgr_osrc:p_staff_partner_key);
 			}
@@ -326,8 +326,8 @@ plugin_gl_fundedit_managers "widget/component-decl"
 
 			// Parameters to ConnectReport
 			method=runclient('E');
-			param=runclient('costctr');
-			value=runclient(:fund_osrc:a_cost_center);
+			param=runclient('fund');
+			value=runclient(:fund_osrc:a_fund);
 			report_group=runclient(:reports_osrc:r_group_name);
 			partner=runclient(:mgr_osrc:p_staff_partner_key);
 			}

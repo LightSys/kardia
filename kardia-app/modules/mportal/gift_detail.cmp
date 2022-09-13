@@ -24,13 +24,13 @@ gift_detail "widget/component-decl"
 	    {
 	    on_begin_qy "widget/connector" { event=BeginQuery; target=gift_detail_table; action=Clear; }
 
-	    a_cost_center "widget/parameter" { type=string; }
-	    alt_costctr "widget/parameter" { type=string; }
+	    a_fund "widget/parameter" { type=string; }
+	    alt_fund "widget/parameter" { type=string; }
 
 	    sql = "	select
 			:a:a_acct_desc,
 			:gi:a_account_code,
-			comments = condition(:parameters:alt_costctr = :gi:a_cost_center and :gi:a_cost_center != :parameters:a_cost_center, '(given to ' + (select :c:a_cost_center + ' - ' + :c:a_cc_desc from /apps/kardia/data/Kardia_DB/a_cost_center/rows c where :c:a_ledger_number = :gi:a_ledger_number and :c:a_cost_center = :gi:a_cost_center) + ') ', '') + isnull(:gi:a_comment, ''),
+			comments = condition(:parameters:alt_fund = :gi:a_fund and :gi:a_fund != :parameters:a_fund, '(given to ' + (select :c:a_fund + ' - ' + :c:a_fund_desc from /apps/kardia/data/Kardia_DB/a_fund/rows c where :c:a_ledger_number = :gi:a_ledger_number and :c:a_fund = :gi:a_fund) + ') ', '') + isnull(:gi:a_comment, ''),
 			:gi:a_dn_receipt_number,
 			:gi:a_period,
 			:gi:a_amount,
@@ -42,7 +42,7 @@ gift_detail "widget/component-decl"
 			:gi:a_posted = 1 and
 			:a:a_ledger_number = :gi:a_ledger_number and
 			:a:a_account_code = :gi:a_account_code and
-			(:gi:a_cost_center = :parameters:a_cost_center or :gi:a_cost_center = :parameters:alt_costctr)
+			(:gi:a_fund = :parameters:a_fund or :gi:a_fund = :parameters:alt_fund)
 		    order by
 			isnull(:gi:a_dn_gift_postmark_date, :gi:a_dn_gift_received_date) desc
 		    ";
@@ -58,10 +58,10 @@ gift_detail "widget/component-decl"
 		target_key_1=a_ledger_number;
 		key_2=p_dn_donor_partner_id;
 		target_key_2=p_partner_key;
-		key_3=a_cost_center;
-		target_key_3=a_cost_center;
-		key_4=alt_costctr;
-		target_key_4=alt_costctr;
+		key_3=a_fund;
+		target_key_3=a_fund;
+		key_4=alt_fund;
+		target_key_4=alt_fund;
 		revealed_only=yes;
 		}
 

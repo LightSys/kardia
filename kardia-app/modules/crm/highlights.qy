@@ -2,7 +2,7 @@ $Version=2$
 highlights "system/query"
     {
     partner_key "query/parameter" { type=string; }
-    my_cclist "query/parameter" { type=string; }
+    my_fundlist "query/parameter" { type=string; }
     my_role "query/parameter" { type=string; }
     my_id "query/parameter" { type=string; }
 
@@ -386,7 +386,7 @@ highlights "system/query"
 		e_highlight_id = 'GIFT-FUNDS;' + first(:i:a_ledger_number),
 		e_highlight_name = 'Giving Funds',
 		e_highlight_type = 'GIFT',
-		e_highlight_data = sum(first(:i:a_cost_center + ' - ' + :c:a_cc_desc) + '\n') - '\n',
+		e_highlight_data = sum(first(:i:a_fund + ' - ' + :c:a_fund_desc) + '\n') - '\n',
 		e_highlight_precedence = 1.0,
 		e_highlight_strength = 0.0,
 		e_highlight_certainty = 1.0,
@@ -396,15 +396,15 @@ highlights "system/query"
 		s_modified_by = user_name()
 	    from
 		/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i,
-		/apps/kardia/data/Kardia_DB/a_cost_center/rows c
+		/apps/kardia/data/Kardia_DB/a_fund/rows c
 	    where
 		:i:p_dn_donor_partner_id = :parameters:partner_key and
 		:c:a_ledger_number = :i:a_ledger_number and
-		:c:a_cost_center = :i:a_cost_center and
+		:c:a_fund = :i:a_fund and
 		:i:a_posted = 1
 	    group by
 		:i:a_ledger_number,
-		:i:a_cost_center
+		:i:a_fund
 	    having
 		1 = 0 and (
 		has_endorsement('kardia:gift', 'kardia:ledger:' + substring(:e_highlight_id,charindex(';',:e_highlight_id) + 1)) or
@@ -464,8 +464,8 @@ highlights "system/query"
 	    select
 		e_highlight_user = user_name(),
 		e_highlight_partner = :parameters:partner_key,
-		e_highlight_id = 'GIFT-1FND;' + :d:a_ledger_number + ';' + :d:a_cost_center,
-		e_highlight_name = 'Giving to ' + :c:a_cost_center,
+		e_highlight_id = 'GIFT-1FND;' + :d:a_ledger_number + ';' + :d:a_fund,
+		e_highlight_name = 'Giving to ' + :c:a_fund,
 		e_highlight_type = 'GIFT',
 		e_highlight_precedence = 1.0,
 		e_highlight_strength = 0.0,
@@ -487,7 +487,7 @@ highlights "system/query"
 				'Infrequently'))))
 			    ) +
 			' to ' +
-			:c:a_cc_desc +
+			:c:a_fund_desc +
 			', ' +
 			dateformat(:d:a_hist_1_first, 'MMM yyyy') +
 			condition(:d:a_hist_1_count == 1,
@@ -500,21 +500,21 @@ highlights "system/query"
 			)
 	    from
 		/apps/kardia/data/Kardia_DB/a_descriptives/rows d,
-		/apps/kardia/data/Kardia_DB/a_cost_center/rows c,
+		/apps/kardia/data/Kardia_DB/a_fund/rows c,
 		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh1
 	    where
 		:d:p_donor_partner_key = :parameters:partner_key and
 		:dh1:p_donor_partner_key = :d:p_donor_partner_key and
 		:dh1:a_ledger_number = :d:a_ledger_number and
-		:dh1:a_cost_center = :d:a_cost_center and
+		:dh1:a_fund = :d:a_fund and
 		:dh1:a_amount = :d:a_hist_1_amount and
 		:c:a_ledger_number = :d:a_ledger_number and
-		:c:a_cost_center = :d:a_cost_center
+		:c:a_fund = :d:a_fund
 	    having
 		((has_endorsement('kardia:gift', 'kardia:ledger:' + substring(:e_highlight_id, charindex(';',:e_highlight_id) + 1, charindex(';',substring(:e_highlight_id,charindex(';',:e_highlight_id) + 1)) - 1)) and
 		  has_endorsement('kardia:gift_amt', 'kardia:ledger:' + substring(:e_highlight_id, charindex(';',:e_highlight_id) + 1, charindex(';',substring(:e_highlight_id,charindex(';',:e_highlight_id) + 1)) - 1))) or
 		 has_endorsement('kardia:gift_manage', 'kardia:ledger:' + substring(:e_highlight_id, charindex(';',:e_highlight_id) + 1, charindex(';',substring(:e_highlight_id,charindex(';',:e_highlight_id) + 1)) - 1))) or
-		charindex(',' + replace(substring(:e_highlight_id, charindex(';', :e_highlight_id) + 1), ';', '|') + ',', ',' + :parameters:my_cclist + ',') > 0
+		charindex(',' + replace(substring(:e_highlight_id, charindex(';', :e_highlight_id) + 1), ';', '|') + ',', ',' + :parameters:my_fundlist + ',') > 0
 	    ;
 
 	    -- Update highlight precedence via system-wide settings

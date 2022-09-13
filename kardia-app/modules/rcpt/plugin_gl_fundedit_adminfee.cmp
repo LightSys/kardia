@@ -12,8 +12,8 @@ plugin_gl_fundedit_adminfee "widget/component-decl"
 
     cc_fee "widget/osrc"
 	{
-	sql = "select * from /apps/kardia/data/Kardia_DB/a_cc_admin_fee/rows";
-	baseobj = "/apps/kardia/data/Kardia_DB/a_cc_admin_fee/rows";
+	sql = "select * from /apps/kardia/data/Kardia_DB/a_fund_admin_fee/rows";
+	baseobj = "/apps/kardia/data/Kardia_DB/a_fund_admin_fee/rows";
 	replicasize = 2;
 	readahead = 2;
 	autoquery=never;
@@ -30,9 +30,9 @@ plugin_gl_fundedit_adminfee "widget/component-decl"
 	    ruletype = osrc_relationship;
 	    target = fund_osrc;
 	    key_1 = "a_ledger_number";
-	    key_2 = "a_cost_center";
+	    key_2 = "a_fund";
 	    target_key_1 = "a_ledger_number";
-	    target_key_2 = "a_cost_center";
+	    target_key_2 = "a_fund";
 	    //revealed_only = true;
 	    }
 
@@ -221,16 +221,16 @@ plugin_gl_fundedit_adminfee "widget/component-decl"
 				    SELECT
 					    :at:a_default_percentage, 
 					    a_percentage = round(:ai:a_percentage * 100 + 0.001, 2),
-					    :ai:a_dest_cost_center,
+					    :ai:a_dest_fund,
 					    :ai:a_is_fixed,
-					    :c:a_cc_desc,
+					    :c:a_fund_desc,
 					    actual_total_pct = isnull(convert(double,:parameters:pct), isnull(:at:a_default_percentage, :at:a_tmp_total_percentage)),
 					    -- actual_item_pct = 0.0
 					    actual_item_pct=round(condition(:ai:a_is_fixed == 1, condition(isnull(convert(double,:parameters:pct), isnull(:at:a_default_percentage, :at:a_tmp_total_percentage)) >= :at:a_tmp_fixed_percentage, 1.0, condition(isnull(convert(double,:parameters:pct), isnull(:at:a_default_percentage, :at:a_tmp_total_percentage)) == 0.0, 0.0, isnull(convert(double,:parameters:pct), isnull(:at:a_default_percentage, :at:a_tmp_total_percentage)) / :at:a_tmp_fixed_percentage)), condition(isnull(convert(double,:parameters:pct), isnull(:at:a_default_percentage, :at:a_tmp_total_percentage)) >= :at:a_tmp_fixed_percentage and (:at:a_tmp_total_percentage - :at:a_tmp_fixed_percentage) > 0.0, (isnull(convert(double,:parameters:pct), isnull(:at:a_default_percentage, :at:a_tmp_total_percentage)) - :at:a_tmp_fixed_percentage) / (:at:a_tmp_total_percentage - :at:a_tmp_fixed_percentage), 0.0)) * :ai:a_percentage * 100.0 + 0.001, 2)
 				    FROM 
 					    IDENTITY /apps/kardia/data/Kardia_DB/a_admin_fee_type_item/rows ai,
 					    /apps/kardia/data/Kardia_DB/a_admin_fee_type/rows at,
-					    /apps/kardia/data/Kardia_DB/a_cost_center/rows c
+					    /apps/kardia/data/Kardia_DB/a_fund/rows c
 				    WHERE
 					    :ai:a_ledger_number = :parameters:ledger and
 					    :ai:a_admin_fee_type = :parameters:type and
@@ -239,7 +239,7 @@ plugin_gl_fundedit_adminfee "widget/component-decl"
 					    :ai:a_admin_fee_type = :at:a_admin_fee_type and
 					    :ai:a_admin_fee_subtype = :at:a_admin_fee_subtype and
 					    :c:a_ledger_number = :ai:a_ledger_number and
-					    :c:a_cost_center = :ai:a_dest_cost_center
+					    :c:a_fund = :ai:a_dest_fund
 				    ORDER BY
 					    :ai:a_percentage desc
 				    ");
@@ -259,8 +259,8 @@ plugin_gl_fundedit_adminfee "widget/component-decl"
 				    t_actual_pct "widget/table-column" { title="Actual %"; fieldname="actual_item_pct"; width=70; align=right; }
 				    t_config_pct "widget/table-column" { title="Type %"; fieldname="a_percentage"; width=70; align=right; }
 				    t_fixed "widget/table-column" { title="Fixed?"; fieldname="a_is_fixed"; width=60; type=check; }
-				    t_dest_cc "widget/table-column" { title="To Costctr:"; fieldname="a_dest_cost_center"; width=90; }
-				    t_dest_cc_txt "widget/table-column" { title="Description"; fieldname="a_cc_desc"; width=190; }
+				    t_dest_cc "widget/table-column" { title="To Fund:"; fieldname="a_dest_fund"; width=90; }
+				    t_dest_cc_txt "widget/table-column" { title="Description"; fieldname="a_fund_desc"; width=190; }
 				    }
 				}
 			    }

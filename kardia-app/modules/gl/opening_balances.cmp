@@ -151,7 +151,7 @@ opening_balances "widget/component-decl"
 		    a_amount = sum(:t:a_amount),
 		    a_comment = 'opening bal (from ' + count(1) + ' transactions)',
 		    a_account_code = :a_account_code,
-		    :t:a_cost_center,
+		    :t:a_fund,
 		    a_journal_number = 1,
 		    a_batch_number = :init_info:batch,
 		    :t:a_ledger_number,
@@ -187,7 +187,7 @@ opening_balances "widget/component-decl"
 		    :t:a_period <= :init_info:endperiod
 		group by
 		    :t:a_ledger_number,
-		    :t:a_cost_center,
+		    :t:a_fund,
 		    :a_account_code,
 		    :a_account_category
 		;
@@ -197,7 +197,7 @@ opening_balances "widget/component-decl"
 		    a_amount = sum(:t:a_amount),
 		    a_comment = 'opening bal (from ' + count(1) + ' transactions)' ,
 		    a_account_code = '3000',
-		    :t:a_cost_center,
+		    :t:a_fund,
 		    a_journal_number = 1,
 		    a_batch_number = :init_info:batch,
 		    :t:a_ledger_number,
@@ -233,7 +233,7 @@ opening_balances "widget/component-decl"
 		    :t:a_period <= :init_info:endperiod
 		group by
 		    :t:a_ledger_number,
-		    :t:a_cost_center
+		    :t:a_fund
 		;
 
 		-- Transfer to the GL as an unposted batch
@@ -286,21 +286,21 @@ opening_balances "widget/component-decl"
 		    :this:acct is null
 		;
 
-		-- Look for invalid cost centers
+		-- Look for invalid funds
 		select
-		    :init_info:errors = :init_info:errors + isnull('Invalid Cost Center: ' + :t:a_cost_center + '\n', ''),
-		    :init_info:cc = :c:a_cost_center
+		    :init_info:errors = :init_info:errors + isnull('Invalid Fund: ' + :t:a_fund + '\n', ''),
+		    :init_info:cc = :c:a_fund
 		from
 		    /apps/kardia/data/Kardia_DB/a_transaction/rows t,
-		    /apps/kardia/data/Kardia_DB/a_cost_center/rows c
+		    /apps/kardia/data/Kardia_DB/a_fund/rows c
 		where
 		    :t:a_ledger_number = :parameters:ledger and
 		    :t:a_batch_number = :init_info:batch and
 		    :c:a_ledger_number =* :t:a_ledger_number and
-		    :c:a_cost_center =* :t:a_cost_center
+		    :c:a_fund =* :t:a_fund
 		group by
 		    :t:a_ledger_number,
-		    :t:a_cost_center
+		    :t:a_fund
 		having
 		    :this:cc is null
 		;

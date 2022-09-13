@@ -9,7 +9,7 @@ select_fund "widget/component-decl"
     label "widget/parameter" { type=string; default="Fund:"; }
     label_width "widget/parameter" { type=integer; default=100; }
     popup_label "widget/parameter" { type=string; default="Fund Code"; }
-    field "widget/parameter" { type=string; default="a_cost_center"; }
+    field "widget/parameter" { type=string; default="a_fund"; }
 
     expose_properties_for=f_trx_cc;
 
@@ -23,21 +23,21 @@ select_fund "widget/component-decl"
 	text=runserver(:this:label);
 	tooltip=runserver(:this:popup_label);
 	label_width=runserver(:this:label_width);
-	popup_source = runserver("/apps/kardia/modules/gl/costctrs.qyt/" + :this:ledger + "/");
+	popup_source = runserver("/apps/kardia/modules/gl/funds.qyt/" + :this:ledger + "/");
 	popup_text=runserver(:this:popup_label + ":");
 
-	cc_get_desc_1 "widget/connector" { event=LoseFocus; event_condition=runclient(:form:is_savable); target=ccdesc_osrc; action=QueryParam; a_ledger_number=runclient(:ledger:value); a_cost_center=runclient(:f_trx_cc:content); }
+	cc_get_desc_1 "widget/connector" { event=LoseFocus; event_condition=runclient(:form:is_savable); target=ccdesc_osrc; action=QueryParam; a_ledger_number=runclient(:ledger:value); a_fund=runclient(:f_trx_cc:content); }
 
 	ccdesc_osrc "widget/osrc"
 	    {
-	    ccdesc_param1 "widget/parameter" { type=string; param_name=a_cost_center; }
+	    ccdesc_param1 "widget/parameter" { type=string; param_name=a_fund; }
 	    ccdesc_param2 "widget/parameter" { type=string; param_name=a_ledger_number; }
-	    sql = "select a_cc_desc = isnull(first(:cc:a_cc_desc),'**INVALID**'), :parameters:a_cost_center from /apps/kardia/data/Kardia_DB/a_cost_center/rows cc where :cc:a_cost_center = :parameters:a_cost_center and :cc:a_ledger_number = :parameters:a_ledger_number";
+	    sql = "select a_fund_desc = isnull(first(:cc:a_fund_desc),'**INVALID**'), :parameters:a_fund from /apps/kardia/data/Kardia_DB/a_fund/rows cc where :cc:a_fund = :parameters:a_fund and :cc:a_ledger_number = :parameters:a_ledger_number";
 	    autoquery = never;
 	    replicasize=2;
 	    readahead=2;
 
-	    cc_get_desc_2 "widget/connector" { event=EndQuery; event_condition=runclient(:ccdesc_osrc:a_cost_center = :f_trx_cc:content); target=f_trx_cc; action=SetValueDescription; Description=runclient(:ccdesc_osrc:a_cc_desc); }
+	    cc_get_desc_2 "widget/connector" { event=EndQuery; event_condition=runclient(:ccdesc_osrc:a_fund = :f_trx_cc:content); target=f_trx_cc; action=SetValueDescription; Description=runclient(:ccdesc_osrc:a_fund_desc); }
 	    }
 	}
     }

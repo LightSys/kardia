@@ -38,20 +38,20 @@ admin_fee_summary "system/report"
 			atotal = isnull(sum(condition(:t:a_account_code = '5700', :t:a_amount, $0.00)), $0.00),
 			acnt = count(condition(:t:a_account_code = '5700', :t:a_amount, $0.00)),
 			gtotal = isnull(sum(condition(:t:a_account_code != '5700' and :t:a_account_code > '1199' and :t:a_account_code != '4700' and :t:a_account_code != '1900', :t:a_amount, $0.00)), $0.00),
-			:t:a_cost_center,
-			srctxt = :c:a_cc_desc
+			:t:a_fund,
+			srctxt = :c:a_fund_desc
 		from
 			/apps/kardia/data/Kardia_DB/a_transaction/rows t,
-			/apps/kardia/data/Kardia_DB/a_cost_center/rows c
+			/apps/kardia/data/Kardia_DB/a_fund/rows c
 		where
 			:t:a_ledger_number = :this:ledger and
 			:t:a_period = :this:period and
 			:t:a_origin = 'CR' and
-			:t:a_cost_center = :c:a_cost_center and
+			:t:a_fund = :c:a_fund and
 			:c:a_ledger_number = :this:ledger
 			" + condition(:this:unposted, "", "and :t:a_posted = 1") + "
 		group by
-			:t:a_cost_center
+			:t:a_fund
 		having
 			:acnt > 0 and :atotal != $0.00
 		");
@@ -65,20 +65,20 @@ admin_fee_summary "system/report"
 	{
 	sql = runserver("
 		select
-			atotal = isnull(sum(condition(:t:a_account_code = '5700' and not (:cd:a_cc_desc is null), :t:a_amount, $0.00)), $0.00),
-			:t:a_cost_center,
-			dsttxt = :cd:a_cc_desc,
-			a_dest_cost_center = substring(:t:a_comment,14,charindex(' ', substring(:t:a_comment,14,255)))
+			atotal = isnull(sum(condition(:t:a_account_code = '5700' and not (:cd:a_fund_desc is null), :t:a_amount, $0.00)), $0.00),
+			:t:a_fund,
+			dsttxt = :cd:a_fund_desc,
+			a_dest_fund = substring(:t:a_comment,14,charindex(' ', substring(:t:a_comment,14,255)))
 		from
 			/apps/kardia/data/Kardia_DB/a_transaction/rows t,
-			/apps/kardia/data/Kardia_DB/a_cost_center/rows cd
+			/apps/kardia/data/Kardia_DB/a_fund/rows cd
 		where
 			:t:a_ledger_number = :this:ledger and
 			:t:a_period = :this:period and
 			:t:a_origin = 'CR' and
 			:t:a_account_code = '5700' and
-			:t:a_cost_center = :cc_qy:a_cost_center and
-			substring(:t:a_comment,14,charindex(' ', substring(:t:a_comment,14,255))) = :cd:a_cost_center and
+			:t:a_fund = :cc_qy:a_fund and
+			substring(:t:a_comment,14,charindex(' ', substring(:t:a_comment,14,255))) = :cd:a_fund and
 			:cd:a_ledger_number = :t:a_ledger_number
 			" + condition(:this:unposted, "", "and :t:a_posted = 1") + "
 		group by
@@ -96,22 +96,22 @@ admin_fee_summary "system/report"
 		select
 			atotal = isnull(sum(:t:a_amount), $0.00),
 			acount = count(1),
-			:t:a_cost_center,
-			dsttxt = :cd:a_cc_desc,
-			a_dest_cost_center = substring(:t:a_comment,14,charindex(' ', substring(:t:a_comment,14,255)))
+			:t:a_fund,
+			dsttxt = :cd:a_fund_desc,
+			a_dest_fund = substring(:t:a_comment,14,charindex(' ', substring(:t:a_comment,14,255)))
 		from
 			/apps/kardia/data/Kardia_DB/a_transaction/rows t,
-			/apps/kardia/data/Kardia_DB/a_cost_center/rows cd
+			/apps/kardia/data/Kardia_DB/a_fund/rows cd
 		where
 			:t:a_ledger_number = :this:ledger and
 			:t:a_period = :this:period and
 			:t:a_origin = 'CR' and
 			:t:a_account_code = '4700' and
-			:t:a_cost_center = :cd:a_cost_center and
+			:t:a_fund = :cd:a_fund and
 			:cd:a_ledger_number = :t:a_ledger_number
 			" + condition(:this:unposted, "", "and :t:a_posted = 1") + "
 		group by
-			:t:a_cost_center
+			:t:a_fund
 		");
 
 	sum_atotal "report/aggregate" { compute="sum(:atotal)"; reset=0; }
@@ -173,7 +173,7 @@ admin_fee_summary "system/report"
 		marginbottom=0.06;
 		margintop=0.06;
 
-		dd_dst "report/table-cell" { value=runserver(:admindst_qy:a_cost_center); align=left; }
+		dd_dst "report/table-cell" { value=runserver(:admindst_qy:a_fund); align=left; }
 		dd_dsttxt "report/table-cell" { value=runserver(:admindst_qy:dsttxt); align=left; font=helvetica; }
 		dd_amt "report/table-cell" { value=runserver($0 - :admindst_qy:atotal); align=right; }
 		}
@@ -234,9 +234,9 @@ admin_fee_summary "system/report"
 		marginbottom=0.0;
 		margintop=0.02;
 
-		d_src "report/table-cell" { value=runserver(:adminfee_qy:a_cost_center); align=left; }
+		d_src "report/table-cell" { value=runserver(:adminfee_qy:a_fund); align=left; }
 		d_srctxt "report/table-cell" { value=runserver(:cc_qy:srctxt); align=left; font=helvetica; }
-		d_dst "report/table-cell" { value=runserver(:adminfee_qy:a_dest_cost_center); align=left; }
+		d_dst "report/table-cell" { value=runserver(:adminfee_qy:a_dest_fund); align=left; }
 		d_dsttxt "report/table-cell" { value=runserver(:adminfee_qy:dsttxt); align=left; font=helvetica; }
 		d_gl "report/table-cell" { value=runserver(:adminfee_qy:atotal); align=right; }
 		d_pct "report/table-cell" { value=runserver("" + round(convert(double,:adminfee_qy:atotal) / convert(double,$0 - :cc_qy:gtotal) * 100, 2) + "%"); align=right; }
@@ -245,7 +245,7 @@ admin_fee_summary "system/report"
 	    tbl_sum_row "report/table-row"
 		{
 		summary = yes;
-		summarize_for = runserver(:adminfee_qy:a_cost_center);
+		summarize_for = runserver(:adminfee_qy:a_fund);
 		bottomborder=0.021;
 		marginbottom=0.2;
 		font=courier;

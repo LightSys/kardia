@@ -35,14 +35,14 @@ coamaint "widget/component-decl"
 		    event=ReturnPressed;
 		    target=searchlistosrc;
 		    action=QueryText;
-		    field_list="a_cost_center*,*a_cc_desc*,a_cost_center_class";
+		    field_list="a_fund*,*a_fund_desc*,a_fund_class";
 		    query=runclient(:searcheb:content);
 		    //action=QueryParam;
 		    //joinstring=runclient("or");
 		    cx__case_insensitive = 1;
-		    //a_cost_center = runclient(:searcheb:content + "*");
-		    //a_cc_desc = runclient("*" + :searcheb:content + "*");
-		    //a_cost_center_class = runclient(:searcheb:content);
+		    //a_fund = runclient(:searcheb:content + "*");
+		    //a_fund_desc = runclient("*" + :searcheb:content + "*");
+		    //a_fund_class = runclient(:searcheb:content);
 		    }
 		}
 
@@ -55,24 +55,24 @@ coamaint "widget/component-decl"
 		    {
 		    sql = runserver("
 			select
-				:c:a_cost_center,
-				:c:a_cc_desc,
-				:c:a_cost_center_class,
-				:cc:a_acct_class_desc,
+				:c:a_fund,
+				:c:a_fund_desc,
+				:c:a_fund_class,
+				:cc:a_fund_class_desc,
 				:c:a_ledger_number
 			from
-				IDENTITY /apps/kardia/data/Kardia_DB/a_cost_center/rows c,
-				/apps/kardia/data/Kardia_DB/a_cost_center_class/rows cc
+				IDENTITY /apps/kardia/data/Kardia_DB/a_fund/rows c,
+				/apps/kardia/data/Kardia_DB/a_fund_class/rows cc
 			where 
 				:c:a_ledger_number = " + quote(:this:ledger) + " and
-				:c:a_cost_center = :c:a_bal_cost_center and
-				:c:a_cost_center_class *= :cc:a_cost_center_class and
+				:c:a_fund = :c:a_bal_fund and
+				:c:a_fund_class *= :cc:a_fund_class and
 				:c:a_ledger_number *= :cc:a_ledger_number
 			order by
-				:c:a_cost_center
+				:c:a_fund
 			");
 
-		    baseobj = "/apps/kardia/data/Kardia_DB/a_cost_center/rows";
+		    baseobj = "/apps/kardia/data/Kardia_DB/a_fund/rows";
 		    replicasize=800;
 		    readahead=800;
 		    autoquery=onfirstreveal;
@@ -82,7 +82,7 @@ coamaint "widget/component-decl"
 			event=EndQuery;
 			event_condition=runclient(not (:mainfund:value is null));
 			action=FindObject;
-			a_cost_center = runclient(:mainfund:value);
+			a_fund = runclient(:mainfund:value);
 			}
 		    dont_preselect_mainfund_twice "widget/connector"
 			{
@@ -97,9 +97,9 @@ coamaint "widget/component-decl"
 			{
 			height=518; width=248; x=0; y=0;
 
-			t_cc "widget/table-column" { title="Cost Ctr"; fieldname="a_cost_center"; width=70; }
-			t_type "widget/table-column" { title="Type"; fieldname="a_cost_center_class"; width=40; }
-			t_desc "widget/table-column" { title="Description"; fieldname="a_cc_desc"; width=140; }
+			t_cc "widget/table-column" { title="Fund"; fieldname="a_fund"; width=70; }
+			t_type "widget/table-column" { title="Type"; fieldname="a_fund_class"; width=40; }
+			t_desc "widget/table-column" { title="Description"; fieldname="a_fund_desc"; width=140; }
 			}
 		    }
 		}
@@ -113,7 +113,7 @@ coamaint "widget/component-decl"
 		{
 		path="/apps/kardia/modules/base/section_label.cmp";
 		height=20;
-		text = runclient("Subsidiary Funds" + condition(:searchlistosrc:a_cost_center is null, "", " for " + :searchlistosrc:a_cost_center + " - " + :searchlistosrc:a_cc_desc) + ":");
+		text = runclient("Subsidiary Funds" + condition(:searchlistosrc:a_fund is null, "", " for " + :searchlistosrc:a_fund + " - " + :searchlistosrc:a_fund_desc) + ":");
 		}
 	    //sublbl "widget/label" { height=20; text="Subsidiary Funds:"; align=center; style=bold; font_size=12; }
 
@@ -166,11 +166,11 @@ coamaint "widget/component-decl"
 		    {
 		    sql = runserver("
 			select
-				:c:a_cost_center,
-				:c:a_cc_desc,
-				:c:a_cost_center_class,
+				:c:a_fund,
+				:c:a_fund_desc,
+				:c:a_fund_class,
 				:c:a_is_posting,
-				bal = (:c:a_cost_center == :c:a_bal_cost_center),
+				bal = (:c:a_fund == :c:a_bal_fund),
 				:c:a_restricted_type,
 				:c:a_legacy_code,
 				:c:a_is_external,
@@ -180,19 +180,19 @@ coamaint "widget/component-decl"
 				:s_date_created,
 				:s_created_by,
 				:a_ledger_number,
-				:a_parent_cost_center,
-				:a_bal_cost_center,
+				:a_parent_fund,
+				:a_bal_fund,
 				:a_reporting_level,
-				:a_cc_comments
+				:a_fund_comments
 			from
-				/apps/kardia/data/Kardia_DB/a_cost_center/rows c
+				/apps/kardia/data/Kardia_DB/a_fund/rows c
 			where 
 				:c:a_ledger_number = " + quote(:this:ledger) + "
 			order by
-				:c:a_cost_center
+				:c:a_fund
 			");
 
-		    baseobj = "/apps/kardia/data/Kardia_DB/a_cost_center/rows";
+		    baseobj = "/apps/kardia/data/Kardia_DB/a_fund/rows";
 		    replicasize=30;
 		    readahead=30;
 		    autoquery=never;
@@ -204,20 +204,20 @@ coamaint "widget/component-decl"
 			is_slave = yes;
 			key_1 = a_ledger_number;
 			target_key_1 = a_ledger_number;
-			key_2 = a_bal_cost_center;
-			target_key_2 = a_cost_center;
+			key_2 = a_bal_fund;
+			target_key_2 = a_fund;
 			autoquery = true;
 			enforce_create = false;
 			}
 
-		    after_create1 "widget/connector" { event=Created; event_condition=runclient(not :adding_subfund:value); target=searchlistosrc; action=QueryParam; a_cost_center=runclient(:subfund_osrc:a_cost_center); }
+		    after_create1 "widget/connector" { event=Created; event_condition=runclient(not :adding_subfund:value); target=searchlistosrc; action=QueryParam; a_fund=runclient(:subfund_osrc:a_fund); }
 
 		    preselect_fund "widget/connector"
 			{
 			event=EndQuery;
 			event_condition=runclient(:mainfund:value is null and not (:fund:value is null));
 			action=FindObject;
-			a_cost_center = runclient(:fund:value);
+			a_fund = runclient(:fund:value);
 			}
 		    dont_preselect_fund_twice "widget/connector"
 			{
@@ -234,9 +234,9 @@ coamaint "widget/component-decl"
 
 			dblclick_sub "widget/connector" { event=DblClick; target=fund_form; action=Modify; }
 
-			t2_cc "widget/table-column" { title="Cost Ctr"; fieldname="a_cost_center"; width=70; }
-			t2_desc "widget/table-column" { title="Description"; fieldname="a_cc_desc"; width=130; }
-			t2_cls "widget/table-column" { title="Type"; fieldname="a_cost_center_class"; width=40; }
+			t2_cc "widget/table-column" { title="Fund"; fieldname="a_fund"; width=70; }
+			t2_desc "widget/table-column" { title="Description"; fieldname="a_fund_desc"; width=130; }
+			t2_cls "widget/table-column" { title="Type"; fieldname="a_fund_class"; width=40; }
 			t2_legacy "widget/table-column" { title="Legacy"; fieldname="a_legacy_code"; width=70; }
 			t2_restr "widget/table-column" { title="Rest."; fieldname="a_restricted_type"; width=40; }
 			t2_bal "widget/table-column" { title="Bal?"; fieldname="bal"; width=40; type=check; }
@@ -250,7 +250,7 @@ coamaint "widget/component-decl"
 		{
 		path="/apps/kardia/modules/base/section_label.cmp";
 		height=20;
-		text = runclient(condition(:fund_form:form_mode == "New", "Creating a New " + condition(:adding_subfund:value,"Sub-Fund" + isnull(" of " + :searchlistosrc:a_cost_center + " - " + :searchlistosrc:a_cc_desc, ""), "Fund"), "Editing Fund " + :fund_form:a_cost_center + " - " + :fund_form:a_cc_desc));
+		text = runclient(condition(:fund_form:form_mode == "New", "Creating a New " + condition(:adding_subfund:value,"Sub-Fund" + isnull(" of " + :searchlistosrc:a_fund + " - " + :searchlistosrc:a_fund_desc, ""), "Fund"), "Editing Fund " + :fund_form:a_fund + " - " + :fund_form:a_fund_desc));
 		}
 
 	    fund_form "widget/form"
@@ -260,7 +260,7 @@ coamaint "widget/component-decl"
 
 		new_cn1 "widget/connector" { event=New; target=f_is_balancing; action=SetValue; Value=runclient(1 - :adding_subfund:value); }
 		new_cn2 "widget/connector" { event=New; event_condition=runclient(not :adding_subfund:value); target=f_balcc; action=SetValue; Value=runclient(null); }
-		new_cn3 "widget/connector" { event=New; event_condition=runclient(:adding_subfund:value); target=f_parentcc; action=SetValue; Value=runclient(:searchlistosrc:a_cost_center); }
+		new_cn3 "widget/connector" { event=New; event_condition=runclient(:adding_subfund:value); target=f_parentcc; action=SetValue; Value=runclient(:searchlistosrc:a_fund); }
 
 		new_cn4 "widget/connector" { event=New; event_condition=runclient(:searchlistosrc:a_ledger_number is null); target=f_ledger; action=SetValue; Value=runclient(:ledger:value); }
 
@@ -291,13 +291,13 @@ coamaint "widget/component-decl"
 				    width=240;
 
 				    f_ledger "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_ledger_number'; ctl_type=label; text='Ledger:'; label_width=120; }
-				    f_parentcc "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_parent_cost_center'; ctl_type=label; text='Rollup Fund:'; label_width=120; }
-				    f_balcc "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_bal_cost_center'; ctl_type=label; text='Balancing Fund:'; label_width=120; }
-				    f_costctr "widget/component" 
+				    f_parentcc "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_parent_fund'; ctl_type=label; text='Rollup Fund:'; label_width=120; }
+				    f_balcc "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_bal_fund'; ctl_type=label; text='Balancing Fund:'; label_width=120; }
+				    f_fund "widget/component" 
 					{ 
 					height=20;
 					path="/sys/cmp/smart_field.cmp";
-					field='a_cost_center';
+					field='a_fund';
 					ctl_type=editbox;
 					text='Fund Number:';
 					label_width=120;
@@ -324,9 +324,9 @@ coamaint "widget/component-decl"
 										  condition(substring(:Value,6,1) == '.', substring(:Value, 1, 5) + substring(:Value,7,1), :Value))));
 					    }
 					}
-				    f_desc "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_cc_desc'; ctl_type=editbox; text='Description:'; label_width=120; }
-				    f_comm "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_cc_comments'; ctl_type=editbox; text='Comments:'; label_width=120; }
-				    f_legacy_code "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field=a_legacy_code; text="Legacy Code:"; ctl_type="editbox"; tooltip="Legacy Cost Ctr from Old System"; label_width=120; }
+				    f_desc "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_fund_desc'; ctl_type=editbox; text='Description:'; label_width=120; }
+				    f_comm "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_fund_comments'; ctl_type=editbox; text='Comments:'; label_width=120; }
+				    f_legacy_code "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field=a_legacy_code; text="Legacy Code:"; ctl_type="editbox"; tooltip="Legacy Fund from Old System"; label_width=120; }
 				    }
 
 				form_vbox2 "widget/vbox"
@@ -334,23 +334,23 @@ coamaint "widget/component-decl"
 				    spacing=4;
 				    width=240;
 
-				    f_is_posting "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field=a_is_posting; text="Is Posting:"; ctl_type="checkbox"; tooltip="Enable posting to this cost center"; label_width=120; }
-				    f_is_external "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field=a_is_external; text="Is External:"; ctl_type="checkbox"; tooltip="Enable posting to this cost center"; label_width=120; }
-				    f_is_balancing "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field=a_is_balancing; text="Self-Balancing:"; ctl_type="checkbox"; type=readonly; tooltip="Enable posting to this cost center"; label_width=120; }
+				    f_is_posting "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field=a_is_posting; text="Is Posting:"; ctl_type="checkbox"; tooltip="Enable posting to this fund"; label_width=120; }
+				    f_is_external "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field=a_is_external; text="Is External:"; ctl_type="checkbox"; tooltip="Enable posting to this fund"; label_width=120; }
+				    f_is_balancing "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field=a_is_balancing; text="Self-Balancing:"; ctl_type="checkbox"; type=readonly; tooltip="Enable posting to this fund"; label_width=120; }
 
 				    f_cc_class "widget/component"
-					{ height=20; path="/sys/cmp/smart_field.cmp"; field=a_cost_center_class; text="Class:"; ctl_type="dropdown"; tooltip="Class/Category"; sql="select :a_acct_class_desc, :a_cost_center_class from /apps/kardia/data/Kardia_DB/a_cost_center_class/rows"; label_width=120; 
+					{ height=20; path="/sys/cmp/smart_field.cmp"; field=a_fund_class; text="Class:"; ctl_type="dropdown"; tooltip="Class/Category"; sql="select :a_fund_class_desc, :a_fund_class from /apps/kardia/data/Kardia_DB/a_fund_class/rows"; label_width=120; 
 					cc_class_cn2 "widget/connector"
 					    {
 					    event=DataModify;
 					    target=f_legacy_code;
 					    action=SetValue;
 					    // FIXME - the below is tied specifically to one deployment.
-					    Value = runclient(condition(char_length(:f_costctr:content) < 5, 
-									:f_costctr:content,
-									condition(char_length(:f_costctr:content) == 5,
-										  condition(:Value == 'MIS', :f_costctr:content + 'E', :f_costctr:content),
-										  condition(substring(:f_costctr:content,6,1) == '.', substring(:f_costctr:content, 1, 5) + substring(:f_costctr:content,7,1), :f_costctr:content))));
+					    Value = runclient(condition(char_length(:f_fund:content) < 5, 
+									:f_fund:content,
+									condition(char_length(:f_fund:content) == 5,
+										  condition(:Value == 'MIS', :f_fund:content + 'E', :f_fund:content),
+										  condition(substring(:f_fund:content,6,1) == '.', substring(:f_fund:content, 1, 5) + substring(:f_fund:content,7,1), :f_fund:content))));
 					    }
 					}
 				    f_cc_level "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field=a_reporting_level; text="Report Level:"; ctl_type="dropdown"; tooltip="Class/Category"; sql="select :a_level_desc, :a_reporting_level from /apps/kardia/data/Kardia_DB/a_reporting_level/rows"; label_width=120; }

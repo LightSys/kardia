@@ -31,10 +31,10 @@ plugin_crm_search_lists "widget/component-decl"
 	    label_width=150;
 	    width=400;
 	    popup_width=380;
-	    popup_sql=runserver("select value = :c:a_cost_center, label = :c:a_cost_center + ' - ' + condition(isnull(:cr:a_receiptable,0) = 1, :c:a_cc_desc + ' (legacy # ' + :c:a_legacy_code + ')', '** CLOSED **') from /apps/kardia/data/Kardia_DB/a_cost_center/rows c, /apps/kardia/data/Kardia_DB/a_cc_receipting/rows cr where :c:a_is_posting = 1 and :cr:a_ledger_number =* :c:a_ledger_number and :cr:a_cost_center =* :c:a_cost_center");
-	    search_field_list="a_cost_center*,*a_cc_desc*,a_legacy_code*";
-	    key_name="a_cost_center";
-	    object_name="Fund / Cost Center";
+	    popup_sql=runserver("select value = :c:a_fund, label = :c:a_fund + ' - ' + condition(isnull(:cr:a_receiptable,0) = 1, :c:a_fund_desc + ' (legacy # ' + :c:a_legacy_code + ')', '** CLOSED **') from /apps/kardia/data/Kardia_DB/a_fund/rows c, /apps/kardia/data/Kardia_DB/a_fund_receipting/rows cr where :c:a_is_posting = 1 and :cr:a_ledger_number =* :c:a_ledger_number and :cr:a_fund =* :c:a_fund");
+	    search_field_list="a_fund*,*a_fund_desc*,a_legacy_code*";
+	    key_name="a_fund";
+	    object_name="Fund";
 	    popup_text="Select Designation:";
 	    form=criteria_params_form;
 	    empty_desc="comma-separated list";

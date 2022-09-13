@@ -1,0 +1,65 @@
+$Version=2$
+fund_one_edit "widget/component-decl"
+    {
+    width=506;height=373;
+
+    osrc "widget/parameter" { type=object; find_container="widget/osrc"; }
+    form "widget/parameter" { type=object; find_container="widget/form"; }
+
+    SetLabel "widget/component-decl-action" { }
+    SetLabel_cn "widget/connector"
+	{
+	target = cc_label;
+	event = SetLabel;
+	action = SetValue;
+	Value = runclient(:Value);
+	}
+
+    cc_table_pane "widget/pane"
+	{
+	x=0;y=8;width=505; height=170;
+	widget_class="group";
+
+	cc_table "widget/table"
+	    {
+	    x=15;y=15;width=474; height=170 - 2 - 25;
+	    rowheight = 20;
+	    mode=dynamicrow;
+	    objectsource = osrc;
+
+	    c_t_number "widget/table-column" { title="Fund"; fieldname="a_fund"; width=60; } 
+	    c_t_class "widget/table-column" { title="Class"; fieldname="a_fund_class"; width=50; } 
+	    c_t_desc "widget/table-column" { title="Description"; fieldname="a_fund_desc"; width=340; } 
+	    }
+	}
+
+    cc_label_pane "widget/pane"
+	{
+	x=16;y=0;width=300;
+	widget_class="label";
+	cc_label "widget/label"
+	    {
+	    x=0;width=298; height=16;
+	    value = 'All Funds';
+	    widget_class="label";
+	    }
+	}
+
+    cc_vbox_1 "widget/vbox"
+	{
+	x=0;y=194;height=179;cellsize=20;spacing=4; width=200;
+
+	f_a_fund "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_fund; text="Fund:"; ctl_type="editbox"; tooltip="Fund"; form=form; }
+	f_a_parent_fund "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_parent_fund; text="Rollup Fund:"; ctl_type="editbox"; tooltip="Fund that this fund rolls into"; form=form; }
+	f_a_cc_class "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_fund_class; text="Fund Class:"; ctl_type="dropdown"; tooltip="Class/Category"; sql="select :a_fund_class_desc, :a_fund_class from /apps/kardia/data/Kardia_DB/a_fund_class/rows"; form=form; }
+	f_a_is_posting "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_is_posting; text="Is Posting:"; ctl_type="checkbox"; tooltip="Enable posting to this fund"; form=form; }
+	}
+    cc_vbox_2 "widget/vbox"
+	{
+	x=210;y=194;height=179;cellsize=20;spacing=4; width=290;
+
+	f_a_legacy_code "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_legacy_code; text="Legacy #:"; ctl_type="editbox"; tooltip="Legacy Fund from Old System"; form=form; }
+	f_a_fund_desc "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_fund_desc; text="Description:"; ctl_type="editbox"; tooltip="A short description of this fund"; form=form; }
+	f_a_cc_comment "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_fund_comments; text="Comments:"; ctl_type="textarea"; tooltip="Comments"; form=form; }
+	}
+    }

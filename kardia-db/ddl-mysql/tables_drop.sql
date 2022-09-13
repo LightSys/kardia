@@ -395,16 +395,16 @@ drop table a_analysis_attr;
 drop table a_analysis_attr_value;
 
 
-/* a_cc_analysis_attr */
-drop table a_cc_analysis_attr;
+/* a_fund_analysis_attr */
+drop table a_fund_analysis_attr;
 
 
 /* a_acct_analysis_attr */
 drop table a_acct_analysis_attr;
 
 
-/* a_cost_center */
-drop table a_cost_center;
+/* a_fund */
+drop table a_fund;
 
 
 /* a_account */
@@ -423,8 +423,8 @@ drop table a_account_usage_type;
 drop table a_account_category;
 
 
-/* a_cc_acct */
-drop table a_cc_acct;
+/* a_fund_acct */
+drop table a_fund_acct;
 
 
 /* a_period */
@@ -459,20 +459,20 @@ drop table a_transaction_tmp;
 drop table a_account_class;
 
 
-/* a_cost_center_class */
-drop table a_cost_center_class;
+/* a_fund_class */
+drop table a_fund_class;
 
 
 /* a_reporting_level */
 drop table a_reporting_level;
 
 
-/* a_cost_center_prefix */
-drop table a_cost_center_prefix;
+/* a_fund_prefix */
+drop table a_fund_prefix;
 
 
-/* a_cc_staff */
-drop table a_cc_staff;
+/* a_fund_staff */
+drop table a_fund_staff;
 
 
 /* a_ledger_office */
@@ -547,8 +547,8 @@ drop table a_tax_allowance_table;
 drop table a_salary_review;
 
 
-/* a_cc_admin_fee */
-drop table a_cc_admin_fee;
+/* a_fund_admin_fee */
+drop table a_fund_admin_fee;
 
 
 /* a_admin_fee_type */
@@ -567,12 +567,12 @@ drop table a_admin_fee_type_item;
 drop table a_admin_fee_type_item_tmp;
 
 
-/* a_cc_receipting */
-drop table a_cc_receipting;
+/* a_fund_receipting */
+drop table a_fund_receipting;
 
 
-/* a_cc_receipting_accts */
-drop table a_cc_receipting_accts;
+/* a_fund_receipting_accts */
+drop table a_fund_receipting_accts;
 
 
 /* a_receipt_type */
@@ -607,8 +607,8 @@ drop table a_subtrx_gift_intent;
 drop table a_subtrx_gift_rcptcnt;
 
 
-/* a_cc_auto_subscribe */
-drop table a_cc_auto_subscribe;
+/* a_fund_auto_subscribe */
+drop table a_fund_auto_subscribe;
 
 
 /* a_motivational_code */

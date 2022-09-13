@@ -133,9 +133,9 @@ payroll_run "widget/component-decl"
 				:a_payroll_interval,
 				:a_acct_method,
 				:a_paydate_delay,
-				:a_cost_center,
-				:a_liab_cost_center,
-				:a_cash_cost_center,
+				:a_fund,
+				:a_liab_fund,
+				:a_cash_fund,
 				:a_issue_checks,
 				:a_service_bureau_id,
 				:a_service_bureau_group_name
@@ -661,7 +661,7 @@ payroll_run "widget/component-decl"
 		//create_sep "widget/autolayoutspacer" { height=16; }
 		//create_hdr "widget/label" { height=20; text="Create Period:"; style=bold; }
 		//create_line "widget/pane" { height=2; style=lowered; }
-		//create_lbl "widget/label" { height=40; value=runclient(condition(:payrollcnt_form:txt == 'No', "Click the button below to create a new set of payroll records for all cost centers, based on the payroll data for the period selected below.", "Records are already present.  If you want to re-create records, you will have to delete them first (see below).")); }
+		//create_lbl "widget/label" { height=40; value=runclient(condition(:payrollcnt_form:txt == 'No', "Click the button below to create a new set of payroll records for all funds, based on the payroll data for the period selected below.", "Records are already present.  If you want to re-create records, you will have to delete them first (see below).")); }
 
 		lastperiod_hbox "widget/hbox"
 		    {
@@ -729,7 +729,7 @@ payroll_run "widget/component-decl"
 			    update_cn "widget/connector"
 				{
 				event=Click;
-				event_confirm=runclient("This will update the balances and accruals in the payroll records for this period from the GL, including balances, expenses, and revenues for the month, as well as payable and receivable totals.  Do you really want to update balances and accruals for " + :period_osrc:a_payroll_period + " from the GL in all cost centers?");
+				event_confirm=runclient("This will update the balances and accruals in the payroll records for this period from the GL, including balances, expenses, and revenues for the month, as well as payable and receivable totals.  Do you really want to update balances and accruals for " + :period_osrc:a_payroll_period + " from the GL in all funds?");
 				target=create_recs_component;
 				action=UpdatePayroll;
 				a_ledger_number = runclient(:ledger_osrc:a_ledger_number);
@@ -751,7 +751,7 @@ payroll_run "widget/component-decl"
 			//delete_sep "widget/autolayoutspacer" { height=16; }
 			delete_hdr "widget/label" { height=20; text="Delete Period:"; style=bold; }
 			//delete_line "widget/pane" { height=2; style=lowered; }
-			delete_lbl "widget/label" { height=48; value=runclient(condition(:period_osrc:cnt > 0, condition(:period_osrc:glcnt == 0, "Click 'Delete' below to delete all payroll records for " + :period_osrc:a_payroll_period + " in all cost centers.","This period has already been posted to the GL.  You can't delete records that have already been posted."), "No records are present to delete.")); }
+			delete_lbl "widget/label" { height=48; value=runclient(condition(:period_osrc:cnt > 0, condition(:period_osrc:glcnt == 0, "Click 'Delete' below to delete all payroll records for " + :period_osrc:a_payroll_period + " in all funds.","This period has already been posted to the GL.  You can't delete records that have already been posted."), "No records are present to delete.")); }
 			delete_btn "widget/textbutton"
 			    {
 			    x=45; width=100; height=24; text = "Delete";
@@ -759,7 +759,7 @@ payroll_run "widget/component-decl"
 			    delete_cn "widget/connector"
 				{
 				event=Click;
-				event_confirm=runclient("Do you really want to delete all payroll records for " + :period_osrc:a_payroll_period + " in all cost centers?");
+				event_confirm=runclient("Do you really want to delete all payroll records for " + :period_osrc:a_payroll_period + " in all funds?");
 				target=delete_recs_osrc;
 				action=QueryParam;
 				}
@@ -801,10 +801,10 @@ payroll_run "widget/component-decl"
 			    :p:a_payroll_group_id,
 			    :p:a_payroll_id,
 			    ptxt = condition(char_length(:p:a_payee_name) > 0, :p:a_payee_name, :par:p_surname + ', ' + :par:p_given_name),
-			    cctxt = '' + :p:a_cost_center + ' ' + :c:a_cc_desc,
-			    :p:a_cost_center,
+			    cctxt = '' + :p:a_fund + ' ' + :c:a_fund_desc,
+			    :p:a_fund,
 			    :p:a_payee_name,
-			    :c:a_cc_desc,
+			    :c:a_fund_desc,
 			    cnt = count(1),
 			    :pp:a_is_fica,
 			    :pp:a_is_employee,
@@ -818,7 +818,7 @@ payroll_run "widget/component-decl"
 			    ded = $0 - (sum(condition(:pit:a_payroll_item_class_code == 'G', :pi:a_actual_amount, $0)) - sum(condition(:pit:a_payroll_item_class_code == 'N', :pi:a_actual_amount, $0)))
 			from
 			    /apps/kardia/data/Kardia_DB/a_payroll/rows p,
-			    /apps/kardia/data/Kardia_DB/a_cost_center/rows c,
+			    /apps/kardia/data/Kardia_DB/a_fund/rows c,
 			    /apps/kardia/data/Kardia_DB/a_payroll_item/rows pi,
 			    /apps/kardia/data/Kardia_DB/a_payroll_item_type/rows pit,
 			    /apps/kardia/data/Kardia_DB/p_partner/rows par,
@@ -826,7 +826,7 @@ payroll_run "widget/component-decl"
 			WHERE
 			    :p:a_ledger_number = :parameters:pl_a_ledger_number and
 			    :p:a_ledger_number = :c:a_ledger_number and
-			    :p:a_cost_center = :c:a_cost_center and
+			    :p:a_fund = :c:a_fund and
 			    :p:a_payroll_id = :pi:a_payroll_id and
 			    :pit:a_payroll_item_type_code = :pi:a_payroll_item_type_code and
 			    :pit:a_ledger_number = :parameters:pl_a_ledger_number and
@@ -1068,15 +1068,15 @@ payroll_run "widget/component-decl"
 			select
 			    :p:a_payroll_id,
 			    severity = 'Error',
-			    msg = 'Invalid Cost Center: ' + :i:a_ref_cost_center + ' in line item ' + :i:a_payroll_item_type_code,
+			    msg = 'Invalid Fund: ' + :i:a_ref_fund + ' in line item ' + :i:a_payroll_item_type_code,
 			    ptxt = condition(char_length(:p:a_payee_name) > 0, :p:a_payee_name, :par:p_surname + ', ' + :par:p_given_name),
-			    config_cc = :i:a_ref_cost_center,
-			    :c:a_cost_center
+			    config_cc = :i:a_ref_fund,
+			    :c:a_fund
 			from
 			    /apps/kardia/data/Kardia_DB/a_payroll/rows p,
 			    /apps/kardia/data/Kardia_DB/a_payroll_item/rows i,
 			    /apps/kardia/data/Kardia_DB/p_partner/rows par,
-			    /apps/kardia/data/Kardia_DB/a_cost_center/rows c
+			    /apps/kardia/data/Kardia_DB/a_fund/rows c
 			where
 			    :p:a_ledger_number = :parameters:ledger and
 			    :p:a_payroll_group_id = :parameters:groupid and
@@ -1084,23 +1084,23 @@ payroll_run "widget/component-decl"
 			    :i:a_period = :parameters:period and
 			    :par:p_partner_key = :p:p_payee_partner_key and
 			    :c:a_ledger_number =* :i:a_ledger_number and
-			    :c:a_cost_center =* :i:a_ref_cost_center
+			    :c:a_fund =* :i:a_ref_fund
 			having
-			    :this:a_cost_center is null and char_length(:this:config_cc) > 1
+			    :this:a_fund is null and char_length(:this:config_cc) > 1
 			;
 		
 			select
 			    :p:a_payroll_id,
 			    severity = 'Error',
-			    msg = 'Invalid Xfer Cost Center: ' + :i:a_xfer_cost_center + ' in line item ' + :i:a_payroll_item_type_code,
+			    msg = 'Invalid Xfer Fund: ' + :i:a_xfer_fund + ' in line item ' + :i:a_payroll_item_type_code,
 			    ptxt = condition(char_length(:p:a_payee_name) > 0, :p:a_payee_name, :par:p_surname + ', ' + :par:p_given_name),
-			    config_cc = :i:a_xfer_cost_center,
-			    :c:a_cost_center
+			    config_cc = :i:a_xfer_fund,
+			    :c:a_fund
 			from
 			    /apps/kardia/data/Kardia_DB/a_payroll/rows p,
 			    /apps/kardia/data/Kardia_DB/a_payroll_item/rows i,
 			    /apps/kardia/data/Kardia_DB/p_partner/rows par,
-			    /apps/kardia/data/Kardia_DB/a_cost_center/rows c
+			    /apps/kardia/data/Kardia_DB/a_fund/rows c
 			where
 			    :p:a_ledger_number = :parameters:ledger and
 			    :p:a_payroll_group_id = :parameters:groupid and
@@ -1108,9 +1108,9 @@ payroll_run "widget/component-decl"
 			    :i:a_period = :parameters:period and
 			    :par:p_partner_key = :p:p_payee_partner_key and
 			    :c:a_ledger_number =* :i:a_ledger_number and
-			    :c:a_cost_center =* :i:a_xfer_cost_center
+			    :c:a_fund =* :i:a_xfer_fund
 			having
-			    :this:a_cost_center is null and char_length(:this:config_cc) > 1
+			    :this:a_fund is null and char_length(:this:config_cc) > 1
 			;
 		
 			select
@@ -1196,7 +1196,7 @@ payroll_run "widget/component-decl"
 			    tref = :t:a_ref_account_code,
 			    ixfer = :i:a_xfer_account_code,
 			    txfer = :t:a_xfer_account_code,
-			    tcxfer = :t:a_xfer_cost_center
+			    tcxfer = :t:a_xfer_fund
 			from
 			    /apps/kardia/data/Kardia_DB/a_payroll/rows p,
 			    /apps/kardia/data/Kardia_DB/a_payroll_item/rows i,
@@ -1220,10 +1220,10 @@ payroll_run "widget/component-decl"
 			
 			select
 			    :i:a_payroll_item_type_code,
-			    pay_cc = :y:a_cost_center,
-			    item_cc = :i:a_ref_cost_center,
+			    pay_cc = :y:a_fund,
+			    item_cc = :i:a_ref_fund,
 			    severity = 'Warning',
-			    msg = 'Fund Changed: ' + :y:a_cost_center + ' vs. ' + :i:a_ref_cost_center,
+			    msg = 'Fund Changed: ' + :y:a_fund + ' vs. ' + :i:a_ref_fund,
 			    ptxt = condition(char_length(:y:a_payee_name) > 0, :y:a_payee_name, :par:p_surname + ', ' + :par:p_given_name)
 			from
 			    /apps/kardia/data/Kardia_DB/a_payroll/rows y,
@@ -1477,7 +1477,7 @@ payroll_run "widget/component-decl"
 			period=runclient(:period_osrc:a_period);
 			payperiod=runclient(:period_osrc:a_payroll_period);
 			paydate=runclient(:period_osrc:a_pay_date);
-			cashfund=runclient(:group_osrc:a_cash_cost_center);
+			cashfund=runclient(:group_osrc:a_cash_fund);
 			groupid=runclient(:group_osrc:a_payroll_group_id);
 			}
 		    }
@@ -1559,7 +1559,7 @@ payroll_run "widget/component-decl"
 			    a_cash_account_code = isnull((select :c:a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows c where :c:a_ledger_number = :parameters:ledger and :c:a_config_name = 'DisbCashAcctPay'), (select :c:a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows c where :c:a_ledger_number = :parameters:ledger and :c:a_config_name = 'DisbCashAcct')),
 			    a_account_code = (select :c:a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows c where :c:a_ledger_number = :parameters:ledger and :c:a_config_name = 'DisbNetPay'),
 			    a_amount = :i:a_actual_amount,
-			    a_cost_center = :parameters:cashfund,
+			    a_fund = :parameters:cashfund,
 			    a_account_code = :i:a_ref_account_code,
 			    a_payee_partner_key = :p:p_payee_partner_key,
 			    a_check_number = '',

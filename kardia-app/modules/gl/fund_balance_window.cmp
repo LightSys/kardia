@@ -80,7 +80,7 @@ fund_balance_window "widget/component-decl"
 		    field='cc_class'; 
 		    ctl_type=dropdown; 
 		    text='Fund Class:'; 
-		    sql = runserver("select :a_cost_center_class + ' - ' + :a_acct_class_desc, :a_cost_center_class from /apps/kardia/data/Kardia_DB/a_cost_center_class/rows where :a_ledger_number = " + quote(:this:ledger) + " order by :a_cost_center_class");
+		    sql = runserver("select :a_fund_class + ' - ' + :a_fund_class_desc, :a_fund_class from /apps/kardia/data/Kardia_DB/a_fund_class/rows where :a_ledger_number = " + quote(:this:ledger) + " order by :a_fund_class");
 		    label_width=120;
 		    form=rpt_form;
 		    }

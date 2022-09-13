@@ -8,7 +8,7 @@ acct_bal_window "widget/component-decl"
 
     ShowBalances "widget/component-decl-action" { }
     ShowBalances_cn1 "widget/connector" { event="ShowBalances"; target="abwin"; action="Open"; Cascade=1; }
-    ShowBalances_cn2 "widget/connector" { event="ShowBalances"; target="abal_cmp"; action="ShowBalances"; Costctr=runclient(:Costctr); Account=runclient(:Account); }
+    ShowBalances_cn2 "widget/connector" { event="ShowBalances"; target="abal_cmp"; action="ShowBalances"; Fund=runclient(:Fund); Account=runclient(:Account); }
 
     ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
     editor "widget/parameter" { type=object; default=null; }

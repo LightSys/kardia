@@ -14,7 +14,7 @@ batch_balance "system/report"
 
     // Parameters for GL Batch Balance
     ledger "report/parameter" { type=string; default=null; }
-    costctr "report/parameter" { type=string; default=null; }
+    fund "report/parameter" { type=string; default=null; }
     batch "report/parameter" { type=integer; default=null; }
     pagesep "report/parameter" { type=integer; default=0; }
 
@@ -27,26 +27,26 @@ batch_balance "system/report"
 	{
 	sql = runserver("
 		select
-			:c:a_cost_center,
-			:c:a_cc_desc,
-			:c:a_bal_cost_center,
+			:c:a_fund,
+			:c:a_fund_desc,
+			:c:a_bal_fund,
 			:a:a_account_code,
 			:a:a_acct_desc,
 			batchbal = sum(:tt:a_amount)
 		from
 			/apps/kardia/data/Kardia_DB/a_transaction/rows tt,
-			/apps/kardia/data/Kardia_DB/a_cost_center/rows c,
+			/apps/kardia/data/Kardia_DB/a_fund/rows c,
 			/apps/kardia/data/Kardia_DB/a_account/rows a
 		where
 			:tt:a_batch_number = :this:batch and
 			:tt:a_ledger_number = :this:ledger and
-			:tt:a_cost_center = :c:a_cost_center and
+			:tt:a_fund = :c:a_fund and
 			:tt:a_account_code = :a:a_account_code and
 			:c:a_ledger_number = :this:ledger and
 			:a:a_ledger_number = :this:ledger
-			" + condition(:this:costctr is null, '', ' and :c:a_bal_cost_center = :this:costctr') + "
+			" + condition(:this:fund is null, '', ' and :c:a_bal_fund = :this:fund') + "
 		group by
-			:tt:a_cost_center,
+			:tt:a_fund,
 			:tt:a_account_code
 		");
 	bbal_sum "report/aggregate" { compute="sum(:batchbal)"; }
@@ -83,7 +83,7 @@ batch_balance "system/report"
 		fontsize=8;
 		header=yes;
 		bottomborder=0.05;
-		h_cc "report/table-cell" { value='Cost Ctr'; align=center; style=bold; }
+		h_cc "report/table-cell" { value='Fund'; align=center; style=bold; }
 		h_acct "report/table-cell" { value='Acct'; align=center; style=bold; }
 		h_desc "report/table-cell" { value='Description'; align=center; style=bold; }
 		h_batchbal "report/table-cell" { value='Total'; align=center; style=bold; }
@@ -94,16 +94,16 @@ batch_balance "system/report"
 		font=courier;
 		fontsize=8;
 		marginbottom=0.0;
-		d_cc "report/table-cell" { value=runserver(:accts_qy:a_cost_center); align=left; }
+		d_cc "report/table-cell" { value=runserver(:accts_qy:a_fund); align=left; }
 		d_acct "report/table-cell" { value=runserver(:accts_qy:a_account_code); align=left; }
-		d_desc "report/table-cell" { font=helvetica; value=runserver(:accts_qy:a_cc_desc + " (" + :accts_qy:a_acct_desc + ")"); align=left; }
+		d_desc "report/table-cell" { font=helvetica; value=runserver(:accts_qy:a_fund_desc + " (" + :accts_qy:a_acct_desc + ")"); align=left; }
 		d_bbal "report/table-cell" { value=runserver(condition(:accts_qy:batchbal == $0, '-0-', :accts_qy:batchbal)); align=right; }
 		}
 
 	    tbl_sum "report/table-row"
 		{
 		summary=yes;
-		summarize_for = runserver(:accts_qy:a_bal_cost_center);
+		summarize_for = runserver(:accts_qy:a_bal_fund);
 		font=courier;
 		fontsize=8;
 		topborder=0.05;

@@ -37,8 +37,8 @@ mailing_list_report "widget/page"
 
 		f_fields_opt1 "widget/dropdownitem" { label="Period / Batch / Journal / Transaction"; value="pbjt"; }
 		f_fields_opt2 "widget/dropdownitem" { label="Date / Batch / Journal / Transaction"; value="date"; }
-		f_fields_opt3 "widget/dropdownitem" { label="Cost Center / Account"; value="cca"; }
-		f_fields_opt4 "widget/dropdownitem" { label="Account / Cost Center"; value="acc"; }
+		f_fields_opt3 "widget/dropdownitem" { label="Fund / Account"; value="cca"; }
+		f_fields_opt4 "widget/dropdownitem" { label="Account / Fund"; value="acc"; }
 		}
 
 	    sep1 "widget/autolayoutspacer" { height=4; }

@@ -3,7 +3,7 @@ use Kardia_DB;
 
 
 /* p_partner */
-alter table p_partner drop index p_cost_ctr_idx;
+alter table p_partner drop index p_fund_idx;
 alter table p_partner drop index p_given_name_idx;
 alter table p_partner drop index p_legacy_key_1_idx;
 alter table p_partner drop index p_legacy_key_2_idx;
@@ -604,8 +604,8 @@ alter table r_saved_paramset drop index r_ps_modfile_idx;
 /* go */
 
 
-/* a_cc_analysis_attr */
-/* drop index a_cc_analysis_attr.a_cc_an_attr_pk */ 
+/* a_fund_analysis_attr */
+/* drop index a_fund_analysis_attr.a_fund_an_attr_pk */ 
 /* go */
 
 
@@ -614,12 +614,12 @@ alter table r_saved_paramset drop index r_ps_modfile_idx;
 /* go */
 
 
-/* a_cost_center */
-alter table a_cost_center drop index a_cc_bal_idx;
-alter table a_cost_center drop index a_cc_ledger_number_idx;
-alter table a_cost_center drop index a_cc_legacy_idx;
-alter table a_cost_center drop index a_cc_parent_idx;
-/* drop index a_cost_center.a_cost_center_pk */ 
+/* a_fund */
+alter table a_fund drop index a_fund_bal_idx;
+alter table a_fund drop index a_fund_ledger_number_idx;
+alter table a_fund drop index a_fund_legacy_idx;
+alter table a_fund drop index a_fund_parent_idx;
+/* drop index a_fund.a_fund_pk */ 
 /* go */
 
 
@@ -648,8 +648,8 @@ alter table a_account_usage drop index a_acctusg_ledger_number_idx;
 /* go */
 
 
-/* a_cc_acct */
-/* drop index a_cc_acct.a_cc_acct_pk */ 
+/* a_fund_acct */
+/* drop index a_fund_acct.a_fund_acct_pk */ 
 /* go */
 
 
@@ -684,11 +684,11 @@ alter table a_batch drop index a_corr_batch_idx;
 /* drop index a_transaction.a_transaction_pk */ 
 /* go */
 alter table a_transaction drop index a_trx_batch_idx;
-/* drop index a_transaction.a_trx_cc_clustered_idx */ 
-/* go */
-alter table a_transaction drop index a_trx_cc_quicksum_idx;
-alter table a_transaction drop index a_trx_ccperiod_idx;
 alter table a_transaction drop index a_trx_donor_id_idx;
+/* drop index a_transaction.a_trx_fund_clustered_idx */ 
+/* go */
+alter table a_transaction drop index a_trx_fund_quicksum_idx;
+alter table a_transaction drop index a_trx_fundperiod_idx;
 alter table a_transaction drop index a_trx_journal_idx;
 alter table a_transaction drop index a_trx_period_idx;
 alter table a_transaction drop index a_trx_recip_id_idx;
@@ -699,10 +699,10 @@ alter table a_transaction drop index a_trx_transaction_idx;
 /* drop index a_transaction_tmp.a_transaction_tmp_pk */ 
 /* go */
 alter table a_transaction_tmp drop index a_trxt_batch_idx;
-/* drop index a_transaction_tmp.a_trxt_cc_clustered_idx */ 
-/* go */
-alter table a_transaction_tmp drop index a_trxt_cc_quicksum_idx;
 alter table a_transaction_tmp drop index a_trxt_donor_id_idx;
+/* drop index a_transaction_tmp.a_trxt_fund_clustered_idx */ 
+/* go */
+alter table a_transaction_tmp drop index a_trxt_fund_quicksum_idx;
 alter table a_transaction_tmp drop index a_trxt_journal_idx;
 alter table a_transaction_tmp drop index a_trxt_recip_id_idx;
 alter table a_transaction_tmp drop index a_trxt_transaction_idx;
@@ -713,8 +713,8 @@ alter table a_transaction_tmp drop index a_trxt_transaction_idx;
 /* go */
 
 
-/* a_cost_center_class */
-/* drop index a_cost_center_class.a_costctr_class_pk */ 
+/* a_fund_class */
+/* drop index a_fund_class.a_fund_class_pk */ 
 /* go */
 
 
@@ -723,14 +723,15 @@ alter table a_transaction_tmp drop index a_trxt_transaction_idx;
 /* go */
 
 
-/* a_cost_center_prefix */
-alter table a_cost_center_prefix drop index a_cc_pfx_ledger_number_idx;
-/* drop index a_cost_center_prefix.a_cost_center_prefix_pk */ 
+/* a_fund_prefix */
+alter table a_fund_prefix drop index a_fund_pfx_ledger_number_idx;
+/* drop index a_fund_prefix.a_fund_prefix_pk */ 
 /* go */
 
 
-/* a_cc_staff */
-/* drop index a_cc_staff.a_cc_staff_pk */ 
+/* a_fund_staff */
+alter table a_fund_staff drop index a_fund_staff_partner_idx;
+/* drop index a_fund_staff.a_fund_staff_pk */ 
 /* go */
 
 
@@ -750,7 +751,7 @@ alter table a_cost_center_prefix drop index a_cc_pfx_ledger_number_idx;
 
 
 /* a_payroll */
-alter table a_payroll drop index a_payroll_cc_idx;
+alter table a_payroll drop index a_payroll_fund_idx;
 alter table a_payroll drop index a_payroll_payee_idx;
 /* drop index a_payroll.a_payroll_pk */ 
 /* go */
@@ -768,12 +769,13 @@ alter table a_payroll_period drop index a_payperiod_idx;
 
 
 /* a_payroll_group */
+alter table a_payroll_group drop index a_payroll_fund_idx;
 /* drop index a_payroll_group.a_payroll_grp_pk */ 
 /* go */
 
 
 /* a_payroll_import */
-alter table a_payroll_import drop index a_payrolli_cc_idx;
+alter table a_payroll_import drop index a_payrolli_fund_idx;
 alter table a_payroll_import drop index a_payrolli_payee_idx;
 /* drop index a_payroll_import.a_payrolli_pk */ 
 /* go */
@@ -832,9 +834,10 @@ alter table a_payroll_import drop index a_payrolli_payee_idx;
 alter table a_salary_review drop index a_salreview_review_idx;
 
 
-/* a_cc_admin_fee */
-/* drop index a_cc_admin_fee.a_cc_admin_fee_pk */ 
+/* a_fund_admin_fee */
+/* drop index a_fund_admin_fee.a_fund_admin_fee_pk */ 
 /* go */
+alter table a_fund_admin_fee drop index a_fundaf_ledger_number_idx;
 
 
 /* a_admin_fee_type */
@@ -859,17 +862,17 @@ alter table a_admin_fee_type_item drop index a_afti_ledger_number_idx;
 alter table a_admin_fee_type_item_tmp drop index a_afti_tmp_ledger_number_idx;
 
 
-/* a_cc_receipting */
-/* drop index a_cc_receipting.a_cc_receipting_pk */ 
+/* a_fund_receipting */
+/* drop index a_fund_receipting.a_fund_receipting_pk */ 
 /* go */
-alter table a_cc_receipting drop index a_ccr_ledger_number_idx;
+alter table a_fund_receipting drop index a_fundr_ledger_number_idx;
 
 
-/* a_cc_receipting_accts */
-/* drop index a_cc_receipting_accts.a_cc_rcptacct_pk */ 
+/* a_fund_receipting_accts */
+/* drop index a_fund_receipting_accts.a_fund_rcptacct_pk */ 
 /* go */
-alter table a_cc_receipting_accts drop index a_ccra_acct_number_idx;
-alter table a_cc_receipting_accts drop index a_ccra_ledger_number_idx;
+alter table a_fund_receipting_accts drop index a_fundra_acct_number_idx;
+alter table a_fund_receipting_accts drop index a_fundra_ledger_number_idx;
 
 
 /* a_receipt_type */
@@ -889,9 +892,9 @@ alter table a_cc_receipting_accts drop index a_ccra_ledger_number_idx;
 
 /* a_subtrx_gift */
 alter table a_subtrx_gift drop index a_gifttrx_batch_idx;
-/* drop index a_subtrx_gift.a_gifttrx_cc_clustered_idx */ 
-/* go */
 alter table a_subtrx_gift drop index a_gifttrx_donor_id_idx;
+/* drop index a_subtrx_gift.a_gifttrx_fund_clustered_idx */ 
+/* go */
 alter table a_subtrx_gift drop index a_gifttrx_gift_idx;
 /* drop index a_subtrx_gift.a_gifttrx_pk */ 
 /* go */
@@ -912,10 +915,10 @@ alter table a_subtrx_gift_group drop index a_gifttrxgrp_pass_id_idx;
 /* drop index a_subtrx_gift_item.a_gifttrx_pk */ 
 /* go */
 alter table a_subtrx_gift_item drop index a_gifttrxi_ack_idx;
-/* drop index a_subtrx_gift_item.a_gifttrxi_cc_clustered_idx */ 
-/* go */
 alter table a_subtrx_gift_item drop index a_gifttrxi_datetype_idx;
 alter table a_subtrx_gift_item drop index a_gifttrxi_donor_idx;
+/* drop index a_subtrx_gift_item.a_gifttrxi_fund_clustered_idx */ 
+/* go */
 alter table a_subtrx_gift_item drop index a_gifttrxi_gift_idx;
 alter table a_subtrx_gift_item drop index a_gifttrxi_mcode_idx;
 alter table a_subtrx_gift_item drop index a_gifttrxi_pass_idx;
@@ -936,15 +939,15 @@ alter table a_subtrx_gift_intent drop index a_gifttrxin_pledge_idx;
 /* go */
 
 
-/* a_cc_auto_subscribe */
-alter table a_cc_auto_subscribe drop index a_cc_as_ledger_number_idx;
-alter table a_cc_auto_subscribe drop index a_cc_as_listcode_idx;
-/* drop index a_cc_auto_subscribe.a_cc_auto_subscribe_pk */ 
+/* a_fund_auto_subscribe */
+alter table a_fund_auto_subscribe drop index a_fund_as_ledger_number_idx;
+alter table a_fund_auto_subscribe drop index a_fund_as_listcode_idx;
+/* drop index a_fund_auto_subscribe.a_fund_auto_subscribe_pk */ 
 /* go */
 
 
 /* a_motivational_code */
-alter table a_motivational_code drop index a_motiv_code_cc;
+alter table a_motivational_code drop index a_motiv_code_fund;
 alter table a_motivational_code drop index a_motiv_code_list;
 alter table a_motivational_code drop index a_motiv_code_parent;
 /* drop index a_motivational_code.a_motivational_code_pk */ 
@@ -993,14 +996,14 @@ alter table a_support_review_target drop index a_supptgt_target_idx;
 
 
 /* a_descriptives */
-alter table a_descriptives drop index a_descr_cc_idx;
+alter table a_descriptives drop index a_descr_fund_idx;
 alter table a_descriptives drop index a_descr_par_idx;
 /* drop index a_descriptives.a_descr_pk */ 
 /* go */
 
 
 /* a_descriptives_hist */
-alter table a_descriptives_hist drop index a_descrhist_cc_idx;
+alter table a_descriptives_hist drop index a_descrhist_fund_idx;
 alter table a_descriptives_hist drop index a_descrhist_merge_idx;
 alter table a_descriptives_hist drop index a_descrhist_par_idx;
 /* drop index a_descriptives_hist.a_descrhist_pk */ 
@@ -1051,6 +1054,12 @@ alter table a_subtrx_deposit drop index a_subtrx_dep_batch_idx;
 /* a_subtrx_cashxfer */
 /* drop index a_subtrx_cashxfer.a_subtrx_cashxfer_pk */ 
 /* go */
+alter table a_subtrx_cashxfer drop index a_subtrx_cxf_batch_idx;
+/* drop index a_subtrx_cashxfer.a_subtrx_cxf_fund_clustered_idx */ 
+/* go */
+alter table a_subtrx_cashxfer drop index a_subtrx_cxf_fund_rev1_idx;
+alter table a_subtrx_cashxfer drop index a_subtrx_cxf_fund_rev2_idx;
+alter table a_subtrx_cashxfer drop index a_subtrx_cxf_journal_idx;
 
 
 /* i_eg_gift_import */
@@ -1061,7 +1070,7 @@ alter table i_eg_gift_import drop index i_eg_egift_idx;
 /* drop index i_eg_gift_import.i_eg_gift_import_pk */ 
 /* go */
 alter table i_eg_gift_import drop index i_eg_kdepbatch_idx;
-alter table i_eg_gift_import drop index i_eg_kdoncc_idx;
+alter table i_eg_gift_import drop index i_eg_kdonfund_idx;
 alter table i_eg_gift_import drop index i_eg_kdonor_idx;
 alter table i_eg_gift_import drop index i_eg_kfeebatch_idx;
 alter table i_eg_gift_import drop index i_eg_kfund_idx;

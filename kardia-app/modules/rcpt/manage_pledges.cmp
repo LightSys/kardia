@@ -20,7 +20,7 @@ manage_pledges "widget/component-decl"
 			:pl:a_intent_type,
 			:pl:a_is_active,
 			:pl:p_donor_partner_id,
-			:pl:a_cost_center,
+			:pl:a_fund,
 			:pl:a_amount,
 			:pl:a_total_amount,
 			:pl:a_pledge_date,
@@ -36,7 +36,7 @@ manage_pledges "widget/component-decl"
 			cnt = count(:gi:a_ledger_number),
 			given = isnull(sum(:gi:a_amount), $0),
 			donor = condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
-			:cc:a_cc_desc,
+			:cc:a_fund_desc,
 			:it:a_intent_desc,
 			interval_desc = isnull(:iv:text, 'Every ' + :pl:a_giving_interval + ' months'),
 			start_desc = dateformat(:pl:a_start_date, 'dd-MMM-yyyy'),
@@ -47,7 +47,7 @@ manage_pledges "widget/component-decl"
 			/apps/kardia/data/Kardia_DB/a_subtrx_gift_intent/rows in,
 			/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows gi,
 			/apps/kardia/data/Kardia_DB/p_partner/rows p,
-			/apps/kardia/data/Kardia_DB/a_cost_center/rows cc,
+			/apps/kardia/data/Kardia_DB/a_fund/rows cc,
 			/apps/kardia/data/Kardia_DB/_a_giving_interval/rows iv
 		    where
 			:pl:a_ledger_number = :parameters:ledger and
@@ -62,7 +62,7 @@ manage_pledges "widget/component-decl"
 			:gi:a_posted = 1 and
 			:p:p_partner_key =* :pl:p_donor_partner_id and
 			:cc:a_ledger_number =* :pl:a_ledger_number and
-			:cc:a_cost_center =* :pl:a_cost_center and
+			:cc:a_fund =* :pl:a_fund and
 			:iv:tag =* :pl:a_giving_interval
 		    group by
 			:pl:a_ledger_number,
@@ -97,7 +97,7 @@ manage_pledges "widget/component-decl"
 		    title="Pledge/Intent";
 		    value=runclient(
 			    condition(:pledge_osrc:donor is not null, :pledge_osrc:donor + ': ', '')
-			    + condition(:pledge_osrc:a_total_amount is not null, 'total gift ' + :pledge_osrc:a_total_amount + ' ', isnull('giving ' + :pledge_osrc:a_amount + ' ', '')) + 'for ' + :pledge_osrc:a_cc_desc
+			    + condition(:pledge_osrc:a_total_amount is not null, 'total gift ' + :pledge_osrc:a_total_amount + ' ', isnull('giving ' + :pledge_osrc:a_amount + ' ', '')) + 'for ' + :pledge_osrc:a_fund_desc
 			    );
 		    style=bold;
 		    wrap=yes;
@@ -151,15 +151,15 @@ manage_pledges "widget/component-decl"
 				    {
 				    height=20;
 				    path="/apps/kardia/modules/base/editbox_table.cmp";
-				    field='a_cost_center';
+				    field='a_fund';
 				    text='Fund:';
 				    label_width=100;
 				    width=280;
 				    popup_width=280;
-				    popup_sql=runserver("select value = :c:a_cost_center, label = :c:a_cost_center + ' - ' + condition(isnull(:cr:a_receiptable,0) = 1, :c:a_cc_desc + ' (legacy # ' + :c:a_legacy_code + ')', '** CLOSED **') from /apps/kardia/data/Kardia_DB/a_cost_center/rows c, /apps/kardia/data/Kardia_DB/a_cc_receipting/rows cr where :c:a_is_posting = 1 and :c:a_ledger_number = " + quote(:this:ledger) + " and :cr:a_ledger_number =* :c:a_ledger_number and :cr:a_cost_center =* :c:a_cost_center");
-				    search_field_list="a_cost_center*,*a_cc_desc*,a_legacy_code*";
-				    key_name="a_cost_center";
-				    object_name="Fund / Cost Center";
+				    popup_sql=runserver("select value = :c:a_fund, label = :c:a_fund + ' - ' + condition(isnull(:cr:a_receiptable,0) = 1, :c:a_fund_desc + ' (legacy # ' + :c:a_legacy_code + ')', '** CLOSED **') from /apps/kardia/data/Kardia_DB/a_fund/rows c, /apps/kardia/data/Kardia_DB/a_fund_receipting/rows cr where :c:a_is_posting = 1 and :c:a_ledger_number = " + quote(:this:ledger) + " and :cr:a_ledger_number =* :c:a_ledger_number and :cr:a_fund =* :c:a_fund");
+				    search_field_list="a_fund*,*a_fund_desc*,a_legacy_code*";
+				    key_name="a_fund";
+				    object_name="Fund";
 				    popup_text="Select Designation:";
 				    empty_desc="optional";
 
@@ -238,7 +238,7 @@ manage_pledges "widget/component-decl"
 		    query=runclient(:query);
 		    use_having=1;
 		    cx__case_insensitive = 1;
-		    field_list="*donor*,a_cost_center,*a_cc_desc*,p_donor_partner_id,*a_comment*";
+		    field_list="*donor*,a_fund,*a_fund_desc*,p_donor_partner_id,*a_comment*";
 		    }
 		}
 

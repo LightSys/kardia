@@ -40,7 +40,7 @@ plugin_base_mergeexec_staff "system/query"
 
 	    -- Funds managed
 	    update
-		identity /apps/kardia/data/Kardia_DB/a_cc_staff/rows cs,
+		identity /apps/kardia/data/Kardia_DB/a_fund_staff/rows cs,
 		/apps/kardia/data/Kardia_DB/p_merge/rows m
 	    set
 		:cs:p_staff_partner_key = '#' + condition(ascii(substring(:m:p_disposition, 2, 1)) = 65, :parameters:partner_a, condition(ascii(substring(:m:p_disposition, 2, 1)) = 66, :parameters:partner_b, condition(ascii(substring(:m:p_disposition, 2, 1)) = 67, :parameters:partner_c, NULL)))
@@ -99,7 +99,7 @@ plugin_base_mergeexec_staff "system/query"
 		set :p_partner_key = substring(:p_partner_key, 2, 16)
 		where (:p_partner_key = '#' + :parameters:partner_a or :p_partner_key = '#' + :parameters:partner_b or :p_partner_key = '#' + :parameters:partner_c)
 	    ;
-	    update /apps/kardia/data/Kardia_DB/a_cc_staff/rows
+	    update /apps/kardia/data/Kardia_DB/a_fund_staff/rows
 		set :p_staff_partner_key = substring(:p_staff_partner_key, 2, 16)
 		where (:p_staff_partner_key = '#' + :parameters:partner_a or :p_staff_partner_key = '#' + :parameters:partner_b or :p_staff_partner_key = '#' + :parameters:partner_c)
 	    ;

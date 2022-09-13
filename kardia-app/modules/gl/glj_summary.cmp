@@ -74,7 +74,7 @@ glj_summary "widget/component-decl"
 	    }
 	cctotals_osrc "widget/osrc"
 	    {
-	    sql = "select :t:a_cost_center, assets = isnull(sum(condition(:a:a_acct_type == 'A', :t:a_amount, $0)), $0), liabs = isnull(sum(condition(:a:a_acct_type == 'L', :t:a_amount, $0)), $0), equity = isnull(sum(condition(:a:a_acct_type == 'Q', :t:a_amount, $0)), $0), revenue = isnull(sum(condition(:a:a_acct_type == 'R', :t:a_amount, $0)), $0), expense = isnull(sum(condition(:a:a_acct_type == 'E', :t:a_amount, $0)), $0) from /apps/kardia/data/Kardia_DB/a_transaction/rows t, /apps/kardia/data/Kardia_DB/a_account/rows a where :t:a_account_code = :a:a_account_code and :t:a_ledger_number = :a:a_ledger_number group by :t:a_cost_center";
+	    sql = "select :t:a_fund, assets = isnull(sum(condition(:a:a_acct_type == 'A', :t:a_amount, $0)), $0), liabs = isnull(sum(condition(:a:a_acct_type == 'L', :t:a_amount, $0)), $0), equity = isnull(sum(condition(:a:a_acct_type == 'Q', :t:a_amount, $0)), $0), revenue = isnull(sum(condition(:a:a_acct_type == 'R', :t:a_amount, $0)), $0), expense = isnull(sum(condition(:a:a_acct_type == 'E', :t:a_amount, $0)), $0) from /apps/kardia/data/Kardia_DB/a_transaction/rows t, /apps/kardia/data/Kardia_DB/a_account/rows a where :t:a_account_code = :a:a_account_code and :t:a_ledger_number = :a:a_ledger_number group by :t:a_fund";
 	    replicasize=100;
 	    readahead=100;
 	    autoquery=never;
@@ -104,7 +104,7 @@ glj_summary "widget/component-decl"
 		    allow_selection = no;
 		    show_selection = no;
 
-		    t_costctr "widget/table-column" { title="Cost Ctr"; fieldname="a_cost_center"; width=50; }
+		    t_fund "widget/table-column" { title="Fund"; fieldname="a_fund"; width=50; }
 		    t_cc_asset "widget/table-column" { title="Asset Change"; fieldname="assets"; width=100; align=right; }
 		    t_cc_liab "widget/table-column" { title="Liability Change"; fieldname="liabs"; width=100; align=right; }
 		    t_cc_equity "widget/table-column" { title="Equity Change"; fieldname="equity"; width=100; align=right; }
@@ -116,7 +116,7 @@ glj_summary "widget/component-decl"
 		{
 		widget_class=label;
 		x=20;y=122; width=242;
-		cctotals_label "widget/label" { x=0;height=18;width=240; value="Batch Totals by Cost Ctr"; widget_class="label"; }
+		cctotals_label "widget/label" { x=0;height=18;width=240; value="Batch Totals by Fund"; widget_class="label"; }
 		}
 	    }
 	actotals_osrc "widget/osrc"

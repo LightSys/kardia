@@ -83,7 +83,7 @@ fm_revexp_chart "widget/component-decl"
 		    :t:a_period >= :info:dataperiod and
 		    :t:a_period < :info:startperiod and
 		    :t:a_ledger_number = :parameters:ledger and
-		    (:parameters:fund is null or :parameters:fund = :t:a_cost_center) and
+		    (:parameters:fund is null or :parameters:fund = :t:a_fund) and
 		    (:t:a_account_category = '30' or :t:a_account_category = '40' or :t:a_account_category = '41' or :t:a_account_category = '42' or :t:a_account_category = '50' or :t:a_account_category = '51' or :t:a_account_category = '52')
 		;
 
@@ -109,7 +109,7 @@ fm_revexp_chart "widget/component-decl"
 		    :p:a_period = :t:a_period and
 		    :p:a_ledger_number = :t:a_ledger_number and
 		    :t:a_transaction_type != 'B' and
-		    (:parameters:fund is null or :parameters:fund = :t:a_cost_center)
+		    (:parameters:fund is null or :parameters:fund = :t:a_fund)
 		group by
 		    :t:a_period
 		order by

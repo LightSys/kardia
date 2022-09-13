@@ -12,11 +12,11 @@ fundmgr_report "system/report"
     margintop=3;
     marginbottom=3;
 
-    filename = runserver("FundMgrRpt-" + :this:manager_id + '-' + :this:period + "-" + isnull(:this:costctr, "ALL") + condition(:this:costctr is null, "", "-" + (select condition(charindex(',',:a_cc_desc) > 0, substring(:a_cc_desc, 1, charindex(',',:a_cc_desc) - 1), :a_cc_desc) from /apps/kardia/data/Kardia_DB/a_cost_center/rows where :a_ledger_number = :this:ledger and :a_cost_center = :this:costctr)) + ".pdf");
+    filename = runserver("FundMgrRpt-" + :this:manager_id + '-' + :this:period + "-" + isnull(:this:fund, "ALL") + condition(:this:fund is null, "", "-" + (select condition(charindex(',',:a_fund_desc) > 0, substring(:a_fund_desc, 1, charindex(',',:a_fund_desc) - 1), :a_fund_desc) from /apps/kardia/data/Kardia_DB/a_fund/rows where :a_ledger_number = :this:ledger and :a_fund = :this:fund)) + ".pdf");
 
     // Parameters for Fund Manager's Report
     ledger "report/parameter" { type=string; default=null; }
-    costctr "report/parameter" { type=string; default=null; }
+    fund "report/parameter" { type=string; default=null; }
     manager_id "report/parameter" { type=string; default=null; }
     incl_fund_class "report/parameter" { type=string; default=null; }
     excl_fund_class "report/parameter" { type=string; default=null; }
@@ -50,30 +50,30 @@ fundmgr_report "system/report"
 	{
 	sql = runserver("
 		select 
-			cclist = sum(:cst:a_cost_center + ',') - ',',
+			fundlist = sum(:cst:a_fund + ',') - ',',
 			cccnt = count(1)
 		from 
-			/apps/kardia/data/Kardia_DB/a_cc_staff/rows cst,
-			/apps/kardia/data/Kardia_DB/a_cost_center/rows cc
+			/apps/kardia/data/Kardia_DB/a_fund_staff/rows cst,
+			/apps/kardia/data/Kardia_DB/a_fund/rows cc
 		where
 			:cst:a_ledger_number = :this:ledger and
 			:cst:p_staff_partner_key = :this:manager_id and
 			:cc:a_ledger_number = :cst:a_ledger_number and
-			:cc:a_cost_center = :cst:a_cost_center
-			" + condition(:this:costctr is null, "", "and :cst:a_cost_center = :this:costctr") + "
-			" + condition(:this:incl_fund_class is null, "", "and charindex(',' + rtrim(:cc:a_cost_center_class) + ',', ',' + :this:incl_fund_class + ',') > 0") + "
-			" + condition(:this:excl_fund_class is null, "", "and charindex(',' + rtrim(:cc:a_cost_center_class) + ',', ',' + :this:excl_fund_class + ',') <= 0") + "
+			:cc:a_fund = :cst:a_fund
+			" + condition(:this:fund is null, "", "and :cst:a_fund = :this:fund") + "
+			" + condition(:this:incl_fund_class is null, "", "and charindex(',' + rtrim(:cc:a_fund_class) + ',', ',' + :this:incl_fund_class + ',') > 0") + "
+			" + condition(:this:excl_fund_class is null, "", "and charindex(',' + rtrim(:cc:a_fund_class) + ',', ',' + :this:excl_fund_class + ',') <= 0") + "
 		");
 	}
 
     how_many_subcc_qy "report/query"
 	{
-	sql = "select cnt = count(1) from /apps/kardia/data/Kardia_DB/a_cost_center/rows c where :c:a_ledger_number = :this:ledger and charindex(',' + rtrim(:c:a_cost_center) + ',', ',' + :cctrs_qy:cclist + ',') > 0";
+	sql = "select cnt = count(1) from /apps/kardia/data/Kardia_DB/a_fund/rows c where :c:a_ledger_number = :this:ledger and charindex(',' + rtrim(:c:a_fund) + ',', ',' + :cctrs_qy:fundlist + ',') > 0";
 	}
 
     subcc_qy "report/query"
 	{
-	sql = "select * from /apps/kardia/data/Kardia_DB/a_cost_center/rows c where :c:a_ledger_number = :this:ledger and charindex(',' + rtrim(:c:a_cost_center) + ',', ',' + :cctrs_qy:cclist + ',') > 0";
+	sql = "select * from /apps/kardia/data/Kardia_DB/a_fund/rows c where :c:a_ledger_number = :this:ledger and charindex(',' + rtrim(:c:a_fund) + ',', ',' + :cctrs_qy:fundlist + ',') > 0";
 	}
 
     gift_and_admin_qy "report/query"
@@ -88,7 +88,7 @@ fundmgr_report "system/report"
 			/apps/kardia/data/Kardia_DB/a_transaction/rows tt
 		WHERE
 			:tt:a_ledger_number = :this:ledger and
-			:tt:a_cost_center = :subcc_qy:a_cost_center and
+			:tt:a_fund = :subcc_qy:a_fund and
 			(:tt:a_account_code = '4100' or :tt:a_account_code = '2120' or :tt:a_account_code = '5700') and
 			:tt:a_origin = 'CR' and
 			:tt:a_transaction_type = 'T' and
@@ -116,7 +116,7 @@ fundmgr_report "system/report"
 			/apps/kardia/data/Kardia_DB/p_partner/rows p
 		WHERE
 			:tt:a_ledger_number = :this:ledger and
-			:tt:a_cost_center = :subcc_qy:a_cost_center and
+			:tt:a_fund = :subcc_qy:a_fund and
 			:tt:a_period = :this:period and
 			:a:a_ledger_number = :this:ledger and
 			:a:a_account_code = :tt:a_account_code and
@@ -148,7 +148,7 @@ fundmgr_report "system/report"
 			/apps/kardia/data/Kardia_DB/a_account/rows a
 		WHERE
 			:tt:a_ledger_number = :this:ledger and
-			:tt:a_cost_center = :subcc_qy:a_cost_center and
+			:tt:a_fund = :subcc_qy:a_fund and
 			:tt:a_period = :this:period and
 			:a:a_ledger_number = :this:ledger and
 			:a:a_account_code = :tt:a_account_code and
@@ -179,7 +179,7 @@ fundmgr_report "system/report"
 			/apps/kardia/data/Kardia_DB/a_account/rows a
 		WHERE
 			:trx:a_ledger_number = :this:ledger and
-			:trx:a_cost_center = :subcc_qy:a_cost_center and
+			:trx:a_fund = :subcc_qy:a_fund and
 			:trx:a_period <= :this:period and
 			:trx:a_period >= :period_qy:ref_period and
 			:a:a_ledger_number = :trx:a_ledger_number and
@@ -211,7 +211,7 @@ fundmgr_report "system/report"
 			/apps/kardia/data/Kardia_DB/p_partner/rows p
 		WHERE
 			:tt:a_ledger_number = :this:ledger and
-			:tt:a_cost_center = :subcc_qy:a_cost_center and
+			:tt:a_fund = :subcc_qy:a_fund and
 			:tt:a_period = :this:period and
 			:tt:a_transaction_type = 'T' and
 			:tt:a_account_code = :accruals_list_qy:a_account_code and
@@ -250,7 +250,7 @@ fundmgr_report "system/report"
 			/apps/kardia/data/Kardia_DB/p_partner/rows p
 		WHERE
 			:tt:a_ledger_number = :this:ledger and
-			:tt:a_cost_center = :subcc_qy:a_cost_center and
+			:tt:a_fund = :subcc_qy:a_fund and
 			:tt:a_period = :this:period and
 			:a:a_ledger_number = :this:ledger and
 			:a:a_account_code = :tt:a_account_code and
@@ -287,28 +287,28 @@ fundmgr_report "system/report"
 			openliabilities = isnull(sum(condition(:a:a_acct_type == 'L' and (:t:a_transaction_type = 'B' or :t:a_period < :this:period), :t:a_amount, $0.00)), $0.00),
 			openequity = isnull(sum(condition(:a:a_acct_type == 'Q' and (:t:a_transaction_type = 'B' or :t:a_period < :this:period), :t:a_amount, $0.00)), $0.00),
 
-			a_cc_disp = '' + :c:a_cost_center + ' - ' + :c:a_cc_desc,
-			:c:a_bal_cost_center,
-			:c:a_cc_desc,
+			a_cc_disp = '' + :c:a_fund + ' - ' + :c:a_fund_desc,
+			:c:a_bal_fund,
+			:c:a_fund_desc,
 			last_trans = max(:t:a_effective_date)
 
 		FROM
-			/apps/kardia/data/Kardia_DB/a_cost_center/rows c,
+			/apps/kardia/data/Kardia_DB/a_fund/rows c,
 			/apps/kardia/data/Kardia_DB/a_transaction/rows t,
 			/apps/kardia/data/Kardia_DB/a_account/rows a
 
 		WHERE
 			:a:a_account_code = :t:a_account_code and 
 			:a:a_ledger_number = :t:a_ledger_number and 
-			:t:a_cost_center =* :c:a_cost_center and 
+			:t:a_fund =* :c:a_fund and 
 			:t:a_ledger_number =* :c:a_ledger_number and
 			:t:a_period >= :period_qy:ref_period and
 			:t:a_period <= :this:period and
 			:c:a_ledger_number = :this:ledger and 
-			charindex(',' + rtrim(:c:a_cost_center) + ',', ',' + :cctrs_qy:cclist + ',') > 0
+			charindex(',' + rtrim(:c:a_fund) + ',', ',' + :cctrs_qy:fundlist + ',') > 0
 			" + condition(:this:unposted, "", "and :t:a_posted = 1") + "
 		GROUP BY
-			:c:a_cost_center
+			:c:a_fund
 		");
 	}
 
@@ -331,7 +331,7 @@ fundmgr_report "system/report"
 	    t_d0 "report/data" { fontsize=15; style=bold; value = runserver('Fund Manager: ' + :manager_info_qy:p_partner_key + " - " + :manager_info_qy:mgr_name + "\n"); }
 	    t_d3 "report/data" { fontsize=10; style=bold; value = runserver("Statement Period: " + :period_qy:a_period_desc + "\n"); }
 	    t_d1 "report/data" { fontsize=8; value = runserver("Fund Manager's Report from " + :ledger_qy:a_ledger_desc + "\n"); }
-	    //t_d2 "report/data" { fontsize=8; value = runserver("For Fund: " + :cctrs_qy:a_cc_desc + " (" + :cctrs_qy:a_cost_center + ")\n"); }
+	    //t_d2 "report/data" { fontsize=8; value = runserver("For Fund: " + :cctrs_qy:a_fund_desc + " (" + :cctrs_qy:a_fund + ")\n"); }
 	    t_d4 "report/data" { fontsize=8; value = runserver("Printed by: " + user_name() + " on " + getdate() + "\n"); }
 	    t_d5 "report/data" { fontsize=8; condition=runserver(:this:unposted); value = runserver("*** WARNING:  DATA INCLUDES UNPOSTED TRANSACTIONS ***\n"); }
 	    }
@@ -394,7 +394,7 @@ fundmgr_report "system/report"
 		align=left;
 
 		sep_line4 "report/image" { y=1.5; width=80;height=0.06; source="/apps/kardia/images/artwork/blackpixel.png"; }
-		s4_d0 "report/data" { fontsize=12; style=bold; value = runserver(:subcc_qy:a_cost_center + " (" + :subcc_qy:a_cc_desc + ") Detail:"); }
+		s4_d0 "report/data" { fontsize=12; style=bold; value = runserver(:subcc_qy:a_fund + " (" + :subcc_qy:a_fund_desc + ") Detail:"); }
 
 		//s4_d1 "report/data" { fontsize=8; style=bold; value="\n\nTotal Gifts:"; }
 		//s4_d2 "report/data" { fontsize=8; font=courier; xpos=12; value=runserver(ralign("" + ($0 - :gift_and_admin_qy:gifts), 11) + "\n"); }

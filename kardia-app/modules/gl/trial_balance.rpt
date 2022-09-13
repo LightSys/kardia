@@ -14,7 +14,7 @@ trial_balance "system/report"
 
     // Parameters for GL Trial Balance
     ledger "report/parameter" { type=string; default=null; }
-    costctr "report/parameter" { type=string; default=null; }
+    fund "report/parameter" { type=string; default=null; }
     year_period "report/parameter" { type=string; default=runserver( (select :a_period from /apps/kardia/data/Kardia_DB/a_period/rows where datepart(month, :a_start_date) = 1 and datepart(month, :a_end_date) = 12 and datepart(year, :a_end_date) = datepart(year, getdate())) ); }
     ref_period "report/parameter" { type=string; default=runserver( (select first(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_summary_only = 0 and datepart(year, :a_end_date) = datepart(year, getdate()) order by :a_start_date) ); }
     end_period "report/parameter" { type=string; default=runserver( (select last(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_summary_only = 0 and datepart(year, :a_end_date) = datepart(year, getdate()) order by :a_start_date) ); }
@@ -40,9 +40,9 @@ trial_balance "system/report"
 	{
 	sql = runserver("
 		select
-			:c:a_cost_center,
-			:c:a_cc_desc,
-			:c:a_bal_cost_center,
+			:c:a_fund,
+			:c:a_fund_desc,
+			:c:a_bal_fund,
 			:a:a_account_code,
 			:tt:a_account_category,
 			:a:a_acct_desc,
@@ -52,19 +52,19 @@ trial_balance "system/report"
 			showzero = :this:showzero
 		from
 			/apps/kardia/data/Kardia_DB/a_transaction/rows tt,
-			/apps/kardia/data/Kardia_DB/a_cost_center/rows c,
+			/apps/kardia/data/Kardia_DB/a_fund/rows c,
 			/apps/kardia/data/Kardia_DB/a_account/rows a
 		where
 			:tt:a_ledger_number = :this:ledger and
-			:tt:a_cost_center = :c:a_cost_center and
+			:tt:a_fund = :c:a_fund and
 			:tt:a_account_code = :a:a_account_code and
 			(:tt:a_period <= :this:end_period and :tt:a_period >= :period_qy:first_period) and
 			:c:a_ledger_number = :this:ledger and
 			:a:a_ledger_number = :this:ledger
 			" + condition(:this:unposted, "", "and :tt:a_posted = 1") + "
-			" + condition(:this:costctr is null, '', ' and :c:a_bal_cost_center = :this:costctr') + "
+			" + condition(:this:fund is null, '', ' and :c:a_bal_fund = :this:fund') + "
 		group by
-			:tt:a_cost_center,
+			:tt:a_fund,
 			:tt:a_account_code
 			" + condition(:this:control, ",:tt:a_account_category", "") + "
 		having
@@ -90,11 +90,11 @@ trial_balance "system/report"
 	{
 	sql = runserver("
 		select
-			cclist = sum(:c:a_cost_center + ',')
+			fundlist = sum(:c:a_fund + ',')
 		from
-			/apps/kardia/data/Kardia_DB/a_cost_center/rows c
+			/apps/kardia/data/Kardia_DB/a_fund/rows c
 		where
-			:c:a_bal_cost_center = :this:costctr or :c:a_cost_center = :this:costctr
+			:c:a_bal_fund = :this:fund or :c:a_fund = :this:fund
 		");
 	}
 
@@ -119,7 +119,7 @@ trial_balance "system/report"
 			:tt:a_account_code = :a:a_account_code and
 			(:tt:a_period <= :this:end_period and :tt:a_period >= :period_qy:first_period) and
 			:a:a_ledger_number = :this:ledger and
-			(:glwide_cc_qy:cclist is null or charindex(',' + rtrim(:tt:a_cost_center) + ',', ',' + :glwide_cc_qy:cclist + ',') > 0)
+			(:glwide_cc_qy:fundlist is null or charindex(',' + rtrim(:tt:a_fund) + ',', ',' + :glwide_cc_qy:fundlist + ',') > 0)
 			" + condition(:this:unposted, "", "and :tt:a_posted = 1") + "
 		group by
 			:tt:a_account_code
@@ -177,7 +177,7 @@ trial_balance "system/report"
 		fontsize=8;
 		header=yes;
 		bottomborder=0.05;
-		h_cc "report/table-cell" { value='Cost Ctr'; align=center; style=bold; }
+		h_cc "report/table-cell" { value='Fund'; align=center; style=bold; }
 		h_acct "report/table-cell" { value='Acct'; align=center; style=bold; }
 		h_desc "report/table-cell" { value='Description'; align=center; style=bold; }
 		h_bbal "report/table-cell" { value='Begin'; align=center; style=bold; }
@@ -190,9 +190,9 @@ trial_balance "system/report"
 		font=courier;
 		fontsize=8;
 		marginbottom=0.0;
-		d_cc "report/table-cell" { value=runserver(:accts_qy:a_cost_center); align=left; }
+		d_cc "report/table-cell" { value=runserver(:accts_qy:a_fund); align=left; }
 		d_acct "report/table-cell" { value=runserver(condition(:this:control, "" + :accts_qy:a_account_category + "-", "") + :accts_qy:a_account_code); align=left; }
-		d_desc "report/table-cell" { font=helvetica; value=runserver(:accts_qy:a_cc_desc + " (" + :accts_qy:a_acct_desc + ")"); align=left; }
+		d_desc "report/table-cell" { font=helvetica; value=runserver(:accts_qy:a_fund_desc + " (" + :accts_qy:a_acct_desc + ")"); align=left; }
 		d_bbal "report/table-cell" { value=runserver(:accts_qy:bbal); align=right; }
 		d_chg "report/table-cell" { value=runserver((:accts_qy:cbal - :accts_qy:bbal)); align=right; }
 		d_cur "report/table-cell" { value=runserver(:accts_qy:cbal); align=right; }
@@ -201,7 +201,7 @@ trial_balance "system/report"
 	    tbl_sum "report/table-row"
 		{
 		summary=yes;
-		summarize_for = runserver(:accts_qy:a_bal_cost_center);
+		summarize_for = runserver(:accts_qy:a_bal_fund);
 		font=courier;
 		fontsize=8;
 		topborder=0.05;
@@ -216,7 +216,7 @@ trial_balance "system/report"
 		}
 	    tbl_sum_all "report/table-row"
 		{
-		condition = runserver(:this:costctr is null);
+		condition = runserver(:this:fund is null);
 		summary=yes;
 		font=courier;
 		fontsize=8;
@@ -232,7 +232,7 @@ trial_balance "system/report"
 		}
 	    tbl_sum_1900 "report/table-row"
 		{
-		condition = runserver(:this:costctr is null);
+		condition = runserver(:this:fund is null);
 		summary=yes;
 		font=courier;
 		fontsize=8;
@@ -252,7 +252,7 @@ trial_balance "system/report"
 	    {
 	    x=0; width=80; height=3;
 	    font=helvetica;
-	    value = runserver("\n\nGL Accounts Summary" + condition(:this:costctr is not null, " for " + :this:costctr, "") + ":\n");
+	    value = runserver("\n\nGL Accounts Summary" + condition(:this:fund is not null, " for " + :this:fund, "") + ":\n");
 	    style=bold;
 	    }
 
@@ -303,7 +303,7 @@ trial_balance "system/report"
 		//bottomborder=0.05;
 		marginbottom=1.0;
 		s3_acct "report/table-cell" { value=''; align=left; style=bold; }
-		s3_desc "report/table-cell" { font=helvetica; value=runserver("TOTAL " + condition(:this:costctr is null, "ALL FUNDS", :this:costctr) + " ALL ACCTS ==>"); align=right; style=bold; }
+		s3_desc "report/table-cell" { font=helvetica; value=runserver("TOTAL " + condition(:this:fund is null, "ALL FUNDS", :this:fund) + " ALL ACCTS ==>"); align=right; style=bold; }
 		s3_bbal "report/table-cell" { value=runserver(:glwide_accts_qy:all_sum_b); align=right; style=bold; }
 		s3_chg "report/table-cell" { value=runserver((:glwide_accts_qy:all_sum_c - :glwide_accts_qy:all_sum_b)); align=right; style=bold; }
 		s3_cur "report/table-cell" { value=runserver(:glwide_accts_qy:all_sum_c); align=right; style=bold; }
@@ -317,7 +317,7 @@ trial_balance "system/report"
 		//bottomborder=0.05;
 		marginbottom=1.0;
 		s2_acct "report/table-cell" { value=''; align=left; style=bold; }
-		s2_desc "report/table-cell" { font=helvetica; value=runserver("TOTAL " + condition(:this:costctr is null, "ALL FUNDS", :this:costctr) + " 1900 ACCT ==>"); align=right; style=bold; }
+		s2_desc "report/table-cell" { font=helvetica; value=runserver("TOTAL " + condition(:this:fund is null, "ALL FUNDS", :this:fund) + " 1900 ACCT ==>"); align=right; style=bold; }
 		s2_bbal "report/table-cell" { value=runserver(:glwide_accts_qy:ifxfr_sum_b); align=right; style=bold; }
 		s2_chg "report/table-cell" { value=runserver((:glwide_accts_qy:ifxfr_sum_c - :glwide_accts_qy:ifxfr_sum_b)); align=right; style=bold; }
 		s2_cur "report/table-cell" { value=runserver(:glwide_accts_qy:ifxfr_sum_c); align=right; style=bold; }

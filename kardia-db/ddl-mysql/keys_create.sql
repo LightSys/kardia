@@ -304,14 +304,14 @@ alter table a_analysis_attr
 alter table a_analysis_attr_value
 	add constraint a_an_attr_val_pk primary key  (a_ledger_number, a_attr_code, a_value);
 
-alter table a_cc_analysis_attr
-	add constraint a_cc_an_attr_pk primary key  (a_ledger_number, a_attr_code, a_cost_center);
+alter table a_fund_analysis_attr
+	add constraint a_fund_an_attr_pk primary key  (a_ledger_number, a_attr_code, a_fund);
 
 alter table a_acct_analysis_attr
 	add constraint a_acct_an_attr_pk primary key  (a_ledger_number, a_attr_code, a_account_code);
 
-alter table a_cost_center
-	add constraint a_cost_center_pk primary key  (a_cost_center, a_ledger_number);
+alter table a_fund
+	add constraint a_fund_pk primary key  (a_fund, a_ledger_number);
 
 alter table a_account
 	add constraint a_account_pk primary key  (a_account_code, a_ledger_number);
@@ -325,8 +325,8 @@ alter table a_account_usage_type
 alter table a_account_category
 	add constraint a_account_category_pk primary key  (a_account_category, a_ledger_number);
 
-alter table a_cc_acct
-	add constraint a_cc_acct_pk primary key  (a_ledger_number, a_period, a_cost_center, a_account_code);
+alter table a_fund_acct
+	add constraint a_fund_acct_pk primary key  (a_ledger_number, a_period, a_fund, a_account_code);
 
 alter table a_period
 	add constraint a_period_pk primary key  (a_period, a_ledger_number);
@@ -347,28 +347,28 @@ alter table a_transaction
 	add constraint a_transaction_pk primary key  (a_ledger_number, a_batch_number, a_journal_number, a_transaction_number);
 
 alter table a_transaction
-	add constraint a_trx_cc_clustered_idx unique  (a_cost_center, a_account_code, a_ledger_number, a_batch_number, a_journal_number, a_transaction_number);
+	add constraint a_trx_fund_clustered_idx unique  (a_fund, a_account_code, a_ledger_number, a_batch_number, a_journal_number, a_transaction_number);
 
 alter table a_transaction_tmp
 	add constraint a_transaction_tmp_pk primary key  (a_ledger_number, a_batch_number, a_journal_number, a_transaction_number);
 
 alter table a_transaction_tmp
-	add constraint a_trxt_cc_clustered_idx unique  (a_cost_center, a_account_code, a_ledger_number, a_batch_number, a_journal_number, a_transaction_number);
+	add constraint a_trxt_fund_clustered_idx unique  (a_fund, a_account_code, a_ledger_number, a_batch_number, a_journal_number, a_transaction_number);
 
 alter table a_account_class
 	add constraint a_account_class_pk primary key  (a_account_class, a_ledger_number);
 
-alter table a_cost_center_class
-	add constraint a_costctr_class_pk primary key  (a_cost_center_class, a_ledger_number);
+alter table a_fund_class
+	add constraint a_fund_class_pk primary key  (a_fund_class, a_ledger_number);
 
 alter table a_reporting_level
 	add constraint a_level_pk primary key  (a_reporting_level, a_ledger_number);
 
-alter table a_cost_center_prefix
-	add constraint a_cost_center_prefix_pk primary key  (a_cost_center_prefix, a_ledger_number);
+alter table a_fund_prefix
+	add constraint a_fund_prefix_pk primary key  (a_fund_prefix, a_ledger_number);
 
-alter table a_cc_staff
-	add constraint a_cc_staff_pk primary key  (a_ledger_number, a_cost_center, p_staff_partner_key);
+alter table a_fund_staff
+	add constraint a_fund_staff_pk primary key  (a_ledger_number, a_fund, p_staff_partner_key);
 
 alter table a_ledger_office
 	add constraint a_lo_pk primary key  (a_ledger_number, p_office_partner_key);
@@ -424,8 +424,8 @@ alter table a_tax_allowance_table
 alter table a_salary_review
 	add constraint a_salreview_pk primary key  (a_ledger_number, a_payroll_id, a_review);
 
-alter table a_cc_admin_fee
-	add constraint a_cc_admin_fee_pk primary key  (a_cost_center, a_ledger_number);
+alter table a_fund_admin_fee
+	add constraint a_fund_admin_fee_pk primary key  (a_fund, a_ledger_number);
 
 alter table a_admin_fee_type
 	add constraint a_admin_fee_type_pk primary key  (a_ledger_number, a_admin_fee_type, a_admin_fee_subtype);
@@ -434,16 +434,16 @@ alter table a_admin_fee_type_tmp
 	add constraint a_admin_fee_type_tmp_pk primary key  (a_ledger_number, a_admin_fee_type, a_admin_fee_subtype);
 
 alter table a_admin_fee_type_item
-	add constraint a_admin_fee_type_item_pk primary key  (a_ledger_number, a_admin_fee_type, a_admin_fee_subtype, a_dest_cost_center);
+	add constraint a_admin_fee_type_item_pk primary key  (a_ledger_number, a_admin_fee_type, a_admin_fee_subtype, a_dest_fund);
 
 alter table a_admin_fee_type_item_tmp
-	add constraint a_admin_fee_type_item_tmp_pk primary key  (a_ledger_number, a_admin_fee_type, a_admin_fee_subtype, a_dest_cost_center);
+	add constraint a_admin_fee_type_item_tmp_pk primary key  (a_ledger_number, a_admin_fee_type, a_admin_fee_subtype, a_dest_fund);
 
-alter table a_cc_receipting
-	add constraint a_cc_receipting_pk primary key  (a_cost_center, a_ledger_number);
+alter table a_fund_receipting
+	add constraint a_fund_receipting_pk primary key  (a_fund, a_ledger_number);
 
-alter table a_cc_receipting_accts
-	add constraint a_cc_rcptacct_pk primary key  (a_cost_center, a_ledger_number,a_account_code);
+alter table a_fund_receipting_accts
+	add constraint a_fund_rcptacct_pk primary key  (a_fund, a_ledger_number,a_account_code);
 
 alter table a_receipt_type
 	add constraint a_rcpttype_pk primary key  (a_receipt_type);
@@ -458,7 +458,7 @@ alter table a_subtrx_gift
 	add constraint a_gifttrx_pk primary key  (a_ledger_number, a_batch_number, a_gift_number);
 
 alter table a_subtrx_gift
-	add constraint a_gifttrx_cc_clustered_idx unique  (a_cost_center, a_account_code, a_ledger_number, a_batch_number, a_gift_number);
+	add constraint a_gifttrx_fund_clustered_idx unique  (a_fund, a_account_code, a_ledger_number, a_batch_number, a_gift_number);
 
 alter table a_subtrx_gift_group
 	add constraint a_gifttrxgrp_pk primary key  (a_ledger_number, a_batch_number, a_gift_number);
@@ -467,7 +467,7 @@ alter table a_subtrx_gift_item
 	add constraint a_gifttrx_pk primary key  (a_ledger_number, a_batch_number, a_gift_number, a_split_number);
 
 alter table a_subtrx_gift_item
-	add constraint a_gifttrxi_cc_clustered_idx unique  (a_cost_center, a_account_code, a_ledger_number, a_batch_number, a_gift_number, a_split_number);
+	add constraint a_gifttrxi_fund_clustered_idx unique  (a_fund, a_account_code, a_ledger_number, a_batch_number, a_gift_number, a_split_number);
 
 alter table a_subtrx_gift_intent
 	add constraint a_gifttrxin_pk primary key  (a_ledger_number, a_batch_number, a_gift_number, a_intent_number);
@@ -475,35 +475,35 @@ alter table a_subtrx_gift_intent
 alter table a_subtrx_gift_rcptcnt
 	add constraint a_rcptno_pk primary key  (a_ledger_number);
 
-alter table a_cc_auto_subscribe
-	add constraint a_cc_auto_subscribe_pk primary key  (a_cost_center, a_ledger_number, m_list_code);
+alter table a_fund_auto_subscribe
+	add constraint a_fund_auto_subscribe_pk primary key  (a_fund, a_ledger_number, m_list_code);
 
 alter table a_motivational_code
 	add constraint a_motivational_code_pk primary key  (a_ledger_number, a_motivational_code);
 
 alter table a_giving_pattern
-	add constraint a_givingp_pk primary key  (a_ledger_number, p_donor_partner_key, a_cost_center, a_pattern_id, a_history_id);
+	add constraint a_givingp_pk primary key  (a_ledger_number, p_donor_partner_key, a_fund, a_pattern_id, a_history_id);
 
 alter table a_giving_pattern_allocation
-	add constraint a_givingpa_pk primary key  (a_ledger_number, p_donor_partner_key, a_cost_center, a_pattern_id, a_history_id);
+	add constraint a_givingpa_pk primary key  (a_ledger_number, p_donor_partner_key, a_fund, a_pattern_id, a_history_id);
 
 alter table a_giving_pattern_flag
-	add constraint a_givingf_pk primary key  (a_ledger_number, p_donor_partner_key, a_cost_center, a_pattern_id, a_history_id);
+	add constraint a_givingf_pk primary key  (a_ledger_number, p_donor_partner_key, a_fund, a_pattern_id, a_history_id);
 
 alter table a_funding_target
-	add constraint a_target_pk primary key  (a_ledger_number, a_cost_center, a_target_id);
+	add constraint a_target_pk primary key  (a_ledger_number, a_fund, a_target_id);
 
 alter table a_support_review
 	add constraint a_supportreview_pk primary key  (a_ledger_number, a_review);
 
 alter table a_support_review_target
-	add constraint a_supptgt_pk primary key  (a_ledger_number, a_cost_center, a_target_id, a_review);
+	add constraint a_supptgt_pk primary key  (a_ledger_number, a_fund, a_target_id, a_review);
 
 alter table a_descriptives
-	add constraint a_descr_pk primary key  (a_ledger_number, p_donor_partner_key, a_cost_center);
+	add constraint a_descr_pk primary key  (a_ledger_number, p_donor_partner_key, a_fund);
 
 alter table a_descriptives_hist
-	add constraint a_descrhist_pk primary key  (a_ledger_number, p_donor_partner_key, a_cost_center, a_hist_id);
+	add constraint a_descrhist_pk primary key  (a_ledger_number, p_donor_partner_key, a_fund, a_hist_id);
 
 alter table a_pledge
 	add constraint a_pledge_pk primary key  (a_ledger_number, a_pledge_id);
@@ -529,6 +529,9 @@ alter table a_subtrx_deposit
 alter table a_subtrx_cashxfer
 	add constraint a_subtrx_cashxfer_pk primary key  (a_ledger_number, a_batch_number, a_journal_number);
 
+alter table a_subtrx_cashxfer
+	add constraint a_subtrx_cxf_fund_clustered_idx unique  (a_fund, a_source_cash_acct, a_ledger_number, a_batch_number, a_journal_number);
+
 alter table i_eg_gift_import
 	add constraint i_eg_gift_import_pk primary key  (a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid);
 
@@ -536,7 +539,7 @@ alter table i_eg_gift_trx_fees
 	add constraint i_eg_gift_trx_fees_pk primary key  (a_ledger_number, i_eg_fees_id);
 
 alter table i_eg_giving_url
-	add constraint i_eg_giving_url_pk primary key  (a_ledger_number, a_cost_center);
+	add constraint i_eg_giving_url_pk primary key  (a_ledger_number, a_fund);
 
 alter table i_crm_partner_import
 	add constraint i_crm_partner_import_pk primary key  (i_crm_import_id, i_crm_import_session_id);

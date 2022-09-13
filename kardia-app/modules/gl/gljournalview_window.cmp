@@ -22,7 +22,7 @@ gljournalview_window "widget/component-decl"
 	target="gljview_cmp";
 	action="Browse";
 	a_account_code = runclient(:a_account_code);
-	a_cost_center = runclient(:a_cost_center);
+	a_fund = runclient(:a_fund);
 	a_period = runclient(:a_period);
 	a_batch_number = runclient(:a_batch_number);
 	a_journal_number = runclient(:a_journal_number);

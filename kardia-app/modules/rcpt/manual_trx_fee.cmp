@@ -266,12 +266,12 @@ manual_trx_fee "widget/component-decl"
 			    select :dateinfo:end = convert(datetime, :parameters:end);
 		    
 			    select
-				chg = sum(condition(:eg:a_cost_center != :i:a_cost_center or :eg:a_account_code != :i:a_account_code or :eg:i_eg_gift_trx_date != :i:a_dn_gift_received_date or :eg:p_donor_partner_key != :i:p_dn_donor_partner_id or :eg:i_eg_gift_amount != :i:a_amount, 1, 0)),
+				chg = sum(condition(:eg:a_fund != :i:a_fund or :eg:a_account_code != :i:a_account_code or :eg:i_eg_gift_trx_date != :i:a_dn_gift_received_date or :eg:p_donor_partner_key != :i:p_dn_donor_partner_id or :eg:i_eg_gift_amount != :i:a_amount, 1, 0)),
 				chgdesc = condition(
-						sum(condition(:eg:a_cost_center != :i:a_cost_center or :eg:a_account_code != :i:a_account_code or :eg:i_eg_gift_trx_date != :i:a_dn_gift_received_date or :eg:p_donor_partner_key != :i:p_dn_donor_partner_id or :eg:i_eg_gift_amount != :i:a_amount, 1, 0)) == 0, 
+						sum(condition(:eg:a_fund != :i:a_fund or :eg:a_account_code != :i:a_account_code or :eg:i_eg_gift_trx_date != :i:a_dn_gift_received_date or :eg:p_donor_partner_key != :i:p_dn_donor_partner_id or :eg:i_eg_gift_amount != :i:a_amount, 1, 0)) == 0, 
 						'No changes to these gifts since import', 
-						sum(condition(:eg:a_cost_center != :i:a_cost_center or :eg:a_account_code != :i:a_account_code or :eg:i_eg_gift_trx_date != :i:a_dn_gift_received_date or :eg:p_donor_partner_key != :i:p_dn_donor_partner_id or :eg:i_eg_gift_amount != :i:a_amount,
-						    condition(:eg:a_cost_center != :i:a_cost_center, 'Designation changed from ' + :eg:a_cost_center + ' to ' + :i:a_cost_center + ', ', '') +
+						sum(condition(:eg:a_fund != :i:a_fund or :eg:a_account_code != :i:a_account_code or :eg:i_eg_gift_trx_date != :i:a_dn_gift_received_date or :eg:p_donor_partner_key != :i:p_dn_donor_partner_id or :eg:i_eg_gift_amount != :i:a_amount,
+						    condition(:eg:a_fund != :i:a_fund, 'Designation changed from ' + :eg:a_fund + ' to ' + :i:a_fund + ', ', '') +
 						    condition(:eg:a_account_code != :i:a_account_code, 'GL account changed from ' + :eg:a_account_code + ' to ' + :i:a_account_code + ', ', '') +
 						    condition(:eg:p_donor_partner_key != :i:p_dn_donor_partner_id, 'Donor ID changed from ' + :eg:p_donor_partner_key + ' to ' + :i:p_dn_donor_partner_id + ', ', '') +
 						    condition(:eg:i_eg_gift_amount != :i:a_amount, 'Gift amount changed from ' + :eg:i_eg_gift_amount + ' to ' + :i:a_amount + ', ', '') +
@@ -279,8 +279,8 @@ manual_trx_fee "widget/component-decl"
 						    '\n', '')
 						) - '\n'
 					),
-				a_cost_center = condition(:eg:a_cost_center = :i:a_cost_center, :eg:a_cost_center, :i:a_cost_center + '*'),
-				fundtxt = :eg:a_cost_center + ' - ' + :cc:a_cc_desc,
+				a_fund = condition(:eg:a_fund = :i:a_fund, :eg:a_fund, :i:a_fund + '*'),
+				fundtxt = :eg:a_fund + ' - ' + :cc:a_fund_desc,
 				datetxt = condition(min(:i_eg_gift_trx_date) = max(:i_eg_gift_trx_date), '', substring(convert(string, min(:i_eg_gift_trx_date)), 1, 6) + ' - ') + substring(convert(string, max(:i_eg_gift_trx_date)), 1, 11),
 				amt = sum(:eg:i_eg_gift_amount),
 				cnt = count(1),
@@ -292,27 +292,27 @@ manual_trx_fee "widget/component-decl"
 			    from
 				/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows eg,
 				/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i,
-				/apps/kardia/data/Kardia_DB/a_cost_center/rows cc
+				/apps/kardia/data/Kardia_DB/a_fund/rows cc
 			    where
 				:eg:a_ledger_number = :i:a_ledger_number and
 				:eg:a_batch_number = :i:a_batch_number and
 				:eg:name = :i:i_eg_source_key and
 				-- :eg:i_eg_gift_amount = :i:a_amount and
 				-- :eg:i_eg_gift_trx_date = :i:a_dn_gift_received_date and
-				-- :eg:a_cost_center = :i:a_cost_center and
+				-- :eg:a_fund = :i:a_fund and
 				-- :eg:a_account_code = :i:a_account_code and
 				-- :eg:p_donor_partner_key = :i:p_dn_donor_partner_id and
 				:eg:a_ledger_number = :parameters:ledger and
 				:eg:a_batch_number_fees is null and
 				:cc:a_ledger_number = :eg:a_ledger_number and 
-				:cc:a_cost_center = :eg:a_cost_center and
+				:cc:a_fund = :eg:a_fund and
 				(:parameters:giftperiod is null or :parameters:giftperiod = :i:a_period) and
 				(:dateinfo:start is null or :dateinfo:start <= :eg:i_eg_gift_trx_date) and
 				(:dateinfo:end is null or :dateinfo:end >= :eg:i_eg_gift_trx_date)
 			    order by
 				:eg:i_eg_gift_trx_date asc
 			    group by
-				:i:a_cost_center,
+				:i:a_fund,
 				:eg:i_eg_service,
 				:eg:i_eg_processor,
 				:eg:i_eg_gift_currency,
@@ -344,7 +344,7 @@ manual_trx_fee "widget/component-decl"
 			tg_svc "widget/table-column" { title="Service/Currency"; width=120; value=runclient(isnull(:gift_sel_osrc:i_eg_service + '/', '') + isnull(:gift_sel_osrc:i_eg_processor + '/','') + isnull(:gift_sel_osrc:i_eg_gift_currency, '')); }
 			tg_dates "widget/table-column" { title="Gift Dates"; width=120; fieldname=datetxt; }
 			tg_type "widget/table-column" { title="Type"; width=65; fieldname=i_eg_gift_pmt_type; }
-			tg_costctr "widget/table-column" { title="Fund"; width=60; fieldname=a_cost_center; }
+			tg_fund "widget/table-column" { title="Fund"; width=60; fieldname=a_fund; }
 			tg_cnt "widget/table-column" { title="# Gifts"; width=40; fieldname=cnt; align=right; }
 			tg_amt "widget/table-column" { title="Amount"; width=60; fieldname=amt; align=right; }
 			tg_fee "widget/table-column" { title="Fee"; width=50; fieldname=fee; align=right; }
@@ -572,7 +572,7 @@ manual_trx_fee "widget/component-decl"
 		    :eg:name = :i:i_eg_source_key and
 		    -- :eg:i_eg_gift_amount = :i:a_amount and
 		    -- :eg:i_eg_gift_trx_date = :i:a_dn_gift_received_date and
-		    -- :eg:a_cost_center = :i:a_cost_center and
+		    -- :eg:a_fund = :i:a_fund and
 		    -- :eg:a_account_code = :i:a_account_code and
 		    -- :eg:p_donor_partner_key = :i:p_dn_donor_partner_id and
 		    :eg:a_ledger_number = :parameters:ledger and
@@ -593,7 +593,7 @@ manual_trx_fee "widget/component-decl"
 		    a_period = :parameters:period,
 		    a_effective_date = :info:bdate,
 		    a_transaction_type = 'T',
-		    a_cost_center = :i:a_cost_center,
+		    a_fund = :i:a_fund,
 		    a_account_code = :parameters:dacct,
 		    a_account_category = :info:dcat,
 		    a_amount = round(sum(:i:a_amount) * (select first(:i_eg_fee_pct_amt) from /apps/kardia/data/Kardia_DB/i_eg_gift_trx_fees/rows f where :f:a_ledger_number = :eg:a_ledger_number and :f:i_eg_service = :eg:i_eg_service and :f:i_eg_processor = :eg:i_eg_processor and :f:i_eg_gift_currency = :eg:i_eg_gift_currency and :f:i_eg_gift_pmt_type = :eg:i_eg_gift_pmt_type) + count(1) * (select first(:i_eg_fee_flat_amt) from /apps/kardia/data/Kardia_DB/i_eg_gift_trx_fees/rows f where :f:a_ledger_number = :eg:a_ledger_number and :f:i_eg_service = :eg:i_eg_service and :f:i_eg_processor = :eg:i_eg_processor and :f:i_eg_gift_currency = :eg:i_eg_gift_currency and :f:i_eg_gift_pmt_type = :eg:i_eg_gift_pmt_type), 2),
@@ -628,7 +628,7 @@ manual_trx_fee "widget/component-decl"
 		order by
 		    :eg:i_eg_gift_trx_date asc
 		group by
-		    :i:a_cost_center,
+		    :i:a_fund,
 		    :eg:i_eg_service,
 		    :eg:i_eg_processor,
 		    :eg:i_eg_gift_currency,
@@ -647,7 +647,7 @@ manual_trx_fee "widget/component-decl"
 		    a_period = :parameters:period,
 		    a_effective_date = :info:bdate,
 		    a_transaction_type = 'T',
-		    a_cost_center = :parameters:cfund,
+		    a_fund = :parameters:cfund,
 		    a_account_code = :parameters:cacct,
 		    a_account_category = :info:ccat,
 		    a_amount = $0 - sum(:t:a_amount),
@@ -685,9 +685,9 @@ manual_trx_fee "widget/component-decl"
 			/apps/kardia/data/Kardia_DB/a_transaction/rows
 		select
 			a_amount = $0 - sum(:t:a_amount),
-			a_comment = '' + count(1) + ' transactions for ' + :c:a_bal_cost_center,
+			a_comment = '' + count(1) + ' transactions for ' + :c:a_bal_fund,
 			a_account_code = :info:ifa_acct,
-			a_cost_center=:c:a_bal_cost_center,
+			a_fund=:c:a_bal_fund,
 			a_journal_number = 2,
 			:t:a_batch_number,
 			:t:a_ledger_number,
@@ -716,10 +716,10 @@ manual_trx_fee "widget/component-decl"
 			s_modified_by = user_name()
 		from
 			/apps/kardia/data/Kardia_DB/a_transaction/rows t,
-			/apps/kardia/data/Kardia_DB/a_cost_center/rows c
+			/apps/kardia/data/Kardia_DB/a_fund/rows c
 		where
 			:t:a_ledger_number = :c:a_ledger_number and
-			:t:a_cost_center = :c:a_cost_center and
+			:t:a_fund = :c:a_fund and
 			:t:a_ledger_number = :parameters:ledger and
 			:t:a_batch_number = :info:batch and
 			:t:a_journal_number = 1 and
@@ -728,9 +728,9 @@ manual_trx_fee "widget/component-decl"
 			:t:a_ledger_number,
 			:t:a_batch_number,
 			:t:a_journal_number,
-			:c:a_bal_cost_center
+			:c:a_bal_fund
 		order by
-			:t:a_cost_center
+			:t:a_fund
 		having
 			:a_amount != $0
 		;

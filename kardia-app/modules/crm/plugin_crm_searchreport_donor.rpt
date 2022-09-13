@@ -185,7 +185,7 @@ plugin_crm_searchreport_donor "system/report"
 				    'Infrequently'))))
 				) +
 			    ' to ' +
-			    :c:a_cc_desc +
+			    :c:a_fund_desc +
 			    ', ' +
 			    dateformat(:d:a_hist_1_first, 'MMM yyyy') +
 			    condition(:d:a_hist_1_count == 1,
@@ -198,16 +198,16 @@ plugin_crm_searchreport_donor "system/report"
 			    )
 		FROM
 		    /apps/kardia/data/Kardia_DB/a_descriptives/rows d,
-		    /apps/kardia/data/Kardia_DB/a_cost_center/rows c,
+		    /apps/kardia/data/Kardia_DB/a_fund/rows c,
 		    /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh1
 		WHERE
 		    :d:p_donor_partner_key = :results_qy:p_partner_key and
 		    :dh1:p_donor_partner_key = :d:p_donor_partner_key and
 		    :dh1:a_ledger_number = :d:a_ledger_number and
-		    :dh1:a_cost_center = :d:a_cost_center and
+		    :dh1:a_fund = :d:a_fund and
 		    :dh1:a_amount = :d:a_hist_1_amount and
 		    :c:a_ledger_number = :d:a_ledger_number and
-		    :c:a_cost_center = :d:a_cost_center
+		    :c:a_fund = :d:a_fund
 		ORDER BY
 		    :d:a_last_gift desc
 		";

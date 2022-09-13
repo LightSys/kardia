@@ -71,7 +71,7 @@ revexp_chart "widget/component-decl"
 		    :p:a_summary_only = 0 and
 		    :t:a_ledger_number =* :p:a_ledger_number and
 		    :t:a_period =* :p:a_period and
-		    (:parameters:fund is null or :t:a_cost_center = :parameters:fund)
+		    (:parameters:fund is null or :t:a_fund = :parameters:fund)
 		group by
 		    :p:a_period
 		order by

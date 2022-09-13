@@ -24,20 +24,20 @@ plugin_base_mlist_autosub "widget/component-decl"
 	as_osrc "widget/osrc"
 	    {
 	    sql = " select
-			    :a:a_ledger_number, :a:a_cost_center, :a:m_list_code,
+			    :a:a_ledger_number, :a:a_fund, :a:m_list_code,
 			    :a:a_minimum_gift, :a:a_subscribe_months, :a:a_comments,
 			    :a:s_date_created, :a:s_created_by, :a:s_date_modified, :a:s_modified_by,
-			    :c:a_cc_desc,
+			    :c:a_fund_desc,
 			    monthtext = '' + :a:a_subscribe_months + ' months',
-			    fundtext = :c:a_cost_center + ' - ' + :c:a_cc_desc
+			    fundtext = :c:a_fund + ' - ' + :c:a_fund_desc
 		    from
-			    IDENTITY /apps/kardia/data/Kardia_DB/a_cc_auto_subscribe/rows a,
-			    /apps/kardia/data/Kardia_DB/a_cost_center/rows c
+			    IDENTITY /apps/kardia/data/Kardia_DB/a_fund_auto_subscribe/rows a,
+			    /apps/kardia/data/Kardia_DB/a_fund/rows c
 		    where
-			    :c:a_cost_center = :a:a_cost_center and
+			    :c:a_fund = :a:a_fund and
 			    :c:a_ledger_number = :a:a_ledger_number
 		    ";
-	    baseobj = "/apps/kardia/data/Kardia_DB/a_cc_auto_subscribe/rows";
+	    baseobj = "/apps/kardia/data/Kardia_DB/a_fund_auto_subscribe/rows";
 	    readahead = 10;
 	    replicasize = 10;
 	    autoquery = never;
@@ -80,14 +80,14 @@ plugin_base_mlist_autosub "widget/component-decl"
 		    height=20;
 		    width=400;
 		    path="/apps/kardia/modules/base/editbox_table.cmp";
-		    field='a_cost_center';
+		    field='a_fund';
 		    text='Fund:';
 		    label_width=100;
 		    popup_width=380;
-		    popup_sql=runserver("select value = :c:a_cost_center, label = :c:a_cost_center + ' - ' + condition(isnull(:cr:a_receiptable,0) = 1, :c:a_cc_desc + ' (legacy # ' + :c:a_legacy_code + ')', '** CLOSED **') from /apps/kardia/data/Kardia_DB/a_cost_center/rows c, /apps/kardia/data/Kardia_DB/a_cc_receipting/rows cr where :c:a_is_posting = 1 and :c:a_ledger_number = " + quote(:this:ledger) + " and :cr:a_ledger_number =* :c:a_ledger_number and :cr:a_cost_center =* :c:a_cost_center");
-		    search_field_list="a_cost_center*,*a_cc_desc*,a_legacy_code*";
-		    key_name="a_cost_center";
-		    object_name="Fund / Cost Center";
+		    popup_sql=runserver("select value = :c:a_fund, label = :c:a_fund + ' - ' + condition(isnull(:cr:a_receiptable,0) = 1, :c:a_fund_desc + ' (legacy # ' + :c:a_legacy_code + ')', '** CLOSED **') from /apps/kardia/data/Kardia_DB/a_fund/rows c, /apps/kardia/data/Kardia_DB/a_fund_receipting/rows cr where :c:a_is_posting = 1 and :c:a_ledger_number = " + quote(:this:ledger) + " and :cr:a_ledger_number =* :c:a_ledger_number and :cr:a_fund =* :c:a_fund");
+		    search_field_list="a_fund*,*a_fund_desc*,a_legacy_code*";
+		    key_name="a_fund";
+		    object_name="Fund";
 		    popup_text="Select Fund:";
 		    empty_desc="required";
 		    }

@@ -2,7 +2,7 @@ $Version=2$
 activity "system/query"
     {
     //collab_id "query/parameter" { type=string; }
-    //my_cclist "query/parameter" { type=string; }
+    //my_fundlist "query/parameter" { type=string; }
 
     sql = " declare collection ud;
 	    declare collection e_activity scope application;

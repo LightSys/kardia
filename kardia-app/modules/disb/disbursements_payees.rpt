@@ -32,7 +32,7 @@ disbursements_payees "system/report"
 	type=string;
 	}
 
-    costctr "report/parameter" { type=string; default=null; }
+    fund "report/parameter" { type=string; default=null; }
     showacct "report/parameter" { default=0; type=integer; }
 
     // Here is the list of periods to use for the 12 period columns.
@@ -65,7 +65,7 @@ disbursements_payees "system/report"
 			:c:a_posted = 1 and
 			:a:a_ledger_number = :c:a_ledger_number and
 			:a:a_account_code = :c:a_account_code and
-			(:this:costctr is null or :c:a_cost_center = :this:costctr)
+			(:this:fund is null or :c:a_fund = :this:fund)
 		GROUP BY
 			:c:a_payee_partner_key " + condition(:this:showacct = 1, ', :c:a_account_code', '') + "
 		");

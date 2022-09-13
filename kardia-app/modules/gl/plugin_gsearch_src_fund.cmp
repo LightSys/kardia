@@ -11,39 +11,39 @@ plugin_gsearch_fund "widget/component-decl"
 		--/apps/kardia/data/Kardia_DB/s_global_search/rows
 	    select
 		s_type = 'FUND',
-		s_key = :a_cost_center,
-		s_label = 'Fund: ' + :a_cost_center + ' ' + :a_cc_desc,
-		s_desc = :a_cost_center + ' - ' + :a_cc_desc,
+		s_key = :a_fund,
+		s_label = 'Fund: ' + :a_fund + ' ' + :a_fund_desc,
+		s_desc = :a_fund + ' - ' + :a_fund_desc,
 		s_score = 100.0,
 		:a_ledger_number,
 		s_cri1 = condition(
-				(char_length(:info:cri1) > 1 and charindex(:info:cri1, condition(:info:lower1 > 0, lower(:a_cc_desc), :a_cc_desc)) > 0) or
-				(char_length(:info:cri1) > 1 and :info:cri1 = condition(:info:lower1 > 0, lower(:a_cost_center), :a_cost_center)), 1, 0),
+				(char_length(:info:cri1) > 1 and charindex(:info:cri1, condition(:info:lower1 > 0, lower(:a_fund_desc), :a_fund_desc)) > 0) or
+				(char_length(:info:cri1) > 1 and :info:cri1 = condition(:info:lower1 > 0, lower(:a_fund), :a_fund)), 1, 0),
 		s_cri2 = condition(
-				(char_length(:info:cri2) > 1 and charindex(:info:cri2, condition(:info:lower2 > 0, lower(:a_cc_desc), :a_cc_desc)) > 0) or
-				(char_length(:info:cri2) > 1 and :info:cri2 = condition(:info:lower2 > 0, lower(:a_cost_center), :a_cost_center)), 1, 0),
+				(char_length(:info:cri2) > 1 and charindex(:info:cri2, condition(:info:lower2 > 0, lower(:a_fund_desc), :a_fund_desc)) > 0) or
+				(char_length(:info:cri2) > 1 and :info:cri2 = condition(:info:lower2 > 0, lower(:a_fund), :a_fund)), 1, 0),
 		s_cri3 = condition(
-				(char_length(:info:cri3) > 1 and charindex(:info:cri3, condition(:info:lower3 > 0, lower(:a_cc_desc), :a_cc_desc)) > 0) or
-				(char_length(:info:cri3) > 1 and :info:cri3 = condition(:info:lower3 > 0, lower(:a_cost_center), :a_cost_center)), 1, 0),
+				(char_length(:info:cri3) > 1 and charindex(:info:cri3, condition(:info:lower3 > 0, lower(:a_fund_desc), :a_fund_desc)) > 0) or
+				(char_length(:info:cri3) > 1 and :info:cri3 = condition(:info:lower3 > 0, lower(:a_fund), :a_fund)), 1, 0),
 		s_cri4 = condition(
-				(char_length(:info:cri4) > 1 and charindex(:info:cri4, condition(:info:lower4 > 0, lower(:a_cc_desc), :a_cc_desc)) > 0) or
-				(char_length(:info:cri4) > 1 and :info:cri4 = condition(:info:lower4 > 0, lower(:a_cost_center), :a_cost_center)), 1, 0),
+				(char_length(:info:cri4) > 1 and charindex(:info:cri4, condition(:info:lower4 > 0, lower(:a_fund_desc), :a_fund_desc)) > 0) or
+				(char_length(:info:cri4) > 1 and :info:cri4 = condition(:info:lower4 > 0, lower(:a_fund), :a_fund)), 1, 0),
 		s_cri5 = condition(
-				(char_length(:info:cri5) > 1 and charindex(:info:cri5, condition(:info:lower5 > 0, lower(:a_cc_desc), :a_cc_desc)) > 0) or
-				(char_length(:info:cri5) > 1 and :info:cri5 = condition(:info:lower5 > 0, lower(:a_cost_center), :a_cost_center)), 1, 0)
+				(char_length(:info:cri5) > 1 and charindex(:info:cri5, condition(:info:lower5 > 0, lower(:a_fund_desc), :a_fund_desc)) > 0) or
+				(char_length(:info:cri5) > 1 and :info:cri5 = condition(:info:lower5 > 0, lower(:a_fund), :a_fund)), 1, 0)
 	    from
-		/apps/kardia/data/Kardia_DB/a_cost_center/rows
+		/apps/kardia/data/Kardia_DB/a_fund/rows
 	    where
-		charindex(lower(nullif(:info:cri1, '')), lower(:a_cc_desc)) > 0 or
-		lower(nullif(:info:cri1, '')) = lower(:a_cost_center) or
-		charindex(lower(nullif(:info:cri2, '')), lower(:a_cc_desc)) > 0 or
-		lower(nullif(:info:cri2, '')) = lower(:a_cost_center) or
-		charindex(lower(nullif(:info:cri3, '')), lower(:a_cc_desc)) > 0 or
-		lower(nullif(:info:cri3, '')) = lower(:a_cost_center) or
-		charindex(lower(nullif(:info:cri4, '')), lower(:a_cc_desc)) > 0 or
-		lower(nullif(:info:cri4, '')) = lower(:a_cost_center) or
-		charindex(lower(nullif(:info:cri5, '')), lower(:a_cc_desc)) > 0 or
-		lower(nullif(:info:cri5, '')) = lower(:a_cost_center)
+		charindex(lower(nullif(:info:cri1, '')), lower(:a_fund_desc)) > 0 or
+		lower(nullif(:info:cri1, '')) = lower(:a_fund) or
+		charindex(lower(nullif(:info:cri2, '')), lower(:a_fund_desc)) > 0 or
+		lower(nullif(:info:cri2, '')) = lower(:a_fund) or
+		charindex(lower(nullif(:info:cri3, '')), lower(:a_fund_desc)) > 0 or
+		lower(nullif(:info:cri3, '')) = lower(:a_fund) or
+		charindex(lower(nullif(:info:cri4, '')), lower(:a_fund_desc)) > 0 or
+		lower(nullif(:info:cri4, '')) = lower(:a_fund) or
+		charindex(lower(nullif(:info:cri5, '')), lower(:a_fund_desc)) > 0 or
+		lower(nullif(:info:cri5, '')) = lower(:a_fund)
 	    having
 		:s_cri1 + :s_cri2 + :s_cri3 + :s_cri4 + :s_cri5 > 0 and
 		has_endorsement('kardia:gl', 'kardia:ledger:' + :a_ledger_number)

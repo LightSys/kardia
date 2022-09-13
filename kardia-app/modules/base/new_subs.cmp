@@ -285,20 +285,20 @@ new_subs "widget/component-decl"
 				    :i:a_comment,
 				    :g:a_ledger_number,
 				    :g:a_batch_number,
-				    :i:a_cost_center,
-				    :c:a_cc_desc,
-				    cc_txt = :i:a_cost_center + ' - ' + isnull(:c:a_cc_desc, '**INVALID**')
+				    :i:a_fund,
+				    :c:a_fund_desc,
+				    cc_txt = :i:a_fund + ' - ' + isnull(:c:a_fund_desc, '**INVALID**')
 				FROM
 				    /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g,
 				    /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i,
-				    /apps/kardia/data/Kardia_DB/a_cost_center/rows c
+				    /apps/kardia/data/Kardia_DB/a_fund/rows c
 				WHERE
 				    :g:a_posted = 1 and
 				    :i:a_ledger_number = :g:a_ledger_number and
 				    :i:a_batch_number = :g:a_batch_number and
 				    :i:a_gift_number = :g:a_gift_number and
 				    :c:a_ledger_number =* :i:a_ledger_number and
-				    :c:a_cost_center =* :i:a_cost_center
+				    :c:a_fund =* :i:a_fund
 				ORDER BY
 				    isnull(:g:a_gift_postmark_date, :g:a_gift_received_date) DESC
 				";

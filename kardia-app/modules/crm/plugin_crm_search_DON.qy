@@ -75,7 +75,7 @@ plugin_crm_search_DON "system/query"
 		/apps/kardia/data/Kardia_DB/a_descriptives/rows d
 	    where
 		:dh:a_ledger_number = :d:a_ledger_number and
-		:dh:a_cost_center = :d:a_cost_center and
+		:dh:a_fund = :d:a_fund and
 		:dh:p_donor_partner_key = :d:p_donor_partner_key and
                 (:stage:startdate is null or :stage:startdate <= :dh:a_last_gift ) and
 		(:stage:enddate is null or :dh:a_first_gift <= :stage:enddate) and
@@ -92,8 +92,8 @@ plugin_crm_search_DON "system/query"
 		(:stage:lapsedmax is null or :d:a_lapsed_days <= :stage:lapsedmax) and
 		(:stage:lengthmin is null or datediff(month, :d:a_first_gift, :d:a_last_gift) >= :stage:lengthmin) and
 		(:stage:lengthmax is null or datediff(month, :d:a_first_gift, :d:a_last_gift) <= :stage:lengthmax) and
-		(:stage:funds is null or charindex(',' + rtrim(:d:a_cost_center) + ',', ',' + :stage:funds + ',') > 0) and
-		-- (:stage:notfunds is null or charindex(',' + :d:a_cost_center + ',', ',' + :stage:notfunds + ',') = 0) and
+		(:stage:funds is null or charindex(',' + rtrim(:d:a_fund) + ',', ',' + :stage:funds + ',') > 0) and
+		-- (:stage:notfunds is null or charindex(',' + :d:a_fund + ',', ',' + :stage:notfunds + ',') = 0) and
                 
                 -- Changes
                 -- See kardia-sysdoc/DNR-donor_analytics_misc.txt to see why

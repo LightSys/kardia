@@ -28,7 +28,7 @@ gift_types "widget/component-decl"
 			:gt:a_is_default,
 			:gt:a_is_enabled,
 			:gt:a_is_cash,
-			:gt:a_payment_cost_center,
+			:gt:a_payment_fund,
 			:gt:a_payment_account_code,
 			:gt:a_desig_account_code,
 			:gt:a_min_gift,
@@ -37,19 +37,19 @@ gift_types "widget/component-decl"
 			:gt:s_created_by,
 			:gt:s_date_modified,
 			:gt:s_modified_by,
-			:cc:a_cc_desc,
+			:cc:a_fund_desc,
 			payment_account_desc = :a1:a_acct_desc,
 			desig_account_desc= :a2:a_acct_desc,
 			in_use = isnull( (select 1 from /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g where :g:a_ledger_number = :gt:a_ledger_number and :g:a_gift_type = :gt:a_gift_payment_type limit 1), 0)
 		    from
 			identity /apps/kardia/data/Kardia_DB/a_gift_payment_type/rows gt,
-			/apps/kardia/data/Kardia_DB/a_cost_center/rows cc,
+			/apps/kardia/data/Kardia_DB/a_fund/rows cc,
 			/apps/kardia/data/Kardia_DB/a_account/rows a1,
 			/apps/kardia/data/Kardia_DB/a_account/rows a2
 		    where
 			:gt:a_ledger_number = :parameters:ledger and
 			:cc:a_ledger_number =* :gt:a_ledger_number and
-			:cc:a_cost_center =* :gt:a_payment_cost_center and
+			:cc:a_fund =* :gt:a_payment_fund and
 			:a1:a_ledger_number =* :gt:a_ledger_number and
 			:a1:a_account_code =* :gt:a_payment_account_code and
 			:a2:a_ledger_number =* :gt:a_ledger_number and
@@ -80,7 +80,7 @@ gift_types "widget/component-decl"
 		gt_active "widget/table-column" { title="Active?"; width=70; type=check; fieldname=a_is_enabled; align=center; }
 		gt_default "widget/table-column" { title="Default?"; width=70; type=check; fieldname=a_is_default; align=center; }
 		gt_cash "widget/table-column" { title="Cash?"; width=70; type=check; fieldname=a_is_cash; align=center; }
-		gt_paycc "widget/table-column" { title="Pay To Fund"; width=150; fieldname=a_payment_cost_center; align=left; caption_fieldname=a_cc_desc; }
+		gt_paycc "widget/table-column" { title="Pay To Fund"; width=150; fieldname=a_payment_fund; align=left; caption_fieldname=a_fund_desc; }
 		gt_payac "widget/table-column" { title="Pay To Acct"; width=150; fieldname=a_payment_account_code; align=left; caption_fieldname=payment_account_desc; }
 		gt_desac "widget/table-column" { title="Desig. Acct"; width=150; fieldname=a_desig_account_code; align=left; caption_fieldname=desig_account_desc; }
 
@@ -123,7 +123,7 @@ gift_types "widget/component-decl"
 				    {
 				    height=20; spacing=10;
 
-				    td_pay "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=editbox; field=a_payment_cost_center; width=200; text="Pay To Fund:"; }
+				    td_pay "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=editbox; field=a_payment_fund; width=200; text="Pay To Fund:"; }
 				    td_payacct "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=editbox; field=a_payment_account_code; width=150; label_width=50; text="Acct:"; }
 				    }
 				td_desacct "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=editbox; field=a_desig_account_code; width=200; text="Desig Acct:"; }

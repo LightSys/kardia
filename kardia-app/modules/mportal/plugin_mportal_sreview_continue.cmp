@@ -17,7 +17,7 @@ plugin_mportal_sreview_continue "widget/component-decl"
 	    select
 		:gp:a_ledger_number,
 		:gp:p_donor_partner_key,
-		:gp:a_cost_center,
+		:gp:a_fund,
 		:gp:a_pattern_id,
 		a_prior_interval = :gp:a_interval,
 		a_prior_amount = :gp:a_amount,
@@ -33,12 +33,12 @@ plugin_mportal_sreview_continue "widget/component-decl"
 	    where
 		(:parameters:name is null or :gp:name = :parameters:name) and
 		:gp:a_ledger_number = :info:ledger and
-		:gp:a_cost_center = :info:fund and
+		:gp:a_fund = :info:fund and
 		:gp:a_is_active = 1 and
 		:gp:a_amount > $0 and
 		:gp:a_interval > 0 and
 		:d:a_ledger_number = :gp:a_ledger_number and
-		:d:a_cost_center = :gp:a_cost_center and
+		:d:a_fund = :gp:a_fund and
 		:d:p_donor_partner_key = :gp:p_donor_partner_key
 	    having
 		(:d:a_act_average_amount = $0 or
@@ -48,7 +48,7 @@ plugin_mportal_sreview_continue "widget/component-decl"
 	    on duplicate
 		:a_ledger_number,
 		:p_donor_partner_key,
-		:a_cost_center,
+		:a_fund,
 		--:a_flag_type,
 		datediff(month, :s_date_modified, getdate())
 	    update set

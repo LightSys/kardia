@@ -13,10 +13,10 @@ inc_exp_matrix "system/report"
     marginbotton = 2.0;
 
     ledger "report/parameter" { type=string; }
-    costctr "report/parameter" { type=string; }
-    exclude_costctr "report/parameter" { type=string; }
-    balcostctr "report/parameter" { type=string; }
-    exclude_balcostctr "report/parameter" { type=string; }
+    fund "report/parameter" { type=string; }
+    exclude_fund "report/parameter" { type=string; }
+    balfund "report/parameter" { type=string; }
+    exclude_balfund "report/parameter" { type=string; }
     end_period "report/parameter" { type=string; }
     trx_end_period "report/parameter" { type=string; }
     invert "report/parameter" { type=integer; default=0; }
@@ -43,24 +43,24 @@ inc_exp_matrix "system/report"
 		FROM
 			/apps/kardia/data/Kardia_DB/a_transaction/rows t,
 			/apps/kardia/data/Kardia_DB/a_account/rows a,
-			/apps/kardia/data/Kardia_DB/a_cost_center/rows c
+			/apps/kardia/data/Kardia_DB/a_fund/rows c
 		WHERE
 			:t:a_ledger_number = :this:ledger and
 			:a:a_ledger_number = :t:a_ledger_number and
 			:a:a_account_code = :t:a_account_code and
 			:c:a_ledger_number = :t:a_ledger_number and
-			:c:a_cost_center = :t:a_cost_center and
+			:c:a_fund = :t:a_fund and
 			:t:a_period >= :p12_qy:a_period and
 			:t:a_period <= :p1_qy:a_period and
 			:t:a_period <= isnull(:this:trx_end_period, :p1_qy:a_period) and
-			" + condition(:this:balcostctr is not null or :this:exclude_balcostctr is not null, 
+			" + condition(:this:balfund is not null or :this:exclude_balfund is not null, 
 				"(:t:a_account_category = '40' or :t:a_account_category = '50' or :t:a_account_category = '42' or :t:a_account_category = '52')", 
 				"(:t:a_account_category = '40' or :t:a_account_category = '50')") + " and
 			(:a:a_acct_type = 'E' or :a:a_acct_type = 'R')
-			" + condition(:this:costctr is not null, "and :t:a_cost_center = :this:costctr", "") + "
-			" + condition(:this:exclude_costctr is not null, "and charindex(',' + rtrim(:t:a_cost_center) + ',', ',' + :this:exclude_costctr + ',') = 0", "") + "
-			" + condition(:this:balcostctr is not null, "and charindex(',' + :c:a_bal_cost_center + ',', ',' + :this:balcostctr + ',') > 0", "") + "
-			" + condition(:this:exclude_balcostctr is not null, "and charindex(',' + :c:a_bal_cost_center + ',', ',' + :this:exclude_balcostctr + ',') = 0", "") + "
+			" + condition(:this:fund is not null, "and :t:a_fund = :this:fund", "") + "
+			" + condition(:this:exclude_fund is not null, "and charindex(',' + rtrim(:t:a_fund) + ',', ',' + :this:exclude_fund + ',') = 0", "") + "
+			" + condition(:this:balfund is not null, "and charindex(',' + :c:a_bal_fund + ',', ',' + :this:balfund + ',') > 0", "") + "
+			" + condition(:this:exclude_balfund is not null, "and charindex(',' + :c:a_bal_fund + ',', ',' + :this:exclude_balfund + ',') = 0", "") + "
 		");
 	}
 
@@ -103,24 +103,24 @@ inc_exp_matrix "system/report"
 		FROM
 			/apps/kardia/data/Kardia_DB/a_transaction/rows t,
 			/apps/kardia/data/Kardia_DB/a_account/rows a,
-			/apps/kardia/data/Kardia_DB/a_cost_center/rows c
+			/apps/kardia/data/Kardia_DB/a_fund/rows c
 		WHERE
 			:t:a_ledger_number = :this:ledger and
 			:a:a_ledger_number = :t:a_ledger_number and
 			:a:a_account_code = :t:a_account_code and
 			:c:a_ledger_number = :t:a_ledger_number and
-			:c:a_cost_center = :t:a_cost_center and
+			:c:a_fund = :t:a_fund and
 			:t:a_period >= :p12_qy:a_period and
 			:t:a_period <= :p1_qy:a_period and
 			:t:a_period <= isnull(:this:trx_end_period, :p1_qy:a_period) and
-			" + condition(:this:balcostctr is not null or :this:exclude_balcostctr is not null, 
+			" + condition(:this:balfund is not null or :this:exclude_balfund is not null, 
 				"(:t:a_account_category = '40' or :t:a_account_category = '50' or :t:a_account_category = '42' or :t:a_account_category = '52')", 
 				"(:t:a_account_category = '40' or :t:a_account_category = '50')") + " and
 			:a:a_acct_type = 'E'
-			" + condition(:this:costctr is not null, "and :t:a_cost_center = :this:costctr", "") + "
-			" + condition(:this:exclude_costctr is not null, "and charindex(',' + rtrim(:t:a_cost_center) + ',', ',' + :this:exclude_costctr + ',') = 0", "") + "
-			" + condition(:this:balcostctr is not null, "and charindex(',' + :c:a_bal_cost_center + ',', ',' + :this:balcostctr + ',') > 0", "") + "
-			" + condition(:this:exclude_balcostctr is not null, "and charindex(',' + :c:a_bal_cost_center + ',', ',' + :this:exclude_balcostctr + ',') = 0", "") + "
+			" + condition(:this:fund is not null, "and :t:a_fund = :this:fund", "") + "
+			" + condition(:this:exclude_fund is not null, "and charindex(',' + rtrim(:t:a_fund) + ',', ',' + :this:exclude_fund + ',') = 0", "") + "
+			" + condition(:this:balfund is not null, "and charindex(',' + :c:a_bal_fund + ',', ',' + :this:balfund + ',') > 0", "") + "
+			" + condition(:this:exclude_balfund is not null, "and charindex(',' + :c:a_bal_fund + ',', ',' + :this:exclude_balfund + ',') = 0", "") + "
 		");
 	}
 
@@ -131,7 +131,7 @@ inc_exp_matrix "system/report"
 			amt = isnull(sum(condition(:this:invert, $0 - :t:a_amount, :t:a_amount)), $0)
 		FROM
 			/apps/kardia/data/Kardia_DB/a_transaction/rows t,
-			/apps/kardia/data/Kardia_DB/a_cost_center/rows c
+			/apps/kardia/data/Kardia_DB/a_fund/rows c
 		WHERE
 			:t:a_ledger_number = :this:ledger and
 			:t:a_period >= :p12_info_qy:ob_period and
@@ -139,9 +139,9 @@ inc_exp_matrix "system/report"
 			:t:a_account_code >= '3000' and
 			:t:a_account_code <= '5999' and
 			:c:a_ledger_number = :t:a_ledger_number and
-			:c:a_cost_center = :t:a_cost_center
-			" + condition(:this:balcostctr is not null, "and charindex(',' + :c:a_bal_cost_center + ',', ',' + :this:balcostctr + ',') > 0", "") + "
-			" + condition(:this:exclude_balcostctr is not null, "and charindex(',' + :c:a_bal_cost_center + ',', ',' + :this:exclude_balcostctr + ',') = 0", "") + "
+			:c:a_fund = :t:a_fund
+			" + condition(:this:balfund is not null, "and charindex(',' + :c:a_bal_fund + ',', ',' + :this:balfund + ',') > 0", "") + "
+			" + condition(:this:exclude_balfund is not null, "and charindex(',' + :c:a_bal_fund + ',', ',' + :this:exclude_balfund + ',') = 0", "") + "
 		");
 	}
 
@@ -163,20 +163,20 @@ inc_exp_matrix "system/report"
 			p12amt = isnull(sum(condition(:t:a_period = :p12_qy:a_period, condition(:this:invert, $0 - :t:a_amount, :t:a_amount), $0)), $0),
 			obamt = isnull(sum(condition(:t:a_period = :p12_qy:a_period and :t:a_transaction_type = 'B', condition(:this:invert, $0 - :t:a_amount, :t:a_amount), $0)), $0),
 			:t:a_period,
-			:t:a_cost_center,
+			:t:a_fund,
 			:t:a_account_code,
 			:a:a_acct_desc,
 			:a:a_acct_type
 		FROM
 			/apps/kardia/data/Kardia_DB/a_transaction/rows t,
 			/apps/kardia/data/Kardia_DB/a_account/rows a,
-			/apps/kardia/data/Kardia_DB/a_cost_center/rows c
+			/apps/kardia/data/Kardia_DB/a_fund/rows c
 		WHERE
 			:t:a_ledger_number = :this:ledger and
 			:a:a_ledger_number = :t:a_ledger_number and
 			:a:a_account_code = :t:a_account_code and
 			:c:a_ledger_number = :t:a_ledger_number and
-			:c:a_cost_center = :t:a_cost_center and
+			:c:a_fund = :t:a_fund and
 			:t:a_period >= :p12_qy:a_period and
 			:t:a_period <= :p1_qy:a_period and
 			:t:a_period <= isnull(:this:trx_end_period, :p1_qy:a_period) and
@@ -184,10 +184,10 @@ inc_exp_matrix "system/report"
 			:t:a_account_category <= '19' and
 			:a:a_default_category != '11' and
 			:a:a_acct_type = 'A'
-			" + condition(:this:costctr is not null, "and :t:a_cost_center = :this:costctr", "") + "
-			" + condition(:this:exclude_costctr is not null, "and charindex(',' + rtrim(:t:a_cost_center) + ',', ',' + :this:exclude_costctr + ',') = 0", "") + "
-			" + condition(:this:balcostctr is not null, "and charindex(',' + :c:a_bal_cost_center + ',', ',' + :this:balcostctr + ',') > 0", "") + "
-			" + condition(:this:exclude_balcostctr is not null, "and charindex(',' + :c:a_bal_cost_center + ',', ',' + :this:exclude_balcostctr + ',') = 0", "") + "
+			" + condition(:this:fund is not null, "and :t:a_fund = :this:fund", "") + "
+			" + condition(:this:exclude_fund is not null, "and charindex(',' + rtrim(:t:a_fund) + ',', ',' + :this:exclude_fund + ',') = 0", "") + "
+			" + condition(:this:balfund is not null, "and charindex(',' + :c:a_bal_fund + ',', ',' + :this:balfund + ',') > 0", "") + "
+			" + condition(:this:exclude_balfund is not null, "and charindex(',' + :c:a_bal_fund + ',', ',' + :this:exclude_balfund + ',') = 0", "") + "
 		");
 	}
 
@@ -198,7 +198,7 @@ inc_exp_matrix "system/report"
 			amt = isnull(sum(condition(:this:invert, $0 - :t:a_amount, :t:a_amount)), $0),
 			cnt = count(1),
 			:t:a_period,
-			:t:a_cost_center,
+			:t:a_fund,
 			:t:a_account_code,
 			:t:a_account_category,
 			:a:a_acct_desc,
@@ -219,25 +219,25 @@ inc_exp_matrix "system/report"
 		FROM
 			/apps/kardia/data/Kardia_DB/a_transaction/rows t,
 			/apps/kardia/data/Kardia_DB/a_account/rows a,
-			/apps/kardia/data/Kardia_DB/a_cost_center/rows c
+			/apps/kardia/data/Kardia_DB/a_fund/rows c
 		WHERE
 			:t:a_ledger_number = :this:ledger and
 			:a:a_ledger_number = :t:a_ledger_number and
 			:a:a_account_code = :t:a_account_code and
 			:c:a_ledger_number = :t:a_ledger_number and
-			:c:a_cost_center = :t:a_cost_center and
+			:c:a_fund = :t:a_fund and
 			:t:a_period >= :p12_qy:a_period and
 			:t:a_period <= :p1_qy:a_period and
 			:t:a_period <= isnull(:this:trx_end_period, :p1_qy:a_period) and
 			:t:a_transaction_type = 'T' and
-			" + condition(:this:balcostctr is not null or :this:exclude_balcostctr is not null, 
+			" + condition(:this:balfund is not null or :this:exclude_balfund is not null, 
 				"(:t:a_account_category = '40' or :t:a_account_category = '50' or :t:a_account_category = '30' or :t:a_account_category = '42' or :t:a_account_category = '52')", 
 				"(:t:a_account_category = '40' or :t:a_account_category = '50' or :t:a_account_category = '30')") + " and
 			(:a:a_acct_type = 'E' or :a:a_acct_type = 'R' or :a:a_acct_type = 'Q')
-			" + condition(:this:costctr is not null, "and :t:a_cost_center = :this:costctr", "") + "
-			" + condition(:this:exclude_costctr is not null, "and charindex(',' + rtrim(:t:a_cost_center) + ',', ',' + :this:exclude_costctr + ',') = 0", "") + "
-			" + condition(:this:balcostctr is not null, "and charindex(',' + :c:a_bal_cost_center + ',', ',' + :this:balcostctr + ',') > 0", "") + "
-			" + condition(:this:exclude_balcostctr is not null, "and charindex(',' + :c:a_bal_cost_center + ',', ',' + :this:exclude_balcostctr + ',') = 0", "") + "
+			" + condition(:this:fund is not null, "and :t:a_fund = :this:fund", "") + "
+			" + condition(:this:exclude_fund is not null, "and charindex(',' + rtrim(:t:a_fund) + ',', ',' + :this:exclude_fund + ',') = 0", "") + "
+			" + condition(:this:balfund is not null, "and charindex(',' + :c:a_bal_fund + ',', ',' + :this:balfund + ',') > 0", "") + "
+			" + condition(:this:exclude_balfund is not null, "and charindex(',' + :c:a_bal_fund + ',', ',' + :this:exclude_balfund + ',') = 0", "") + "
 		GROUP BY
 			:t:a_account_code,
 			:t:a_account_category,
@@ -346,8 +346,8 @@ inc_exp_matrix "system/report"
 		moneyformat = "$###,###,##0.00";
 		value=runserver(
 			"Revenue & Expense by Period on [" + getdate() + " ET] requested by [" + user_name() + "]" + 
-			"\nFor ledger " + :this:ledger + condition(:this:balcostctr is null, "", ", fund(s) " + :this:balcostctr) + ", ending " + :this:end_period + 
-			condition(:this:exclude_balcostctr is null, "", "\nExcluding fund(s): " + :this:exclude_balcostctr) + 
+			"\nFor ledger " + :this:ledger + condition(:this:balfund is null, "", ", fund(s) " + :this:balfund) + ", ending " + :this:end_period + 
+			condition(:this:exclude_balfund is null, "", "\nExcluding fund(s): " + :this:exclude_balfund) + 
 			condition(:this:reserve_factor is not null, "\nReserve Goal: " + :this:reserve_factor + " months; Monthly expenses: " + :expense_total_qy:amt_per_month +  " (averaged over " + :periods_qy:num_trx_periods + " periods)", "") +
 			"\n\n");
 		}
@@ -501,7 +501,7 @@ inc_exp_matrix "system/report"
 
 	    eq_summary_row "report/table-row"
 		{
-		condition = runserver(:this:costctr is null);
+		condition = runserver(:this:fund is null);
 		summary = yes;
 		font = courier;
 		fontsize = 7;
@@ -511,7 +511,7 @@ inc_exp_matrix "system/report"
 		style = bold;
 
 		es1 "report/table-cell" { value=runserver(''); font=helvetica; }
-		es2 "report/table-cell" { value=runserver(condition(:this:balcostctr is null, 'Net Assets', 'Fund Bal') + ' (open: ' + :opening_equity_qy:amt + '):'); font=helvetica; }
+		es2 "report/table-cell" { value=runserver(condition(:this:balfund is null, 'Net Assets', 'Fund Bal') + ' (open: ' + :opening_equity_qy:amt + '):'); font=helvetica; }
 		es3 "report/table-cell" { value=runserver(:opening_equity_qy:amt + :trx_sum_qy:etp12); align=right; }
 		es4 "report/table-cell" { value=runserver(:opening_equity_qy:amt + :trx_sum_qy:etp11); align=right; }
 		es5 "report/table-cell" { value=runserver(:opening_equity_qy:amt + :trx_sum_qy:etp10); align=right; }
@@ -529,7 +529,7 @@ inc_exp_matrix "system/report"
 
 	    nca_summary_row "report/table-row"
 		{
-		condition = runserver(:this:balcostctr is null and :this:costctr is null);
+		condition = runserver(:this:balfund is null and :this:fund is null);
 		summary = yes;
 		font = courier;
 		fontsize = 7;
@@ -556,7 +556,7 @@ inc_exp_matrix "system/report"
 
 	    reserve_summary_row "report/table-row"
 		{
-		condition = runserver(:this:reserve_factor is not null and :this:balcostctr is null and :this:costctr is null);
+		condition = runserver(:this:reserve_factor is not null and :this:balfund is null and :this:fund is null);
 		summary = yes;
 		font = courier;
 		fontsize = 7;
@@ -583,7 +583,7 @@ inc_exp_matrix "system/report"
 
 	    reserve_mos_row "report/table-row"
 		{
-		condition = runserver(:this:balcostctr is null and :this:costctr is null);
+		condition = runserver(:this:balfund is null and :this:fund is null);
 		summary = yes;
 		font = courier;
 		fontsize = 7;

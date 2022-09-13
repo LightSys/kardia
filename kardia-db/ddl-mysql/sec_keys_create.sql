@@ -17,7 +17,7 @@ alter table p_partner
 	add constraint p_parent_key_idx unique  (p_parent_key, p_partner_key);
 
 alter table p_partner
-	add constraint p_cost_ctr_idx unique  (p_cost_center, p_partner_key);
+	add constraint p_fund_idx unique  (a_fund, p_partner_key);
 
 alter table p_partner
 	add constraint p_merged_with_idx unique  (p_merged_with, p_partner_key);
@@ -202,14 +202,14 @@ alter table r_group_param
 alter table r_saved_paramset
 	add constraint r_ps_modfile_idx unique  (r_module, r_file, r_paramset_id);
 
-alter table a_cost_center
-	add constraint a_cc_parent_idx unique  (a_parent_cost_center, a_cost_center, a_ledger_number);
+alter table a_fund
+	add constraint a_fund_parent_idx unique  (a_parent_fund, a_fund, a_ledger_number);
 
-alter table a_cost_center
-	add constraint a_cc_legacy_idx unique  (a_legacy_code, a_cost_center, a_ledger_number);
+alter table a_fund
+	add constraint a_fund_legacy_idx unique  (a_legacy_code, a_fund, a_ledger_number);
 
-alter table a_cost_center
-	add constraint a_cc_bal_idx unique  (a_bal_cost_center, a_cost_center, a_ledger_number);
+alter table a_fund
+	add constraint a_fund_bal_idx unique  (a_bal_fund, a_fund, a_ledger_number);
 
 alter table a_account
 	add constraint a_acct_parent_idx unique  (a_parent_account_code, a_account_code, a_ledger_number);
@@ -236,7 +236,7 @@ alter table a_payroll_import
 	add constraint a_payrolli_payee_idx unique  (a_ledger_number, p_payee_partner_key, a_payroll_id);
 
 alter table a_payroll_import
-	add constraint a_payrolli_cc_idx unique  (a_ledger_number, a_cost_center, a_payroll_id);
+	add constraint a_payrolli_fund_idx unique  (a_ledger_number, a_fund, a_payroll_id);
 
 alter table a_subtrx_gift
 	add constraint a_gifttrx_donor_id_idx unique  (p_donor_partner_id, a_ledger_number, a_batch_number, a_gift_number);
@@ -281,19 +281,19 @@ alter table a_motivational_code
 	add constraint a_motiv_code_list unique  (m_list_code, a_ledger_number, a_motivational_code);
 
 alter table a_giving_pattern
-	add constraint a_givingp_review_idx unique  (a_review, a_ledger_number, p_donor_partner_key, a_cost_center, a_pattern_id, a_history_id);
+	add constraint a_givingp_review_idx unique  (a_review, a_ledger_number, p_donor_partner_key, a_fund, a_pattern_id, a_history_id);
 
 alter table a_giving_pattern
-	add constraint a_givingp_actual_idx unique  (a_actual_cost_center, a_ledger_number, p_donor_partner_key, a_cost_center, a_pattern_id, a_history_id);
+	add constraint a_givingp_actual_idx unique  (a_actual_fund, a_ledger_number, p_donor_partner_key, a_fund, a_pattern_id, a_history_id);
 
 alter table a_giving_pattern_allocation
-	add constraint a_givingpa_review_idx unique  (a_review, a_ledger_number, p_donor_partner_key, a_cost_center, a_pattern_id, a_history_id);
+	add constraint a_givingpa_review_idx unique  (a_review, a_ledger_number, p_donor_partner_key, a_fund, a_pattern_id, a_history_id);
 
 alter table a_giving_pattern_allocation
-	add constraint a_givingpa_actual_idx unique  (a_actual_cost_center, a_ledger_number, p_donor_partner_key, a_cost_center, a_pattern_id, a_history_id);
+	add constraint a_givingpa_actual_idx unique  (a_actual_fund, a_ledger_number, p_donor_partner_key, a_fund, a_pattern_id, a_history_id);
 
 alter table a_giving_pattern_flag
-	add constraint a_givingf_review_idx unique  (a_review, a_ledger_number, p_donor_partner_key, a_cost_center, a_pattern_id, a_history_id);
+	add constraint a_givingf_review_idx unique  (a_review, a_ledger_number, p_donor_partner_key, a_fund, a_pattern_id, a_history_id);
 
 alter table a_subtrx_cashdisb
 	add constraint a_subtrx_cashdisb_acct_idx unique  (a_cash_account_code, a_ledger_number, a_batch_number, a_disbursement_id, a_line_item);
@@ -308,7 +308,7 @@ alter table i_eg_gift_import
 	add constraint i_eg_edonor_idx unique  (i_eg_donor_uuid, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid);
 
 alter table i_eg_gift_import
-	add constraint i_eg_kfund_idx unique  (a_cost_center, a_account_code, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid);
+	add constraint i_eg_kfund_idx unique  (a_fund, a_account_code, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid);
 
 alter table i_eg_gift_import
 	add constraint i_eg_efund_idx unique  (i_eg_desig_name, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid);

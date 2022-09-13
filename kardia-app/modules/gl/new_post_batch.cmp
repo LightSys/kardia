@@ -345,7 +345,7 @@ new_post_batch "widget/component-decl"
 				    msg =
 					  condition(:a:a_account_code is null, 'Invalid GL Account ' + :t:a_account_code,
 					   condition(:ac:a_account_category is null, 'Invalid Ctl Acct ' + :t:a_account_category,
-					    condition(:c:a_cost_center is null, 'Invalid Cost Center ' + :t:a_cost_center,
+					    condition(:c:a_fund is null, 'Invalid Fund ' + :t:a_fund,
 				             condition(substring(isnull(:t:a_account_code,' '),1,1) != substring(isnull(:t:a_account_category,' '),1,1), 'Account / Ctl Acct Mismatch (' + :t:a_account_code + ' vs ' + :t:a_account_category + ')',
 					      condition(:t:a_period != :b:a_period, 'Trx Period ' + :t:a_period + ' / Batch Period ' + :b:a_period + ' Mismatch',
 					       condition(:t:a_effective_date > :p:a_end_date or :t:a_effective_date < :p:a_start_date, 'Trx Date ' + substring(convert(string,:t:a_effective_date),1,11) + ' Not In Period ' + :t:a_period,
@@ -354,7 +354,7 @@ new_post_batch "widget/component-decl"
 				    /apps/kardia/data/Kardia_DB/a_batch/rows b,
 				    /apps/kardia/data/Kardia_DB/a_period/rows p,
 				    /apps/kardia/data/Kardia_DB/a_transaction/rows t,
-				    /apps/kardia/data/Kardia_DB/a_cost_center/rows c,
+				    /apps/kardia/data/Kardia_DB/a_fund/rows c,
 				    /apps/kardia/data/Kardia_DB/a_account/rows a,
 				    /apps/kardia/data/Kardia_DB/a_account_category/rows ac
 			    WHERE
@@ -363,7 +363,7 @@ new_post_batch "widget/component-decl"
 				    :p:a_ledger_number = :b:a_ledger_number and
 				    :p:a_period = :b:a_period and
 				    :c:a_ledger_number =* :t:a_ledger_number and
-				    :c:a_cost_center =* :t:a_cost_center and
+				    :c:a_fund =* :t:a_fund and
 				    :a:a_ledger_number =* :t:a_ledger_number and
 				    :a:a_account_code =* :t:a_account_code and
 				    :ac:a_ledger_number =* :t:a_ledger_number and
@@ -457,7 +457,7 @@ new_post_batch "widget/component-decl"
 		    {
 		    path="/apps/kardia/modules/base/section_check_label.cmp";
 		    height=20;
-		    text = "Cost Center Balance";
+		    text = "Fund Balance";
 		    checked = runclient(condition(:cc_balance_osrc:ctext == 'None', 1, 0));
 		    }
 
@@ -467,19 +467,19 @@ new_post_batch "widget/component-decl"
 		    replicasize = 10;
 		    readahead = 10;
 		    sql = " SELECT
-				    ctext = substring(isnull(sum(condition(sum(:t:a_amount) == $0, convert(string,null), 'CostCtr ' + :c:a_bal_cost_center + ' (' + sum(:t:a_amount) + '), ')) - ', ', 'None'),1,86)
+				    ctext = substring(isnull(sum(condition(sum(:t:a_amount) == $0, convert(string,null), 'Fund ' + :c:a_bal_fund + ' (' + sum(:t:a_amount) + '), ')) - ', ', 'None'),1,86)
 			    FROM
 				    /apps/kardia/data/Kardia_DB/a_transaction/rows t,
-				    /apps/kardia/data/Kardia_DB/a_cost_center/rows c
+				    /apps/kardia/data/Kardia_DB/a_fund/rows c
 			    WHERE
 				    :t:a_ledger_number = :c:a_ledger_number and
-				    :t:a_cost_center = :c:a_cost_center
+				    :t:a_fund = :c:a_fund
 			    GROUP BY
 				    :t:a_ledger_number,
 				    :t:a_batch_number,
-				    :c:a_bal_cost_center
+				    :c:a_bal_fund
 			    ORDER BY
-				    :t:a_cost_center
+				    :t:a_fund
 			    ";
 
 		    refresh_cc "widget/connector" { event=Refresh; source=new_post_batch; action=Refresh; }
@@ -495,11 +495,11 @@ new_post_batch "widget/component-decl"
 			target_key_2 = a_ledger_number;
 			}
 
-		    cc_balance_label "widget/label" { height=16; text="Unbalanced cost centers in this batch:"; }
+		    cc_balance_label "widget/label" { height=16; text="Unbalanced funds in this batch:"; }
 
 		    cc_balance_info "widget/label" { height=34; value=runclient(:cc_balance_osrc:ctext + "..."); style=bold; }
 
-		    cc_bal_instruction "widget/label" { height=18; value=runclient(condition(:cc_balance_osrc:ctext != 'None' and char_length(:cc_balance_osrc:ctext) > 0, condition(:a1900_balance_osrc:cnt == 0, "This batch needs an Interfund Xfer Asset journal.", "Please re-create Interfund Xfer Asset journal."), condition(:cc_balance_osrc:ctext == 'None',"All cost centers balance.",""))); }
+		    cc_bal_instruction "widget/label" { height=18; value=runclient(condition(:cc_balance_osrc:ctext != 'None' and char_length(:cc_balance_osrc:ctext) > 0, condition(:a1900_balance_osrc:cnt == 0, "This batch needs an Interfund Xfer Asset journal.", "Please re-create Interfund Xfer Asset journal."), condition(:cc_balance_osrc:ctext == 'None',"All funds balance.",""))); }
 
 		    a1900_ctls_hbox "widget/hbox"
 			{

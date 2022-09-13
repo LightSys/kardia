@@ -494,7 +494,7 @@ periodmaint "widget/component-decl"
 							:t:a_account_code != '1900'
 						    group by    
 							:t:a_ledger_number,
-							:t:a_cost_center,
+							:t:a_fund,
 							:t:a_account_code
 						    )),
 				    bal_check_eq = convert(string,(select
@@ -510,7 +510,7 @@ periodmaint "widget/component-decl"
 							:t:a_account_code <= '5999'
 						    group by
 							:t:a_ledger_number,
-							:t:a_cost_center
+							:t:a_fund
 						    ))
 				";
 			readahead=2;

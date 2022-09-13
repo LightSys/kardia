@@ -14,9 +14,9 @@ insert ra values('a_account_category','Control Categories',':a_acct_cat_desc');
 
 insert ra values('a_batch','Batches',':a_batch_desc');
 
-insert ra values('a_cost_center','Cost Centers',':a_cc_desc');
+insert ra values('a_fund','Funds',':a_fund_desc');
 
-insert ra values('a_cost_center_prefix','CostCtr Prefixes',':a_cc_prefix_desc');
+insert ra values('a_fund_prefix','Fund Prefixes',':a_fund_prefix_desc');
 
 insert ra values('a_period','Periods',':a_period_desc');
 
@@ -51,7 +51,7 @@ create table p_partner (
         p_no_mail_reason                      char(1)  null,           /* Reason why p_no_mail is set: (U)ndeliverable, (O)ffice Request, (P)ersonal Request, (M)issionary Request, (D)eceased, (T)emporarily Away, (I)nactive Donor, (X) Other. --  */
         p_no_solicitations                    bit,                     /*  --  */
         p_no_mail                             bit,                     /*  --  */
-        p_cost_center                         varchar(20)  null,       /* The cost center number (see a_cost_center) associated with the partner, if applicable. --  */
+        a_fund                                varchar(20)  null,       /* The fund code (see a_fund) associated with the partner, if applicable. --  */
         p_best_contact                        char(10)  null,          /*  --  */
         p_merged_with                         char(10)  null,          /* new key id after merge --  */
         p_legacy_key_1                        char(10)  null,          /* old system --  */
@@ -741,9 +741,9 @@ create table m_list (
         m_discard_after                       datetime  null,          /* for temporary lists/extracts --  */
         m_list_frozen                         bit,                     /* do not permit add/remove memberships --  */
         m_date_sent                           datetime  null,          /*  --  */
-        m_charge_ledger                       char(10)  null,          /* who to charge for publ. costs --  */
+        a_charge_ledger                       char(10)  null,          /* who to charge for publ. costs --  */
         p_postal_mode                         char(1)  null,           /* B-Bulk F-FirstClass Used to set postal modes on mailings --  */
-        m_charge_cost_ctr                     varchar(20)  null,       /*  --  */
+        a_charge_fund                         varchar(20)  null,       /*  --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -1946,7 +1946,7 @@ create table a_analysis_attr (
         a_attr_code                           char(8)  not null,       /* analysis attribute code (alphanumeric allowed) --  */
         a_ledger_number                       char(10)  not null,      /* ledger number that uses this attribute --  */
         a_desc                                varchar(255)  not null,  /* description of attribute --  */
-        a_cc_enab                             bit  not null,           /* whether to enable this attr for cost centers --  */
+        a_fund_enab                           bit  not null,           /* whether to enable this attr for funds --  */
         a_acct_enab                           bit  not null,           /* whether to enable this attr for GL accounts --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
@@ -1973,12 +1973,12 @@ create table a_analysis_attr_value (
 );
 
 
-/* a_cc_analysis_attr */
+/* a_fund_analysis_attr */
 
-create table a_cc_analysis_attr (
+create table a_fund_analysis_attr (
         a_attr_code                           char(8)  not null,       /* analysis attribute code (alphanumeric allowed) --  */
         a_ledger_number                       char(10)  not null,      /* ledger number that uses this attribute --  */
-        a_cost_center                         char(20)  not null,      /* cost center --  */
+        a_fund                                char(20)  not null,      /* fund --  */
         a_value                               varchar(255)  null,      /* analysis attribute value --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
@@ -2005,22 +2005,22 @@ create table a_acct_analysis_attr (
 );
 
 
-/* a_cost_center */
+/* a_fund */
 
-create table a_cost_center (
-        a_cost_center                         char(20)  not null,      /* cost center code (alphanumeric allowed) --  */
-        a_ledger_number                       char(10)  not null,      /* ledger number that uses this cost center --  */
-        a_parent_cost_center                  char(20)  null,          /* cost center that this data rolls up into for reporting (within same ledger) --  */
-        a_bal_cost_center                     char(20)  not null,      /* a_bal_cost_center = a_is_balancing?a_cost_center:a_parent_cost_center --  */
-        a_cost_center_class                   char(3)  null,           /* classification (could be others too): (ADM)inistration & General, (FUN)draising, (MIN)istry / Program Services. --  */
-        a_reporting_level                     int  not null,           /* at what detail level should this costctr be shown (in reports); smaller number = less detail, more generalized report --  */
-        a_is_posting                          bit,                     /* enables posting to this cost center --  */
-        a_is_external                         bit,                     /* Does the cost center represent a subdivision of the local entity, or is it foreign/external? --  */
-        a_is_balancing                        bit,                     /* Is this a true cost center which self-balances (satisfies the accounting equation), or is it merely a fund within a cost center? --  */
+create table a_fund (
+        a_fund                                char(20)  not null,      /* fund code (alphanumeric allowed) --  */
+        a_ledger_number                       char(10)  not null,      /* ledger number that uses this fund --  */
+        a_parent_fund                         char(20)  null,          /* fund that this data rolls up into for reporting (within same ledger) --  */
+        a_bal_fund                            char(20)  not null,      /* a_bal_fund = a_is_balancing?a_fund:a_parent_fund --  */
+        a_fund_class                          char(3)  null,           /* classification (could be others too): (ADM)inistration & General, (FUN)draising, (MIN)istry / Program Services. --  */
+        a_reporting_level                     int  not null,           /* at what detail level should this fund be shown (in reports); smaller number = less detail, more generalized report --  */
+        a_is_posting                          bit,                     /* enables posting to this fund --  */
+        a_is_external                         bit,                     /* Does the fund represent a subdivision of the local entity, or is it foreign/external? --  */
+        a_is_balancing                        bit,                     /* Is this a true fund which self-balances (satisfies the accounting equation), or is it merely a fund within a fund? --  */
         a_restricted_type                     char(1)  not null,       /* Fund restriction code: N = not restricted, T = temporarily restricted, P = permanently restricted --  */
-        a_cc_desc                             char(32)  null,          /* short description of cost center, for reporting --  */
-        a_cc_comments                         varchar(255)  null,      /* comments / long description of cost center --  */
-        a_legacy_code                         varchar(32)  null,       /* Legacy cost center code, from data import --  */
+        a_fund_desc                           char(32)  null,          /* short description of fund, for reporting --  */
+        a_fund_comments                       varchar(255)  null,      /* comments / long description of fund --  */
+        a_legacy_code                         varchar(32)  null,       /* Legacy fund code, from data import --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -2037,7 +2037,7 @@ create table a_account (
         a_ledger_number                       char(10)  not null,      /* ledger number that uses this account --  */
         a_parent_account_code                 char(16)  null,          /* account that this data rolls up into for reporting (within same ledger) --  */
         a_acct_type                           char(1)  not null,       /* type of account: (A)sset, (L)iability, (Q)Equity, (R)evenue, (E)xpense --  */
-        a_account_class                       char(3)  null,           /* classification (used for managing which accts go with which cost centers) --  */
+        a_account_class                       char(3)  null,           /* classification (used for managing which accts go with which fund) --  */
         a_reporting_level                     int  not null,           /* at what detail level should this account be shown (in reports); smaller number = less detail, more generalized report --  */
         p_banking_details_key                 char(10)  null,          /* esp. for Asset accounts, this is the relevant bank account data --  */
         a_is_contra                           bit,                     /* is this a contra account - if so a_parent_account_code gives main account it balances against --  */
@@ -2114,14 +2114,14 @@ create table a_account_category (
 );
 
 
-/* a_cc_acct */
+/* a_fund_acct */
 
-create table a_cc_acct (
+create table a_fund_acct (
         a_ledger_number                       char(10)  not null,      /* ledger number --  */
         a_period                              char(8)  not null,       /* the high level accounting period (i.e., year) --  */
-        a_cost_center                         char(20)  not null,      /* cost center code --  */
+        a_fund                                char(20)  not null,      /* fund code --  */
         a_account_code                        char(16)  not null,      /* GL account code --  */
-        a_cc_acct_class                       char(3)  null,           /* classification (could be others too): (ADM)inistration & General, (FUN)draising, (MIN)istry / Program Services. --  */
+        a_fund_acct_class                     char(3)  null,           /* classification (could be others too): (ADM)inistration & General, (FUN)draising, (MIN)istry / Program Services. --  */
         a_opening_balance                     decimal(14,4)  not null,
                                                                       /* opening balance for the period (year) --  */
         a_current_balance                     decimal(14,4)  not null,
@@ -2244,7 +2244,7 @@ create table a_transaction (
         a_period                              char(8)  not null,       /* Accounting period this transaction is recorded in. --  */
         a_effective_date                      datetime  not null,      /* Effective date of transaction (e.g., accrual date) --  */
         a_transaction_type                    char(1)  not null,       /* B=Beginning balance, E=Ending (closing of exp/rev into equity), T=Transaction (normal) --  */
-        a_cost_center                         char(20)  not null,      /* Cost center this transaction is posted to. --  */
+        a_fund                                char(20)  not null,      /* Fund this transaction is posted to. --  */
         a_account_category                    char(8)  not null,       /* Broad category of account (object) --  */
         a_account_code                        char(16)  not null,      /* GL Account that this transaction is posted to --  */
         a_amount                              decimal(14,4)  not null,
@@ -2293,7 +2293,7 @@ create table a_transaction_tmp (
         a_period                              char(8)  not null,       /* Accounting period this transaction is recorded in. --  */
         a_effective_date                      datetime  not null,      /* Effective date of transaction (e.g., accrual date) --  */
         a_transaction_type                    char(1)  not null,       /* B=Beginning balance, E=Ending (closing of exp/rev into equity), T=Transaction (normal) --  */
-        a_cost_center                         char(20)  not null,      /* Cost center this transaction is posted to. --  */
+        a_fund                                char(20)  not null,      /* Fund this transaction is posted to. --  */
         a_account_category                    char(8)  not null,       /* Broad category of account (object) --  */
         a_account_code                        char(16)  not null,      /* GL Account that this transaction is posted to --  */
         a_amount                              decimal(14,4)  not null,
@@ -2347,12 +2347,12 @@ create table a_account_class (
 );
 
 
-/* a_cost_center_class */
+/* a_fund_class */
 
-create table a_cost_center_class (
-        a_cost_center_class                   char(3)  not null,       /* costctr class (alphanumeric allowed) --  */
-        a_ledger_number                       char(10)  not null,      /* ledger number that uses this costctr class --  */
-        a_acct_class_desc                     varchar(255)  not null,  /* description of costctr class --  */
+create table a_fund_class (
+        a_fund_class                          char(3)  not null,       /* fund class (alphanumeric allowed) --  */
+        a_ledger_number                       char(10)  not null,      /* ledger number that uses this fund class --  */
+        a_fund_class_desc                     varchar(255)  not null,  /* description of fund class --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -2379,13 +2379,13 @@ create table a_reporting_level (
 );
 
 
-/* a_cost_center_prefix */
+/* a_fund_prefix */
 
-create table a_cost_center_prefix (
-        a_cost_center_prefix                  char(20)  not null,      /* cost center prefix (alphanumeric allowed) --  */
-        a_ledger_number                       char(10)  not null,      /* ledger number that uses this cost center prefix --  */
-        a_cc_prefix_desc                      char(32)  null,          /* short description of cost center prefix, for reporting --  */
-        a_cc_prefix_comments                  varchar(255)  null,      /* comments / long description of cost center prefix --  */
+create table a_fund_prefix (
+        a_fund_prefix                         char(20)  not null,      /* fund prefix (alphanumeric allowed) --  */
+        a_ledger_number                       char(10)  not null,      /* ledger number that uses this fund prefix --  */
+        a_fund_prefix_desc                    char(32)  null,          /* short description of fund prefix, for reporting --  */
+        a_fund_prefix_comments                varchar(255)  null,      /* comments / long description of fund prefix --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -2395,11 +2395,11 @@ create table a_cost_center_prefix (
 );
 
 
-/* a_cc_staff */
+/* a_fund_staff */
 
-create table a_cc_staff (
+create table a_fund_staff (
         a_ledger_number                       char(10)  not null,      /* ledger number (a_ledger) --  */
-        a_cost_center                         char(20)  not null,      /* cost center code (a_cost_center) --  */
+        a_fund                                char(20)  not null,      /* fund code (a_fund) --  */
         p_staff_partner_key                   varchar(10)  not null,   /* Partner key (p_partner) --  */
         p_start_date                          datetime  null,          /* starting date that data is available to fund manager --  */
         p_end_date                            datetime  null,          /* ending date that data is available to fund manager --  */
@@ -2467,9 +2467,9 @@ create table a_payroll (
         a_payroll_id                          integer  not null,       /* unique ID for this payroll entry --  */
         p_payee_partner_key                   char(10)  not null,      /* partner ID of the payee. --  */
         a_payee_name                          char(80)  null,          /* if necessary, this can be used to adjust the name used in payroll. --  */
-        a_priority                            integer  null,           /* if more than one payroll in a cost ctr, this sets the priority (higher number = higher priority) --  */
+        a_priority                            integer  null,           /* if more than one payroll in a fund, this sets the priority (higher number = higher priority) --  */
         a_payroll_interval                    char(2)  not null,       /* interval (OW = once weekly, BW = biweekly, OD = daily, SM = semimonthly, OM = once monthly, MS = misc) --  */
-        a_cost_center                         char(20)  not null,      /* cost center that this payroll takes place within --  */
+        a_fund                                char(20)  not null,      /* Fund that this payroll takes place within --  */
         a_start_date                          datetime  null,          /* starting date that this payroll record applies to --  */
         a_end_date                            datetime  null,          /* ending date that this payroll record applies to --  */
         s_date_created                        datetime  not null,      /*  --  */
@@ -2545,9 +2545,9 @@ create table a_payroll_group (
         a_payroll_interval                    char(2)  not null,       /* interval (OW = once weekly, BW = biweekly, OD = daily, SM = semimonthly, OM = once monthly, MS = misc) --  */
         a_acct_method                         char(1)  not null,       /* accounting method: (A)ccrual - pay accrues on last date of pay period, or (C)ash - pay accrues on payment date --  */
         a_paydate_delay                       integer  not null,       /* the number of days after end date of period when payroll is typically paid (0 for issue on exact end date) --  */
-        a_cost_center                         char(20)  not null,      /* default cost center that this payroll takes place within (can be overridden on payee entries) --  */
-        a_liab_cost_center                    char(20)  null,          /* cost center to xfer payroll liabilities to, if any --  */
-        a_cash_cost_center                    char(20)  null,          /* cost center for handling cash for payroll, if any --  */
+        a_fund                                char(20)  not null,      /* default fund that this payroll takes place within (can be overridden on payee entries) --  */
+        a_liab_fund                           char(20)  null,          /* fund to xfer payroll liabilities to, if any --  */
+        a_cash_fund                           char(20)  null,          /* fund for handling cash for payroll, if any --  */
         a_issue_checks                        bit  not null,           /* whether we write the checks (1) or some outside entity does (0) and we just record the total transaction. --  */
         a_service_bureau_id                   integer  null,           /* partner id of payroll service bureau that is being used, if any --  */
         a_service_bureau_group_name           varchar(64)  null,       /* identifier of this payroll group at the payroll service bureau --  */
@@ -2568,10 +2568,10 @@ create table a_payroll_import (
         a_payroll_id                          integer  not null,       /* unique ID for this payroll entry --  */
         p_payee_partner_key                   char(10)  not null,      /* partner ID of the payee. --  */
         a_payee_name                          char(80)  null,          /* if necessary, this can be used to adjust the name used in payroll. --  */
-        a_priority                            integer  null,           /* if more than one payroll in a cost ctr, this sets the priority (higher number = higher priority) --  */
+        a_priority                            integer  null,           /* if more than one payroll in a fund, this sets the priority (higher number = higher priority) --  */
         a_payroll_interval                    char(2)  not null,       /* interval (OW = once weekly, BW = biweekly, OD = daily, SM = semimonthly, OM = once monthly, MS = misc) --  */
         a_ledger_number                       char(10)  not null,      /* ledger number that will be doing the payroll. --  */
-        a_cost_center                         char(20)  not null,      /* cost center that this payroll takes place within --  */
+        a_fund                                char(20)  not null,      /* fund that this payroll takes place within --  */
         a_start_date                          datetime  null,          /* starting date that this payroll record applies to --  */
         a_end_date                            datetime  null,          /* ending date that this payroll record applies to --  */
         s_date_created                        datetime  not null,      /*  --  */
@@ -2601,10 +2601,10 @@ create table a_payroll_item (
         a_filing_status                       char(1)  null,           /* for tax withholding, the filing status. --  */
         a_allowances                          integer  null,           /* for tax withholding, the number of withholding allowances claimed (e.g., on W4) --  */
         a_dependent_allowances                integer  null,           /* for tax withholding, the number of withholding allowances claimed for dependents (some states, such as Georgia/Indiana) --  */
-        a_ref_cost_center                     char(20)  null,          /* for receivables/payables/etc, the cost center to check --  */
+        a_ref_fund                            char(20)  null,          /* for receivables/payables/etc, the fund to check --  */
         a_ref_account_code                    char(10)  null,          /* for receivables/payables/etc, the gl account to check --  */
-        a_xfer_cost_center                    char(20)  null,          /* for line items that reference an outside cost ctr / fund. --  */
-        a_xfer_account_code                   char(10)  null,          /* gl acct to use in outside cost ctr / fund. --  */
+        a_xfer_fund                           char(20)  null,          /* for line items that reference an outside fund. --  */
+        a_xfer_account_code                   char(10)  null,          /* gl acct to use in outside fund. --  */
         a_start_date                          datetime  null,          /* starting date that this payroll item record applies to --  */
         a_end_date                            datetime  null,          /* ending date that this payroll item record applies to --  */
         s_date_created                        datetime  not null,      /*  --  */
@@ -2632,10 +2632,10 @@ create table a_payroll_item_import (
         a_filing_status                       char(1)  null,           /* for tax withholding, the filing status. --  */
         a_allowances                          integer  null,           /* for tax withholding, the number of withholding allowances claimed (e.g., on W4) --  */
         a_dependent_allowances                integer  null,           /* for tax withholding, the number of withholding allowances claimed for dependents (some states, such as Georgia/Indiana) --  */
-        a_ref_cost_center                     char(20)  null,          /* for receivables/payables/etc, the cost center to check --  */
+        a_ref_fund                            char(20)  null,          /* for receivables/payables/etc, the fund to check --  */
         a_ref_account_code                    char(10)  null,          /* for receivables/payables/etc, the gl account to check --  */
-        a_xfer_cost_center                    char(20)  null,          /* for line items that reference an outside cost ctr / fund. --  */
-        a_xfer_account_code                   char(10)  null,          /* gl acct to use in outside cost ctr / fund. --  */
+        a_xfer_fund                           char(20)  null,          /* for line items that reference an outside fund. --  */
+        a_xfer_account_code                   char(10)  null,          /* gl acct to use in outside fund. --  */
         a_start_date                          datetime  null,          /* starting date that this payroll item record applies to --  */
         a_end_date                            datetime  null,          /* ending date that this payroll item record applies to --  */
         s_date_created                        datetime  not null,      /*  --  */
@@ -2656,7 +2656,7 @@ create table a_payroll_item_type (
         a_payroll_item_subclass_code          char(2)  null,           /* specific category of payroll item --  */
         a_payroll_item_form_sequence          integer  null,           /* order this item comes in on the payroll form. --  */
         a_ref_account_code                    char(10)  null,          /* default GL account code to use for items of this type --  */
-        a_xfer_cost_center                    char(20)  null,          /* default cost center to use when this item involves an xfer --  */
+        a_xfer_fund                           char(20)  null,          /* default fund to use when this item involves an xfer --  */
         a_xfer_account_code                   char(10)  null,          /* default gl account to use when this item involves an xfer --  */
         a_state_province                      char(2)  null,           /* State/Province that this tax table relates to. --  */
         a_desc                                varchar(32)  null,       /* description for this code --  */
@@ -2826,14 +2826,14 @@ create table a_salary_review (
 );
 
 
-/* a_cc_admin_fee */
+/* a_fund_admin_fee */
 
-create table a_cc_admin_fee (
-        a_cost_center                         char(20)  not null,      /* cost center code (alphanumeric allowed) --  */
-        a_ledger_number                       char(10)  not null,      /* ledger number that uses this cost center --  */
-        a_admin_fee_type                      char(3)  not null,       /* admin fee type to apply to this cost center (and subsidiaries) --  */
-        a_default_subtype                     char(1)  null,           /* default subtype to use for gifts to this costctr --  */
-        a_percentage                          float  null,             /* percent to deduct for this cost center, if different from a_admin_fee_type:a_default_percentage --  */
+create table a_fund_admin_fee (
+        a_fund                                char(20)  not null,      /* fund code (alphanumeric allowed) --  */
+        a_ledger_number                       char(10)  not null,      /* ledger number that uses this fund --  */
+        a_admin_fee_type                      char(3)  not null,       /* admin fee type to apply to this fund (and subsidiaries) --  */
+        a_default_subtype                     char(1)  null,           /* default subtype to use for gifts to this fund --  */
+        a_percentage                          float  null,             /* percent to deduct for this fund, if different from a_admin_fee_type:a_default_percentage --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -2891,8 +2891,8 @@ create table a_admin_fee_type_item (
         a_ledger_number                       char(10)  not null,      /* ledger number that uses this admin fee type --  */
         a_admin_fee_type                      char(3)  not null,       /* admin fee type --  */
         a_admin_fee_subtype                   char(1)  not null,       /* admin fee subtype - e.g., for variable percentages. --  */
-        a_dest_cost_center                    char(20)  not null,      /* destination cost center for the admin fee proceeds --  */
-        a_percentage                          float  not null,         /* percent of gift to go to the above cost center --  */
+        a_dest_fund                           char(20)  not null,      /* destination fund for the admin fee proceeds --  */
+        a_percentage                          float  not null,         /* percent of gift to go to the above fund --  */
         a_is_fixed                            bit  default 0,          /* if fee is scaled up or down, will the scaling apply to this fee item? --  */
         a_comment                             varchar(255)  null,      /* comments for this admin fee type item --  */
         s_date_created                        datetime  not null,      /*  --  */
@@ -2910,8 +2910,8 @@ create table a_admin_fee_type_item_tmp (
         a_ledger_number                       char(10)  not null,      /* ledger number that uses this admin fee type --  */
         a_admin_fee_type                      char(3)  not null,       /* admin fee type --  */
         a_admin_fee_subtype                   char(1)  not null,       /* admin fee subtype - e.g., for variable percentages. --  */
-        a_dest_cost_center                    char(20)  not null,      /* destination cost center for the admin fee proceeds --  */
-        a_percentage                          float  not null,         /* percent of gift to go to the above cost center --  */
+        a_dest_fund                           char(20)  not null,      /* destination fund for the admin fee proceeds --  */
+        a_percentage                          float  not null,         /* percent of gift to go to the above fund --  */
         a_is_fixed                            bit  default 0,          /* if fee is scaled up or down, will the scaling apply to this fee item? --  */
         a_comment                             varchar(255)  null,      /* comments for this admin fee type item --  */
         s_date_created                        datetime  not null,      /*  --  */
@@ -2923,11 +2923,11 @@ create table a_admin_fee_type_item_tmp (
 );
 
 
-/* a_cc_receipting */
+/* a_fund_receipting */
 
-create table a_cc_receipting (
-        a_cost_center                         char(20)  not null,      /* cost center code (alphanumeric allowed) --  */
-        a_ledger_number                       char(10)  not null,      /* ledger number that uses this cost center --  */
+create table a_fund_receipting (
+        a_fund                                char(20)  not null,      /* fund code (alphanumeric allowed) --  */
+        a_ledger_number                       char(10)  not null,      /* ledger number that uses this fund --  */
         a_receiptable                         bit  default 1,          /* can we receipt revenue (gifts) into this account? --  */
         a_disposition                         char(1)  null,           /* Donor management disposition of fund: N = not interesting, O = one-time gifts typical, R = recurring gifts typical --  */
         s_date_created                        datetime  not null,      /*  --  */
@@ -2939,15 +2939,15 @@ create table a_cc_receipting (
 );
 
 
-/* a_cc_receipting_accts */
+/* a_fund_receipting_accts */
 
-create table a_cc_receipting_accts (
-        a_cost_center                         char(20)  not null,      /* cost center code (alphanumeric allowed) --  */
-        a_ledger_number                       char(10)  not null,      /* ledger number that uses this cost center --  */
+create table a_fund_receipting_accts (
+        a_fund                                char(20)  not null,      /* fund code (alphanumeric allowed) --  */
+        a_ledger_number                       char(10)  not null,      /* ledger number that uses this fund --  */
         a_account_code                        char(16)  not null,      /* a GL account that we can receipt into for this fund. --  */
         a_non_tax_deductible                  bit  default 0,          /* are cash receipts tax deductible? --  */
         a_is_default                          bit  default 0,          /* is this the default receipting acct for this fund? --  */
-        a_receipt_comment                     varchar(64)  null,       /* text to use in place of a_cc_desc from a_cost_center, when printing receipts. --  */
+        a_receipt_comment                     varchar(64)  null,       /* text to use in place of a_fund_desc from a_fund, when printing receipts. --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -2987,7 +2987,7 @@ create table a_gift_payment_type (
         a_is_default                          bit  default 0,          /* is this the default payment type? --  */
         a_is_enabled                          bit  default 1,          /* is this payment type enabled? --  */
         a_is_cash                             bit  default 1,          /* is this payment type a cash (check, cash, credit card, etc.) or noncash (in-kind) gift? --  */
-        a_payment_cost_center                 char(20)  null,          /* cost center for payment (defaults to value in a_config) --  */
+        a_payment_fund                        char(20)  null,          /* fund for payment (defaults to value in a_config) --  */
         a_payment_account_code                char(16)  null,          /* GL account for payment (defaults to value in a_config) --  */
         a_desig_account_code                  char(16)  null,          /* GL account code for designations, to force a specific one --  */
         a_min_gift                            decimal(14,4)  null,     /* Minimum gift for this payment type --  */
@@ -3031,7 +3031,7 @@ create table a_subtrx_gift (
         a_batch_number                        integer  not null,       /* Batch id for this gift. --  */
         a_gift_number                         integer  not null,       /* sequential gift number in the batch. --  */
         a_period                              char(8)  not null,       /* Accounting period this transaction is recorded in. --  */
-        a_cost_center                         char(20)  not null,      /* Which fund the gift is given to. --  */
+        a_fund                                char(20)  not null,      /* Which fund the gift is given to. --  */
         a_account_code                        char(16)  not null,      /* Which GL Account this gift posts to in the above fund. --  */
         a_amount                              decimal(14,4)  not null,
                                                                       /* Amount of the gift. --  */
@@ -3039,7 +3039,7 @@ create table a_subtrx_gift (
         a_posted_to_gl                        bit  default 0,          /* Has this transaction been posted to the GL - yes (1) or no (0)? --  */
         a_gift_type                           char(1)  not null,       /* Type of gift: (C)ash, chec(K), credit car(D), (E)FT --  */
         a_gift_admin_fee                      float  null,             /* Total administration fee percent to use (optionally specified by user) --  */
-        a_gift_admin_subtype                  char(1)  null,           /* Admin fee subtype to use (overrides that specified in a_cc_admin_fee) --  */
+        a_gift_admin_subtype                  char(1)  null,           /* Admin fee subtype to use (overrides that specified in a_fund_admin_fee) --  */
         a_calc_admin_fee                      float  null,             /* Total administration fee percent as calculated by the system (set by admin fee logic) --  */
         a_calc_admin_fee_type                 char(3)  null,           /* admin fee type as calculated by the system (set by admin fee logic) --  */
         a_calc_admin_fee_subtype              char(1)  null,           /* admin fee subtype as calculated by the system (set by admin fee logic) --  */
@@ -3117,7 +3117,7 @@ create table a_subtrx_gift_item (
         a_gift_number                         integer  not null,       /* sequential gift number in the batch. --  */
         a_split_number                        integer  not null,       /* sequential split number for line items in a gift (split gift between multiple designations) --  */
         a_period                              char(8)  not null,       /* Accounting period this transaction is recorded in. --  */
-        a_cost_center                         char(20)  not null,      /* Which fund the gift is given to. --  */
+        a_fund                                char(20)  not null,      /* Which fund the gift is given to. --  */
         a_account_code                        char(16)  not null,      /* Which GL Account this gift posts to in the above fund. --  */
         a_amount                              decimal(14,4)  not null,
                                                                       /* Amount of the gift. --  */
@@ -3132,7 +3132,7 @@ create table a_subtrx_gift_item (
         a_posted                              bit  default 0,          /* Has this transaction been posted (in this table)? --  */
         a_posted_to_gl                        bit  default 0,          /* Has this transaction been posted to the GL - yes (1) or no (0)? --  */
         a_gift_admin_fee                      float  null,             /* Total administration fee percent to use (optionally specified by user) --  */
-        a_gift_admin_subtype                  char(1)  null,           /* Admin fee subtype to use (overrides that specified in a_cc_admin_fee) --  */
+        a_gift_admin_subtype                  char(1)  null,           /* Admin fee subtype to use (overrides that specified in a_fund_admin_fee) --  */
         a_calc_admin_fee                      float  null,             /* Total administration fee percent as calculated by the system (set by admin fee logic) --  */
         a_calc_admin_fee_type                 char(3)  null,           /* admin fee type as calculated by the system (set by admin fee logic) --  */
         a_calc_admin_fee_subtype              char(1)  null,           /* admin fee subtype as calculated by the system (set by admin fee logic) --  */
@@ -3170,7 +3170,7 @@ create table a_subtrx_gift_intent (
         a_pledge_id                           integer  null,           /* Reference to pledges table to associate this gift intent with a pledge --  */
         p_dn_donor_partner_id                 char(10)  not null,      /* Donor ID making the pledge - denormalized (from gift_group) --  */
         p_dn_ack_partner_id                   char(10)  null,          /* Acknowledgement ID making the pledge - denormalized (from gift_group) --  */
-        a_cost_center                         char(20)  null,          /* Fund being pledged to --  */
+        a_fund                                char(20)  null,          /* Fund being pledged to --  */
         a_intent_type                         varchar(1)  not null,    /* Intent type: P=pledge, F=faith promise, I=intention --  */
         a_amount                              decimal(14,4)  null,     /* Amount for this intent (e.g. monthly amount) - UI should default copy from gift data --  */
         a_total_amount                        decimal(14,4)  null,     /* Total amount for this intent (e.g. total pledge) --  */
@@ -3199,11 +3199,11 @@ create table a_subtrx_gift_rcptcnt (
 );
 
 
-/* a_cc_auto_subscribe */
+/* a_fund_auto_subscribe */
 
-create table a_cc_auto_subscribe (
-        a_cost_center                         char(20)  not null,      /* cost center code (alphanumeric allowed) --  */
-        a_ledger_number                       char(10)  not null,      /* ledger number that uses this cost center --  */
+create table a_fund_auto_subscribe (
+        a_fund                                char(20)  not null,      /* fund code (alphanumeric allowed) --  */
+        a_ledger_number                       char(10)  not null,      /* ledger number that uses this fund --  */
         m_list_code                           varchar(20)  not null,   /* the mailing list code of the mailing to subscribe the donor to. --  */
         a_minimum_gift                        decimal(14,4)  null,     /* sets a minimum gift before automatic subscription takes place. --  */
         a_subscribe_months                    integer  null,           /* how many months to subscribe the donor (or indefinitely, if null) --  */
@@ -3225,7 +3225,7 @@ create table a_motivational_code (
         a_motivational_code_status            char(1)  not null,       /* status of this motivational code: A=Active, O=Obsolete. --  */
         a_parent_motivational_code            varchar(16)  null,       /* motivational code parent or category --  */
         m_list_code                           varchar(20)  null,       /* (Optional) mailing list associated with this motivational code --  */
-        a_cost_center                         varchar(20)  null,       /* Optional cost center associated with this motivational code --  */
+        a_fund                                varchar(20)  null,       /* Optional fund associated with this motivational code --  */
         a_account_code                        varchar(16)  null,       /* Optional GL account associated with this motivational code --  */
         a_gift_admin_fee                      float  null,             /* Optional override percentage for admin fees for gifts on this motiv code. --  */
         a_gift_admin_subtype                  char(1)  null,           /* Optional override admin subtype for admin fees for gifts on this motiv code. --  */
@@ -3245,7 +3245,7 @@ create table a_motivational_code (
 create table a_giving_pattern (
         a_ledger_number                       char(10)  not null,      /* ledger number for this giving pattern --  */
         p_donor_partner_key                   char(10)  not null,      /* Partner ID for the donor --  */
-        a_cost_center                         char(20)  not null,      /* fund that this donor is giving toward --  */
+        a_fund                                char(20)  not null,      /* fund that this donor is giving toward --  */
         a_pattern_id                          integer  not null,       /* sequential integer ID of this giving pattern record. --  */
         a_history_id                          integer  not null,       /* sequential integer ID of the history of this giving pattern record. --  */
         a_review                              varchar(16)  null,       /* An identifier for the support review this entry is associated with --  */
@@ -3256,8 +3256,8 @@ create table a_giving_pattern (
         a_start_date                          datetime  not null,      /* Date that this donor began this current giving pattern --  */
         a_end_date                            datetime  null,          /* Date that we expect the donor to end this giving pattern (NOT A LEGAL OBLIGATION ON THE DONOR'S PART) --  */
         a_evaluation_date                     datetime  not null,      /* Date that this giving pattern was determined --  */
-        a_actual_cost_center                  char(20)  null,          /* Actual cost center that the donor donated to, if not to the one listed above. --  */
-        a_percent                             float  null,             /* Percent of gift (0.00 to 1.00) allocated to this fund, if a_actual_cost_center is supplied. --  */
+        a_actual_fund                         char(20)  null,          /* Actual fund that the donor donated to, if not to the one listed above. --  */
+        a_percent                             float  null,             /* Percent of gift (0.00 to 1.00) allocated to this fund, if a_actual_fund is supplied. --  */
         a_comment                             varchar(255)  null,      /* Giving pattern comments --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
@@ -3273,11 +3273,11 @@ create table a_giving_pattern (
 create table a_giving_pattern_allocation (
         a_ledger_number                       char(10)  not null,      /* ledger number for this giving pattern --  */
         p_donor_partner_key                   char(10)  not null,      /* Partner ID for the donor --  */
-        a_cost_center                         char(20)  not null,      /* fund that this donor is giving toward --  */
+        a_fund                                char(20)  not null,      /* fund that this donor is giving toward --  */
         a_pattern_id                          integer  not null,       /* sequential integer ID of this giving pattern record. --  */
         a_history_id                          integer  not null,       /* sequential integer ID of the history of this giving pattern record. --  */
         a_review                              varchar(16)  null,       /* An identifier for the support review this entry is associated with --  */
-        a_actual_cost_center                  char(20)  not null,      /* Actual cost center that the donor donated to --  */
+        a_actual_fund                         char(20)  not null,      /* Actual fund that the donor donated to --  */
         a_percent                             float  not null,         /* Percent of gift (0.00 to 1.00) allocated to this fund --  */
         a_comment                             varchar(255)  null,      /* Comments --  */
         s_date_created                        datetime  not null,      /*  --  */
@@ -3294,7 +3294,7 @@ create table a_giving_pattern_allocation (
 create table a_giving_pattern_flag (
         a_ledger_number                       char(10)  not null,      /* ledger number for this giving pattern --  */
         p_donor_partner_key                   char(10)  not null,      /* Partner ID for the donor --  */
-        a_cost_center                         char(20)  not null,      /* fund that this donor is giving toward --  */
+        a_fund                                char(20)  not null,      /* fund that this donor is giving toward --  */
         a_pattern_id                          integer  not null,       /* sequential integer ID of this giving pattern record. --  */
         a_history_id                          integer  not null,       /* sequential integer ID of the giving pattern flag (since past/historical ones are kept around). However this DOES NOT relate to the history ID in the a_giving_pattern table. --  */
         a_review                              varchar(16)  null,       /* An identifier for the support review this flag is associated with, if any --  */
@@ -3318,7 +3318,7 @@ create table a_giving_pattern_flag (
 
 create table a_funding_target (
         a_ledger_number                       char(10)  not null,      /* ledger number for the fund --  */
-        a_cost_center                         char(20)  not null,      /* fund that we're establishing a target for --  */
+        a_fund                                char(20)  not null,      /* fund that we're establishing a target for --  */
         a_target_id                           integer  not null,       /* sequential integer ID of this funding target record. --  */
         a_target_desc                         varchar(255)  not null,  /* Description for this funding target --  */
         a_review                              varchar(16)  null,       /* Support review ID that this target is connected with, if available --  */
@@ -3356,7 +3356,7 @@ create table a_support_review (
 
 create table a_support_review_target (
         a_ledger_number                       char(10)  not null,      /* ledger number for this fund --  */
-        a_cost_center                         char(20)  not null,      /* fund that is being reviewed --  */
+        a_fund                                char(20)  not null,      /* fund that is being reviewed --  */
         a_target_id                           integer  not null,       /* ID of the funding target we're working with --  */
         a_review                              varchar(16)  not null,   /* ID of the support review we're looking at --  */
         a_amount                              decimal(14,4)  not null,
@@ -3378,7 +3378,7 @@ create table a_support_review_target (
 create table a_descriptives (
         a_ledger_number                       char(10)  not null,      /* ledger number for the donations --  */
         p_donor_partner_key                   char(10)  not null,      /* Partner ID for the donor --  */
-        a_cost_center                         char(20)  not null,      /* fund that this donor is giving toward --  */
+        a_fund                                char(20)  not null,      /* fund that this donor is giving toward --  */
         a_first_gift                          datetime  null,          /* first gift date --  */
         a_first_gift_amount                   decimal(14,4)  null,     /* first gift amount --  */
         a_last_gift                           datetime  null,          /* most recent gift date --  */
@@ -3426,7 +3426,7 @@ create table a_descriptives (
 create table a_descriptives_hist (
         a_ledger_number                       char(10)  not null,      /* ledger number for the donations --  */
         p_donor_partner_key                   char(10)  not null,      /* Partner ID for the donor --  */
-        a_cost_center                         char(20)  not null,      /* fund that this donor is giving toward --  */
+        a_fund                                char(20)  not null,      /* fund that this donor is giving toward --  */
         a_hist_id                             integer  not null,       /* unique id for this history entry --  */
         a_amount                              decimal(14,4)  not null,
                                                                       /* amount given --  */
@@ -3463,7 +3463,7 @@ create table a_pledge (
         a_pledge_id                           integer  not null,       /* ID of this pledge --  */
         a_is_active                           bit  not null,           /* Active pledge? --  */
         p_donor_partner_id                    char(10)  not null,      /* Donor ID making the pledge --  */
-        a_cost_center                         char(20)  null,          /* Fund being pledged to --  */
+        a_fund                                char(20)  null,          /* Fund being pledged to --  */
         a_intent_type                         varchar(1)  not null,    /* Intent type: P=pledge, F=faith promise, I=intention, R=online recurring --  */
         a_amount                              decimal(14,4)  null,     /* Periodic amount for this intent (e.g. monthly) - UI should default copy from gift data --  */
         a_total_amount                        decimal(14,4)  null,     /* Total amount this intent (e.g. pledged total for the year) --  */
@@ -3514,7 +3514,7 @@ create table a_subtrx_cashdisb (
         a_cash_account_code                   char(10)  not null,      /* Cash account the funds are disbursed from --  */
         a_amount                              decimal(14,4)  not null,
                                                                       /* Amount of disbursement --  */
-        a_cost_center                         char(20)  not null,      /* Cost center for the expense / liability side of the transaction --  */
+        a_fund                                char(20)  not null,      /* Fund for the expense / liability side of the transaction --  */
         a_account_code                        char(10)  not null,      /* GL account for the expense / liability side of the transaction --  */
         a_payee_partner_key                   char(10)  not null,      /* Partner id of the payee (recipient) --  */
         a_check_number                        varchar(16)  null,       /* Check number being issued --  */
@@ -3583,9 +3583,9 @@ create table a_subtrx_payable_item (
         a_accrued_date                        datetime  not null,      /* When the payable accrues as an expense --  */
         a_amount                              decimal(14,4)  not null,
                                                                       /* Amount of payable --  */
-        a_cost_center                         char(20)  not null,      /* Cost center for the expense generated by the payable --  */
+        a_fund                                char(20)  not null,      /* Fund for the expense generated by the payable --  */
         a_account_code                        char(10)  not null,      /* GL account for the expense generated by the payable --  */
-        a_liab_cost_center                    char(20)  not null,      /* Cost center for the liability generated by the payable --  */
+        a_liab_fund                           char(20)  not null,      /* Fund for the liability generated by the payable --  */
         a_liab_account_code                   char(10)  not null,      /* GL account for the liability generated by the payable --  */
         a_comment                             varchar(255)  null,      /* Payable comments --  */
         s_date_created                        datetime  not null,      /*  --  */
@@ -3605,8 +3605,8 @@ create table a_subtrx_xfer (
         a_journal_number                      integer  not null,       /* journal id for this transfer (one per transfer) --  */
         a_period                              char(8)  not null,       /* Accounting period this transfer is recorded in. --  */
         a_effective_date                      datetime  not null,      /* Effective date of transfer (e.g., accrual date) --  */
-        a_source_cost_center                  char(20)  not null,      /* Cost center the funds are coming from --  */
-        a_dest_cost_center                    char(20)  not null,      /* Cost center the funds are going to --  */
+        a_source_fund                         char(20)  not null,      /* Fund that the money is coming from --  */
+        a_dest_fund                           char(20)  not null,      /* Fund that the money is going to --  */
         a_amount                              decimal(14,4)  not null,
                                                                       /* Amount to transfer --  */
         a_in_gl                               bit  default 0,          /* Has this transfer been posted into the GL - yes (1) or no (0)? --  */
@@ -3656,7 +3656,7 @@ create table a_subtrx_cashxfer (
         a_effective_date                      datetime  not null,      /* Effective date of transfer (e.g., accrual date) --  */
         a_source_cash_acct                    char(16)  not null,      /* Account the funds are coming from --  */
         a_dest_cash_acct                      char(16)  not null,      /* Account the funds are going to --  */
-        a_cost_center                         char(20)  not null,      /* Cost Center in which to perform the cash transfer --  */
+        a_fund                                char(20)  not null,      /* Fund in which to perform the cash transfer --  */
         a_amount                              decimal(14,4)  not null,
                                                                       /* Amount to transfer --  */
         a_in_gl                               bit  default 0,          /* Has this transfer been posted into the GL - yes (1) or no (0)? --  */
@@ -3722,7 +3722,7 @@ create table i_eg_gift_import (
         p_donor_partner_key                   char(10)  null,          /* Kardia partner key assigned by import process --  */
         i_eg_donormap_confidence              integer  null,           /* Confidence of mapping: 0=low, 1=medium, 2=high --  */
         i_eg_donormap_future                  integer  null,           /* Future applicability of donor mapping: 0=low, 1=medium, 2=high --  */
-        a_cost_center                         char(20)  null,          /* Kardia fund assigned by import process --  */
+        a_fund                                char(20)  null,          /* Kardia fund assigned by import process --  */
         i_eg_fundmap_confidence               integer  null,           /* Confidence of mapping: 0=low, 1=medium, 2=high --  */
         i_eg_fundmap_future                   integer  null,           /* Future applicability of the fund mapping: 0=low, 1=medium, 2=high --  */
         a_account_code                        char(16)  null,          /* Kardia GL account code assigned by import process --  */
@@ -3764,7 +3764,7 @@ create table i_eg_gift_trx_fees (
 
 create table i_eg_giving_url (
         a_ledger_number                       char(10)  not null,      /* ledger number for the fund --  */
-        a_cost_center                         char(20)  not null,      /* Kardia fund, or * to give a default URL for all funds in the ledger. --  */
+        a_fund                                char(20)  not null,      /* Kardia fund, or * to give a default URL for all funds in the ledger. --  */
         i_eg_url                              varchar(255)  not null,  /* URL a donor can visit to give an online donation. --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */

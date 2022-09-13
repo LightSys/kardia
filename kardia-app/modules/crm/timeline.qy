@@ -2,7 +2,7 @@ $Version=2$
 timeline "system/query"
     {
     partner_key "query/parameter" { type=string; }
-    my_cclist "query/parameter" { type=string; }
+    my_fundlist "query/parameter" { type=string; }
 
     sql = " DECLARE COLLECTION tmp_collection SCOPE APPLICATION;
 
@@ -65,7 +65,7 @@ timeline "system/query"
 		e_activity_date = isnull(:p:a_pledge_date, :p:s_date_created),
 		e_activity_type = 'GIFT',
 		e_reference_info = :p:name,
-		e_info = :it:a_intent_desc + ': ' + (select sum(condition(has_endorsement('kardia:gift_amt', 'kardia:ledger:' + :p:a_ledger_number), '' + isnull(:p:a_amount, 'total ' + :p:a_total_amount) + ' to ', 'To ') + :cc:a_cost_center + ' - ' + :cc:a_cc_desc + ', ') - ', ' from /apps/kardia/data/Kardia_DB/a_cost_center/rows cc where :cc:a_ledger_number = :p:a_ledger_number and :cc:a_cost_center = :p:a_cost_center) + isnull('\n' + :p:a_comment, ''),
+		e_info = :it:a_intent_desc + ': ' + (select sum(condition(has_endorsement('kardia:gift_amt', 'kardia:ledger:' + :p:a_ledger_number), '' + isnull(:p:a_amount, 'total ' + :p:a_total_amount) + ' to ', 'To ') + :cc:a_fund + ' - ' + :cc:a_fund_desc + ', ') - ', ' from /apps/kardia/data/Kardia_DB/a_fund/rows cc where :cc:a_ledger_number = :p:a_ledger_number and :cc:a_fund = :p:a_fund) + isnull('\n' + :p:a_comment, ''),
 		e_whom = (select :p_partner_key from /apps/kardia/data/Kardia_DB/p_staff/rows s where :s:p_kardia_login = :p:s_created_by),
 		e_initiation = 'P'
 	    from
@@ -89,7 +89,7 @@ timeline "system/query"
 		e_activity_date = isnull(:p:a_pledge_date, :p:s_date_created),
 		e_activity_type = 'GIFT',
 		e_reference_info = :p:name,
-		e_info = :it:a_intent_desc + ': ' + (select sum(condition(has_endorsement('kardia:gift_amt', 'kardia:ledger:' + :p:a_ledger_number), '' + isnull(:p:a_amount, 'total ' + :p:a_total_amount) + ' to ', 'To ') + :cc:a_cost_center + ' - ' + :cc:a_cc_desc + ', ') - ', ' from /apps/kardia/data/Kardia_DB/a_cost_center/rows cc where :cc:a_ledger_number = :p:a_ledger_number and :cc:a_cost_center = :p:a_cost_center) + isnull('\n' + :p:a_comment, ''),
+		e_info = :it:a_intent_desc + ': ' + (select sum(condition(has_endorsement('kardia:gift_amt', 'kardia:ledger:' + :p:a_ledger_number), '' + isnull(:p:a_amount, 'total ' + :p:a_total_amount) + ' to ', 'To ') + :cc:a_fund + ' - ' + :cc:a_fund_desc + ', ') - ', ' from /apps/kardia/data/Kardia_DB/a_fund/rows cc where :cc:a_ledger_number = :p:a_ledger_number and :cc:a_fund = :p:a_fund) + isnull('\n' + :p:a_comment, ''),
 		e_whom = (select :p_partner_key from /apps/kardia/data/Kardia_DB/p_staff/rows s where :s:p_kardia_login = :p:s_created_by),
 		e_initiation = 'P'
 	    from
@@ -97,7 +97,7 @@ timeline "system/query"
 		/apps/kardia/data/Kardia_DB/a_intent_type/rows it
 	    where
 		:p:p_donor_partner_id = :parameters:partner_key and
-		charindex(',' + rtrim(:p:a_ledger_number) + '|' + rtrim(:p:a_cost_center) + ',', ',' + :parameters:my_cclist + ',') > 0 and
+		charindex(',' + rtrim(:p:a_ledger_number) + '|' + rtrim(:p:a_fund) + ',', ',' + :parameters:my_fundlist + ',') > 0 and
 		:p:a_is_active = 1 and
 		:it:a_ledger_number = :p:a_ledger_number and
 		:it:a_intent_type = :p:a_intent_type
@@ -114,7 +114,7 @@ timeline "system/query"
 		e_activity_date = isnull(:g:a_gift_postmark_date, :g:a_gift_received_date),
 		e_activity_type = 'GIFT',
 		e_reference_info = :g:name,
-		e_info = 'Gift Given: ' + (select sum(condition(has_endorsement('kardia:gift_amt', 'kardia:ledger:' + :g:a_ledger_number), '' + sum(:i:a_amount) + ' to ', 'To ') + :cc:a_cost_center + ' - ' + :cc:a_cc_desc + ', ') - ', ' from /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i, /apps/kardia/data/Kardia_DB/a_cost_center/rows cc where :i:a_ledger_number = :g:a_ledger_number and :i:a_batch_number = :g:a_batch_number and :i:a_gift_number = :g:a_gift_number and :cc:a_ledger_number = :i:a_ledger_number and :cc:a_cost_center = :i:a_cost_center group by :i:a_cost_center) + isnull('\n' + (select sum(:i:a_comment + ' ') - ' ' from /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i where :i:a_ledger_number = :g:a_ledger_number and :i:a_batch_number = :g:a_batch_number and :i:a_gift_number = :g:a_gift_number), ''),
+		e_info = 'Gift Given: ' + (select sum(condition(has_endorsement('kardia:gift_amt', 'kardia:ledger:' + :g:a_ledger_number), '' + sum(:i:a_amount) + ' to ', 'To ') + :cc:a_fund + ' - ' + :cc:a_fund_desc + ', ') - ', ' from /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i, /apps/kardia/data/Kardia_DB/a_fund/rows cc where :i:a_ledger_number = :g:a_ledger_number and :i:a_batch_number = :g:a_batch_number and :i:a_gift_number = :g:a_gift_number and :cc:a_ledger_number = :i:a_ledger_number and :cc:a_fund = :i:a_fund group by :i:a_fund) + isnull('\n' + (select sum(:i:a_comment + ' ') - ' ' from /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i where :i:a_ledger_number = :g:a_ledger_number and :i:a_batch_number = :g:a_batch_number and :i:a_gift_number = :g:a_gift_number), ''),
 		e_whom = (select :p_partner_key from /apps/kardia/data/Kardia_DB/p_staff/rows s where :s:p_kardia_login = :g:s_created_by),
 		e_initiation = 'P'
 	    from
@@ -135,17 +135,17 @@ timeline "system/query"
 		e_activity_date = isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date),
 		e_activity_type = 'GIFT',
 		e_reference_info = :i:name,
-		e_info = 'Gift Given: ' + :i:a_amount + ' to ' + :cc:a_cost_center + ' - ' + :cc:a_cc_desc + isnull('\n' + :i:a_comment, ''),
+		e_info = 'Gift Given: ' + :i:a_amount + ' to ' + :cc:a_fund + ' - ' + :cc:a_fund_desc + isnull('\n' + :i:a_comment, ''),
 		e_whom = (select :p_partner_key from /apps/kardia/data/Kardia_DB/p_staff/rows s where :s:p_kardia_login = :i:s_created_by),
 		e_initiation = 'P'
 	    from
 		/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i,
-		/apps/kardia/data/Kardia_DB/a_cost_center/rows cc
+		/apps/kardia/data/Kardia_DB/a_fund/rows cc
 	    where
 		:i:p_dn_donor_partner_id = :parameters:partner_key and
 		:cc:a_ledger_number = :i:a_ledger_number and
-		:cc:a_cost_center = :i:a_cost_center and
-		charindex(',' + rtrim(:i:a_ledger_number) + '|' + rtrim(:i:a_cost_center) + ',', ',' + :parameters:my_cclist + ',') > 0 and
+		:cc:a_fund = :i:a_fund and
+		charindex(',' + rtrim(:i:a_ledger_number) + '|' + rtrim(:i:a_fund) + ',', ',' + :parameters:my_fundlist + ',') > 0 and
 		:i:a_posted = 1
 	    having
 		not has_endorsement('kardia:gift', 'kardia:ledger:' + substring(:e_reference_info,1,charindex('|',:e_reference_info) - 1)) and

@@ -59,8 +59,8 @@ gift_import_report "system/report"
 			donor_name = condition(char_length(rtrim(:p:p_org_name)) > 1, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
 			:eg:i_eg_donor_name,
 			:eg:i_eg_desig_name,
-			:c:a_cost_center,
-			:c:a_cc_desc,
+			:c:a_fund,
+			:c:a_fund_desc,
 			this_period = :period_qy:a_period,
 			gift_period = :bg:a_period,
 			dep_period = :bd:a_period,
@@ -68,7 +68,7 @@ gift_import_report "system/report"
 		FROM
 			/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows eg,
 			/apps/kardia/data/Kardia_DB/p_partner/rows p,
-			/apps/kardia/data/Kardia_DB/a_cost_center/rows c,
+			/apps/kardia/data/Kardia_DB/a_fund/rows c,
 			/apps/kardia/data/Kardia_DB/a_batch/rows bg,
 			/apps/kardia/data/Kardia_DB/a_batch/rows bd,
 			/apps/kardia/data/Kardia_DB/a_batch/rows bf
@@ -78,7 +78,7 @@ gift_import_report "system/report"
 			:eg:i_eg_gift_trx_date <= :period_qy:a_end_date and
 			:p:p_partner_key =* :eg:p_donor_partner_key and
 			:c:a_ledger_number =* :eg:a_ledger_number and
-			:c:a_cost_center =* :eg:a_cost_center and
+			:c:a_fund =* :eg:a_fund and
 			:bg:a_ledger_number =* :eg:a_ledger_number and
 			:bg:a_batch_number =* :eg:a_batch_number and
 			:bd:a_ledger_number =* :eg:a_ledger_number and
@@ -195,7 +195,7 @@ gift_import_report "system/report"
 
 		g_date "report/table-cell" { value=runserver(:gift_qy:i_eg_gift_trx_date); font=courier; dateformat = "dd-MMM"; }
 		g_donor "report/table-cell" { value=runserver(isnull(:gift_qy:p_donor_partner_key + ' ' + :gift_qy:donor_name, :gift_qy:i_eg_donor_name)); }
-		g_desig "report/table-cell" { value=runserver(isnull(:gift_qy:a_cost_center + ' ' + :gift_qy:a_cc_desc, :gift_qy:i_eg_desig_name)); }
+		g_desig "report/table-cell" { value=runserver(isnull(:gift_qy:a_fund + ' ' + :gift_qy:a_fund_desc, :gift_qy:i_eg_desig_name)); }
 		g_method "report/table-cell" { value=runserver(:gift_qy:card_number); }
 		g_freq "report/table-cell" { value=runserver(lower(:gift_qy:i_eg_gift_interval)); }
 		g_amount "report/table-cell" { value=runserver(:gift_qy:i_eg_gift_amount); font=courier; align=right; }
@@ -204,7 +204,7 @@ gift_import_report "system/report"
 		g_dper "report/table-cell" { value=runserver(:gift_qy:dep_period); }
 		g_notes "report/table-cell" { value=runserver(
 							condition(:gift_qy:donor_name is null, 'A,', '') +
-							condition(:gift_qy:a_cc_desc is null, 'B,', '') +
+							condition(:gift_qy:a_fund_desc is null, 'B,', '') +
 							condition(:gift_qy:gift_period is not null and :gift_qy:dep_period is not null and :gift_qy:gift_period != :gift_qy:dep_period, 'C,', '') +
 							condition(:gift_qy:i_eg_status = 'pending', 'pend,', '') + 
 							condition(:gift_qy:i_eg_status = 'returned', 'RET,', '') +

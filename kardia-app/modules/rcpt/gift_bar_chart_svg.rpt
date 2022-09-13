@@ -109,7 +109,7 @@ gift_bar_chart_svg "system/report"
 		    :g:a_posted = 1 and
 		    :p:a_period = :g:a_period and
 		    :p:a_ledger_number = :g:a_ledger_number and
-		    (:this:fund is null or :g:a_cost_center = :this:fund)
+		    (:this:fund is null or :g:a_fund = :this:fund)
 		group by
 		    :g:a_period
 		";

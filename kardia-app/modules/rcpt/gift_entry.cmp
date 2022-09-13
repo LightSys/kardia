@@ -353,7 +353,7 @@ gift_entry "widget/component-decl"
 			    width=130;
 			    text = "New Receipt";
 
-			    enabled = runclient(:gift_entry:by_donor == 0 and :receipts_osrc:cx__pending == 0 and (not (:batch_osrc:a_batch_number is null)) and ((char_length(:line_items_osrc:a_cost_center) > 0 and :desig_form:form_mode == 'New' and not (char_length(:f_desig_recvdoc:content) > 0 or char_length(:f_desig_amount:content) > 0 or char_length(:f_desig_cc:content) > 0)) or :desig_form:form_mode == 'View' or :desig_form:form_mode == 'NoData') and :rcpt_form:is_newable and not (:rcpt_form:a_posted == 1));
+			    enabled = runclient(:gift_entry:by_donor == 0 and :receipts_osrc:cx__pending == 0 and (not (:batch_osrc:a_batch_number is null)) and ((char_length(:line_items_osrc:a_fund) > 0 and :desig_form:form_mode == 'New' and not (char_length(:f_desig_recvdoc:content) > 0 or char_length(:f_desig_amount:content) > 0 or char_length(:f_desig_cc:content) > 0)) or :desig_form:form_mode == 'View' or :desig_form:form_mode == 'NoData') and :rcpt_form:is_newable and not (:rcpt_form:a_posted == 1));
 
 			    new_cn1 "widget/connector" { event=Click; event_condition=runclient(:desig_form:form_mode == 'New'); target=desig_form; action=Discard; }
 			    new_cn2 "widget/connector" { event=Click; target=rcpt_form; action=New; }
@@ -834,10 +834,10 @@ gift_entry "widget/component-decl"
 							value = :a:a_account_code,
 							selected = 1
 						    from
-							/apps/kardia/data/Kardia_DB/a_cc_receipting_accts/rows cr,
+							/apps/kardia/data/Kardia_DB/a_fund_receipting_accts/rows cr,
 							/apps/kardia/data/Kardia_DB/a_account/rows a
 						    where
-							:cr:a_cost_center = " + quote(:f_desig_cc:content) + " and
+							:cr:a_fund = " + quote(:f_desig_cc:content) + " and
 							:cr:a_ledger_number = " + quote(:gift_entry:ledger) + " and
 							:a:a_ledger_number = :cr:a_ledger_number and
 							:a:a_account_code = :cr:a_account_code and
@@ -1075,7 +1075,7 @@ gift_entry "widget/component-decl"
 					:g:a_gift_number,
 					:g:a_split_number,
 					:g:a_period,
-					:g:a_cost_center,
+					:g:a_fund,
 					:g:a_account_code,
 					:g:a_amount,
 					:g:a_gift_admin_fee,
@@ -1094,14 +1094,14 @@ gift_entry "widget/component-decl"
 					:g:s_modified_by,
 					:g:s_date_created,
 					:g:s_created_by,
-					:c:a_cc_desc,
+					:c:a_fund_desc,
 					:a:a_acct_desc
 				    from
 					IDENTITY /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows g,
-					/apps/kardia/data/Kardia_DB/a_cost_center/rows c,
+					/apps/kardia/data/Kardia_DB/a_fund/rows c,
 					/apps/kardia/data/Kardia_DB/a_account/rows a
 				    where
-					:c:a_cost_center =* :g:a_cost_center and
+					:c:a_fund =* :g:a_fund and
 					:c:a_ledger_number =* :g:a_ledger_number and
 					:a:a_account_code =* :g:a_account_code and
 					:a:a_ledger_number =* :g:a_ledger_number
@@ -1146,15 +1146,15 @@ gift_entry "widget/component-decl"
 				SQL = runclient("
 					select
 					    value=:g:a_split_number,
-					    label='' + :g:a_amount + ' for ' + :c:a_cc_desc
+					    label='' + :g:a_amount + ' for ' + :c:a_fund_desc
 					from
 					    identity /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows g,
-					    /apps/kardia/data/Kardia_DB/a_cost_center/rows c
+					    /apps/kardia/data/Kardia_DB/a_fund/rows c
 					where
 					    :g:a_ledger_number = " + quote(:receipts_osrc:a_ledger_number) + " and
 					    :g:a_batch_number = " + :receipts_osrc:a_batch_number + " and
 					    :g:a_gift_number = " + :receipts_osrc:a_gift_number + " and
-					    :c:a_cost_center =* :g:a_cost_center and
+					    :c:a_fund =* :g:a_fund and
 					    :c:a_ledger_number =* :g:a_ledger_number
 					");
 				}
@@ -1181,8 +1181,8 @@ gift_entry "widget/component-decl"
 				row_shadow_angle=135;
 				nodata_message="No designations yet";
 
-				t_cc "widget/table-column" { title="Fund"; value=runclient(:line_items_osrc:a_cost_center + ' ' + :line_items_osrc:a_cc_desc); width=350; style=bold; caption_fieldname=a_comment; wrap=yes; }
-				//t_cc_desc "widget/table-column" { title="Description"; fieldname="a_cc_desc"; width=120; }
+				t_cc "widget/table-column" { title="Fund"; value=runclient(:line_items_osrc:a_fund + ' ' + :line_items_osrc:a_fund_desc); width=350; style=bold; caption_fieldname=a_comment; wrap=yes; }
+				//t_cc_desc "widget/table-column" { title="Description"; fieldname="a_fund_desc"; width=120; }
 				//t_comm "widget/table-column" { title="Comments"; fieldname="a_comment"; width=120; }
 				t_itemamt "widget/table-column"
 				    {
@@ -1319,14 +1319,14 @@ gift_entry "widget/component-decl"
 							{
 							height=20;
 							path="/apps/kardia/modules/base/editbox_table.cmp";
-							field='a_cost_center';
+							field='a_fund';
 							text='Designation:';
 							label_width=100;
 							popup_width=380;
-							popup_sql=runserver("select value = :c:a_cost_center, label = :c:a_cost_center + ' - ' + condition(isnull(:cr:a_receiptable,0) = 1, :c:a_cc_desc + ' (legacy # ' + :c:a_legacy_code + ')', '** CLOSED **') from /apps/kardia/data/Kardia_DB/a_cost_center/rows c, /apps/kardia/data/Kardia_DB/a_cc_receipting/rows cr where :c:a_is_posting = 1 and :c:a_ledger_number = " + quote(:this:ledger) + " and :cr:a_ledger_number =* :c:a_ledger_number and :cr:a_cost_center =* :c:a_cost_center");
-							search_field_list="a_cost_center*,*a_cc_desc*,a_legacy_code*";
-							key_name="a_cost_center";
-							object_name="Fund / Cost Center";
+							popup_sql=runserver("select value = :c:a_fund, label = :c:a_fund + ' - ' + condition(isnull(:cr:a_receiptable,0) = 1, :c:a_fund_desc + ' (legacy # ' + :c:a_legacy_code + ')', '** CLOSED **') from /apps/kardia/data/Kardia_DB/a_fund/rows c, /apps/kardia/data/Kardia_DB/a_fund_receipting/rows cr where :c:a_is_posting = 1 and :c:a_ledger_number = " + quote(:this:ledger) + " and :cr:a_ledger_number =* :c:a_ledger_number and :cr:a_fund =* :c:a_fund");
+							search_field_list="a_fund*,*a_fund_desc*,a_legacy_code*";
+							key_name="a_fund";
+							object_name="Fund";
 							popup_text="Select Designation:";
 							empty_desc="required";
 
@@ -1343,11 +1343,11 @@ gift_entry "widget/component-decl"
 									    label=:at:a_admin_fee_type_desc + ' [' + round(100.0 * :at:a_default_percentage, 1) + '%]',
 									    selected=(:ac:a_default_subtype == :at:a_admin_fee_subtype)
 								    from
-									    /apps/kardia/data/Kardia_DB/a_cc_admin_fee/rows ac,
+									    /apps/kardia/data/Kardia_DB/a_fund_admin_fee/rows ac,
 									    /apps/kardia/data/Kardia_DB/a_admin_fee_type/rows at
 								    where
 									    :ac:a_ledger_number = " + quote(:gift_entry:ledger) + " and
-									    :ac:a_cost_center = " + quote(isnull(:Value, '')) + " and
+									    :ac:a_fund = " + quote(isnull(:Value, '')) + " and
 									    :ac:a_ledger_number = :at:a_ledger_number and
 									    :ac:a_admin_fee_type = :at:a_admin_fee_type
 								    ");
@@ -1359,7 +1359,7 @@ gift_entry "widget/component-decl"
 							    target = ccinfo_osrc;
 							    action = QueryParam;
 							    a_ledger_number = runclient(:receipts_osrc:a_ledger_number);
-							    a_cost_center = runclient(:Value);
+							    a_fund = runclient(:Value);
 							    p_partner_key = runclient(:receipts_osrc:p_donor_partner_id);
 							    }
 
@@ -1389,10 +1389,10 @@ gift_entry "widget/component-decl"
 										value = :a:a_account_code,
 										selected = 1
 									    from
-										/apps/kardia/data/Kardia_DB/a_cc_receipting_accts/rows cr,
+										/apps/kardia/data/Kardia_DB/a_fund_receipting_accts/rows cr,
 										/apps/kardia/data/Kardia_DB/a_account/rows a
 									    where
-										:cr:a_cost_center = " + quote(:f_desig_cc:content) + " and
+										:cr:a_fund = " + quote(:f_desig_cc:content) + " and
 										:cr:a_ledger_number = " + quote(:gift_entry:ledger) + " and
 										:a:a_ledger_number = :cr:a_ledger_number and
 										:a:a_account_code = :cr:a_account_code and
@@ -1422,11 +1422,11 @@ gift_entry "widget/component-decl"
 
 						    ccinfo_osrc "widget/osrc"
 							{
-							a_cost_center "widget/parameter" { type=string; }
+							a_fund "widget/parameter" { type=string; }
 							a_ledger_number "widget/parameter" { type=string; }
 							p_partner_key "widget/parameter" { type=string; }
 							sql = " select
-								    txt = condition(char_length(:parameters:a_cost_center) > 0, isnull(first(:c:a_cc_desc), '** INVALID **'), 'required'),
+								    txt = condition(char_length(:parameters:a_fund) > 0, isnull(first(:c:a_fund_desc), '** INVALID **'), 'required'),
 								    giftcnt =     (	select
 											count(1)
 										    from
@@ -1435,16 +1435,16 @@ gift_entry "widget/component-decl"
 											:i:p_dn_donor_partner_id = :parameters:p_partner_key and
 											:i:a_ledger_number = :c:a_ledger_number and
 											:i:a_posted = 1 and
-											:i:a_cost_center = :c:a_cost_center
+											:i:a_fund = :c:a_fund
 										    )
 								from
-								    /apps/kardia/data/Kardia_DB/a_cost_center/rows c,
-								    /apps/kardia/data/Kardia_DB/a_cc_receipting/rows cr
+								    /apps/kardia/data/Kardia_DB/a_fund/rows c,
+								    /apps/kardia/data/Kardia_DB/a_fund_receipting/rows cr
 								where
-								    :c:a_cost_center = :parameters:a_cost_center and
+								    :c:a_fund = :parameters:a_fund and
 								    :c:a_ledger_number = :parameters:a_ledger_number and
 								    :cr:a_ledger_number = :c:a_ledger_number and
-								    :cr:a_cost_center = :c:a_cost_center and
+								    :cr:a_fund = :c:a_fund and
 								    :cr:a_receiptable = 1
 								limit 1
 								";
@@ -1558,7 +1558,7 @@ gift_entry "widget/component-decl"
 							    target = acctinfo_osrc;
 							    action=QueryParam;
 							    a_ledger_number = runclient(:receipts_osrc:a_ledger_number);
-							    a_cost_center = runclient(:f_desig_cc:content);
+							    a_fund = runclient(:f_desig_cc:content);
 							    a_account_code = runclient(:Value);
 							    }
 
@@ -1596,9 +1596,9 @@ gift_entry "widget/component-decl"
 						    acctinfo_osrc "widget/osrc"
 							{
 							a_account_code "widget/parameter" { type=string; }
-							a_cost_center_2 "widget/parameter" { param_name=a_cost_center; type=string; }
+							a_fund_2 "widget/parameter" { param_name=a_fund; type=string; }
 							a_ledger_number_2 "widget/parameter" { param_name=a_ledger_number; type=string; }
-							sql = "select check = :a_non_tax_deductible from /apps/kardia/data/Kardia_DB/a_cc_receipting_accts/rows cr where :cr:a_cost_center = :parameters:a_cost_center and :cr:a_ledger_number = :parameters:a_ledger_number and :cr:a_account_code = :parameters:a_account_code";
+							sql = "select check = :a_non_tax_deductible from /apps/kardia/data/Kardia_DB/a_fund_receipting_accts/rows cr where :cr:a_fund = :parameters:a_fund and :cr:a_ledger_number = :parameters:a_ledger_number and :cr:a_account_code = :parameters:a_account_code";
 							readahead = 2;
 							replicasize = 2;
 							autoquery = never;
@@ -1883,7 +1883,7 @@ gift_entry "widget/component-decl"
 						}
 
 					    //new_def_amt "widget/connector" { event=New; target=p_amt; action=SetValue; Value=runclient(:line_items_osrc:a_amount); }
-					    //new_def_fnd "widget/connector" { event=New; target=p_fund; action=SetValue; Value=runclient(:line_items_osrc:a_cost_center); }
+					    //new_def_fnd "widget/connector" { event=New; target=p_fund; action=SetValue; Value=runclient(:line_items_osrc:a_fund); }
 					    new_def_typ "widget/connector" { event=New; target=p_type; action=SetValue; Value=runclient('I'); }
 					    new_def_gc "widget/connector" { event=New; target=p_cnt; action=SetValue; Value=runclient(null); }
 
@@ -1898,20 +1898,20 @@ gift_entry "widget/component-decl"
 						p_type "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=dropdown; field=a_intent_type; width=185; label_width=50; text="Type:"; sql="select :a_intent_desc, :a_intent_type, selected=condition(:a_intent_type == 'I', 1, 0), grp=:a_allow_daf from /apps/kardia/data/Kardia_DB/a_intent_type/rows order by :a_intent_desc"; numdisplay=5; }
 						p_amt "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=editbox; field=a_amount; width=150; label_width=60; text="Amount:"; }
 						p_tamt "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=editbox; field=a_total_amount; width=180; label_width=90; text="Total Amount:"; }
-						//p_fund "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=editbox; field=a_cost_center; width=170; label_width=50; text="Fund:"; }
+						//p_fund "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=editbox; field=a_fund; width=170; label_width=50; text="Fund:"; }
 						p_fund "widget/component"
 						    {
 						    height=20;
 						    path="/apps/kardia/modules/base/editbox_table.cmp";
-						    field='a_cost_center';
+						    field='a_fund';
 						    text='Fund:';
 						    label_width=50;
 						    width=170;
 						    popup_width=280;
-						    popup_sql=runserver("select value = :c:a_cost_center, label = :c:a_cost_center + ' - ' + condition(isnull(:cr:a_receiptable,0) = 1, :c:a_cc_desc + ' (legacy # ' + :c:a_legacy_code + ')', '** CLOSED **') from /apps/kardia/data/Kardia_DB/a_cost_center/rows c, /apps/kardia/data/Kardia_DB/a_cc_receipting/rows cr where :c:a_is_posting = 1 and :c:a_ledger_number = " + quote(:this:ledger) + " and :cr:a_ledger_number =* :c:a_ledger_number and :cr:a_cost_center =* :c:a_cost_center");
-						    search_field_list="a_cost_center*,*a_cc_desc*,a_legacy_code*";
-						    key_name="a_cost_center";
-						    object_name="Fund / Cost Center";
+						    popup_sql=runserver("select value = :c:a_fund, label = :c:a_fund + ' - ' + condition(isnull(:cr:a_receiptable,0) = 1, :c:a_fund_desc + ' (legacy # ' + :c:a_legacy_code + ')', '** CLOSED **') from /apps/kardia/data/Kardia_DB/a_fund/rows c, /apps/kardia/data/Kardia_DB/a_fund_receipting/rows cr where :c:a_is_posting = 1 and :c:a_ledger_number = " + quote(:this:ledger) + " and :cr:a_ledger_number =* :c:a_ledger_number and :cr:a_fund =* :c:a_fund");
+						    search_field_list="a_fund*,*a_fund_desc*,a_legacy_code*";
+						    key_name="a_fund";
+						    object_name="Fund";
 						    popup_text="Select Designation:";
 						    empty_desc="optional";
 
