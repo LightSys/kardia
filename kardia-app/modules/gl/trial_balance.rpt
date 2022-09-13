@@ -18,11 +18,12 @@ trial_balance "system/report"
     year_period "report/parameter" { type=string; default=runserver( (select :a_period from /apps/kardia/data/Kardia_DB/a_period/rows where datepart(month, :a_start_date) = 1 and datepart(month, :a_end_date) = 12 and datepart(year, :a_end_date) = datepart(year, getdate())) ); }
     ref_period "report/parameter" { type=string; default=runserver( (select first(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_summary_only = 0 and datepart(year, :a_end_date) = datepart(year, getdate()) order by :a_start_date) ); }
     end_period "report/parameter" { type=string; default=runserver( (select last(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_summary_only = 0 and datepart(year, :a_end_date) = datepart(year, getdate()) order by :a_start_date) ); }
-    pagesep "report/parameter" { type=integer; default=0; }
+    //pagesep "report/parameter" { type=integer; default=0; }
     show1900 "report/parameter" { type=integer; default=1; }
     unposted "report/parameter" { type=integer; default=0; }
     summchart "report/parameter" { type=integer; default=0; }
-
+    control "report/parameter" { type=integer; default=0; }
+    showzero "report/parameter" { type=integer; default=0; }
 
     ledger_qy "report/query"
 	{
@@ -43,9 +44,12 @@ trial_balance "system/report"
 			:c:a_cc_desc,
 			:c:a_bal_cost_center,
 			:a:a_account_code,
+			:tt:a_account_category,
 			:a:a_acct_desc,
 			cbal = sum(:tt:a_amount),
-			bbal = isnull(sum(condition(:tt:a_transaction_type = 'B' or :tt:a_period < :this:ref_period, :tt:a_amount, $0.00)), $0.00)
+			bbal = isnull(sum(condition(:tt:a_transaction_type = 'B' or :tt:a_period < :this:ref_period, :tt:a_amount, $0.00)), $0.00),
+			trxcnt = isnull(sum(condition(:tt:a_transaction_type = 'B', 0, 1)), 0),
+			showzero = :this:showzero
 		from
 			/apps/kardia/data/Kardia_DB/a_transaction/rows tt,
 			/apps/kardia/data/Kardia_DB/a_cost_center/rows c,
@@ -62,6 +66,9 @@ trial_balance "system/report"
 		group by
 			:tt:a_cost_center,
 			:tt:a_account_code
+			" + condition(:this:control, ",:tt:a_account_category", "") + "
+		having
+			:trxcnt > 0 or :bbal != $0.00 or :cbal != $0.00 or :this:showzero
 		");
 	cbal_sum "report/aggregate" { compute="sum(:cbal)"; }
 	cbal_sum2 "report/aggregate" { compute="sum(:cbal)"; }
@@ -96,9 +103,14 @@ trial_balance "system/report"
 	sql = runserver("
 		select
 			:a:a_account_code,
+			:tt:a_account_category,
 			:a:a_acct_desc,
 			cbal = sum(:tt:a_amount),
-			bbal = isnull(sum(condition(:tt:a_transaction_type = 'B' or :tt:a_period < :this:ref_period, :tt:a_amount, $0.00)), $0.00)
+			bbal = isnull(sum(condition(:tt:a_transaction_type = 'B' or :tt:a_period < :this:ref_period, :tt:a_amount, $0.00)), $0.00),
+			trxcnt = isnull(sum(condition(:tt:a_transaction_type = 'B', 0, 1)), 0),
+			trxmax = isnull(max(:tt:a_amount), $0),
+			trxmin = isnull(min(:tt:a_amount), $0),
+			showzero = :this:showzero
 		from
 			/apps/kardia/data/Kardia_DB/a_transaction/rows tt,
 			/apps/kardia/data/Kardia_DB/a_account/rows a
@@ -111,6 +123,9 @@ trial_balance "system/report"
 			" + condition(:this:unposted, "", "and :tt:a_posted = 1") + "
 		group by
 			:tt:a_account_code
+			" + condition(:this:control, ",:tt:a_account_category", "") + "
+		having
+			:trxcnt > 0 or :trxmax != $0.00 or :trxmin != $0.00 or :this:showzero
 		");
 	cbal_sum "report/aggregate" { compute="sum(:cbal)"; }
 	cbal_sum2 "report/aggregate" { compute="sum(:cbal)"; }
@@ -148,7 +163,7 @@ trial_balance "system/report"
 	    {
 	    x=0; width=80; height=0;
 	    columns=6;
-	    widths=6,4,40,9,9,9;
+	    widths=5.5,5.5,39,9,9,9;
 	    colsep=0.8;
 	    source=accts_qy;
 	    topborder=0.3;
@@ -176,7 +191,7 @@ trial_balance "system/report"
 		fontsize=8;
 		marginbottom=0.0;
 		d_cc "report/table-cell" { value=runserver(:accts_qy:a_cost_center); align=left; }
-		d_acct "report/table-cell" { value=runserver(:accts_qy:a_account_code); align=left; }
+		d_acct "report/table-cell" { value=runserver(condition(:this:control, "" + :accts_qy:a_account_category + "-", "") + :accts_qy:a_account_code); align=left; }
 		d_desc "report/table-cell" { font=helvetica; value=runserver(:accts_qy:a_cc_desc + " (" + :accts_qy:a_acct_desc + ")"); align=left; }
 		d_bbal "report/table-cell" { value=runserver(:accts_qy:bbal); align=right; }
 		d_chg "report/table-cell" { value=runserver((:accts_qy:cbal - :accts_qy:bbal)); align=right; }
@@ -246,7 +261,7 @@ trial_balance "system/report"
 	    condition=runserver(:this:summchart == 1);
 	    x=0; width=80; height=0;
 	    columns=5;
-	    widths=4,46.8,9,9,9;
+	    widths=5.5,45.3,9,9,9;
 	    colsep=0.8;
 	    source=glwide_cc_qy,glwide_accts_qy;
 	    topborder=0.3;
@@ -272,7 +287,7 @@ trial_balance "system/report"
 		font=courier;
 		fontsize=8;
 		marginbottom=0.0;
-		d_acct "report/table-cell" { value=runserver(:glwide_accts_qy:a_account_code); align=left; }
+		d_acct "report/table-cell" { value=runserver(condition(:this:control, "" + :glwide_accts_qy:a_account_category + "-", "") + :glwide_accts_qy:a_account_code); align=left; }
 		d_desc "report/table-cell" { font=helvetica; value=runserver(:glwide_accts_qy:a_acct_desc); align=left; }
 		d_bbal "report/table-cell" { value=runserver(:glwide_accts_qy:bbal); align=right; }
 		d_chg "report/table-cell" { value=runserver((:glwide_accts_qy:cbal - :glwide_accts_qy:bbal)); align=right; }

@@ -81,10 +81,12 @@ trial_balance "widget/page"
 		}
 	    f_end "widget/component" { width=350; height=24; path="/sys/cmp/smart_field.cmp"; field='end_period'; ctl_type=dropdown; text='Ending Period:';  form=rpt_form; label_width=120; sql = runserver("select :a_period + ' - ' + :a_period_desc, :a_period, 0, :a_parent_period from  /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = " + quote(:this:ledger) + " and :a_summary_only = 0 order by :a_period asc"); }
 	    sep "widget/autolayoutspacer" { height=4; }
+	    f_showzero "widget/component" { x=10; width=400; height=24; path="/sys/cmp/smart_field.cmp"; field="showzero"; ctl_type='checkboxleft'; text="Show accounts with a zero balance and no transactions"; form=rpt_form; label_width=120; }
+	    f_control "widget/component" { x=10; width=400; height=24; path="/sys/cmp/smart_field.cmp"; field="control"; ctl_type='checkboxleft'; text="Show control account codes"; form=rpt_form; label_width=120; }
 	    f_unposted "widget/component" { x=10; width=400; height=24; path="/sys/cmp/smart_field.cmp"; field="unposted"; ctl_type='checkboxleft'; text="Include unposted transactions"; form=rpt_form; label_width=120; }
-	    f_pagesep "widget/component" { x=10; width=400; height=24; path="/sys/cmp/smart_field.cmp"; field="pagesep"; ctl_type='checkboxleft'; text="Show cost centers on separate page(s)"; form=rpt_form; label_width=120; }
+	    //f_pagesep "widget/component" { x=10; width=400; height=24; path="/sys/cmp/smart_field.cmp"; field="pagesep"; ctl_type='checkboxleft'; text="Show cost centers on separate page(s)"; form=rpt_form; label_width=120; }
 	    f_summchart "widget/component" { x=10; width=400; height=24; path="/sys/cmp/smart_field.cmp"; field="summchart"; ctl_type='checkboxleft'; text="Include a ledger-wide GL Account summary"; form=rpt_form; label_width=120; }
-	    f_rollsubs "widget/component" { x=10; width=400; height=24; path="/sys/cmp/smart_field.cmp"; field="rollsubs"; ctl_type='checkboxleft'; text="Roll-up subsidiary cost centers (funds) with their main funds"; form=rpt_form; label_width=120; }
+	    //f_rollsubs "widget/component" { x=10; width=400; height=24; path="/sys/cmp/smart_field.cmp"; field="rollsubs"; ctl_type='checkboxleft'; text="Roll-up subsidiary cost centers (funds) with their main funds"; form=rpt_form; label_width=120; }
 	    f_level "widget/component" { width=350; height=24; path="/sys/cmp/smart_field.cmp"; field='report_level'; ctl_type=dropdown; text='Detail Level:'; sql=runserver("select '' + :a_reporting_level + ' - ' + :a_level_rpt_desc, :a_reporting_level from /apps/kardia/data/Kardia_DB/a_reporting_level/rows where :a_ledger_number = " + quote(:this:ledger)); form=rpt_form; label_width=120; }
 	    f_docfmt "widget/component"
 		{ 
