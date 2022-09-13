@@ -1,0 +1,67 @@
+$Version=2$
+plugin_base_config_email_reports "widget/component-decl"
+	{
+	width=828;
+	height=490;
+	title = "Email Reports";
+	description = "Configure emailing scheduled Kardia reports";
+	sequence = 1200;
+
+	vbox "widget/vbox"
+		{
+		x=0; y=0;
+		width=828; height=490;
+		spacing=7;
+
+		config_lbl "widget/label" { height=16; style=bold; text="Report Emailing Configuration"; }
+
+		config_osrc "widget/osrc"
+			{
+			a_ledger_number "widget/parameter" { type=string; }
+			sql = "select * from object /apps/kardia/modules/base/config.qyp";
+
+			config_form "widget/form"
+				{
+				allow_query=no;
+
+				email_reports_dryrun_label "widget/label" { height=15; text="Perform a dry run (print what would be done without actually emailing anything) when the email reports tool runs?"; }
+				email_reports_dryrun_enable "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="ReportsDryRun"; text="Dry Run:"; ctl_type=checkbox; enab_hints "widget/hints" { style=notnull; } }
+				
+				email_reports_osml_label "widget/label" { height=15; text="What OSML directory to put generated reports into?"; }
+				email_reports_osml_dir "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="ReportsDir"; text="OSML dir:"; width=500; ctl_type=editbox; }
+
+				email_reports_email_label "widget/label" { height=15; text="What SMTP settings to use when sending report emails? See https://docs.python.org/3/library/smtplib.html#smtplib.SMTP for more info"; }
+				email_reports_host "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="ReportsHost"; text="Host:"; width=500; ctl_type=editbox; }
+				email_reports_port "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="ReportsPort"; text="Port:"; width=500; ctl_type=editbox; emr_port_hints "widget/hints" { allowchars="0123456789"; } }
+				email_reports_hostname "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="ReportsHostname"; text="Our hostname:"; empty_desc="optional"; width=500; ctl_type=editbox; }
+				email_reports_timeout "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="ReportsTimeout"; text="Timeout (secs):"; empty_desc="optional"; width=500; ctl_type=editbox; emr_timeout_hints "widget/hints" { allowchars="0123456789"; } }
+				}
+			}
+
+		ctls_hbox "widget/hbox"
+			{
+			height=24;
+			align=center;
+			spacing=10;
+
+			save_btn "widget/textbutton"
+				{
+				height=24; width=130;
+				text = "Save";
+				enabled=runclient(:config_form:is_savable);
+
+				on_save "widget/connector" { event=Click; target=config_form; action=Save; }
+				}
+
+			cancel_btn "widget/textbutton"
+				{
+				height=24; width=130;
+				text = "Cancel";
+				enabled=runclient(:config_form:is_discardable);
+
+				on_cancel "widget/connector" { event=Click; target=config_form; action=Discard; }
+				}
+			}
+		}
+    }
+

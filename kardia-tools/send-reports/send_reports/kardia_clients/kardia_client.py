@@ -10,6 +10,10 @@ class KardiaClient(abc.ABC):
         pass
 
     @abc.abstractmethod
+    def get_config(self) -> Dict:
+        pass
+
+    @abc.abstractmethod
     def get_scheduled_reports_to_be_sent(self, filters: ScheduledReportFilters,
         on_individual_report_error: Callable[[str], None]) -> List[ScheduledReport]:
         pass
