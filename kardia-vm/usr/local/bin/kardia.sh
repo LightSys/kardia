@@ -937,8 +937,13 @@ function repoSetStatus
     cd "$1/cx-git"
     CXORIGIN=$(cd "$1/cx-git" 2>/dev/null; git config --get remote.origin.url 2>/dev/null)
     CXMETHOD=${CXORIGIN%%:*}
-    CXUSER=${CXORIGIN##https://}
-    CXUSER=${CXUSER%%@*}
+    #if CXORIGIN has a @ in it, then we have a user set.  Pick it out
+    if [[ $CXORIGIN =~ "@" ]]; then
+	CXUSER=${CXORIGIN##https://}
+	CXUSER=${CXUSER%%@*}
+    else
+	CXUSER=""
+    fi
     if [ "$CXMETHOD" != "https" ]; then
 	CXUSER=""
     fi
