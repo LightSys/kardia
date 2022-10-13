@@ -4835,6 +4835,7 @@ function doQuickSetupGuide
     if [ $# -lt 1 ]; then
 	STEP=1
     else
+	echo "Starting back at position $1"
 	STEP=$1
     fi
     export SLOWMODDE=yes
@@ -5090,14 +5091,20 @@ GDB:  Run Centrallix in a console, using the GDB debugger.  This allows you to d
 function sg08InitRepo
     {
     if [ "$QUICKMODE" = "no" ]; then
-	dialog --backtitle "$TITLE" --title "Step $STEPNUM:  Initialize the Shared Repository" --yes-label OK --no-label Back --yesno "Next, let's initialize the shared source code repository on the VM Appliance.  This downloads the very latest source code for Kardia and Centrallix from Github  You'll need to separately initialize the per-user repositories if you are using 'team' or 'individual' workflow." 0 0
+	dialog --backtitle "$TITLE" --title "Step $STEPNUM:  Initialize the Shared Repository" --ok-label 'OK' --cancel-label 'Back' --extra-button --extra-label 'Skip' --yesno "Next, let's initialize the shared source code repository on the VM Appliance.  This downloads the very latest source code for Kardia and Centrallix from Github  You'll need to separately initialize the per-user repositories if you are using 'team' or 'individual' workflow." 0 0
     else
-	dialog --backtitle "$TITLE" --title "Step $STEPNUM:  Initialize the Shared Repository" --yes-label OK --no-label Back --yesno "Next, let's initialize the shared source code repository on the VM Appliance.  This downloads the very latest source code for Kardia and Centrallix from Github" 0 0
+	dialog --backtitle "$TITLE" --title "Step $STEPNUM:  Initialize the Shared Repository" --ok-label 'OK' --cancel-label 'Back' --extra-button --extra-label 'Skip' --yesno "Next, let's initialize the shared source code repository on the VM Appliance.  This downloads the very latest source code for Kardia and Centrallix from Github" 0 0
     fi
-    if [ "$?" != 0 ]; then
+    value=$?
+    if [ "$value" == 0 ]; then
+	repoInitShared
+    fi
+    if [ "$value" == 1 ]; then
 	return 1
     fi
-    repoInitShared
+    if [ "$value" == 3 ]; then
+	return #skip.  It looks like we did it
+    fi
     }
 
 function sg09SetSFUser
