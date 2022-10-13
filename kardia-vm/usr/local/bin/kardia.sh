@@ -259,6 +259,7 @@ function GetOSInfo
 #
 function UpdateMenus
     {
+    whereToReturn="$@"
     lookupStatus
     GetOSInfo
     os_string=$(echo $OSSTR | sed 's/ /_/g')
@@ -309,7 +310,7 @@ function UpdateMenus
 		fi
 		echo "Successfully updated menu system.  Press [ENTER] to continue..."
 		read ANS
-		exec /usr/local/bin/kardia.sh
+		exec /usr/local/bin/kardia.sh $whereToReturn
 	    else
 		echo "Menus are already up to date.  Press [ENTER] to continue..."
 		read ANS
@@ -4830,10 +4831,15 @@ function chooseSetupGuide
 # Set it up for kardia testing only
 function doQuickSetupGuide
     {
+    #if we are resuming, we pass in the number we start at
+    if [ $# -lt 1 ]; then
+	STEP=1
+    else
+	STEP=$1
+    fi
     export SLOWMODDE=yes
     export STEPNUM="One"
     updateFirewall
-    STEP=1
     while true; do
 	if [ "$STEP" = 0 ]; then
 	    return 1
@@ -4861,7 +4867,8 @@ function doQuickSetupGuide
 		;;
 	    6)
 		STEPNUM=Six
-		sg10UpdateStuff
+		#We add the function we return to if we complete the rebuilding Kardia
+		sg10UpdateStuff doQuickSetupGuide 7
 		;;
 	    7)
 		STEPNUM=Seven
@@ -4887,8 +4894,13 @@ function doQuickSetupGuide
 # Setup Guide (aka "Wizard") for first-time run.
 function doSetupGuide
     {
+    #if we are resuming, we pass in the number we start at
+    if [ $# -lt 1 ]; then
+	STEP=1
+    else
+	STEP=$1
+    fi
     updateFirewall
-    STEP=1
     while true; do
 	if [ "$STEP" = 0 ]; then
 	    return 1
@@ -4932,7 +4944,8 @@ function doSetupGuide
 		;;
 	    10)
 		STEPNUM=Ten
-		sg10UpdateStuff
+		#We pass in the place to resume next if we restart kardia.sh
+		sg10UpdateStuff doSetupGuide 11
 		;;
 	    11)
 		STEPNUM=Eleven
@@ -5098,12 +5111,13 @@ function sg09SetSFUser
 
 function sg10UpdateStuff
     {
+    whereToReturn="$@"
     dialog --backtitle "$TITLE" --title "Step $STEPNUM:  Download OS Updates" --yes-label OK --no-label Skip --yesno "Every OS needs to download updates at some time.  We like to start this VM as fully updated as possible.  Would you like to check to see if we need to download operating system and kardia.sh updates?" 0 0
     if [ "$?" != 0 ]; then
 	return 0
     fi
     doUpdates
-    UpdateMenus
+    UpdateMenus $whereToReturn
     }
 
 function sg11RootBuildRun
@@ -5260,3 +5274,6 @@ while true; do
 	    ;;
     esac
 done
+
+#clear the screen. Some terminals do not do this
+clear
