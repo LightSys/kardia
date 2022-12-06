@@ -252,6 +252,7 @@ gift_import_report "system/report"
 			"\nGifts posted this month but deposited next month: \t" + :gift_qy:dep_next_total + 
 			"\nGifts posted this month but not yet deposited: \t" + :gift_qy:dep_none_total + 
 			"\nGifts refunded: \t\t\t" + :gift_qy:refund_total + 
+			"\nReconciliation Total: \t\t\t" + (:gift_qy:dep_prev_total - :gift_qy:dep_next_total - :gift_qy:dep_none_total) + 
 			"\n"); }
 
 	    f_d4 "report/data" { style=bold; fontsize=11; value = runserver("\n\nGifts by Day:\n"); }
