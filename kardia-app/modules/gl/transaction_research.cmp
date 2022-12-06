@@ -123,8 +123,8 @@ transaction_research "widget/component-decl"
 		nodata_message = "No matching transactions";
 
 		trt_date "widget/table-column" { title = "Date"; value=runclient(condition(:tr_osrc:dmin == :tr_osrc:dmax, :tr_osrc:dmin, :tr_osrc:dmin + ' -\n' + :tr_osrc:dmax)); width=60; style=bold; }
-		trt_per "widget/table-column" { title = "Period"; value=runclient(condition(:tr_osrc:minp == :tr_osrc:maxp, :tr_osrc:minp, :tr_osrc:minp + ' - ' + :tr_osrc:maxp)); width=110; style=bold; caption_value=runclient(condition(:tr_osrc:minp == :tr_osrc:maxp, :tr_osrc:pdesc, '(multiple)')); }
-		trt_stat "widget/table-column" { title = "Status"; value=runclient(condition(:tr_osrc:minstat == :tr_osrc:maxstat, :tr_osrc:minstat, '(mixed)')); width=60; style=bold; caption_value=runclient(condition(:tr_osrc:mino == :tr_osrc:maxo, :tr_osrc:mino, '(multiple)')); }
+		trt_per "widget/table-column" { title = "Period"; value=runclient(condition(:tr_osrc:minp == :tr_osrc:maxp, :tr_osrc:minp, :tr_osrc:minp + ' - ' + :tr_osrc:maxp)); width=90; style=bold; caption_value=runclient(condition(:tr_osrc:minp == :tr_osrc:maxp, :tr_osrc:pdesc, '(multiple)')); }
+		trt_stat "widget/table-column" { title = "Status"; value=runclient(condition(:tr_osrc:minstat == :tr_osrc:maxstat, :tr_osrc:minstat, '(mixed)')); width=80; style=bold; caption_value=runclient(condition(:tr_osrc:mino == :tr_osrc:maxo, :tr_osrc:mino, '(multiple)')); }
 		trt_bat "widget/table-column" { title = "Batch / Jnl"; value=runclient(condition(:tr_osrc:minb == :tr_osrc:maxb, '' + :tr_osrc:minb + ' / ' + condition(:tr_osrc:minj == :tr_osrc:maxj, :tr_osrc:minj, '' + :tr_osrc:minj + ' - ' + :tr_osrc:maxj), '' + :tr_osrc:minb + ' - ' + :tr_osrc:maxb)); width=140; style=bold; caption_value=runclient(condition(:tr_osrc:minb == :tr_osrc:maxb, :tr_osrc:bdesc, '(multiple)')); }
 		trt_cc "widget/table-column" { title = "Fund"; value=runclient(condition(:tr_osrc:mincc == :tr_osrc:maxcc, :tr_osrc:mincc, :tr_osrc:mincc + ' - ' + :tr_osrc:maxcc)); width=140; style=bold; caption_value=runclient(condition(:tr_osrc:mincc == :tr_osrc:maxcc, :tr_osrc:cdesc, '(multiple)')); }
 		trt_acct "widget/table-column" { title = "Account"; value=runclient(condition(:tr_osrc:minac == :tr_osrc:maxac, :tr_osrc:minac, :tr_osrc:minac + ' - ' + :tr_osrc:maxac)); width=140; style=bold; caption_value=runclient(condition(:tr_osrc:minac == :tr_osrc:maxac, :tr_osrc:adesc, '(multiple)')); }
@@ -243,8 +243,8 @@ transaction_research "widget/component-decl"
 				nodata_message = "No matching transactions";
 
 				tlt_date "widget/table-column" { title = "Date"; fieldname=dtxt; width=50; }
-				tlt_per "widget/table-column" { title = "Period"; fieldname=per; width=110; }
-				tlt_stat "widget/table-column" { title = "Status"; fieldname=stat; width=60; }
+				tlt_per "widget/table-column" { title = "Period"; fieldname=per; width=90; }
+				tlt_stat "widget/table-column" { title = "Status"; value=runclient(:tr_list_osrc:a_origin + ' ' + :tr_list_osrc:stat); width=80; }
 				tlt_bat "widget/table-column" { title = "Batch / Jnl"; fieldname=bjt; width=140; }
 				tlt_cc "widget/table-column" { title = "Fund"; fieldname=cc; width=140; }
 				tlt_acct "widget/table-column" { title = "Account"; fieldname=ac; width=140; }
