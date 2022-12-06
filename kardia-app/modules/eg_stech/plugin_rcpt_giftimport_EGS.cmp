@@ -38,39 +38,39 @@ plugin_rcpt_giftimport_EGS "widget/component-decl"
 			i_eg_desig_notes = condition(char_length(isnull(:depdet:DesignationMemo,'')) > 1, :depdet:DesignationMemo, condition(char_length(isnull(:depdet:MainMemo, '')) > 1, :depdet:MainMemo, condition(char_length(isnull(:depdet:Memo, '')) > 1, :depdet:Memo, ''))),
 			i_eg_desig_uuid = :desig:DesignationGUID,
 
-			i_eg_donor_alt_id = condition(char_length(convert(string, :p:DonorID)) > 1, convert(string, :p:DonorID), null),
-			i_eg_donor_name = :p:FirstName + ' ' + :p:LastName,
-			i_eg_donor_given_name = :p:FirstName,
-			i_eg_donor_surname = :p:LastName,
-			i_eg_donor_middle_name = :p:MiddleName,
-			i_eg_donor_prefix = :p:Prefix,
-			i_eg_donor_suffix = :p:Suffix,
-			i_eg_donor_addr1 = convert(string, :p:Address1),
-			i_eg_donor_addr2 = convert(string, :p:Address2),
-			i_eg_donor_addr3 = convert(string, :p:Address3),
-			i_eg_donor_city = :p:City,
-			i_eg_donor_state = :p:StateCode,
-			i_eg_donor_postal = convert(string, :p:PostalCode),
-			i_eg_donor_country = (select :ct:CountryCode from /apps/kardia/modules/eg_stech/egsapi.http/CountrySelect/Countries ct where :ct:CountryName = :p:CountryName),
-			i_eg_donor_email = :p:EmailAddress,
-			i_eg_donor_phone = convert(string, :p:WorkPhoneNumber),
+			:p:i_eg_donor_alt_id,
+			:p:i_eg_donor_name,
+			:p:i_eg_donor_given_name,
+			:p:i_eg_donor_surname,
+			:p:i_eg_donor_middle_name,
+			:p:i_eg_donor_prefix,
+			:p:i_eg_donor_suffix,
+			:p:i_eg_donor_addr1,
+			:p:i_eg_donor_addr2,
+			:p:i_eg_donor_addr3,
+			:p:i_eg_donor_city,
+			:p:i_eg_donor_state,
+			:p:i_eg_donor_postal,
+			i_eg_donor_country = (select :ct:CountryCode from /apps/kardia/modules/eg_stech/egsapi.http/CountrySelect/Countries ct where :ct:CountryName = :p:i_eg_donor_country),
+			:p:i_eg_donor_email,
+			:p:i_eg_donor_phone,
 
 			i_eg_deposit_date = convert(datetime, :dep:DepositDate),
 			i_eg_deposit_gross_amt = convert(money, :dep:GrossAmount),
 			i_eg_deposit_amt = convert(money, :dep:NetAmount),
 
-			i_eg_gift_interval = upper(isnull(:ac:RecurringName, '')),
-			i_eg_gift_date = convert(datetime, isnull(:ac:CreateDateTime, :t:TransactionDate))
+			:ac:i_eg_gift_interval,
+			i_eg_gift_date = isnull(:ac:i_eg_gift_date, convert(datetime, :t:TransactionDate))
 		from
-			/apps/kardia/modules/eg_stech/egsapi_trx.http/DonorsTransactionInformation?Page=1&RecordsPerPage=9999/Transactions t,
-			expression ('/apps/kardia/modules/eg_stech/egsapi_trx.http/DonorsTransactionInformation?Page=1&RecordsPerPage=9999/Transactions/' + :t:name + '/Designations') desig,
-			/apps/kardia/modules/eg_stech/egsapi.http/DonorInformationReport/Donors p,
-			/apps/kardia/modules/eg_stech/egsapi_sched.http/AccountSchedules?StatusType=0&Page=1&RecordsPerPage=9999/AccountSchedules ac,
+			/apps/kardia/modules/eg_stech/egsapi_trx.http/DonorsTransactionInformation?Page=1&RecordsPerPage=1000/Transactions t,
+			expression ('/apps/kardia/modules/eg_stech/egsapi_trx.http/DonorsTransactionInformation?Page=1&RecordsPerPage=1000/Transactions/' + :t:name + '/Designations') desig,
+			/apps/kardia/modules/eg_stech/donors.qy p,
+			/apps/kardia/modules/eg_stech/acctsched.qy ac,
 			/apps/kardia/modules/eg_stech/egsapi_trx.http/DepositDesignationDetail/DepositDesignationDetails depdet,
 			/apps/kardia/modules/eg_stech/egsapi_trx.http/DepositSummary/Deposits dep
 		where
-			:p:DonorGUID = :t:DonorGUID and
-			:ac:AccountScheduleGUID =* :t:AccountScheduleGUID and
+			:p:i_eg_donor_uuid = :t:DonorGUID and
+			:ac:i_eg_gift_uuid =* :t:AccountScheduleGUID and
 			:depdet:TransactionGUID =* :t:TransactionGUID and
 			:depdet:DesignationGUID =* :desig:DesignationGUID and
 			:dep:DepositID = :depdet:DepositID and
