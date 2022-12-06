@@ -84,6 +84,8 @@ trial_balance "system/report"
 
 	ifxfr_sum_b "report/aggregate" { compute="sum(:bbal)"; where=":a_account_code == '1900'"; reset=0; }
 	ifxfr_sum_c "report/aggregate" { compute="sum(:cbal)"; where=":a_account_code == '1900'"; reset=0; }
+
+	rowid "report/aggregate" { compute="count(1)"; reset=0; }
 	}
 
     glwide_cc_qy "report/query"
@@ -141,6 +143,8 @@ trial_balance "system/report"
 
 	ifxfr_sum_b "report/aggregate" { compute="sum(:bbal)"; where=":a_account_code == '1900'"; reset=0; }
 	ifxfr_sum_c "report/aggregate" { compute="sum(:cbal)"; where=":a_account_code == '1900'"; reset=0; }
+
+	rowid "report/aggregate" { compute="count(1)"; reset=0; }
 	}
 
 
@@ -170,6 +174,7 @@ trial_balance "system/report"
 	    bottomborder=0.3;
 	    nullformat="-";
 	    moneyformat = "Z###,###,###.00-";
+	    negative_fontcolor = "#e00000";
 
 	    tbl_hdr "report/table-row"
 		{
@@ -189,7 +194,10 @@ trial_balance "system/report"
 		{
 		font=courier;
 		fontsize=8;
-		marginbottom=0.0;
+		marginbottom=0.1;
+		margintop=0.15;
+		bgcolor = runserver(condition((:accts_qy:rowid / 2) * 2 == :accts_qy:rowid, '#f0f0f0', null));
+
 		d_cc "report/table-cell" { value=runserver(:accts_qy:a_fund); align=left; }
 		d_acct "report/table-cell" { value=runserver(condition(:this:control, "" + :accts_qy:a_account_category + "-", "") + :accts_qy:a_account_code); align=left; }
 		d_desc "report/table-cell" { font=helvetica; value=runserver(:accts_qy:a_fund_desc + " (" + :accts_qy:a_acct_desc + ")"); align=left; }
@@ -268,6 +276,7 @@ trial_balance "system/report"
 	    bottomborder=0.3;
 	    nullformat="-";
 	    moneyformat = "Z###,###,###.00-";
+	    negative_fontcolor = "#e00000";
 
 	    tbl_hdr "report/table-row"
 		{
@@ -286,7 +295,10 @@ trial_balance "system/report"
 		{
 		font=courier;
 		fontsize=8;
-		marginbottom=0.0;
+		marginbottom=0.1;
+		margintop=0.15;
+		bgcolor = runserver(condition((:glwide_accts_qy:rowid / 2) * 2 == :glwide_accts_qy:rowid, '#f0f0f0', null));
+
 		d_acct "report/table-cell" { value=runserver(condition(:this:control, "" + :glwide_accts_qy:a_account_category + "-", "") + :glwide_accts_qy:a_account_code); align=left; }
 		d_desc "report/table-cell" { font=helvetica; value=runserver(:glwide_accts_qy:a_acct_desc); align=left; }
 		d_bbal "report/table-cell" { value=runserver(:glwide_accts_qy:bbal); align=right; }

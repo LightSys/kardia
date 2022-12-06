@@ -294,7 +294,9 @@ transaction_report "system/report"
 		    {
 		    font=courier;
 		    fontsize=8;
-		    marginbottom=0.0;
+		    marginbottom=0.1;
+		    margintop=0.15;
+		    bgcolor = runserver(condition((:trx_qy:rowid / 2) * 2 == :trx_qy:rowid, '#f0f0f0', null));
 
 		    d_period "report/table-cell" { value=runserver(:trx_qy:a_period); align=left; }
 		    d_date "report/table-cell" { value=runserver(:trx_qy:a_effective_date); align=left; }
@@ -309,11 +311,11 @@ transaction_report "system/report"
 		    d_credit "report/table-cell" { value=runserver(:trx_qy:minus_amt); align=right; }
 		    }
 
-		tbl_sep_row "report/table-row"
-		    {
-		    condition = runserver((:trx_qy:rowid / 5) * 5 == :trx_qy:rowid);
-		    bottomborder=0.021;
-		    }
+//		tbl_sep_row "report/table-row"
+//		    {
+//		    condition = runserver((:trx_qy:rowid / 5) * 5 == :trx_qy:rowid);
+//		    bottomborder=0.021;
+//		    }
 
 		per_subtotal "report/table-row"
 		    {
