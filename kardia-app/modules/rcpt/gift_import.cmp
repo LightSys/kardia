@@ -844,7 +844,7 @@ gift_import "widget/component-decl"
 						cctext = isnull(:eg:a_fund + ' - ' + isnull(:c:a_fund_desc, '**INVALID**'), 'Needs QA: ' + :eg:i_eg_desig_name),
 						:eg:i_eg_gift_amount,
 						:eg:i_eg_net_amount,
-						:eg:i_eg_net_amount,
+						:eg:a_batch_number,
 						fees = :eg:i_eg_gift_amount - :eg:i_eg_net_amount,
 						import_status = condition(
 								    :eg:a_batch_number is not null,
@@ -899,10 +899,11 @@ gift_import "widget/component-decl"
 
 					dep_g_stat "widget/table-column" { width=34; fieldname=import_status; title="Stat."; type=image; }
 					dep_g_date "widget/table-column" { width=80; fieldname=trx_date; title="Gift Date"; }
-					dep_g_fund "widget/table-column" { width=206; fieldname=cctext; title="Designation"; }
-					dep_g_gross "widget/table-column" { width=95; fieldname=i_eg_gift_amount; title="Amt Given"; align=right; }
-					dep_g_fees "widget/table-column" { width=95; fieldname=fees; title="- Fees"; align=right; }
-					dep_g_net "widget/table-column" { width=95; fieldname=i_eg_net_amount; title="= Net Amt"; align=right; }
+					dep_g_batch "widget/table-column" { width=65; fieldname=a_batch_number; title="Gift Batch"; }
+					dep_g_fund "widget/table-column" { width=186; fieldname=cctext; title="Designation"; }
+					dep_g_gross "widget/table-column" { width=80; fieldname=i_eg_gift_amount; title="Amt Given"; align=right; }
+					dep_g_fees "widget/table-column" { width=80; fieldname=fees; title="- Fees"; align=right; }
+					dep_g_net "widget/table-column" { width=80; fieldname=i_eg_net_amount; title="= Net Amt"; align=right; }
 					}
 				    }
 				}
