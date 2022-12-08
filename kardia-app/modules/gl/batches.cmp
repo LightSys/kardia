@@ -46,6 +46,7 @@ batches "widget/component-decl"
 				:b:a_batch_number, 
 				:b:a_batch_desc, 
 				:b:a_default_effective_date,
+				batch_txt = '' + :a_batch_number + ' - ' + :a_batch_desc,
 				date_txt = substring(convert(string,:a_default_effective_date),1,11),
 				:b:s_date_created,
 				:b:s_created_by,
@@ -94,6 +95,7 @@ batches "widget/component-decl"
 			new_batch_cmp "widget/component"
 			    {
 			    x=0;y=0;width=478;height=298;
+			    border_radius=8;
 			    path="/apps/kardia/modules/gl/generic_editbatch.cmp";
 			    ledger=runserver(:this:ledger);
 			    periods_osrc = periods_osrc;
@@ -102,6 +104,122 @@ batches "widget/component-decl"
 			    new_batch_window = new_batch_window;
 			    new_batch_form = new_batch_form;
 			    allow_effdate = 1;
+			    }
+			}
+		    }
+
+		do_copy_osrc "widget/osrc"
+		    {
+		    dc_ledger "widget/parameter" { type=string; param_name=ledger; }
+		    dc_oldbatch "widget/parameter" { type=integer; param_name=oldbatch; }
+		    dc_newbatch "widget/parameter" { type=integer; param_name=newbatch; }
+		    dc_amounts "widget/parameter" { type=string; param_name=amounts; }
+		    autoquery=never;
+		    sql = " exec /apps/kardia/modules/gl/copy_gl_batch.qy
+				ledger = :parameters:ledger,
+				oldbatch = :parameters:oldbatch,
+				newbatch = :parameters:newbatch,
+				amounts = :parameters:amounts
+			    ";
+
+		    do_copy_done1 "widget/connector" { event=EndQuery; target=copy_batch_form; action=Discard; }
+		    do_copy_done2 "widget/connector" { event=EndQuery; target=batch_osrc; action=RefreshObject; }
+		    }
+
+		copy_batch_window "widget/childwindow"
+		    {
+		    style=dialog;
+		    border_radius=8;
+		    titlebar=no;
+		    modal=yes;
+		    toplevel=yes;
+		    width=480; height=240;
+		    x=150; y=150;
+		    visible=no;
+
+		    copy_batch_osrc "widget/osrc"
+			{
+			autoquery=never;
+			sql = "select '' where 0 = 1";
+
+			copy_batch_form "widget/form"
+			    {
+			    allow_new = yes;
+			    allow_query = no;
+
+			    hide_on_nodata "widget/connector" { event=NoData; target=copy_batch_window; action=Close; }
+
+			    on_new_set_binfo "widget/connector" { event=New; target=copy_batchno; action=SetValue; Value=runclient(:new_batch_form:batch_txt); }
+			    before_copy_save "widget/connector"
+				{
+				event=BeforeSave;
+				event_cancel=runclient(1);
+				target=do_copy_osrc;
+				action=QueryParam;
+				ledger=runclient(:ledger:value);
+				oldbatch=runclient(:copy_frombatch:value);
+				newbatch=runclient(:batch_osrc:a_batch_number);
+				amounts=runclient(:copy_amounts:value);
+				}
+
+			    copy_batch_vbox "widget/vbox"
+				{
+				x=10; y=10; width=458; height=218;
+				spacing=8;
+
+				copy_hdr "widget/label" { height=16; font_size=16; style=bold; align=center; text="Copy Transactions"; }
+				copy_sep "widget/pane" { height=2; style=lowered; }
+				copy_sep2 "widget/autolayoutspacer" { height=2; }
+				copy_batchno "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; ctl_type=label; field=batch_txt; text="To Batch:"; cp_bn_hints "widget/hints" { style=readonly; } }
+				copy_fromtype "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; ctl_type=dropdown; field=from_type; text="From:"; sql = "select 'Other GL Batch', 'B'"; cp_ft_hints "widget/hints" { default=runclient('B'); } }
+				copy_fromperiod "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; ctl_type=dropdown; field=from_period; text="From Period:"; sql = runserver("select :p:a_period + ' - ' + :p:a_period_desc, :p:a_period from /apps/kardia/data/Kardia_DB/a_period/rows p where :p:a_summary_only = 0 and :p:a_status != 'N' and :p:a_ledger_number = " + quote(:this:ledger) + " order by :a_period desc"); }
+				copy_frombatch "widget/component"
+				    {
+				    height=20;
+				    path="/sys/cmp/smart_field.cmp";
+				    ctl_type=dropdown;
+				    field=from_batch;
+				    text="From Batch:";
+				    numdisplay=8;
+				    sql = "select '','' where 0 = 1";
+
+				    load_from_on_period "widget/connector"
+					{
+					source=copy_fromperiod;
+					event=DataChange;
+					event_condition=runclient(char_length(:Value) > 0);
+					action=SetItems;
+					SQL = runclient("select label = '' + :a_batch_number + ' - ' + :a_batch_desc + ' (' + (select '' + count(1) + ' transaction' + condition(count(1) == 1, '', 's') from /apps/kardia/data/Kardia_DB/a_transaction/rows t where :t:a_ledger_number = :b:a_ledger_number and :t:a_batch_number = :b:a_batch_number) + ')', value = :a_batch_number from /apps/kardia/data/Kardia_DB/a_batch/rows b where :b:a_period = " + quote(:Value) + " and :a_ledger_number = " + quote(:ledger:value) + " and :a_origin = 'GL' order by :a_batch_number desc");
+					}
+				    }
+				copy_amounts "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; ctl_type=dropdown; field=amounts; text="Amounts:"; sql = "select 'Copy Amounts', 'C'; select 'Reverse Debits/Credits', 'R'; select 'Zero Amounts', 'Z'; select 'One Cent Amounts', 'O'"; cp_am_hints "widget/hints" { default=runclient('C'); } }
+				copy_sep3 "widget/autolayoutspacer" { height=2; }
+
+				copy_ctls "widget/hbox"
+				    {
+				    height=24;
+				    spacing=8;
+				    align=center;
+
+				    copy_btn "widget/textbutton"
+					{
+					width=100; height=24;
+					text = "Copy";
+					enabled = runclient(char_length(:copy_fromtype:value) > 0 and char_length(:copy_fromperiod:value) > 0 and char_length(:copy_frombatch:value) > 0 and char_length(:copy_amounts:value) > 0);
+
+					// The save is trapped to trigger the copy operation instead.
+					copy_btn_cn "widget/connector" { event=Click; target=copy_batch_form; action=Save; }
+					}
+
+				    ccancel_btn "widget/textbutton"
+					{
+					width=100; height=24;
+					text = "Cancel";
+
+					ccancel_cn "widget/connector" { event=Click; target=copy_batch_form; action=Discard; }
+					}
+				    }
+				}
 			    }
 			}
 		    }
@@ -169,6 +287,15 @@ batches "widget/component-decl"
 			    ledger=runclient(:batch_osrc:a_ledger_number);
 			    batch=runclient(:batch_osrc:a_batch_number);
 			    }
+			}
+		    copy_trx "widget/textbutton"
+			{
+			width = 172;
+			height = 40;
+			text = "Copy Journal Entries";
+			enabled = runclient(:new_batch_form:is_editable and not (:new_batch_form:glpost == 1) and :periods_osrc:a_status == 'O' and :batch_osrc:a_origin = 'GL');
+
+			copy_cn "widget/connector" { event=Click; target=copy_batch_form; action=Edit; }
 			}
 
 		    sep_line4 "widget/pane" { height=2; fl_height=0; style=lowered; }
