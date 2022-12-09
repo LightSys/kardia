@@ -15,7 +15,7 @@ copy_gl_batch "system/query"
 		/apps/kardia/data/Kardia_DB/a_transaction/rows
 	    where
 		:a_ledger_number = :parameters:ledger and
-		:a_batch_number = :parameters:oldbatch
+		:a_batch_number = :parameters:newbatch
 	    ;
 
 	    -- determine date and period
@@ -35,7 +35,7 @@ copy_gl_batch "system/query"
 	    select
 		:a_ledger_number,
 		a_batch_number = :parameters:newbatch,
-		a_journal_number = :a_journal_number + :info:startjnl,
+		a_journal_number = dense_rank(:a_journal_number) - 1 + :info:startjnl,
 		a_period = :info:bperiod,
 		a_effective_date = :info:bdate,
 		:a_transaction_type,
@@ -71,5 +71,7 @@ copy_gl_batch "system/query"
 	    where
 		:t:a_ledger_number = :parameters:ledger and
 		:t:a_batch_number = :parameters:oldbatch
+	    order by
+		:t:a_journal_number
 	    ";
     }
