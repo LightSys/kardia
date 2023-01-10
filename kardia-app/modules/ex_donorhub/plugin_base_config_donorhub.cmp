@@ -1,0 +1,61 @@
+$Version=2$
+plugin_base_config_donorhub "widget/component-decl"
+    {
+    width=828;
+    height=490;
+    title = "DonorHub";
+    description = "Configure DonorHub Integration";
+    sequence = 1012;
+
+    vbox "widget/vbox"
+	{
+	x=0; y=0;
+	width=828; height=490;
+	spacing=7;
+
+	config_osrc "widget/osrc"
+	    {
+	    sql = "select * from object /apps/kardia/modules/base/config.qyp";
+	    autoquery=onload;
+
+	    config_form "widget/form"
+		{
+		allow_query=no;
+
+		dh_lbl "widget/label" { height=16; style=bold; text="DonorHub Integration:"; }
+
+		dh_label_1 "widget/label" { height=40; text="Security Options: when data is sent to DonorHub, Kardia can abbreviate or omit certain types of information to reduce exposure in the event of a compromise.  The tradeoff is that users of MPDx and TntConnect will see more limited information."; }
+		dh_abbrname "widget/component" { path="/sys/cmp/smart_field.cmp"; x=24; height=24; field="ExDonhubAbbrName"; text="Abbreviate Names: only display initials for first names"; ctl_type=checkboxleft; dhan_hints "widget/hints" { style=notnull; } }
+		dh_abbraddr "widget/component" { path="/sys/cmp/smart_field.cmp"; x=24; height=24; field="ExDonhubAbbrAddr"; text="Abbreviate Addresses: only display city / state / zip, without street addresses"; ctl_type=checkboxleft; dhad_hints "widget/hints" { style=notnull; } }
+		dh_excemail "widget/component" { path="/sys/cmp/smart_field.cmp"; x=24; height=24; field="ExDonhubExcEmail"; text="Omit Emails: email addresses will not be included"; ctl_type=checkboxleft; dhee_hints "widget/hints" { style=notnull; } }
+		dh_excphone "widget/component" { path="/sys/cmp/smart_field.cmp"; x=24; height=24; field="ExDonhubExcPhone"; text="Omit Phone Numbers: phone numbers will not be included"; ctl_type=checkboxleft; dhep_hints "widget/hints" { style=notnull; } }
+		}
+	    }
+
+	ctls_hbox "widget/hbox"
+	    {
+	    height=24;
+	    align=center;
+	    spacing=10;
+
+	    save_btn "widget/textbutton"
+		{
+		height=24; width=130;
+		text = "Save";
+		enabled=runclient(:config_form:is_savable);
+
+		on_save "widget/connector" { event=Click; target=config_form; action=Save; }
+		}
+
+	    cancel_btn "widget/textbutton"
+		{
+		height=24; width=130;
+		text = "Cancel";
+		enabled=runclient(:config_form:is_discardable);
+
+		on_cancel "widget/connector" { event=Click; target=config_form; action=Discard; }
+		}
+	    }
+	}
+    }
+
