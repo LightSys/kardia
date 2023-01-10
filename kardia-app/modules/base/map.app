@@ -11,6 +11,6 @@ map "widget/page"
 	{
 	path = "map.cmp";
 	x=10; y=10;
-	width=820; height=680;
+	width=820; height=660;
 	}
     }
