@@ -17,6 +17,7 @@ Download the check_scanner_router.config onto a USB flash drive and open it in a
 `ServerUsername=UserName`\
 `ServerPassword=server-password`\
 `ServerIP=##.#.###.##`\
+`ServerPort=##`\
 `ServerPortForCheckScanner=#####`
 
 1. On the Reconfigure line, replace "False" with "True" if you want an already configured Raspberry Pi to repeat setup when the USB drive is inserted
@@ -28,7 +29,8 @@ Download the check_scanner_router.config onto a USB flash drive and open it in a
 7. On the ServerUsername line, replace "UserName" with the username of the server profile you want the Pi router to connect to
 8. On the ServerPassword line, replace "server-password" with the password to the server profile you want the Pi router to connect to. If you leave the password blank (i.e. `ServerPassword=`), the Pi will copy its SSH RSA public key to the USB device instead of directly to the server
 9. On the ServerIP line, replace "##.#.###.##" with the IP address of the server
-10. On the ServerPortForCheckScanner line, replace "#####" with the server port number you want the check scanner to try to connect to. This must be a port between 1024 and 65535, and preferably it should end in 443. Something like "21443" should work fine
+10. On the ServerPort line, replace "##" with the SSH port of the server (default: 22).  This must be a number between 1 and 65535.
+11. On the ServerPortForCheckScanner line, replace "#####" with the port number on the server that you want the check scanner to listen on. This must be a port between 1024 and 65535. It needs to be an unused port; something like "21443" should work fine.
 
 ### 2. Hardware Setup
 

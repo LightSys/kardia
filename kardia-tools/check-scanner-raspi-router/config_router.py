@@ -273,7 +273,7 @@ def build_autossh_service():
 	lines.append("ExecStart=/usr/bin/autossh -N -o "
 	"\"ServerAliveInterval 30\" -o \"ServerAliveCountMax 3\" -R "
 	"0:localhost:22 -R " + server_port + ":" + scanner_ip_address + ":"
-	"443 " + server_ip + " -o \"ExitOnForwardFailure yes\"\n")
+	"443 -p" + server_conn_port + " " + server_ip + " -o \"ExitOnForwardFailure yes\"\n")
 	lines.append("Restart=always\n")
 	lines.append("RestartSec=60\n\n")
 	
@@ -734,6 +734,19 @@ if is_ip_address(server_ip) == False:
 	exit_with_error("\"" + server_ip + "\" is an invalid IP address: "
 	"Format must be \"###.###.###.###\"")
 		
+# Get the connection port on the server
+try:
+	server_conn_port = settings["ServerPort"]
+except:
+	server_conn_port = "22"
+print_status("Server Port Number: " + server_conn_port)
+
+# Ensure the port number is a valid integer
+if server_conn_port.isdigit() == False or int(server_conn_port) > 65535 or int(
+server_conn_port) < 1:
+	exit_with_error("\"" + server_conn_port + "\" is an invalid port number:"
+	" Port must be integer between 1 and 65535")
+
 # Get the listening port on the server
 try:
 	server_port = settings["ServerPortForCheckScanner"]
