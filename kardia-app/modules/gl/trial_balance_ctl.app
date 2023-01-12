@@ -29,7 +29,7 @@ trial_balance_ctl "widget/page"
 	    lbl_tb "widget/label" { height=30; font_size=16; text="GL Ctl Trial Balance - Report Options:"; align=center; }
 	    pn_sep1 "widget/pane" { height=2; style=lowered; }
 	    f_ledger "widget/component" { width=350; height=24; path="/sys/cmp/smart_field.cmp"; field='ledger'; ctl_type=label; text='Ledger:'; value=runserver(:this:ledger); form=rpt_form; label_width=120; }
-	    f_costctr "widget/component" { width=350; height=24; path="/apps/kardia/modules/base/editbox_tree.cmp"; field="costctr"; popup_source=runserver("/apps/kardia/modules/gl/costctrs.qyt/" + :this:ledger + "/"); popup_text="Choose Cost Center:"; text="Cost Center:"; attach_point=editbox; label_width=120; empty_desc="optional"; }
+	    f_fund "widget/component" { width=350; height=24; path="/apps/kardia/modules/base/editbox_tree.cmp"; field="fund"; popup_source=runserver("/apps/kardia/modules/gl/funds.qyt/" + :this:ledger + "/"); popup_text="Choose Fund:"; text="Fund:"; attach_point=editbox; label_width=120; empty_desc="optional"; }
 	    f_year "widget/component"
 		{ 
 		width=350; height=24; 
@@ -82,9 +82,9 @@ trial_balance_ctl "widget/page"
 	    f_end "widget/component" { width=350; height=24; path="/sys/cmp/smart_field.cmp"; field='end_period'; ctl_type=dropdown; text='Ending Period:';  form=rpt_form; label_width=120; sql = runserver("select :a_period + ' - ' + :a_period_desc, :a_period, 0, :a_parent_period from  /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = " + quote(:this:ledger) + " and :a_summary_only = 0 order by :a_period asc"); }
 	    sep "widget/autolayoutspacer" { height=4; }
 	    f_unposted "widget/component" { x=10; width=400; height=24; path="/sys/cmp/smart_field.cmp"; field="unposted"; ctl_type='checkboxleft'; text="Include unposted transactions"; form=rpt_form; label_width=120; }
-	    f_pagesep "widget/component" { x=10; width=400; height=24; path="/sys/cmp/smart_field.cmp"; field="pagesep"; ctl_type='checkboxleft'; text="Show cost centers on separate page(s)"; form=rpt_form; label_width=120; }
+	    f_pagesep "widget/component" { x=10; width=400; height=24; path="/sys/cmp/smart_field.cmp"; field="pagesep"; ctl_type='checkboxleft'; text="Show funds on separate page(s)"; form=rpt_form; label_width=120; }
 	    f_summchart "widget/component" { x=10; width=400; height=24; path="/sys/cmp/smart_field.cmp"; field="summchart"; ctl_type='checkboxleft'; text="Include a ledger-wide GL Account summary"; form=rpt_form; label_width=120; }
-	    f_rollsubs "widget/component" { x=10; width=400; height=24; path="/sys/cmp/smart_field.cmp"; field="rollsubs"; ctl_type='checkboxleft'; text="Roll-up subsidiary cost centers (funds) with their main funds"; form=rpt_form; label_width=120; }
+	    f_rollsubs "widget/component" { x=10; width=400; height=24; path="/sys/cmp/smart_field.cmp"; field="rollsubs"; ctl_type='checkboxleft'; text="Roll-up subsidiary funds with their main funds"; form=rpt_form; label_width=120; }
 	    f_level "widget/component" { width=350; height=24; path="/sys/cmp/smart_field.cmp"; field='report_level'; ctl_type=dropdown; text='Detail Level:'; sql=runserver("select '' + :a_reporting_level + ' - ' + :a_level_rpt_desc, :a_reporting_level from /apps/kardia/data/Kardia_DB/a_reporting_level/rows where :a_ledger_number = " + quote(:this:ledger)); form=rpt_form; label_width=120; }
 	    f_docfmt "widget/component"
 		{ 

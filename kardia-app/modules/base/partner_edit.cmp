@@ -85,7 +85,7 @@ p_partner_component "widget/component-decl"
 			:p_title, :p_given_name, :p_preferred_name, :p_surname, :p_surname_first, :p_localized_name, :p_org_name, :p_gender,
 			:p_language_code, :p_acquisition_code, :p_comments, :p_record_status_code, :p_no_solicitations, :p_no_mail,
 			:p_no_mail_reason,
-			:p_cost_center, :p_best_contact, :p_merged_with, :p_legacy_key_1, :p_legacy_key_2, :p_legacy_key_3, :p_suffix,
+			:a_fund, :p_best_contact, :p_merged_with, :p_legacy_key_1, :p_legacy_key_2, :p_legacy_key_3, :p_suffix,
 			:s_date_created, :s_created_by, :s_date_modified, :s_modified_by, :__cx_osml_control,
 			disp_name = condition(char_length(rtrim(:p_org_name)) > 0, :p_org_name + ' ' + condition(char_length(:p_given_name + :p_surname) > 0, '- ', ''), '') + isnull(:p_given_name + ' ','') + isnull(:p_surname + ' ','') + condition(isnull(:p_merged_with,'X') = :parameters:param_id, '(old; merged)', '') + condition(:p_partner_key = :parameters:param_merge, '(new; merged into)', ''),
 			disp_ico = '/apps/kardia/images/icons/' + condition(:p_partner_class == 'IND', 'person.gif', 'group.gif')

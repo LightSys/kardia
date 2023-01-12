@@ -61,8 +61,8 @@ staffmaint "widget/component-decl"
 			email = isnull(:ci2:p_contact_data, :ci1:p_contact_data),
 			disp_name = condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name + ' ' + condition(char_length(:p:p_given_name + :p:p_surname) > 0, '- ', ''), '') + isnull(:p:p_given_name + ' ','') + isnull(:p:p_surname + ' ',''),
 			" + (select sum(:sql_addon + ',\n') - ',\n' from object wildcard '/apps/kardia/modules/*/plugin_base_staffmaint_*.cmp') + 
-			//+"cclist = (select isnull(sum(:a_cost_center + ',') - ',', '') from /apps/kardia/data/Kardia_DB/a_cc_staff/rows cs where :cs:p_staff_partner_key = :s:p_partner_key and :cs:a_ledger_number = " + quote(:this:ledger) + ")
-			//+"cclist = (select isnull(sum(:a_cost_center + ',') - ',', '') from /apps/kardia/data/Kardia_DB/a_cc_staff/rows cs where :cs:p_staff_partner_key = :s:p_partner_key and :cs:a_ledger_number = :parameters:a_ledger_number)
+			//+"fundlist = (select isnull(sum(:a_fund + ',') - ',', '') from /apps/kardia/data/Kardia_DB/a_fund_staff/rows cs where :cs:p_staff_partner_key = :s:p_partner_key and :cs:a_ledger_number = " + quote(:this:ledger) + ")
+			//+"fundlist = (select isnull(sum(:a_fund + ',') - ',', '') from /apps/kardia/data/Kardia_DB/a_fund_staff/rows cs where :cs:p_staff_partner_key = :s:p_partner_key and :cs:a_ledger_number = :parameters:a_ledger_number)
 			"
 		    FROM
 			IDENTITY /apps/kardia/data/Kardia_DB/p_staff/rows s,
@@ -128,7 +128,7 @@ staffmaint "widget/component-decl"
 		    t_email "widget/table-column" { title="Email"; fieldname=email; width=200; }
 		    t_kardia "widget/table-column" { title="Kardia"; fieldname=p_kardia_login; width=80; }
 		    t_kardiaweb "widget/table-column" { title=runserver( (select isnull(:s_config_value, 'KardiaWeb') from /apps/kardia/data/Kardia_DB/s_config/rows where :s_config_name = 'KardiaWebName') ); fieldname=p_kardiaweb_login; width=80; }
-		    //t_cclist "widget/table-column" { title="Funds"; fieldname=cclist; width=200; }
+		    //t_fundlist "widget/table-column" { title="Funds"; fieldname=fundlist; width=200; }
 
 		    staff_cols_repeat "widget/repeat"
 			{

@@ -1,0 +1,59 @@
+$Version=2$
+remove_payee "widget/component-decl"
+    {
+    RemovePayee "widget/component-decl-action" { }
+    PayeeRemoved "widget/component-decl-event" { }
+
+    on_Remove "widget/connector"
+	{
+	event=RemovePayee;
+	target=remove_payee_osrc;
+	action=QueryParam;
+	period=runclient(:period);
+	ledger=runclient(:ledger);
+	paygroup=runclient(:paygroup);
+	payee=runclient(:payee);
+	}
+
+    remove_payee_osrc "widget/osrc"
+	{
+	period "widget/parameter" { type=string; }
+	ledger "widget/parameter" { type=string; }
+	paygroup "widget/parameter" { type=integer; }
+	payee "widget/parameter" { type=integer; }
+
+	replicasize=2;
+	readahead=2;
+	autoquery=never;
+
+	sql = "	delete
+		    /apps/kardia/data/Kardia_DB/a_payroll_period_payee/rows
+		where
+		    :a_ledger_number = :parameters:ledger and
+		    :a_payroll_group_id = :parameters:paygroup and
+		    :a_payroll_period = :parameters:period and
+		    :a_payroll_id = :parameters:payee
+		;
+
+		delete
+		    /apps/kardia/data/Kardia_DB/a_payroll_item/rows
+		where
+		    :a_ledger_number = :parameters:ledger and
+		    :a_payroll_group_id = :parameters:paygroup and
+		    :a_period = :parameters:period and
+		    :a_payroll_id = :parameters:payee
+		";
+
+	on_posted "widget/connector"
+	    {
+	    event=EndQuery;
+	    target=remove_payee;
+	    action=PayeeRemoved;
+
+	    period=runclient(:period:value);
+	    ledger=runclient(:ledger:value);
+	    paygroup=runclient(:paygroup:value);
+	    payee=runclient(:payee:value);
+	    }
+	}
+    }

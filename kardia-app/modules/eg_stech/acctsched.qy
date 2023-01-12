@@ -1,0 +1,13 @@
+$Version=2$
+acctsched "system/query"
+    {
+    sql = " select
+		i_eg_gift_uuid = :ac:AccountScheduleGUID,
+		i_eg_gift_interval = upper(isnull(:ac:RecurringName, '')),
+		i_eg_gift_date = convert(datetime, :ac:CreateDateTime)
+	    from
+		identity paged expression ('/apps/kardia/modules/eg_stech/egsapi_sched.http/AccountSchedules?StatusType=0&Page=' + :ac:cx__page + '&RecordsPerPage=1000/AccountSchedules') ac
+	    where
+	    	isnull(:ac:AccountScheduleGUID, '') != ''
+	    ";
+    }

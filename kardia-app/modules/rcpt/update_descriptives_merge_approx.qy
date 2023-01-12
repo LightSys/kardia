@@ -26,13 +26,13 @@ update_descriptives_merge_approx "system/query"
                         (select 
                                 count(1)
                                 from collection a_descriptives_hist dh2
-                                where :dh2:a_ledger_number = :dh:a_ledger_number and :dh2:a_cost_center = :dh:a_cost_center and :dh2:p_donor_partner_key = :dh:p_donor_partner_key and (:dh2:a_hist_id = :dh:a_hist_id + 1 or :dh2:a_hist_id = :dh:a_hist_id - 1) and (:dh2:a_count < 5 or :dh2:a_act_average_months < 5) and (not isnull(:dh:a_is_extra, 0) or not isnull(:dh2:a_is_extra, 0))
+                                where :dh2:a_ledger_number = :dh:a_ledger_number and :dh2:a_fund = :dh:a_fund and :dh2:p_donor_partner_key = :dh:p_donor_partner_key and (:dh2:a_hist_id = :dh:a_hist_id + 1 or :dh2:a_hist_id = :dh:a_hist_id - 1) and (:dh2:a_count < 5 or :dh2:a_act_average_months < 5) and (not isnull(:dh:a_is_extra, 0) or not isnull(:dh2:a_is_extra, 0))
                                 ) >= 1,
                         2,
                         0
                         )
 	    where
-		(:parameters:fund is null or :parameters:fund = :dh:a_cost_center) and
+		(:parameters:fund is null or :parameters:fund = :dh:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :dh:p_donor_partner_key)
 	    ;
             
@@ -41,11 +41,11 @@ update_descriptives_merge_approx "system/query"
                 collection tmp_segments
             select
                 ledger = :dh1:a_ledger_number,
-                fund = :dh1:a_cost_center,
+                fund = :dh1:a_fund,
                 donor = :dh1:p_donor_partner_key,
                 hist_id = :dh1:a_hist_id,
                 is_approximate = :dh1:a_is_approximate,
-                seg = row_number() - row_number(:dh1:a_ledger_number, :dh1:a_cost_center, :dh1:p_donor_partner_key, :dh1:a_is_approximate),
+                seg = row_number() - row_number(:dh1:a_ledger_number, :dh1:a_fund, :dh1:p_donor_partner_key, :dh1:a_is_approximate),
                 amount = :dh1:a_amount,
                 first = :dh1:a_first_gift,
                 last = :dh1:a_last_gift,
@@ -57,7 +57,7 @@ update_descriptives_merge_approx "system/query"
             from
                 collection a_descriptives_hist dh1
             where
-                (:parameters:fund is null or :parameters:fund = :dh1:a_cost_center) and
+                (:parameters:fund is null or :parameters:fund = :dh1:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :dh1:p_donor_partner_key)
             ;
 
@@ -128,7 +128,7 @@ update_descriptives_merge_approx "system/query"
                 :dh2:a_act_average_amount = condition(
                                 datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) < 16,
                                 null,
-                                condition((select count(1) from collection a_descriptives_hist where :a_ledger_number = :t:ledger and :a_cost_center = :t:fund and :p_donor_partner_key = :t:donor and :a_is_approximate != 2) = 1, :dh2:a_total / round(datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) / 30.5), (:dh2:a_total - :dh2:a_amount) / round(datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) / 30.5))
+                                condition((select count(1) from collection a_descriptives_hist where :a_ledger_number = :t:ledger and :a_fund = :t:fund and :p_donor_partner_key = :t:donor and :a_is_approximate != 2) = 1, :dh2:a_total / round(datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) / 30.5), (:dh2:a_total - :dh2:a_amount) / round(datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) / 30.5))
                                 ),
                 :dh2:a_act_average_months = convert(integer, round(datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) / 30.5)),
                 :dh2:a_act_average_interval = condition(
@@ -138,10 +138,10 @@ update_descriptives_merge_approx "system/query"
                                 ),
                 :dh2:a_is_extra = 0
 	    where
-		(:parameters:fund is null or :parameters:fund = :dh2:a_cost_center) and
+		(:parameters:fund is null or :parameters:fund = :dh2:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :dh2:p_donor_partner_key) and
                 :t:ledger = :dh2:a_ledger_number and
-                :t:fund = :dh2:a_cost_center and
+                :t:fund = :dh2:a_fund and
                 :t:donor = :dh2:p_donor_partner_key and
                 :t:merged_id = :dh2:a_hist_id
 	    ;
@@ -150,7 +150,7 @@ update_descriptives_merge_approx "system/query"
 	    delete
 		collection a_descriptives_hist dh1
             where
-		(:parameters:fund is null or :parameters:fund = :dh1:a_cost_center) and
+		(:parameters:fund is null or :parameters:fund = :dh1:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :dh1:p_donor_partner_key) and
 		:dh1:a_is_approximate = 2
             ;
@@ -161,12 +161,12 @@ update_descriptives_merge_approx "system/query"
 		identity collection a_descriptives_hist dh1,
                 collection a_descriptives_hist dh2
 	    set
-		:dh1:a_merged_id = condition((select count(1) from collection a_descriptives_hist where :a_ledger_number = :dh1:a_ledger_number and :a_cost_center = :dh1:a_cost_center and :p_donor_partner_key = :dh1:p_donor_partner_key and :a_is_extra = 0 and :a_is_approximate = 0) = 0, :dh2:a_hist_id, null)
+		:dh1:a_merged_id = condition((select count(1) from collection a_descriptives_hist where :a_ledger_number = :dh1:a_ledger_number and :a_fund = :dh1:a_fund and :p_donor_partner_key = :dh1:p_donor_partner_key and :a_is_extra = 0 and :a_is_approximate = 0) = 0, :dh2:a_hist_id, null)
             where
-                (:parameters:fund is null or :parameters:fund = :dh1:a_cost_center) and
+                (:parameters:fund is null or :parameters:fund = :dh1:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :dh1:p_donor_partner_key) and
                 :dh2:a_ledger_number = :dh1:a_ledger_number and
-		:dh2:a_cost_center = :dh1:a_cost_center and
+		:dh2:a_fund = :dh1:a_fund and
 		:dh2:p_donor_partner_key = :dh1:p_donor_partner_key and
                 :dh1:a_is_extra = 1 and
                 :dh2:a_is_approximate = 1
@@ -177,7 +177,7 @@ update_descriptives_merge_approx "system/query"
                 collection tmp_merge_aggregates
             select
                 ledger = :dh1:a_ledger_number,
-                fund = :dh1:a_cost_center,
+                fund = :dh1:a_fund,
                 donor = :dh1:p_donor_partner_key,
                 merged = :dh1:a_merged_id,
 
@@ -192,21 +192,21 @@ update_descriptives_merge_approx "system/query"
                 collection a_descriptives_hist dh1,
                 collection a_descriptives_hist dh2
             where
-                (:parameters:fund is null or :parameters:fund = :dh1:a_cost_center) and
+                (:parameters:fund is null or :parameters:fund = :dh1:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :dh1:p_donor_partner_key) and
                 :dh2:a_ledger_number = :dh1:a_ledger_number and
-		:dh2:a_cost_center = :dh1:a_cost_center and
+		:dh2:a_fund = :dh1:a_fund and
 		:dh2:p_donor_partner_key = :dh1:p_donor_partner_key and
 		:dh1:a_merged_id = :dh2:a_hist_id
             group by
                 :dh1:a_ledger_number,
                 :dh1:p_donor_partner_key,
-                :dh1:a_cost_center,
+                :dh1:a_fund,
                 :dh1:a_merged_id
             order by
                 :dh1:a_ledger_number,
                 :dh1:p_donor_partner_key,
-                :dh1:a_cost_center,
+                :dh1:a_fund,
                 :dh1:a_hist_id
             ;
 
@@ -240,7 +240,7 @@ update_descriptives_merge_approx "system/query"
                 :dh2:a_act_average_amount = condition(
                                 datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) < 16,
                                 null,
-                                condition((select count(1) from collection a_descriptives_hist where :a_ledger_number = :t:ledger and :a_cost_center = :t:fund and :p_donor_partner_key = :t:donor and :a_is_approximate != 2) = 1, :dh2:a_total / round(datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) / 30.5), (:dh2:a_total - :dh2:a_amount) / round(datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) / 30.5))
+                                condition((select count(1) from collection a_descriptives_hist where :a_ledger_number = :t:ledger and :a_fund = :t:fund and :p_donor_partner_key = :t:donor and :a_is_approximate != 2) = 1, :dh2:a_total / round(datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) / 30.5), (:dh2:a_total - :dh2:a_amount) / round(datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) / 30.5))
                                 ),
                 :dh2:a_act_average_months = convert(integer, round(datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) / 30.5)),
                 :dh2:a_act_average_interval = condition(
@@ -250,10 +250,10 @@ update_descriptives_merge_approx "system/query"
                                 ),
                 :dh2:a_is_extra = 0
 	    where
-		(:parameters:fund is null or :parameters:fund = :dh2:a_cost_center) and
+		(:parameters:fund is null or :parameters:fund = :dh2:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :dh2:p_donor_partner_key) and
                 :t:ledger = :dh2:a_ledger_number and
-                :t:fund = :dh2:a_cost_center and
+                :t:fund = :dh2:a_fund and
                 :t:donor = :dh2:p_donor_partner_key and
                 :t:merged_id = :dh2:a_hist_id
 	    ;
@@ -262,7 +262,7 @@ update_descriptives_merge_approx "system/query"
 	    delete
 		collection a_descriptives_hist dh1
             where
-		(:parameters:fund is null or :parameters:fund = :dh1:a_cost_center) and
+		(:parameters:fund is null or :parameters:fund = :dh1:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :dh1:p_donor_partner_key) and
 		:dh1:a_merged_id is not null
 	    ";

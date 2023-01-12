@@ -9,7 +9,7 @@ pay_form_item "widget/component-decl"
     period "widget/parameter" { type=string; default=null; }
     ref_period "widget/parameter" { type=string; default=null; }
     prev_period "widget/parameter" { type=string; default=null; }
-    costctr "widget/parameter" { type=string; default=null; }
+    fund "widget/parameter" { type=string; default=null; }
     payroll_id "widget/parameter" { type=integer; default=null; }
     group_id "widget/parameter" { type=integer; default=null; }
     type_code "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
@@ -23,7 +23,7 @@ pay_form_item "widget/component-decl"
     //avl_upd "widget/repeat"
 //	{
 //	condition = runserver(:this:class_code == 'A');
-	//sql = runserver("update /apps/kardia/data/Kardia_DB/a_payroll_item/rows pi set :a_actual_amount = ( select sum(:a_amount) from /apps/kardia/data/Kardia_DB/a_transaction/rows where :a_ledger_number = " + quote(:this:ledger) + " and :a_cost_center = " + quote(:this:costctr) + " and :a_period <= " + quote(:this:period) + " and :a_posted = 1 ) where :a_payroll_item_type_code = " + quote(:this:type_code) + " and :a_payroll_id = " + :this:payroll_id);
+	//sql = runserver("update /apps/kardia/data/Kardia_DB/a_payroll_item/rows pi set :a_actual_amount = ( select sum(:a_amount) from /apps/kardia/data/Kardia_DB/a_transaction/rows where :a_ledger_number = " + quote(:this:ledger) + " and :a_fund = " + quote(:this:fund) + " and :a_period <= " + quote(:this:period) + " and :a_posted = 1 ) where :a_payroll_item_type_code = " + quote(:this:type_code) + " and :a_payroll_id = " + :this:payroll_id);
 //	}
 
     // Reload the net from Gross + Taxes + Payables + Receivables.
@@ -90,7 +90,7 @@ pay_form_item "widget/component-decl"
 	    {
 	    sql = runserver("
 		SELECT
-			:i:a_ref_cost_center, 
+			:i:a_ref_fund, 
 			:i:a_actual_amount,
 			:i:a_target_amount,
 			prev_amt = (select :i2:a_actual_amount from /apps/kardia/data/Kardia_DB/a_payroll_item/rows i2 where :i2:a_payroll_id = :i:a_payroll_id and :i2:a_payroll_group_id = :i:a_payroll_group_id and :i2:a_ledger_number = :i:a_ledger_number and :i2:a_payroll_item_type_code = :i:a_payroll_item_type_code and :i2:a_period = " + quote(:this:prev_period) + ")
@@ -232,7 +232,7 @@ pay_form_item "widget/component-decl"
 		    autoquery=onload;
 		    replicasize=2;
 		    readahead=2;
-		    sql = runserver("select total = isnull($0 - sum(:t:a_amount),$0) FROM /apps/kardia/data/Kardia_DB/a_transaction/rows t WHERE :t:a_ledger_number = " + quote(:this:ledger) + " and :t:a_period <= " + quote(:this:period) + " and :t:a_period >= " + quote(:this:ref_period) + " and :t:a_cost_center = " + quote(:this:costctr) + " and :t:a_account_code >= '3000' and :t:a_account_code <= '5999' and (:t:a_origin != 'PP' or :t:a_period < " + quote(:this:period) + ")");
+		    sql = runserver("select total = isnull($0 - sum(:t:a_amount),$0) FROM /apps/kardia/data/Kardia_DB/a_transaction/rows t WHERE :t:a_ledger_number = " + quote(:this:ledger) + " and :t:a_period <= " + quote(:this:period) + " and :t:a_period >= " + quote(:this:ref_period) + " and :t:a_fund = " + quote(:this:fund) + " and :t:a_account_code >= '3000' and :t:a_account_code <= '5999' and (:t:a_origin != 'PP' or :t:a_period < " + quote(:this:period) + ")");
 		    }
 
 		item_glosrc "widget/osrc"
@@ -241,7 +241,7 @@ pay_form_item "widget/component-decl"
 		    autoquery=onload;
 		    replicasize=2;
 		    readahead=2;
-		    sql = runserver("select total = isnull(sum(:t:a_amount),$0) FROM /apps/kardia/data/Kardia_DB/a_transaction/rows t WHERE :t:a_ledger_number = " + quote(:this:ledger) + " and :t:a_period = " + quote(:this:period) + " and :t:a_cost_center = " + quote(:this:costctr) + " and :t:a_account_code >= '5000' and :t:a_account_code <= '5999' and :t:a_origin != 'PP'");
+		    sql = runserver("select total = isnull(sum(:t:a_amount),$0) FROM /apps/kardia/data/Kardia_DB/a_transaction/rows t WHERE :t:a_ledger_number = " + quote(:this:ledger) + " and :t:a_period = " + quote(:this:period) + " and :t:a_fund = " + quote(:this:fund) + " and :t:a_account_code >= '5000' and :t:a_account_code <= '5999' and :t:a_origin != 'PP'");
 		    }
 
 		item_glosrc "widget/osrc"
@@ -250,7 +250,7 @@ pay_form_item "widget/component-decl"
 		    autoquery=onload;
 		    replicasize=2;
 		    readahead=2;
-		    sql = runserver("select total = isnull($0 - sum(:t:a_amount),$0) FROM /apps/kardia/data/Kardia_DB/a_transaction/rows t WHERE :t:a_ledger_number = " + quote(:this:ledger) + " and :t:a_period = " + quote(:this:period) + " and :t:a_cost_center = " + quote(:this:costctr) + " and :t:a_account_code >= '4000' and :t:a_account_code <= '4999'");
+		    sql = runserver("select total = isnull($0 - sum(:t:a_amount),$0) FROM /apps/kardia/data/Kardia_DB/a_transaction/rows t WHERE :t:a_ledger_number = " + quote(:this:ledger) + " and :t:a_period = " + quote(:this:period) + " and :t:a_fund = " + quote(:this:fund) + " and :t:a_account_code >= '4000' and :t:a_account_code <= '4999'");
 		    }
 
 		item_glosrc "widget/osrc"
@@ -259,7 +259,7 @@ pay_form_item "widget/component-decl"
 		    autoquery=onload;
 		    replicasize=2;
 		    readahead=2;
-		    sql = runserver("select total = isnull(sum(:t:a_amount),$0) FROM /apps/kardia/data/Kardia_DB/a_transaction/rows t WHERE :t:a_ledger_number = " + quote(:this:ledger) + " and :t:a_period <= " + quote(:this:period) + " and :t:a_period >= " + quote(:this:ref_period) + " and :t:a_cost_center = " + quote(:this:costctr) + " and :t:a_account_code = '1281'");
+		    sql = runserver("select total = isnull(sum(:t:a_amount),$0) FROM /apps/kardia/data/Kardia_DB/a_transaction/rows t WHERE :t:a_ledger_number = " + quote(:this:ledger) + " and :t:a_period <= " + quote(:this:period) + " and :t:a_period >= " + quote(:this:ref_period) + " and :t:a_fund = " + quote(:this:fund) + " and :t:a_account_code = '1281'");
 		    }
 
 		item_glosrc "widget/osrc"
@@ -268,7 +268,7 @@ pay_form_item "widget/component-decl"
 		    autoquery=onload;
 		    replicasize=2;
 		    readahead=2;
-		    sql = runserver("select total = isnull(sum(:t:a_amount),$0) FROM /apps/kardia/data/Kardia_DB/a_transaction/rows t WHERE :t:a_ledger_number = " + quote(:this:ledger) + " and :t:a_period <= " + quote(:this:period) + " and :t:a_period >= " + quote(:this:ref_period) + " and :t:a_cost_center = " + quote(:this:costctr) + " and :t:a_account_code = '1280'");
+		    sql = runserver("select total = isnull(sum(:t:a_amount),$0) FROM /apps/kardia/data/Kardia_DB/a_transaction/rows t WHERE :t:a_ledger_number = " + quote(:this:ledger) + " and :t:a_period <= " + quote(:this:period) + " and :t:a_period >= " + quote(:this:ref_period) + " and :t:a_fund = " + quote(:this:fund) + " and :t:a_account_code = '1280'");
 		    }
 
 		item_glosrc "widget/osrc"
@@ -283,8 +283,8 @@ pay_form_item "widget/component-decl"
 			ruletype = "osrc_relationship";
 			target = item_osrc;
 			is_slave = yes;
-			key_1 = a_cost_center;
-			target_key_1 = a_ref_cost_center;
+			key_1 = a_fund;
+			target_key_1 = a_ref_fund;
 			autoquery = true;
 			}
 		    }
@@ -333,7 +333,7 @@ pay_form_item "widget/component-decl"
 								/apps/kardia/data/Kardia_DB/a_payroll_item/rows i,
 								/apps/kardia/data/Kardia_DB/a_payroll_item_type/rows it
 							WHERE
-								:y:a_cost_center = " + quote(:this:costctr) + " and
+								:y:a_fund = " + quote(:this:fund) + " and
 								:y:a_ledger_number = " + quote(:this:ledger) + " and
 								:y:a_payroll_group_id = " + :this:group_id + " and
 								:i:a_payroll_id = :y:a_payroll_id and

@@ -130,15 +130,15 @@ check_stub "system/report"
     items_qy "report/query"
 	{
 	sql = "	select
-			:d:a_cost_center,
-			:c:a_cc_desc,
+			:d:a_fund,
+			:c:a_fund_desc,
 			:d:a_account_code,
 			:a:a_acct_desc,
 			:d:a_amount,
 			:d:a_comment
 		from
 			/apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows d,
-			/apps/kardia/data/Kardia_DB/a_cost_center/rows c,
+			/apps/kardia/data/Kardia_DB/a_fund/rows c,
 			/apps/kardia/data/Kardia_DB/a_account/rows a
 		where
 			:d:a_ledger_number = :checks_qy:a_ledger_number and
@@ -146,7 +146,7 @@ check_stub "system/report"
 			:d:a_disbursement_id = :checks_qy:a_disbursement_id and
 			(:d:a_posted = 1 or :this:unposted = 1) and
 			:c:a_ledger_number = :d:a_ledger_number and
-			:c:a_cost_center = :d:a_cost_center and
+			:c:a_fund = :d:a_fund and
 			:a:a_ledger_number = :d:a_ledger_number and
 			:a:a_account_code = :d:a_account_code
 		";
@@ -289,7 +289,7 @@ check_stub "system/report"
 
 		p_date "report/table-cell" { value=runserver(condition(:items_qy:cx__rowid == 0, :checks_qy:a_effective_date, '')); }
 		p_ckno "report/table-cell" { value=runserver(condition(:items_qy:cx__rowid == 0, :checks_qy:a_check_number, '')); }
-		p_fund "report/table-cell" { value=runserver(:items_qy:a_cost_center + ' ' + :items_qy:a_cc_desc); }
+		p_fund "report/table-cell" { value=runserver(:items_qy:a_fund + ' ' + :items_qy:a_fund_desc); }
 		p_acct "report/table-cell" { value=runserver(:items_qy:a_account_code + ' ' + :items_qy:a_acct_desc); }
 		p_comm "report/table-cell" { value=runserver(:items_qy:a_comment); }
 		p_amt "report/table-cell" { value=runserver(:items_qy:a_amount); font=courier; align=right; }

@@ -1,0 +1,27 @@
+$Version=2$
+donors "system/query"
+    {
+    sql = " select
+		i_eg_donor_uuid = :p:DonorGUID,
+		i_eg_donor_alt_id = condition(char_length(convert(string, :p:DonorID)) > 1, convert(string, :p:DonorID), null),
+		i_eg_donor_name = :p:FirstName + ' ' + :p:LastName,
+		i_eg_donor_given_name = :p:FirstName,
+		i_eg_donor_surname = :p:LastName,
+		i_eg_donor_middle_name = :p:MiddleName,
+		i_eg_donor_prefix = :p:Prefix,
+		i_eg_donor_suffix = :p:Suffix,
+		i_eg_donor_addr1 = convert(string, :p:Address1),
+		i_eg_donor_addr2 = convert(string, :p:Address2),
+		i_eg_donor_addr3 = convert(string, :p:Address3),
+		i_eg_donor_city = :p:City,
+		i_eg_donor_state = :p:StateCode,
+		i_eg_donor_postal = convert(string, :p:PostalCode),
+		i_eg_donor_country = :p:CountryName,
+		i_eg_donor_email = :p:EmailAddress,
+		i_eg_donor_phone = convert(string, :p:WorkPhoneNumber)
+	    from
+		identity paged expression ('/apps/kardia/modules/eg_stech/egsapi.http/DonorInformationReport?Page=' + :p:cx__page + '&RecordsPerPage=1000/Donors') p
+	    where
+	    	isnull(:p:DonorGUID, '') != ''
+	    ";
+    }

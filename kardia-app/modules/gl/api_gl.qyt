@@ -36,11 +36,11 @@ gl "system/querytree"
 		sql = "	select
 			    *
 			from
-			    identity /apps/kardia/data/Kardia_DB/a_cost_center/rows c
+			    identity /apps/kardia/data/Kardia_DB/a_fund/rows c
 			where
 			    :c:a_ledger_number = :ledgers:a_ledger_number
 			order by
-			    :c:a_cost_center asc
+			    :c:a_fund asc
 			";
 		}
 	    }
@@ -54,12 +54,12 @@ gl "system/querytree"
 		sql = "	select
 			    *
 			from
-			    identity /apps/kardia/data/Kardia_DB/a_cost_center/rows c
+			    identity /apps/kardia/data/Kardia_DB/a_fund/rows c
 			where
 			    :c:a_ledger_number = :ledgers:a_ledger_number and
-			    :c:a_bal_cost_center = :c:a_cost_center
+			    :c:a_bal_fund = :c:a_fund
 			order by
-			    :c:a_cost_center asc
+			    :c:a_fund asc
 			";
 
 		subfundstxt "system/querytree"
@@ -71,13 +71,13 @@ gl "system/querytree"
 			sql = "	select
 				    *
 				from
-				    identity /apps/kardia/data/Kardia_DB/a_cost_center/rows c
+				    identity /apps/kardia/data/Kardia_DB/a_fund/rows c
 				where
 				    :c:a_ledger_number = :ledgers:a_ledger_number and
-				    :c:a_bal_cost_center = :funds:a_cost_center and
-				    :c:a_bal_cost_center != :c:a_cost_center
+				    :c:a_bal_fund = :funds:a_fund and
+				    :c:a_bal_fund != :c:a_fund
 				order by
-				    :c:a_cost_center asc
+				    :c:a_fund asc
 				";
 			}
 		    }

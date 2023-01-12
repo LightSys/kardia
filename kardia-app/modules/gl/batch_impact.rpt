@@ -16,7 +16,7 @@ batch_impact "system/report"
 
     // Parameters for GL Batch Impact Report
     ledger "report/parameter" { type=string; default=null; }
-    costctr "report/parameter" { type=string; default=null; }
+    fund "report/parameter" { type=string; default=null; }
     year_period "report/parameter" { type=string; default=runserver( (select :a_period from /apps/kardia/data/Kardia_DB/a_period/rows where datepart(month, :a_start_date) = 1 and datepart(month, :a_end_date) = 12 and datepart(year, :a_end_date) = datepart(year, getdate())) ); }
     ref_period "report/parameter" { type=string; default=runserver( (select first(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_summary_only = 0 and datepart(year, :a_end_date) = datepart(year, getdate()) order by :a_start_date) ); }
     end_period "report/parameter" { type=string; default=runserver( (select last(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_summary_only = 0 and datepart(year, :a_end_date) = datepart(year, getdate()) order by :a_start_date) ); }
@@ -45,28 +45,28 @@ batch_impact "system/report"
 	{
 	sql = runserver("
 		select
-			:c:a_cost_center,
-			:c:a_cc_desc,
-			:c:a_bal_cost_center,
+			:c:a_fund,
+			:c:a_fund_desc,
+			:c:a_bal_fund,
 			:a:a_account_code,
 			:a:a_acct_desc,
 			cbal = sum(:tt:a_amount),
 			bbal = isnull(sum(condition(:tt:a_batch_number != :this:batch, :tt:a_amount, $0.00)), $0.00)
 		from
 			/apps/kardia/data/Kardia_DB/a_transaction/rows tt,
-			/apps/kardia/data/Kardia_DB/a_cost_center/rows c,
+			/apps/kardia/data/Kardia_DB/a_fund/rows c,
 			/apps/kardia/data/Kardia_DB/a_account/rows a
 		where
 			:tt:a_ledger_number = :this:ledger and
-			:tt:a_cost_center = :c:a_cost_center and
+			:tt:a_fund = :c:a_fund and
 			:tt:a_account_code = :a:a_account_code and
 			(:tt:a_period <= :this:end_period and :tt:a_period >= :period_qy:first_period) and
 			:c:a_ledger_number = :this:ledger and
 			:a:a_ledger_number = :this:ledger
 			" + condition(:this:unposted, "", "and :tt:a_posted = 1") + "
-			" + condition(:this:costctr is null, '', ' and :c:a_bal_cost_center = :this:costctr') + "
+			" + condition(:this:fund is null, '', ' and :c:a_bal_fund = :this:fund') + "
 		group by
-			:tt:a_cost_center,
+			:tt:a_fund,
 			:tt:a_account_code
 		");
 	cbal_sum "report/aggregate" { compute="sum(:cbal)"; }
@@ -119,7 +119,7 @@ batch_impact "system/report"
 		fontsize=8;
 		header=yes;
 		bottomborder=0.05;
-		h_cc "report/table-cell" { value='Cost Ctr'; align=center; style=bold; }
+		h_cc "report/table-cell" { value='Fund'; align=center; style=bold; }
 		h_acct "report/table-cell" { value='Acct'; align=center; style=bold; }
 		h_desc "report/table-cell" { value='Description'; align=center; style=bold; }
 		h_bbal "report/table-cell" { value='Without'; align=center; style=bold; }
@@ -132,9 +132,9 @@ batch_impact "system/report"
 		font=courier;
 		fontsize=8;
 		marginbottom=0.0;
-		d_cc "report/table-cell" { value=runserver(:accts_qy:a_cost_center); align=left; }
+		d_cc "report/table-cell" { value=runserver(:accts_qy:a_fund); align=left; }
 		d_acct "report/table-cell" { value=runserver(:accts_qy:a_account_code); align=left; }
-		d_desc "report/table-cell" { font=helvetica; value=runserver(:accts_qy:a_cc_desc + " (" + :accts_qy:a_acct_desc + ")"); align=left; }
+		d_desc "report/table-cell" { font=helvetica; value=runserver(:accts_qy:a_fund_desc + " (" + :accts_qy:a_acct_desc + ")"); align=left; }
 		d_bbal "report/table-cell" { value=runserver(condition(:accts_qy:bbal == $0, '-0-   ', :accts_qy:bbal)); align=right; }
 		d_chg "report/table-cell" { value=runserver(condition((:accts_qy:cbal - :accts_qy:bbal) == $0, '      ', (:accts_qy:cbal - :accts_qy:bbal))); align=right; }
 		d_cur "report/table-cell" { value=runserver(condition(:accts_qy:cbal == $0, '-0-   ', :accts_qy:cbal)); align=right; }
@@ -143,7 +143,7 @@ batch_impact "system/report"
 	    tbl_sum "report/table-row"
 		{
 		summary=yes;
-		summarize_for = runserver(:accts_qy:a_bal_cost_center);
+		summarize_for = runserver(:accts_qy:a_bal_fund);
 		font=courier;
 		fontsize=8;
 		topborder=0.05;
@@ -158,7 +158,7 @@ batch_impact "system/report"
 		}
 	    tbl_sum_all "report/table-row"
 		{
-		condition = runserver(:this:costctr is null);
+		condition = runserver(:this:fund is null);
 		summary=yes;
 		font=courier;
 		fontsize=8;
@@ -174,7 +174,7 @@ batch_impact "system/report"
 		}
 	    tbl_sum_1900 "report/table-row"
 		{
-		condition = runserver(:this:costctr is null);
+		condition = runserver(:this:fund is null);
 		summary=yes;
 		font=courier;
 		fontsize=8;

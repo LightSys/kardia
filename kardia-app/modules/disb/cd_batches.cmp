@@ -30,6 +30,7 @@ cd_batches "widget/component-decl"
 			:b:s_modified_by,
 			:b:s_date_modified,
 			:b:a_period,
+			batch_txt = '' + :b:a_batch_number + ' - ' + :b:a_batch_desc,
 			date_txt = substring(convert(string,:a_default_effective_date),1,11),
 			drec = count(:d:a_batch_number),
 			--drec = isnull((select 1 from /apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows cd where :cd:a_batch_number = :b:a_batch_number and :cd:a_ledger_number = :b:a_ledger_number limit 1),0),
@@ -132,6 +133,43 @@ cd_batches "widget/component-decl"
 		    }
 		}
 	    }
+
+	    copy_batch_window "widget/childwindow"
+		{
+		style=dialog;
+		border_radius=8;
+		titlebar=no;
+		modal=yes;
+		toplevel=yes;
+		width=480; height=240;
+		x=150; y=150;
+		visible=no;
+
+		copy_batch_osrc "widget/osrc"
+		    {
+		    autoquery=never;
+		    sql = "select '' where 0 = 1";
+
+		    copy_batch_form "widget/form"
+			{
+			allow_new = yes;
+			allow_query = no;
+
+			copy_batch_cmp "widget/component"
+			    {
+			    x=0; y=0; width=480; height=240;
+			    path="/apps/kardia/modules/gl/generic_copy_batch.cmp";
+			    batch_type="CD";
+			    desc_sql="select '' + count(1) + ' check' + condition(count(1) == 1, '', 's') from /apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows cd where :cd:a_ledger_number = :b:a_ledger_number and :cd:a_batch_number = :b:a_batch_number";
+			    copy_query="/apps/kardia/modules/disb/copy_cd_batch.qy";
+			    ledger=runserver(:this:ledger);
+			    batch_osrc=disb_osrc;
+
+			    do_copy_done "widget/connector" { event=Copied; target=disb_osrc; action=RefreshObject; }
+			    }
+			}
+		    }
+		}
 
 	new_batch_window "widget/childwindow"
 	    {
@@ -248,6 +286,16 @@ cd_batches "widget/component-decl"
 		batch=runclient(:disb_osrc:a_batch_number);
 		}
 	    }
+	copy_disb "widget/textbutton"
+	    {
+	    width = 172;
+	    height = 40;
+	    text = "Copy Disbursements";
+	    enabled = runclient(:new_batch_form:is_editable and not (:new_batch_form:dpost == 1) and :periods_osrc:a_status == 'O');
+
+	    copy_cn "widget/connector" { event=Click; target=copy_batch_form; action=Edit; }
+	    }
+
 
 	sep_line2 "widget/pane"
 	    {

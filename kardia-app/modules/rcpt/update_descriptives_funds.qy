@@ -8,9 +8,9 @@ update_descriptives_funds "system/query"
     sql = " select
 		*
 	    from
-		/apps/kardia/data/Kardia_DB/a_cost_center/rows c,
-		expression ('/apps/kardia/modules/rcpt/update_descriptives_new.qy?lookback=' + :parameters:lookback + isnull('&donor=' + :parameters:donor, '') + '&fund=' + :c:a_cost_center + '&ledger=' + :c:a_ledger_number) d
+		/apps/kardia/data/Kardia_DB/a_fund/rows c,
+		expression ('/apps/kardia/modules/rcpt/update_descriptives_new.qy?lookback=' + :parameters:lookback + isnull('&donor=' + :parameters:donor, '') + '&fund=' + :c:a_fund + '&ledger=' + :c:a_ledger_number) d
 	    where
-		(:c:a_cost_center = :parameters:fund or :parameters:fund is null)
+		(:c:a_fund = :parameters:fund or :parameters:fund is null)
 	    ";
     }

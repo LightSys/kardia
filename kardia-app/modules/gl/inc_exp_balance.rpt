@@ -22,7 +22,7 @@ inc_exp_balance "system/report"
 
     // Parameters
     ledger "report/parameter" { type=string; default=null; }
-    //costctr "report/parameter" { type=string; default=null; }
+    //fund "report/parameter" { type=string; default=null; }
     ref_period "report/parameter" { type=string; default=runserver( (select first(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_summary_only = 0 and datepart(year, :a_end_date) = datepart(year, getdate()) order by :a_start_date) ); }
     end_period "report/parameter" { type=string; default=runserver( (select last(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_summary_only = 0 and datepart(year, :a_end_date) = datepart(year, getdate()) order by :a_start_date) ); }
     unposted "report/parameter" { type=integer; default=0; }
@@ -48,7 +48,7 @@ inc_exp_balance "system/report"
 	{
 	sql = runserver("
 		SELECT
-			:c:a_bal_cost_center,
+			:c:a_bal_fund,
 			:c:a_restricted_type,
 			ob = :inv_qy:inv * isnull(sum(condition((:t:a_period < :this:ref_period or :t:a_transaction_type == 'B') and :t:a_account_category >= '3', :t:a_amount, $0)), $0),
 			iob = :inv_qy:inv * isnull(sum(condition((:t:a_period < :this:ref_period) and (:t:a_account_category == '42' or :t:a_account_category == '52'), :t:a_amount, $0)), $0),
@@ -61,18 +61,18 @@ inc_exp_balance "system/report"
 			wexp = :inv_qy:inv * isnull(sum(condition(:t:a_period >= :this:ref_period and :t:a_account_category == '51', :t:a_amount, $0)), $0),
 			equity = :inv_qy:inv * isnull(sum(condition(:t:a_period >= :this:ref_period and :t:a_transaction_type != 'B' and substring(:t:a_account_category,1,1) == '3', :t:a_amount, $0)), $0)
 		FROM
-			/apps/kardia/data/Kardia_DB/a_cost_center/rows c,
+			/apps/kardia/data/Kardia_DB/a_fund/rows c,
 			/apps/kardia/data/Kardia_DB/a_transaction/rows t
 		WHERE
 			:c:a_ledger_number = :this:ledger and
-			-- :c:a_cost_center = :c:a_bal_cost_center and
+			-- :c:a_fund = :c:a_bal_fund and
 			:t:a_ledger_number = :c:a_ledger_number and
 			:t:a_period <= :this:end_period and
 			:t:a_period >= :period_qy:first_period and
-			:t:a_cost_center = :c:a_cost_center
+			:t:a_fund = :c:a_fund
 			" + condition(:this:unposted, "", "and :t:a_posted = 1") + "
 		GROUP BY
-			:c:a_bal_cost_center
+			:c:a_bal_fund
 		");
 	sum_irev "report/aggregate" { compute="sum(:irev)"; reset=0; }
 	sum_iexp "report/aggregate" { compute="sum(:iexp)"; reset=0; }
@@ -116,11 +116,11 @@ inc_exp_balance "system/report"
     ccinfo_qy "report/query"
 	{
 	sql = " SELECT
-			:c:a_cc_desc
+			:c:a_fund_desc
 		FROM
-			/apps/kardia/data/Kardia_DB/a_cost_center/rows c
+			/apps/kardia/data/Kardia_DB/a_fund/rows c
 		WHERE
-			:c:a_cost_center = :accts_qy:a_bal_cost_center and
+			:c:a_fund = :accts_qy:a_bal_fund and
 			:c:a_ledger_number = :this:ledger
 		";
 	}
@@ -131,9 +131,9 @@ inc_exp_balance "system/report"
 		SELECT
 			cnt = count(1)
 		FROM
-			/apps/kardia/data/Kardia_DB/a_cost_center/rows c
+			/apps/kardia/data/Kardia_DB/a_fund/rows c
 		WHERE
-			:c:a_bal_cost_center = :accts_qy:a_bal_cost_center and
+			:c:a_bal_fund = :accts_qy:a_bal_fund and
 			:c:a_ledger_number = :this:ledger
 		");
 	}
@@ -142,8 +142,8 @@ inc_exp_balance "system/report"
 	{
 	sql = runserver("
 		SELECT
-			:c:a_cost_center,
-			:c:a_cc_desc,
+			:c:a_fund,
+			:c:a_fund_desc,
 			ob = :inv_qy:inv * isnull(sum(condition((:t:a_period < :this:ref_period or :t:a_transaction_type == 'B') and :t:a_account_category >= '3', :t:a_amount, $0)), $0),
 			rev = :inv_qy:inv * isnull(sum(condition(:t:a_period >= :this:ref_period and :t:a_account_category == '40', :t:a_amount, $0)), $0),
 			exp = :inv_qy:inv * isnull(sum(condition(:t:a_period >= :this:ref_period and :t:a_account_category == '50', :t:a_amount, $0)), $0),
@@ -153,18 +153,18 @@ inc_exp_balance "system/report"
 			wexp = :inv_qy:inv * isnull(sum(condition(:t:a_period >= :this:ref_period and :t:a_account_category == '51', :t:a_amount, $0)), $0),
 			equity = :inv_qy:inv * isnull(sum(condition(:t:a_period >= :this:ref_period and :t:a_transaction_type != 'B' and substring(:t:a_account_category,1,1) == '3', :t:a_amount, $0)), $0)
 		FROM
-			/apps/kardia/data/Kardia_DB/a_cost_center/rows c,
+			/apps/kardia/data/Kardia_DB/a_fund/rows c,
 			/apps/kardia/data/Kardia_DB/a_transaction/rows t
 		WHERE
-			:c:a_bal_cost_center = :accts_qy:a_bal_cost_center and
+			:c:a_bal_fund = :accts_qy:a_bal_fund and
 			:c:a_ledger_number = :this:ledger and
 			:t:a_ledger_number = :c:a_ledger_number and
 			:t:a_period <= :this:end_period and
 			:t:a_period >= :period_qy:first_period and
-			:t:a_cost_center = :c:a_cost_center
+			:t:a_fund = :c:a_fund
 			" + condition(:this:unposted, "", "and :t:a_posted = 1") + "
 		GROUP BY
-			:c:a_cost_center
+			:c:a_fund
 		");
 	}
 
@@ -242,8 +242,8 @@ inc_exp_balance "system/report"
 		marginbottom=0.0;
 		margintop=0.5;
 		style=bold;
-		d_cc "report/table-cell" { value=runserver(:accts_qy:a_bal_cost_center); align=left; font=helvetica; }
-		d_desc "report/table-cell" { value=runserver(:ccinfo_qy:a_cc_desc); align=left; font=helvetica; }
+		d_cc "report/table-cell" { value=runserver(:accts_qy:a_bal_fund); align=left; font=helvetica; }
+		d_desc "report/table-cell" { value=runserver(:ccinfo_qy:a_fund_desc); align=left; font=helvetica; }
 		d_bbal "report/table-cell" { value=runserver(:accts_qy:ob); align=right; }
 		d_rev "report/table-cell" { value=runserver(:accts_qy:rev); align=right; }
 		d_irev "report/table-cell" { value=runserver(:accts_qy:irev); align=right; }
@@ -262,8 +262,8 @@ inc_exp_balance "system/report"
 		font=courier;
 		fontsize=7;
 		marginbottom=0.0;
-		d2_cc "report/table-cell" { value=runserver("  " + :subaccts_qy:a_cost_center); align=left; font=helvetica; }
-		d2_desc "report/table-cell" { value=runserver(:subaccts_qy:a_cc_desc); align=left; font=helvetica; }
+		d2_cc "report/table-cell" { value=runserver("  " + :subaccts_qy:a_fund); align=left; font=helvetica; }
+		d2_desc "report/table-cell" { value=runserver(:subaccts_qy:a_fund_desc); align=left; font=helvetica; }
 		d2_bbal "report/table-cell" { value=runserver(:subaccts_qy:ob); align=right; }
 		d2_rev "report/table-cell" { value=runserver(:subaccts_qy:rev); align=right; }
 		d2_irev "report/table-cell" { value=runserver(:subaccts_qy:irev); align=right; }

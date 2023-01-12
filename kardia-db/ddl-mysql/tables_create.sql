@@ -14,9 +14,9 @@ insert ra values('a_account_category','Control Categories',':a_acct_cat_desc');
 
 insert ra values('a_batch','Batches',':a_batch_desc');
 
-insert ra values('a_cost_center','Cost Centers',':a_cc_desc');
+insert ra values('a_fund','Funds',':a_fund_desc');
 
-insert ra values('a_cost_center_prefix','CostCtr Prefixes',':a_cc_prefix_desc');
+insert ra values('a_fund_prefix','Fund Prefixes',':a_fund_prefix_desc');
 
 insert ra values('a_period','Periods',':a_period_desc');
 
@@ -51,7 +51,7 @@ create table p_partner (
         p_no_mail_reason                      char(1)  null,           /* Reason why p_no_mail is set: (U)ndeliverable, (O)ffice Request, (P)ersonal Request, (M)issionary Request, (D)eceased, (T)emporarily Away, (I)nactive Donor, (X) Other. --  */
         p_no_solicitations                    bit,                     /*  --  */
         p_no_mail                             bit,                     /*  --  */
-        p_cost_center                         varchar(20)  null,       /* The cost center number (see a_cost_center) associated with the partner, if applicable. --  */
+        a_fund                                varchar(20)  null,       /* The fund code (see a_fund) associated with the partner, if applicable. --  */
         p_best_contact                        char(10)  null,          /*  --  */
         p_merged_with                         char(10)  null,          /* new key id after merge --  */
         p_legacy_key_1                        char(10)  null,          /* old system --  */
@@ -154,7 +154,7 @@ create table p_address_format_set (
         __cx_osml_control                     varchar(255)  null       /*  --  */
 
 );
-insert into p_address_format_set (p_address_set,p_address_set_desc,p_is_active,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "STANDARD" as p_address_set, "Standard Format Set" as p_address_set_desc, 1 as p_is_active, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_address_format_set (p_address_set,p_address_set_desc,p_is_active,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "STANDARD" as p_address_set, "Standard Format Set" as p_address_set_desc, 1 as p_is_active, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
 
 
 /* p_contact_info */
@@ -398,57 +398,57 @@ create table p_pol_division (
         __cx_osml_control                     varchar(255)  null       /*  --  */
 
 );
-insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'AL' as p_pol_division, 'Alabama' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'GA' as p_pol_division, 'Georgia' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'HI' as p_pol_division, 'Hawaii' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'ID' as p_pol_division, 'Idaho' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'IL' as p_pol_division, 'Illinois' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'IN' as p_pol_division, 'Indiana' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'IA' as p_pol_division, 'Iowa' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'KS' as p_pol_division, 'Kansas' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'KY' as p_pol_division, 'Kentucky' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'LA' as p_pol_division, 'Louisiana' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'ME' as p_pol_division, 'Maine' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'AK' as p_pol_division, 'Alaska' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'MD' as p_pol_division, 'Maryland' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'MA' as p_pol_division, 'Massachusetts' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'MI' as p_pol_division, 'Michigan' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'MN' as p_pol_division, 'Minnesota' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'MS' as p_pol_division, 'Mississippi' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'MO' as p_pol_division, 'Missouri' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'MT' as p_pol_division, 'Montana' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'NE' as p_pol_division, 'Nebraska' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'NV' as p_pol_division, 'Nevada' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'NH' as p_pol_division, 'New Hampshire' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'AZ' as p_pol_division, 'Arizona' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'NJ' as p_pol_division, 'New Jersey' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'NM' as p_pol_division, 'New Mexico' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'NY' as p_pol_division, 'New York' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'NC' as p_pol_division, 'North Carolina' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'ND' as p_pol_division, 'North Dakota' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'OH' as p_pol_division, 'Ohio' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'OK' as p_pol_division, 'Oklahoma' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'OR' as p_pol_division, 'Oregon' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'PA' as p_pol_division, 'Pennsylvania' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'RI' as p_pol_division, 'Rhode Island' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'AR' as p_pol_division, 'Arkansas' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'SC' as p_pol_division, 'South Carolina' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'SD' as p_pol_division, 'South Dakota' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'TN' as p_pol_division, 'Tennessee' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'TX' as p_pol_division, 'Texas' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'UT' as p_pol_division, 'Utah' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'VT' as p_pol_division, 'Vermont' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'VA' as p_pol_division, 'Virginia' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'WA' as p_pol_division, 'Washington' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'WV' as p_pol_division, 'West Virginia' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'WI' as p_pol_division, 'Wisconsin' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'CA' as p_pol_division, 'California' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'WY' as p_pol_division, 'Wyoming' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'DC' as p_pol_division, 'Washington DC' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'CO' as p_pol_division, 'Colorado' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'CT' as p_pol_division, 'Connecticut' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'DE' as p_pol_division, 'Delaware' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'FL' as p_pol_division, 'Florida' as p_pol_division_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,p_record_status_code,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'AL' as p_pol_division, 'Alabama' as p_pol_division_name, 'A' as p_record_status_code, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,p_record_status_code,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'GA' as p_pol_division, 'Georgia' as p_pol_division_name, 'A' as p_record_status_code, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,p_record_status_code,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'HI' as p_pol_division, 'Hawaii' as p_pol_division_name, 'A' as p_record_status_code, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,p_record_status_code,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'ID' as p_pol_division, 'Idaho' as p_pol_division_name, 'A' as p_record_status_code, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,p_record_status_code,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'IL' as p_pol_division, 'Illinois' as p_pol_division_name, 'A' as p_record_status_code, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,p_record_status_code,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'IN' as p_pol_division, 'Indiana' as p_pol_division_name, 'A' as p_record_status_code, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,p_record_status_code,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'IA' as p_pol_division, 'Iowa' as p_pol_division_name, 'A' as p_record_status_code, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,p_record_status_code,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'KS' as p_pol_division, 'Kansas' as p_pol_division_name, 'A' as p_record_status_code, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,p_record_status_code,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'KY' as p_pol_division, 'Kentucky' as p_pol_division_name, 'A' as p_record_status_code, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,p_record_status_code,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'LA' as p_pol_division, 'Louisiana' as p_pol_division_name, 'A' as p_record_status_code, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,p_record_status_code,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'ME' as p_pol_division, 'Maine' as p_pol_division_name, 'A' as p_record_status_code, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,p_record_status_code,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'AK' as p_pol_division, 'Alaska' as p_pol_division_name, 'A' as p_record_status_code, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,p_record_status_code,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'MD' as p_pol_division, 'Maryland' as p_pol_division_name, 'A' as p_record_status_code, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,p_record_status_code,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'MA' as p_pol_division, 'Massachusetts' as p_pol_division_name, 'A' as p_record_status_code, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,p_record_status_code,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'MI' as p_pol_division, 'Michigan' as p_pol_division_name, 'A' as p_record_status_code, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,p_record_status_code,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'MN' as p_pol_division, 'Minnesota' as p_pol_division_name, 'A' as p_record_status_code, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,p_record_status_code,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'MS' as p_pol_division, 'Mississippi' as p_pol_division_name, 'A' as p_record_status_code, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,p_record_status_code,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'MO' as p_pol_division, 'Missouri' as p_pol_division_name, 'A' as p_record_status_code, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,p_record_status_code,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'MT' as p_pol_division, 'Montana' as p_pol_division_name, 'A' as p_record_status_code, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,p_record_status_code,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'NE' as p_pol_division, 'Nebraska' as p_pol_division_name, 'A' as p_record_status_code, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,p_record_status_code,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'NV' as p_pol_division, 'Nevada' as p_pol_division_name, 'A' as p_record_status_code, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,p_record_status_code,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'NH' as p_pol_division, 'New Hampshire' as p_pol_division_name, 'A' as p_record_status_code, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,p_record_status_code,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'AZ' as p_pol_division, 'Arizona' as p_pol_division_name, 'A' as p_record_status_code, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,p_record_status_code,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'NJ' as p_pol_division, 'New Jersey' as p_pol_division_name, 'A' as p_record_status_code, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,p_record_status_code,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'NM' as p_pol_division, 'New Mexico' as p_pol_division_name, 'A' as p_record_status_code, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,p_record_status_code,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'NY' as p_pol_division, 'New York' as p_pol_division_name, 'A' as p_record_status_code, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,p_record_status_code,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'NC' as p_pol_division, 'North Carolina' as p_pol_division_name, 'A' as p_record_status_code, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,p_record_status_code,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'ND' as p_pol_division, 'North Dakota' as p_pol_division_name, 'A' as p_record_status_code, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,p_record_status_code,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'OH' as p_pol_division, 'Ohio' as p_pol_division_name, 'A' as p_record_status_code, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,p_record_status_code,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'OK' as p_pol_division, 'Oklahoma' as p_pol_division_name, 'A' as p_record_status_code, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,p_record_status_code,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'OR' as p_pol_division, 'Oregon' as p_pol_division_name, 'A' as p_record_status_code, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,p_record_status_code,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'PA' as p_pol_division, 'Pennsylvania' as p_pol_division_name, 'A' as p_record_status_code, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,p_record_status_code,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'RI' as p_pol_division, 'Rhode Island' as p_pol_division_name, 'A' as p_record_status_code, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,p_record_status_code,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'AR' as p_pol_division, 'Arkansas' as p_pol_division_name, 'A' as p_record_status_code, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,p_record_status_code,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'SC' as p_pol_division, 'South Carolina' as p_pol_division_name, 'A' as p_record_status_code, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,p_record_status_code,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'SD' as p_pol_division, 'South Dakota' as p_pol_division_name, 'A' as p_record_status_code, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,p_record_status_code,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'TN' as p_pol_division, 'Tennessee' as p_pol_division_name, 'A' as p_record_status_code, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,p_record_status_code,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'TX' as p_pol_division, 'Texas' as p_pol_division_name, 'A' as p_record_status_code, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,p_record_status_code,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'UT' as p_pol_division, 'Utah' as p_pol_division_name, 'A' as p_record_status_code, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,p_record_status_code,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'VT' as p_pol_division, 'Vermont' as p_pol_division_name, 'A' as p_record_status_code, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,p_record_status_code,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'VA' as p_pol_division, 'Virginia' as p_pol_division_name, 'A' as p_record_status_code, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,p_record_status_code,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'WA' as p_pol_division, 'Washington' as p_pol_division_name, 'A' as p_record_status_code, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,p_record_status_code,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'WV' as p_pol_division, 'West Virginia' as p_pol_division_name, 'A' as p_record_status_code, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,p_record_status_code,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'WI' as p_pol_division, 'Wisconsin' as p_pol_division_name, 'A' as p_record_status_code, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,p_record_status_code,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'CA' as p_pol_division, 'California' as p_pol_division_name, 'A' as p_record_status_code, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,p_record_status_code,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'WY' as p_pol_division, 'Wyoming' as p_pol_division_name, 'A' as p_record_status_code, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,p_record_status_code,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'DC' as p_pol_division, 'Washington DC' as p_pol_division_name, 'A' as p_record_status_code, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,p_record_status_code,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'CO' as p_pol_division, 'Colorado' as p_pol_division_name, 'A' as p_record_status_code, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,p_record_status_code,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'CT' as p_pol_division, 'Connecticut' as p_pol_division_name, 'A' as p_record_status_code, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,p_record_status_code,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'DE' as p_pol_division, 'Delaware' as p_pol_division_name, 'A' as p_record_status_code, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,p_record_status_code,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'FL' as p_pol_division, 'Florida' as p_pol_division_name, 'A' as p_record_status_code, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
 
 
 /* p_banking_details */
@@ -488,12 +488,12 @@ create table p_banking_type (
         __cx_osml_control                     varchar(255)  null       /*  --  */
 
 );
-insert into p_banking_type (p_banking_type,p_banking_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'C' as p_banking_type, 'Checking' as p_banking_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_banking_type (p_banking_type,p_banking_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'S' as p_banking_type, 'Savings' as p_banking_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_banking_type (p_banking_type,p_banking_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'R' as p_banking_type, 'Revolving Credit' as p_banking_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_banking_type (p_banking_type,p_banking_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'D' as p_banking_type, 'Certificate of Deposit' as p_banking_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_banking_type (p_banking_type,p_banking_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'M' as p_banking_type, 'Merchant' as p_banking_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_banking_type (p_banking_type,p_banking_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'I' as p_banking_type, 'Investment' as p_banking_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_banking_type (p_banking_type,p_banking_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'C' as p_banking_type, 'Checking' as p_banking_desc, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_banking_type (p_banking_type,p_banking_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'S' as p_banking_type, 'Savings' as p_banking_desc, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_banking_type (p_banking_type,p_banking_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'R' as p_banking_type, 'Revolving Credit' as p_banking_desc, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_banking_type (p_banking_type,p_banking_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'D' as p_banking_type, 'Certificate of Deposit' as p_banking_desc, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_banking_type (p_banking_type,p_banking_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'M' as p_banking_type, 'Merchant' as p_banking_desc, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_banking_type (p_banking_type,p_banking_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'I' as p_banking_type, 'Investment' as p_banking_desc, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
 
 
 /* p_title */
@@ -581,16 +581,16 @@ create table p_acquisition_code (
         __cx_osml_control                     varchar(255)  null       /*  --  */
 
 );
-insert into p_acquisition_code (p_acquisition_code,p_acquisition_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'CNV' as p_acquisition_code, 'Data Conversion' as p_acquisition_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_acquisition_code (p_acquisition_code,p_acquisition_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'OTH' as p_acquisition_code, 'Other Reason' as p_acquisition_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_acquisition_code (p_acquisition_code,p_acquisition_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'DON' as p_acquisition_code, 'New Donor' as p_acquisition_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_acquisition_code (p_acquisition_code,p_acquisition_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'PAR' as p_acquisition_code, 'Missionary Partner' as p_acquisition_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_acquisition_code (p_acquisition_code,p_acquisition_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'PAY' as p_acquisition_code, 'New Payee' as p_acquisition_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_acquisition_code (p_acquisition_code,p_acquisition_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'STA' as p_acquisition_code, 'New Staff Member' as p_acquisition_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_acquisition_code (p_acquisition_code,p_acquisition_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'MIS' as p_acquisition_code, 'New Missionary' as p_acquisition_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_acquisition_code (p_acquisition_code,p_acquisition_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'EVT' as p_acquisition_code, 'Met at an Event' as p_acquisition_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_acquisition_code (p_acquisition_code,p_acquisition_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'UNI' as p_acquisition_code, 'Met at a College or University' as p_acquisition_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_acquisition_code (p_acquisition_code,p_acquisition_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'RAN' as p_acquisition_code, 'Met at Random / Divine Appointment' as p_acquisition_name, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_acquisition_code (p_acquisition_code,p_acquisition_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'CNV' as p_acquisition_code, 'Data Conversion' as p_acquisition_name, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_acquisition_code (p_acquisition_code,p_acquisition_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'OTH' as p_acquisition_code, 'Other Reason' as p_acquisition_name, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_acquisition_code (p_acquisition_code,p_acquisition_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'DON' as p_acquisition_code, 'New Donor' as p_acquisition_name, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_acquisition_code (p_acquisition_code,p_acquisition_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'PAR' as p_acquisition_code, 'Missionary Partner' as p_acquisition_name, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_acquisition_code (p_acquisition_code,p_acquisition_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'PAY' as p_acquisition_code, 'New Payee' as p_acquisition_name, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_acquisition_code (p_acquisition_code,p_acquisition_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'STA' as p_acquisition_code, 'New Staff Member' as p_acquisition_name, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_acquisition_code (p_acquisition_code,p_acquisition_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'MIS' as p_acquisition_code, 'New Missionary' as p_acquisition_name, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_acquisition_code (p_acquisition_code,p_acquisition_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'EVT' as p_acquisition_code, 'Met at an Event' as p_acquisition_name, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_acquisition_code (p_acquisition_code,p_acquisition_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'UNI' as p_acquisition_code, 'Met at a College or University' as p_acquisition_name, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_acquisition_code (p_acquisition_code,p_acquisition_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'RAN' as p_acquisition_code, 'Met at Rnd / Divine Appointment' as p_acquisition_name, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
 
 
 /* p_partner_search */
@@ -677,6 +677,58 @@ create table p_nondup (
 );
 
 
+/* p_dup */
+
+create table p_dup (
+        p_partner_key                         char(10)  not null,      /*  --  */
+        p_dup_partner_key                     char(10)  not null,      /*  --  */
+        p_match_quality                       float  not null,         /* The degree of match for the potential duplicates (0.0 ~ 1.0) --  */
+        p_location_id                         integer  null,           /* If this is a duplicate location (same partner), this is the location ID. --  */
+        p_dup_location_id                     integer  null,           /*  --  */
+        p_revision_id                         integer  null,           /*  --  */
+        p_dup_revision_id                     integer  null,           /*  --  */
+        p_contact_id                          integer  null,           /* If this is a duplicate contact record (same partner), this is the contact ID. --  */
+        p_dup_contact_id                      integer  null,           /*  --  */
+        p_comment                             varchar(900)  null,      /* comments about this potential duplicate --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* p_merge */
+
+create table p_merge (
+        p_partner_key_a                       char(10)  not null,      /*  --  */
+        p_partner_key_b                       char(10)  not null,      /*  --  */
+        p_data_source                         varchar(16)  not null,   /* The source of the data (gift, address, contact, etc.) --  */
+        p_data_key                            varchar(255)  not null,  /* The primary key or other identifier of the data in question --  */
+        p_data_desc                           varchar(255)  not null,  /* The data's summarized content/value. --  */
+        p_short_data_desc                     varchar(255)  not null,  /* The data's summarized content/value, shortened to be more appropriate for fuzzy string comparison --  */
+        p_date_start                          datetime  null,          /* If we're managing data based on a date range, this is the starting date --  */
+        p_date_end                            datetime  null,          /* If we're managing the data based on date range, this is the ending date --  */
+        p_allow_copy                          bit  not null,           /* 1 if we can make a copy of this data (e.g. addresses, phones, emails), 0 if we can only move it (e.g. gifts, payments, etc.) --  */
+        p_default_copy                        bit  not null,           /* 1 if by default we copy rather than move, 0 if by default we move rather than copy --  */
+        p_default_marriage_copy               bit  not null,           /* 1 if by default we copy this in a marriage merge, 0 if by default we leave it alone --  */
+        p_default_marriage_move               bit  not null,           /* 1 if by default we move this in a marriage merge, 0 if by default we leave it alone --  */
+        p_allow_multiple                      bit  not null,           /* 1 if we can have more than one of these items per partner (addresses, gifts, etc), or 0 if we can only have one per partner (staff, church, person) --  */
+        p_default_multiple                    bit  not null,           /* 1 if we by default keep multiples, or 0 if we by default don't create multiples. --  */
+        p_allow_delete                        bit  not null,           /* 1 if we can delete this item entirely during the merge, or 0 if we cannot delete it --  */
+        p_allow_collate                       bit  not null,           /* 1 if we should look at the "short desc" to see if two of these are identical, 0 if they are never considered identical --  */
+        p_disposition                         varchar(3)  not null,    /* How we're handling this, first char where from (uppercase if copy, lowercase if move), 2nd/3rd chars where to, for example aB means move from a to b, BC means copy from B to C, ABC means copy from A to both B and C. --  */
+        p_comment                             varchar(900)  null,      /* comments about this merge data --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
 /* m_list */
 
 create table m_list (
@@ -689,9 +741,9 @@ create table m_list (
         m_discard_after                       datetime  null,          /* for temporary lists/extracts --  */
         m_list_frozen                         bit,                     /* do not permit add/remove memberships --  */
         m_date_sent                           datetime  null,          /*  --  */
-        m_charge_ledger                       char(10)  null,          /* who to charge for publ. costs --  */
+        a_charge_ledger                       char(10)  null,          /* who to charge for publ. costs --  */
         p_postal_mode                         char(1)  null,           /* B-Bulk F-FirstClass Used to set postal modes on mailings --  */
-        m_charge_cost_ctr                     varchar(20)  null,       /*  --  */
+        a_charge_fund                         varchar(20)  null,       /*  --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -788,13 +840,13 @@ create table e_contact_history_type (
         __cx_osml_control                     varchar(255)  null       /*  --  */
 
 );
-insert into e_contact_history_type (e_contact_history_type,e_short_name,e_description,e_user_selectable,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 1 as e_contact_history_type, 'Phone' as e_short_name, 'Phone Call' as e_description, 1 as e_user_selectable, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into e_contact_history_type (e_contact_history_type,e_short_name,e_description,e_user_selectable,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 2 as e_contact_history_type, 'Email' as e_short_name, 'Email Message' as e_description, 1 as e_user_selectable, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into e_contact_history_type (e_contact_history_type,e_short_name,e_description,e_user_selectable,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 3 as e_contact_history_type, 'Conversation' as e_short_name, 'In-Person Conversation' as e_description, 1 as e_user_selectable, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into e_contact_history_type (e_contact_history_type,e_short_name,e_description,e_user_selectable,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 4 as e_contact_history_type, 'Note' as e_short_name, 'Note' as e_description, 1 as e_user_selectable, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into e_contact_history_type (e_contact_history_type,e_short_name,e_description,e_user_selectable,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 5 as e_contact_history_type, 'Pray' as e_short_name, 'Prayer/Praise Item' as e_description, 1 as e_user_selectable, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into e_contact_history_type (e_contact_history_type,e_short_name,e_description,e_user_selectable,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 6 as e_contact_history_type, 'SignUp' as e_short_name, 'Sign Up List' as e_description, 1 as e_user_selectable, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into e_contact_history_type (e_contact_history_type,e_short_name,e_description,e_user_selectable,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 7 as e_contact_history_type, 'Update' as e_short_name, 'Update' as e_description, 1 as e_user_selectable, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into e_contact_history_type (e_contact_history_type,e_short_name,e_description,e_is_notes,e_is_inperson,e_user_selectable,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 1 as e_contact_history_type, 'Phone' as e_short_name, 'Phone Call' as e_description,0 as e_is_notes, 0 as e_is_inperson, 1 as e_user_selectable, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into e_contact_history_type (e_contact_history_type,e_short_name,e_description,e_is_notes,e_is_inperson,e_user_selectable,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 2 as e_contact_history_type, 'Email' as e_short_name, 'Email Message' as e_description,1 as e_is_notes, 0 as e_is_inperson, 1 as e_user_selectable, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into e_contact_history_type (e_contact_history_type,e_short_name,e_description,e_is_notes,e_is_inperson,e_user_selectable,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 3 as e_contact_history_type, 'Conversation' as e_short_name, 'In-Person Conversation' as e_description,0 as e_is_notes, 1 as e_is_inperson, 1 as e_user_selectable, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into e_contact_history_type (e_contact_history_type,e_short_name,e_description,e_is_notes,e_is_inperson,e_user_selectable,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 4 as e_contact_history_type, 'Note' as e_short_name, 'Note' as e_description,1 as e_is_notes, 0 as e_is_inperson, 1 as e_user_selectable, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into e_contact_history_type (e_contact_history_type,e_short_name,e_description,e_is_notes,e_is_inperson,e_user_selectable,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 5 as e_contact_history_type, 'Pray' as e_short_name, 'Prayer/Praise Item' as e_description,1 as e_is_notes, 0 as e_is_inperson, 1 as e_user_selectable, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into e_contact_history_type (e_contact_history_type,e_short_name,e_description,e_is_notes,e_is_inperson,e_user_selectable,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 6 as e_contact_history_type, 'SignUp' as e_short_name, 'Sign Up List' as e_description,1 as e_is_notes, 1 as e_is_inperson, 1 as e_user_selectable, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into e_contact_history_type (e_contact_history_type,e_short_name,e_description,e_is_notes,e_is_inperson,e_user_selectable,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 7 as e_contact_history_type, 'Update' as e_short_name, 'Update' as e_description,0 as e_is_notes, 0 as e_is_inperson, 1 as e_user_selectable, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
 
 
 /* e_contact_history */
@@ -1100,12 +1152,12 @@ create table e_document_type (
         __cx_osml_control                     varchar(255)  null       /*  --  */
 
 );
-insert into e_document_type (e_doc_type_id,e_doc_type_label,e_doc_type_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 1 as e_doc_type_id, 'Profile Photo' as e_doc_type_label, 'Profile Photograph' as e_doc_type_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into e_document_type (e_doc_type_id,e_doc_type_label,e_doc_type_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 2 as e_doc_type_id, 'Prayer Letter' as e_doc_type_label, 'Prayer Letter' as e_doc_type_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into e_document_type (e_doc_type_id,e_doc_type_label,e_doc_type_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 3 as e_doc_type_id, 'Application' as e_doc_type_label, 'Application' as e_doc_type_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into e_document_type (e_doc_type_id,e_doc_type_label,e_doc_type_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 4 as e_doc_type_id, 'Resume' as e_doc_type_label, 'Resume' as e_doc_type_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into e_document_type (e_doc_type_id,e_doc_type_label,e_doc_type_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 5 as e_doc_type_id, 'Document' as e_doc_type_label, 'Document' as e_doc_type_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into e_document_type (e_doc_type_id,e_doc_type_label,e_doc_type_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 6 as e_doc_type_id, 'Image' as e_doc_type_label, 'Image' as e_doc_type_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into e_document_type (e_doc_type_id,e_doc_type_label,e_doc_type_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 1 as e_doc_type_id, 'Profile Photo' as e_doc_type_label, 'Profile Photograph' as e_doc_type_desc, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into e_document_type (e_doc_type_id,e_doc_type_label,e_doc_type_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 2 as e_doc_type_id, 'Prayer Letter' as e_doc_type_label, 'Prayer Letter' as e_doc_type_desc, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into e_document_type (e_doc_type_id,e_doc_type_label,e_doc_type_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 3 as e_doc_type_id, 'Application' as e_doc_type_label, 'Application' as e_doc_type_desc, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into e_document_type (e_doc_type_id,e_doc_type_label,e_doc_type_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 4 as e_doc_type_id, 'Resume' as e_doc_type_label, 'Resume' as e_doc_type_desc, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into e_document_type (e_doc_type_id,e_doc_type_label,e_doc_type_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 5 as e_doc_type_id, 'Document' as e_doc_type_label, 'Document' as e_doc_type_desc, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into e_document_type (e_doc_type_id,e_doc_type_label,e_doc_type_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 6 as e_doc_type_id, 'Image' as e_doc_type_label, 'Image' as e_doc_type_desc, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
 
 
 /* e_document */
@@ -1237,7 +1289,7 @@ create table e_collaborator_type (
         __cx_osml_control                     varchar(255)  null       /*  --  */
 
 );
-insert into e_collaborator_type (e_collab_type_id,e_collab_type_label,e_collab_type_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 1 as e_collab_type_id, 'Mobilizer' as e_collab_type_label, 'Mobilizer' as e_collab_type_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into e_collaborator_type (e_collab_type_id,e_collab_type_label,e_collab_type_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 1 as e_collab_type_id, 'Mobilizer' as e_collab_type_label, 'Mobilizer' as e_collab_type_desc, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
 
 
 /* e_collaborator */
@@ -1272,7 +1324,7 @@ create table e_todo_type (
         __cx_osml_control                     varchar(255)  null       /*  --  */
 
 );
-insert into e_todo_type (e_todo_type_id,e_todo_type_label,e_todo_type_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 1 as e_todo_type_id, 'Follow-up' as e_todo_type_label, 'Follow-up' as e_todo_type_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into e_todo_type (e_todo_type_id,e_todo_type_label,e_todo_type_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 1 as e_todo_type_id, 'Follow-up' as e_todo_type_label, 'Follow-up' as e_todo_type_desc, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
 
 
 /* e_todo */
@@ -1448,10 +1500,10 @@ create table e_ack_type (
         __cx_osml_control                     varchar(255)  null       /*  --  */
 
 );
-insert into e_ack_type (e_ack_type,e_ack_type_label,e_ack_type_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 1 as e_ack_type, 'Prayed' as e_ack_type_label, 'Prayed' as e_ack_type_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into e_ack_type (e_ack_type,e_ack_type_label,e_ack_type_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 2 as e_ack_type, 'Reply' as e_ack_type_label, 'Reply' as e_ack_type_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into e_ack_type (e_ack_type,e_ack_type_label,e_ack_type_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 3 as e_ack_type, 'Comment' as e_ack_type_label, 'Comment' as e_ack_type_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into e_ack_type (e_ack_type,e_ack_type_label,e_ack_type_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 4 as e_ack_type, 'Viewed' as e_ack_type_label, 'Viewed' as e_ack_type_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into e_ack_type (e_ack_type,e_ack_type_label,e_ack_type_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 1 as e_ack_type, 'Prayed' as e_ack_type_label, 'Prayed' as e_ack_type_desc, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into e_ack_type (e_ack_type,e_ack_type_label,e_ack_type_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 2 as e_ack_type, 'Reply' as e_ack_type_label, 'Reply' as e_ack_type_desc, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into e_ack_type (e_ack_type,e_ack_type_label,e_ack_type_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 3 as e_ack_type, 'Comment' as e_ack_type_label, 'Comment' as e_ack_type_desc, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into e_ack_type (e_ack_type,e_ack_type_label,e_ack_type_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 4 as e_ack_type, 'Viewed' as e_ack_type_label, 'Viewed' as e_ack_type_desc, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
 
 
 /* e_trackactivity */
@@ -1894,7 +1946,7 @@ create table a_analysis_attr (
         a_attr_code                           char(8)  not null,       /* analysis attribute code (alphanumeric allowed) --  */
         a_ledger_number                       char(10)  not null,      /* ledger number that uses this attribute --  */
         a_desc                                varchar(255)  not null,  /* description of attribute --  */
-        a_cc_enab                             bit  not null,           /* whether to enable this attr for cost centers --  */
+        a_fund_enab                           bit  not null,           /* whether to enable this attr for funds --  */
         a_acct_enab                           bit  not null,           /* whether to enable this attr for GL accounts --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
@@ -1921,12 +1973,12 @@ create table a_analysis_attr_value (
 );
 
 
-/* a_cc_analysis_attr */
+/* a_fund_analysis_attr */
 
-create table a_cc_analysis_attr (
+create table a_fund_analysis_attr (
         a_attr_code                           char(8)  not null,       /* analysis attribute code (alphanumeric allowed) --  */
         a_ledger_number                       char(10)  not null,      /* ledger number that uses this attribute --  */
-        a_cost_center                         char(20)  not null,      /* cost center --  */
+        a_fund                                char(20)  not null,      /* fund --  */
         a_value                               varchar(255)  null,      /* analysis attribute value --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
@@ -1953,22 +2005,22 @@ create table a_acct_analysis_attr (
 );
 
 
-/* a_cost_center */
+/* a_fund */
 
-create table a_cost_center (
-        a_cost_center                         char(20)  not null,      /* cost center code (alphanumeric allowed) --  */
-        a_ledger_number                       char(10)  not null,      /* ledger number that uses this cost center --  */
-        a_parent_cost_center                  char(20)  null,          /* cost center that this data rolls up into for reporting (within same ledger) --  */
-        a_bal_cost_center                     char(20)  not null,      /* a_bal_cost_center = a_is_balancing?a_cost_center:a_parent_cost_center --  */
-        a_cost_center_class                   char(3)  null,           /* classification (could be others too): (ADM)inistration & General, (FUN)draising, (MIN)istry / Program Services. --  */
-        a_reporting_level                     int  not null,           /* at what detail level should this costctr be shown (in reports); smaller number = less detail, more generalized report --  */
-        a_is_posting                          bit,                     /* enables posting to this cost center --  */
-        a_is_external                         bit,                     /* Does the cost center represent a subdivision of the local entity, or is it foreign/external? --  */
-        a_is_balancing                        bit,                     /* Is this a true cost center which self-balances (satisfies the accounting equation), or is it merely a fund within a cost center? --  */
+create table a_fund (
+        a_fund                                char(20)  not null,      /* fund code (alphanumeric allowed) --  */
+        a_ledger_number                       char(10)  not null,      /* ledger number that uses this fund --  */
+        a_parent_fund                         char(20)  null,          /* fund that this data rolls up into for reporting (within same ledger) --  */
+        a_bal_fund                            char(20)  not null,      /* a_bal_fund = a_is_balancing?a_fund:a_parent_fund --  */
+        a_fund_class                          char(3)  null,           /* classification (could be others too): (ADM)inistration & General, (FUN)draising, (MIN)istry / Program Services. --  */
+        a_reporting_level                     int  not null,           /* at what detail level should this fund be shown (in reports); smaller number = less detail, more generalized report --  */
+        a_is_posting                          bit,                     /* enables posting to this fund --  */
+        a_is_external                         bit,                     /* Does the fund represent a subdivision of the local entity, or is it foreign/external? --  */
+        a_is_balancing                        bit,                     /* Is this a true fund which self-balances (satisfies the accounting equation), or is it merely a fund within a fund? --  */
         a_restricted_type                     char(1)  not null,       /* Fund restriction code: N = not restricted, T = temporarily restricted, P = permanently restricted --  */
-        a_cc_desc                             char(32)  null,          /* short description of cost center, for reporting --  */
-        a_cc_comments                         varchar(255)  null,      /* comments / long description of cost center --  */
-        a_legacy_code                         varchar(32)  null,       /* Legacy cost center code, from data import --  */
+        a_fund_desc                           char(32)  null,          /* short description of fund, for reporting --  */
+        a_fund_comments                       varchar(255)  null,      /* comments / long description of fund --  */
+        a_legacy_code                         varchar(32)  null,       /* Legacy fund code, from data import --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -1985,7 +2037,7 @@ create table a_account (
         a_ledger_number                       char(10)  not null,      /* ledger number that uses this account --  */
         a_parent_account_code                 char(16)  null,          /* account that this data rolls up into for reporting (within same ledger) --  */
         a_acct_type                           char(1)  not null,       /* type of account: (A)sset, (L)iability, (Q)Equity, (R)evenue, (E)xpense --  */
-        a_account_class                       char(3)  null,           /* classification (used for managing which accts go with which cost centers) --  */
+        a_account_class                       char(3)  null,           /* classification (used for managing which accts go with which fund) --  */
         a_reporting_level                     int  not null,           /* at what detail level should this account be shown (in reports); smaller number = less detail, more generalized report --  */
         p_banking_details_key                 char(10)  null,          /* esp. for Asset accounts, this is the relevant bank account data --  */
         a_is_contra                           bit,                     /* is this a contra account - if so a_parent_account_code gives main account it balances against --  */
@@ -2035,12 +2087,12 @@ create table a_account_usage_type (
         __cx_osml_control                     varchar(255)  null       /*  --  */
 
 );
-insert into a_account_usage_type (a_acct_usage_code,a_acct_type,a_acct_usage_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "IFTE" as a_acct_usage_code, "E" as a_acct_type, "Inter-Fund Transfer Expense" as a_acct_usage_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into a_account_usage_type (a_acct_usage_code,a_acct_type,a_acct_usage_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "IFTR" as a_acct_usage_code, "R" as a_acct_type, "Inter-Fund Transfer Revenue" as a_acct_usage_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into a_account_usage_type (a_acct_usage_code,a_acct_type,a_acct_usage_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "ICTE" as a_acct_usage_code, "E" as a_acct_type, "Inter-CostCtr Transfer Expense" as a_acct_usage_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into a_account_usage_type (a_acct_usage_code,a_acct_type,a_acct_usage_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "ICTR" as a_acct_usage_code, "R" as a_acct_type, "Inter-CostCtr Transfer Revenue" as a_acct_usage_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into a_account_usage_type (a_acct_usage_code,a_acct_type,a_acct_usage_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "ILTE" as a_acct_usage_code, "E" as a_acct_type, "Inter-Ledger Transfer Expense" as a_acct_usage_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into a_account_usage_type (a_acct_usage_code,a_acct_type,a_acct_usage_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "ILTR" as a_acct_usage_code, "R" as a_acct_type, "Inter-Ledger Transfer Revenue" as a_acct_usage_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_account_usage_type (a_acct_usage_code,a_acct_type,a_acct_usage_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "IFTE" as a_acct_usage_code, "E" as a_acct_type, "Inter-Fund Transfer Expense" as a_acct_usage_desc, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_account_usage_type (a_acct_usage_code,a_acct_type,a_acct_usage_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "IFTR" as a_acct_usage_code, "R" as a_acct_type, "Inter-Fund Transfer Revenue" as a_acct_usage_desc, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_account_usage_type (a_acct_usage_code,a_acct_type,a_acct_usage_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "ICTE" as a_acct_usage_code, "E" as a_acct_type, "Inter-CostCtr Transfer Expense" as a_acct_usage_desc, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_account_usage_type (a_acct_usage_code,a_acct_type,a_acct_usage_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "ICTR" as a_acct_usage_code, "R" as a_acct_type, "Inter-CostCtr Transfer Revenue" as a_acct_usage_desc, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_account_usage_type (a_acct_usage_code,a_acct_type,a_acct_usage_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "ILTE" as a_acct_usage_code, "E" as a_acct_type, "Inter-Ledger Transfer Expense" as a_acct_usage_desc, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_account_usage_type (a_acct_usage_code,a_acct_type,a_acct_usage_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "ILTR" as a_acct_usage_code, "R" as a_acct_type, "Inter-Ledger Transfer Revenue" as a_acct_usage_desc, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
 
 
 /* a_account_category */
@@ -2062,14 +2114,14 @@ create table a_account_category (
 );
 
 
-/* a_cc_acct */
+/* a_fund_acct */
 
-create table a_cc_acct (
+create table a_fund_acct (
         a_ledger_number                       char(10)  not null,      /* ledger number --  */
         a_period                              char(8)  not null,       /* the high level accounting period (i.e., year) --  */
-        a_cost_center                         char(20)  not null,      /* cost center code --  */
+        a_fund                                char(20)  not null,      /* fund code --  */
         a_account_code                        char(16)  not null,      /* GL account code --  */
-        a_cc_acct_class                       char(3)  null,           /* classification (could be others too): (ADM)inistration & General, (FUN)draising, (MIN)istry / Program Services. --  */
+        a_fund_acct_class                     char(3)  null,           /* classification (could be others too): (ADM)inistration & General, (FUN)draising, (MIN)istry / Program Services. --  */
         a_opening_balance                     decimal(14,4)  not null,
                                                                       /* opening balance for the period (year) --  */
         a_current_balance                     decimal(14,4)  not null,
@@ -2135,9 +2187,9 @@ create table a_period_usage_type (
         __cx_osml_control                     varchar(255)  null       /*  --  */
 
 );
-insert into a_period_usage_type (a_period_usage_code,a_period_usage_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "GIFT" as a_period_usage_code, "Gift Entry Default Period" as a_period_usage_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into a_period_usage_type (a_period_usage_code,a_period_usage_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "CURR" as a_period_usage_code, "General Default Period" as a_period_usage_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into a_period_usage_type (a_period_usage_code,a_period_usage_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "YEAR" as a_period_usage_code, "General Default Year" as a_period_usage_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_period_usage_type (a_period_usage_code,a_period_usage_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "GIFT" as a_period_usage_code, "Gift Entry Default Period" as a_period_usage_desc, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_period_usage_type (a_period_usage_code,a_period_usage_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "CURR" as a_period_usage_code, "General Default Period" as a_period_usage_desc, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_period_usage_type (a_period_usage_code,a_period_usage_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "YEAR" as a_period_usage_code, "General Default Year" as a_period_usage_desc, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
 
 
 /* a_ledger */
@@ -2192,7 +2244,7 @@ create table a_transaction (
         a_period                              char(8)  not null,       /* Accounting period this transaction is recorded in. --  */
         a_effective_date                      datetime  not null,      /* Effective date of transaction (e.g., accrual date) --  */
         a_transaction_type                    char(1)  not null,       /* B=Beginning balance, E=Ending (closing of exp/rev into equity), T=Transaction (normal) --  */
-        a_cost_center                         char(20)  not null,      /* Cost center this transaction is posted to. --  */
+        a_fund                                char(20)  not null,      /* Fund this transaction is posted to. --  */
         a_account_category                    char(8)  not null,       /* Broad category of account (object) --  */
         a_account_code                        char(16)  not null,      /* GL Account that this transaction is posted to --  */
         a_amount                              decimal(14,4)  not null,
@@ -2241,7 +2293,7 @@ create table a_transaction_tmp (
         a_period                              char(8)  not null,       /* Accounting period this transaction is recorded in. --  */
         a_effective_date                      datetime  not null,      /* Effective date of transaction (e.g., accrual date) --  */
         a_transaction_type                    char(1)  not null,       /* B=Beginning balance, E=Ending (closing of exp/rev into equity), T=Transaction (normal) --  */
-        a_cost_center                         char(20)  not null,      /* Cost center this transaction is posted to. --  */
+        a_fund                                char(20)  not null,      /* Fund this transaction is posted to. --  */
         a_account_category                    char(8)  not null,       /* Broad category of account (object) --  */
         a_account_code                        char(16)  not null,      /* GL Account that this transaction is posted to --  */
         a_amount                              decimal(14,4)  not null,
@@ -2295,12 +2347,12 @@ create table a_account_class (
 );
 
 
-/* a_cost_center_class */
+/* a_fund_class */
 
-create table a_cost_center_class (
-        a_cost_center_class                   char(3)  not null,       /* costctr class (alphanumeric allowed) --  */
-        a_ledger_number                       char(10)  not null,      /* ledger number that uses this costctr class --  */
-        a_acct_class_desc                     varchar(255)  not null,  /* description of costctr class --  */
+create table a_fund_class (
+        a_fund_class                          char(3)  not null,       /* fund class (alphanumeric allowed) --  */
+        a_ledger_number                       char(10)  not null,      /* ledger number that uses this fund class --  */
+        a_fund_class_desc                     varchar(255)  not null,  /* description of fund class --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -2327,13 +2379,13 @@ create table a_reporting_level (
 );
 
 
-/* a_cost_center_prefix */
+/* a_fund_prefix */
 
-create table a_cost_center_prefix (
-        a_cost_center_prefix                  char(20)  not null,      /* cost center prefix (alphanumeric allowed) --  */
-        a_ledger_number                       char(10)  not null,      /* ledger number that uses this cost center prefix --  */
-        a_cc_prefix_desc                      char(32)  null,          /* short description of cost center prefix, for reporting --  */
-        a_cc_prefix_comments                  varchar(255)  null,      /* comments / long description of cost center prefix --  */
+create table a_fund_prefix (
+        a_fund_prefix                         char(20)  not null,      /* fund prefix (alphanumeric allowed) --  */
+        a_ledger_number                       char(10)  not null,      /* ledger number that uses this fund prefix --  */
+        a_fund_prefix_desc                    char(32)  null,          /* short description of fund prefix, for reporting --  */
+        a_fund_prefix_comments                varchar(255)  null,      /* comments / long description of fund prefix --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -2343,11 +2395,11 @@ create table a_cost_center_prefix (
 );
 
 
-/* a_cc_staff */
+/* a_fund_staff */
 
-create table a_cc_staff (
+create table a_fund_staff (
         a_ledger_number                       char(10)  not null,      /* ledger number (a_ledger) --  */
-        a_cost_center                         char(20)  not null,      /* cost center code (a_cost_center) --  */
+        a_fund                                char(20)  not null,      /* fund code (a_fund) --  */
         p_staff_partner_key                   varchar(10)  not null,   /* Partner key (p_partner) --  */
         p_start_date                          datetime  null,          /* starting date that data is available to fund manager --  */
         p_end_date                            datetime  null,          /* ending date that data is available to fund manager --  */
@@ -2415,9 +2467,9 @@ create table a_payroll (
         a_payroll_id                          integer  not null,       /* unique ID for this payroll entry --  */
         p_payee_partner_key                   char(10)  not null,      /* partner ID of the payee. --  */
         a_payee_name                          char(80)  null,          /* if necessary, this can be used to adjust the name used in payroll. --  */
-        a_priority                            integer  null,           /* if more than one payroll in a cost ctr, this sets the priority (higher number = higher priority) --  */
+        a_priority                            integer  null,           /* if more than one payroll in a fund, this sets the priority (higher number = higher priority) --  */
         a_payroll_interval                    char(2)  not null,       /* interval (OW = once weekly, BW = biweekly, OD = daily, SM = semimonthly, OM = once monthly, MS = misc) --  */
-        a_cost_center                         char(20)  not null,      /* cost center that this payroll takes place within --  */
+        a_fund                                char(20)  not null,      /* Fund that this payroll takes place within --  */
         a_start_date                          datetime  null,          /* starting date that this payroll record applies to --  */
         a_end_date                            datetime  null,          /* ending date that this payroll record applies to --  */
         s_date_created                        datetime  not null,      /*  --  */
@@ -2493,9 +2545,9 @@ create table a_payroll_group (
         a_payroll_interval                    char(2)  not null,       /* interval (OW = once weekly, BW = biweekly, OD = daily, SM = semimonthly, OM = once monthly, MS = misc) --  */
         a_acct_method                         char(1)  not null,       /* accounting method: (A)ccrual - pay accrues on last date of pay period, or (C)ash - pay accrues on payment date --  */
         a_paydate_delay                       integer  not null,       /* the number of days after end date of period when payroll is typically paid (0 for issue on exact end date) --  */
-        a_cost_center                         char(20)  not null,      /* default cost center that this payroll takes place within (can be overridden on payee entries) --  */
-        a_liab_cost_center                    char(20)  null,          /* cost center to xfer payroll liabilities to, if any --  */
-        a_cash_cost_center                    char(20)  null,          /* cost center for handling cash for payroll, if any --  */
+        a_fund                                char(20)  not null,      /* default fund that this payroll takes place within (can be overridden on payee entries) --  */
+        a_liab_fund                           char(20)  null,          /* fund to xfer payroll liabilities to, if any --  */
+        a_cash_fund                           char(20)  null,          /* fund for handling cash for payroll, if any --  */
         a_issue_checks                        bit  not null,           /* whether we write the checks (1) or some outside entity does (0) and we just record the total transaction. --  */
         a_service_bureau_id                   integer  null,           /* partner id of payroll service bureau that is being used, if any --  */
         a_service_bureau_group_name           varchar(64)  null,       /* identifier of this payroll group at the payroll service bureau --  */
@@ -2516,10 +2568,10 @@ create table a_payroll_import (
         a_payroll_id                          integer  not null,       /* unique ID for this payroll entry --  */
         p_payee_partner_key                   char(10)  not null,      /* partner ID of the payee. --  */
         a_payee_name                          char(80)  null,          /* if necessary, this can be used to adjust the name used in payroll. --  */
-        a_priority                            integer  null,           /* if more than one payroll in a cost ctr, this sets the priority (higher number = higher priority) --  */
+        a_priority                            integer  null,           /* if more than one payroll in a fund, this sets the priority (higher number = higher priority) --  */
         a_payroll_interval                    char(2)  not null,       /* interval (OW = once weekly, BW = biweekly, OD = daily, SM = semimonthly, OM = once monthly, MS = misc) --  */
         a_ledger_number                       char(10)  not null,      /* ledger number that will be doing the payroll. --  */
-        a_cost_center                         char(20)  not null,      /* cost center that this payroll takes place within --  */
+        a_fund                                char(20)  not null,      /* fund that this payroll takes place within --  */
         a_start_date                          datetime  null,          /* starting date that this payroll record applies to --  */
         a_end_date                            datetime  null,          /* ending date that this payroll record applies to --  */
         s_date_created                        datetime  not null,      /*  --  */
@@ -2549,10 +2601,10 @@ create table a_payroll_item (
         a_filing_status                       char(1)  null,           /* for tax withholding, the filing status. --  */
         a_allowances                          integer  null,           /* for tax withholding, the number of withholding allowances claimed (e.g., on W4) --  */
         a_dependent_allowances                integer  null,           /* for tax withholding, the number of withholding allowances claimed for dependents (some states, such as Georgia/Indiana) --  */
-        a_ref_cost_center                     char(20)  null,          /* for receivables/payables/etc, the cost center to check --  */
+        a_ref_fund                            char(20)  null,          /* for receivables/payables/etc, the fund to check --  */
         a_ref_account_code                    char(10)  null,          /* for receivables/payables/etc, the gl account to check --  */
-        a_xfer_cost_center                    char(20)  null,          /* for line items that reference an outside cost ctr / fund. --  */
-        a_xfer_account_code                   char(10)  null,          /* gl acct to use in outside cost ctr / fund. --  */
+        a_xfer_fund                           char(20)  null,          /* for line items that reference an outside fund. --  */
+        a_xfer_account_code                   char(10)  null,          /* gl acct to use in outside fund. --  */
         a_start_date                          datetime  null,          /* starting date that this payroll item record applies to --  */
         a_end_date                            datetime  null,          /* ending date that this payroll item record applies to --  */
         s_date_created                        datetime  not null,      /*  --  */
@@ -2580,10 +2632,10 @@ create table a_payroll_item_import (
         a_filing_status                       char(1)  null,           /* for tax withholding, the filing status. --  */
         a_allowances                          integer  null,           /* for tax withholding, the number of withholding allowances claimed (e.g., on W4) --  */
         a_dependent_allowances                integer  null,           /* for tax withholding, the number of withholding allowances claimed for dependents (some states, such as Georgia/Indiana) --  */
-        a_ref_cost_center                     char(20)  null,          /* for receivables/payables/etc, the cost center to check --  */
+        a_ref_fund                            char(20)  null,          /* for receivables/payables/etc, the fund to check --  */
         a_ref_account_code                    char(10)  null,          /* for receivables/payables/etc, the gl account to check --  */
-        a_xfer_cost_center                    char(20)  null,          /* for line items that reference an outside cost ctr / fund. --  */
-        a_xfer_account_code                   char(10)  null,          /* gl acct to use in outside cost ctr / fund. --  */
+        a_xfer_fund                           char(20)  null,          /* for line items that reference an outside fund. --  */
+        a_xfer_account_code                   char(10)  null,          /* gl acct to use in outside fund. --  */
         a_start_date                          datetime  null,          /* starting date that this payroll item record applies to --  */
         a_end_date                            datetime  null,          /* ending date that this payroll item record applies to --  */
         s_date_created                        datetime  not null,      /*  --  */
@@ -2604,7 +2656,7 @@ create table a_payroll_item_type (
         a_payroll_item_subclass_code          char(2)  null,           /* specific category of payroll item --  */
         a_payroll_item_form_sequence          integer  null,           /* order this item comes in on the payroll form. --  */
         a_ref_account_code                    char(10)  null,          /* default GL account code to use for items of this type --  */
-        a_xfer_cost_center                    char(20)  null,          /* default cost center to use when this item involves an xfer --  */
+        a_xfer_fund                           char(20)  null,          /* default fund to use when this item involves an xfer --  */
         a_xfer_account_code                   char(10)  null,          /* default gl account to use when this item involves an xfer --  */
         a_state_province                      char(2)  null,           /* State/Province that this tax table relates to. --  */
         a_desc                                varchar(32)  null,       /* description for this code --  */
@@ -2631,19 +2683,19 @@ create table a_payroll_item_class (
         __cx_osml_control                     varchar(255)  null       /*  --  */
 
 );
-insert into a_payroll_item_class (a_payroll_item_class_code,a_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'A' as a_payroll_item_class_code, 'Available Funds' as a_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into a_payroll_item_class (a_payroll_item_class_code,a_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'R' as a_payroll_item_class_code, 'Pre-Tax Receivables' as a_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into a_payroll_item_class (a_payroll_item_class_code,a_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'T' as a_payroll_item_class_code, 'Tax Withholding' as a_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into a_payroll_item_class (a_payroll_item_class_code,a_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'V' as a_payroll_item_class_code, 'Post-Tax Receivables' as a_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into a_payroll_item_class (a_payroll_item_class_code,a_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'X' as a_payroll_item_class_code, 'Exemption from Tax' as a_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into a_payroll_item_class (a_payroll_item_class_code,a_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'B' as a_payroll_item_class_code, 'Pre-Tax Benefit' as a_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into a_payroll_item_class (a_payroll_item_class_code,a_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'D' as a_payroll_item_class_code, 'Post-Tax Deduction' as a_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into a_payroll_item_class (a_payroll_item_class_code,a_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'E' as a_payroll_item_class_code, 'Employer Tax' as a_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into a_payroll_item_class (a_payroll_item_class_code,a_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'G' as a_payroll_item_class_code, 'Gross Pay' as a_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into a_payroll_item_class (a_payroll_item_class_code,a_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'I' as a_payroll_item_class_code, 'Informational' as a_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into a_payroll_item_class (a_payroll_item_class_code,a_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'M' as a_payroll_item_class_code, 'Non-Tax Payables' as a_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into a_payroll_item_class (a_payroll_item_class_code,a_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'N' as a_payroll_item_class_code, 'Net Pay' as a_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into a_payroll_item_class (a_payroll_item_class_code,a_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'P' as a_payroll_item_class_code, 'Pre-Payroll Transaction' as a_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_payroll_item_class (a_payroll_item_class_code,a_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'A' as a_payroll_item_class_code, 'Available Funds' as a_desc, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_payroll_item_class (a_payroll_item_class_code,a_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'R' as a_payroll_item_class_code, 'Pre-Tax Receivables' as a_desc, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_payroll_item_class (a_payroll_item_class_code,a_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'T' as a_payroll_item_class_code, 'Tax Withholding' as a_desc, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_payroll_item_class (a_payroll_item_class_code,a_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'V' as a_payroll_item_class_code, 'Post-Tax Receivables' as a_desc, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_payroll_item_class (a_payroll_item_class_code,a_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'X' as a_payroll_item_class_code, 'Exemption from Tax' as a_desc, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_payroll_item_class (a_payroll_item_class_code,a_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'B' as a_payroll_item_class_code, 'Pre-Tax Benefit' as a_desc, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_payroll_item_class (a_payroll_item_class_code,a_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'D' as a_payroll_item_class_code, 'Post-Tax Deduction' as a_desc, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_payroll_item_class (a_payroll_item_class_code,a_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'E' as a_payroll_item_class_code, 'Employer Tax' as a_desc, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_payroll_item_class (a_payroll_item_class_code,a_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'G' as a_payroll_item_class_code, 'Gross Pay' as a_desc, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_payroll_item_class (a_payroll_item_class_code,a_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'I' as a_payroll_item_class_code, 'Informational' as a_desc, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_payroll_item_class (a_payroll_item_class_code,a_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'M' as a_payroll_item_class_code, 'Non-Tax Payables' as a_desc, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_payroll_item_class (a_payroll_item_class_code,a_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'N' as a_payroll_item_class_code, 'Net Pay' as a_desc, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_payroll_item_class (a_payroll_item_class_code,a_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'P' as a_payroll_item_class_code, 'Pre-Payroll Transaction' as a_desc, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
 
 
 /* a_payroll_item_subclass */
@@ -2659,11 +2711,11 @@ create table a_payroll_item_subclass (
         __cx_osml_control                     varchar(255)  null       /*  --  */
 
 );
-insert into a_payroll_item_subclass (a_payroll_item_class_code,a_payroll_item_subclass_code,a_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'T' as a_payroll_item_class_code, 'TI' as a_payroll_item_subclass_code, 'FICA' as a_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into a_payroll_item_subclass (a_payroll_item_class_code,a_payroll_item_subclass_code,a_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'T' as a_payroll_item_class_code, 'TF' as a_payroll_item_subclass_code, 'Federal Income' as a_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into a_payroll_item_subclass (a_payroll_item_class_code,a_payroll_item_subclass_code,a_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'T' as a_payroll_item_class_code, 'TS' as a_payroll_item_subclass_code, 'State Income' as a_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into a_payroll_item_subclass (a_payroll_item_class_code,a_payroll_item_subclass_code,a_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'T' as a_payroll_item_class_code, 'TL' as a_payroll_item_subclass_code, 'Local' as a_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into a_payroll_item_subclass (a_payroll_item_class_code,a_payroll_item_subclass_code,a_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'T' as a_payroll_item_class_code, 'TU' as a_payroll_item_subclass_code, 'State Unemployment' as a_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_payroll_item_subclass (a_payroll_item_class_code,a_payroll_item_subclass_code,a_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'T' as a_payroll_item_class_code, 'TI' as a_payroll_item_subclass_code, 'FICA' as a_desc, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_payroll_item_subclass (a_payroll_item_class_code,a_payroll_item_subclass_code,a_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'T' as a_payroll_item_class_code, 'TF' as a_payroll_item_subclass_code, 'Federal Income' as a_desc, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_payroll_item_subclass (a_payroll_item_class_code,a_payroll_item_subclass_code,a_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'T' as a_payroll_item_class_code, 'TS' as a_payroll_item_subclass_code, 'State Income' as a_desc, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_payroll_item_subclass (a_payroll_item_class_code,a_payroll_item_subclass_code,a_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'T' as a_payroll_item_class_code, 'TL' as a_payroll_item_subclass_code, 'Local' as a_desc, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_payroll_item_subclass (a_payroll_item_class_code,a_payroll_item_subclass_code,a_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'T' as a_payroll_item_class_code, 'TU' as a_payroll_item_subclass_code, 'State Unemployment' as a_desc, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
 
 
 /* a_payroll_form_group */
@@ -2774,14 +2826,14 @@ create table a_salary_review (
 );
 
 
-/* a_cc_admin_fee */
+/* a_fund_admin_fee */
 
-create table a_cc_admin_fee (
-        a_cost_center                         char(20)  not null,      /* cost center code (alphanumeric allowed) --  */
-        a_ledger_number                       char(10)  not null,      /* ledger number that uses this cost center --  */
-        a_admin_fee_type                      char(3)  not null,       /* admin fee type to apply to this cost center (and subsidiaries) --  */
-        a_default_subtype                     char(1)  null,           /* default subtype to use for gifts to this costctr --  */
-        a_percentage                          float  null,             /* percent to deduct for this cost center, if different from a_admin_fee_type:a_default_percentage --  */
+create table a_fund_admin_fee (
+        a_fund                                char(20)  not null,      /* fund code (alphanumeric allowed) --  */
+        a_ledger_number                       char(10)  not null,      /* ledger number that uses this fund --  */
+        a_admin_fee_type                      char(3)  not null,       /* admin fee type to apply to this fund (and subsidiaries) --  */
+        a_default_subtype                     char(1)  null,           /* default subtype to use for gifts to this fund --  */
+        a_percentage                          float  null,             /* percent to deduct for this fund, if different from a_admin_fee_type:a_default_percentage --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -2839,8 +2891,8 @@ create table a_admin_fee_type_item (
         a_ledger_number                       char(10)  not null,      /* ledger number that uses this admin fee type --  */
         a_admin_fee_type                      char(3)  not null,       /* admin fee type --  */
         a_admin_fee_subtype                   char(1)  not null,       /* admin fee subtype - e.g., for variable percentages. --  */
-        a_dest_cost_center                    char(20)  not null,      /* destination cost center for the admin fee proceeds --  */
-        a_percentage                          float  not null,         /* percent of gift to go to the above cost center --  */
+        a_dest_fund                           char(20)  not null,      /* destination fund for the admin fee proceeds --  */
+        a_percentage                          float  not null,         /* percent of gift to go to the above fund --  */
         a_is_fixed                            bit  default 0,          /* if fee is scaled up or down, will the scaling apply to this fee item? --  */
         a_comment                             varchar(255)  null,      /* comments for this admin fee type item --  */
         s_date_created                        datetime  not null,      /*  --  */
@@ -2858,8 +2910,8 @@ create table a_admin_fee_type_item_tmp (
         a_ledger_number                       char(10)  not null,      /* ledger number that uses this admin fee type --  */
         a_admin_fee_type                      char(3)  not null,       /* admin fee type --  */
         a_admin_fee_subtype                   char(1)  not null,       /* admin fee subtype - e.g., for variable percentages. --  */
-        a_dest_cost_center                    char(20)  not null,      /* destination cost center for the admin fee proceeds --  */
-        a_percentage                          float  not null,         /* percent of gift to go to the above cost center --  */
+        a_dest_fund                           char(20)  not null,      /* destination fund for the admin fee proceeds --  */
+        a_percentage                          float  not null,         /* percent of gift to go to the above fund --  */
         a_is_fixed                            bit  default 0,          /* if fee is scaled up or down, will the scaling apply to this fee item? --  */
         a_comment                             varchar(255)  null,      /* comments for this admin fee type item --  */
         s_date_created                        datetime  not null,      /*  --  */
@@ -2871,11 +2923,11 @@ create table a_admin_fee_type_item_tmp (
 );
 
 
-/* a_cc_receipting */
+/* a_fund_receipting */
 
-create table a_cc_receipting (
-        a_cost_center                         char(20)  not null,      /* cost center code (alphanumeric allowed) --  */
-        a_ledger_number                       char(10)  not null,      /* ledger number that uses this cost center --  */
+create table a_fund_receipting (
+        a_fund                                char(20)  not null,      /* fund code (alphanumeric allowed) --  */
+        a_ledger_number                       char(10)  not null,      /* ledger number that uses this fund --  */
         a_receiptable                         bit  default 1,          /* can we receipt revenue (gifts) into this account? --  */
         a_disposition                         char(1)  null,           /* Donor management disposition of fund: N = not interesting, O = one-time gifts typical, R = recurring gifts typical --  */
         s_date_created                        datetime  not null,      /*  --  */
@@ -2887,15 +2939,15 @@ create table a_cc_receipting (
 );
 
 
-/* a_cc_receipting_accts */
+/* a_fund_receipting_accts */
 
-create table a_cc_receipting_accts (
-        a_cost_center                         char(20)  not null,      /* cost center code (alphanumeric allowed) --  */
-        a_ledger_number                       char(10)  not null,      /* ledger number that uses this cost center --  */
+create table a_fund_receipting_accts (
+        a_fund                                char(20)  not null,      /* fund code (alphanumeric allowed) --  */
+        a_ledger_number                       char(10)  not null,      /* ledger number that uses this fund --  */
         a_account_code                        char(16)  not null,      /* a GL account that we can receipt into for this fund. --  */
         a_non_tax_deductible                  bit  default 0,          /* are cash receipts tax deductible? --  */
         a_is_default                          bit  default 0,          /* is this the default receipting acct for this fund? --  */
-        a_receipt_comment                     varchar(64)  null,       /* text to use in place of a_cc_desc from a_cost_center, when printing receipts. --  */
+        a_receipt_comment                     varchar(64)  null,       /* text to use in place of a_fund_desc from a_fund, when printing receipts. --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -2919,11 +2971,11 @@ create table a_receipt_type (
         __cx_osml_control                     varchar(255)  null       /*  --  */
 
 );
-insert into a_receipt_type (a_receipt_type,a_receipt_type_desc,a_is_default,a_is_enabled,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "I" as a_receipt_type, "Immediate" as a_receipt_type_desc, 1 as a_is_default, 1 as a_is_enabled, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into a_receipt_type (a_receipt_type,a_receipt_type_desc,a_is_default,a_is_enabled,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "N" as a_receipt_type, "None" as a_receipt_type_desc, 0 as a_is_default, 1 as a_is_enabled, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into a_receipt_type (a_receipt_type,a_receipt_type_desc,a_is_default,a_is_enabled,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "A" as a_receipt_type, "Annual" as a_receipt_type_desc, 0 as a_is_default, 0 as a_is_enabled, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into a_receipt_type (a_receipt_type,a_receipt_type_desc,a_is_default,a_is_enabled,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "Q" as a_receipt_type, "Quarterly" as a_receipt_type_desc, 0 as a_is_default, 0 as a_is_enabled, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into a_receipt_type (a_receipt_type,a_receipt_type_desc,a_is_default,a_is_enabled,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "M" as a_receipt_type, "Monthly" as a_receipt_type_desc, 0 as a_is_default, 0 as a_is_enabled, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_receipt_type (a_receipt_type,a_receipt_type_desc,a_is_default,a_is_enabled,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "I" as a_receipt_type, "Immediate" as a_receipt_type_desc, 1 as a_is_default, 1 as a_is_enabled, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_receipt_type (a_receipt_type,a_receipt_type_desc,a_is_default,a_is_enabled,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "N" as a_receipt_type, "None" as a_receipt_type_desc, 0 as a_is_default, 1 as a_is_enabled, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_receipt_type (a_receipt_type,a_receipt_type_desc,a_is_default,a_is_enabled,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "A" as a_receipt_type, "Annual" as a_receipt_type_desc, 0 as a_is_default, 0 as a_is_enabled, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_receipt_type (a_receipt_type,a_receipt_type_desc,a_is_default,a_is_enabled,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "Q" as a_receipt_type, "Quarterly" as a_receipt_type_desc, 0 as a_is_default, 0 as a_is_enabled, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_receipt_type (a_receipt_type,a_receipt_type_desc,a_is_default,a_is_enabled,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "M" as a_receipt_type, "Monthly" as a_receipt_type_desc, 0 as a_is_default, 0 as a_is_enabled, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
 
 
 /* a_gift_payment_type */
@@ -2935,7 +2987,7 @@ create table a_gift_payment_type (
         a_is_default                          bit  default 0,          /* is this the default payment type? --  */
         a_is_enabled                          bit  default 1,          /* is this payment type enabled? --  */
         a_is_cash                             bit  default 1,          /* is this payment type a cash (check, cash, credit card, etc.) or noncash (in-kind) gift? --  */
-        a_payment_cost_center                 char(20)  null,          /* cost center for payment (defaults to value in a_config) --  */
+        a_payment_fund                        char(20)  null,          /* fund for payment (defaults to value in a_config) --  */
         a_payment_account_code                char(16)  null,          /* GL account for payment (defaults to value in a_config) --  */
         a_desig_account_code                  char(16)  null,          /* GL account code for designations, to force a specific one --  */
         a_min_gift                            decimal(14,4)  null,     /* Minimum gift for this payment type --  */
@@ -2947,12 +2999,12 @@ create table a_gift_payment_type (
         __cx_osml_control                     varchar(255)  null       /*  --  */
 
 );
-insert into a_gift_payment_type (a_gift_payment_type,a_gift_payment_type_desc,a_is_default,a_is_enabled,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "K" as a_gift_payment_type, "Check" as a_gift_payment_type_desc, 1 as a_is_default, 1 as a_is_enabled, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into a_gift_payment_type (a_gift_payment_type,a_gift_payment_type_desc,a_is_default,a_is_enabled,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "C" as a_gift_payment_type, "Cash" as a_gift_payment_type_desc, 0 as a_is_default, 1 as a_is_enabled, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into a_gift_payment_type (a_gift_payment_type,a_gift_payment_type_desc,a_is_default,a_is_enabled,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "E" as a_gift_payment_type, "EFT" as a_gift_payment_type_desc, 0 as a_is_default, 1 as a_is_enabled, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into a_gift_payment_type (a_gift_payment_type,a_gift_payment_type_desc,a_is_default,a_is_enabled,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "D" as a_gift_payment_type, "Credit Card" as a_gift_payment_type_desc, 0 as a_is_default, 1 as a_is_enabled, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into a_gift_payment_type (a_gift_payment_type,a_gift_payment_type_desc,a_is_default,a_is_enabled,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "N" as a_gift_payment_type, "In-Kind Non-Capitalized" as a_gift_payment_type_desc, 0 as a_is_default, 0 as a_is_enabled, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into a_gift_payment_type (a_gift_payment_type,a_gift_payment_type_desc,a_is_default,a_is_enabled,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "I" as a_gift_payment_type, "In-Kind Capitalized" as a_gift_payment_type_desc, 0 as a_is_default, 0 as a_is_enabled, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_gift_payment_type (a_gift_payment_type,a_gift_payment_type_desc,a_is_default,a_is_enabled,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "K" as a_gift_payment_type, "Check" as a_gift_payment_type_desc, 1 as a_is_default, 1 as a_is_enabled, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_gift_payment_type (a_gift_payment_type,a_gift_payment_type_desc,a_is_default,a_is_enabled,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "C" as a_gift_payment_type, "Cash" as a_gift_payment_type_desc, 0 as a_is_default, 1 as a_is_enabled, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_gift_payment_type (a_gift_payment_type,a_gift_payment_type_desc,a_is_default,a_is_enabled,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "E" as a_gift_payment_type, "EFT" as a_gift_payment_type_desc, 0 as a_is_default, 1 as a_is_enabled, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_gift_payment_type (a_gift_payment_type,a_gift_payment_type_desc,a_is_default,a_is_enabled,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "D" as a_gift_payment_type, "Credit Card" as a_gift_payment_type_desc, 0 as a_is_default, 1 as a_is_enabled, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_gift_payment_type (a_gift_payment_type,a_gift_payment_type_desc,a_is_default,a_is_enabled,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "N" as a_gift_payment_type, "In-Kind Non-Capitalized" as a_gift_payment_type_desc, 0 as a_is_default, 0 as a_is_enabled, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into a_gift_payment_type (a_gift_payment_type,a_gift_payment_type_desc,a_is_default,a_is_enabled,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "I" as a_gift_payment_type, "In-Kind Capitalized" as a_gift_payment_type_desc, 0 as a_is_default, 0 as a_is_enabled, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
 
 
 /* a_receipt_mailing */
@@ -2979,7 +3031,7 @@ create table a_subtrx_gift (
         a_batch_number                        integer  not null,       /* Batch id for this gift. --  */
         a_gift_number                         integer  not null,       /* sequential gift number in the batch. --  */
         a_period                              char(8)  not null,       /* Accounting period this transaction is recorded in. --  */
-        a_cost_center                         char(20)  not null,      /* Which fund the gift is given to. --  */
+        a_fund                                char(20)  not null,      /* Which fund the gift is given to. --  */
         a_account_code                        char(16)  not null,      /* Which GL Account this gift posts to in the above fund. --  */
         a_amount                              decimal(14,4)  not null,
                                                                       /* Amount of the gift. --  */
@@ -2987,7 +3039,7 @@ create table a_subtrx_gift (
         a_posted_to_gl                        bit  default 0,          /* Has this transaction been posted to the GL - yes (1) or no (0)? --  */
         a_gift_type                           char(1)  not null,       /* Type of gift: (C)ash, chec(K), credit car(D), (E)FT --  */
         a_gift_admin_fee                      float  null,             /* Total administration fee percent to use (optionally specified by user) --  */
-        a_gift_admin_subtype                  char(1)  null,           /* Admin fee subtype to use (overrides that specified in a_cc_admin_fee) --  */
+        a_gift_admin_subtype                  char(1)  null,           /* Admin fee subtype to use (overrides that specified in a_fund_admin_fee) --  */
         a_calc_admin_fee                      float  null,             /* Total administration fee percent as calculated by the system (set by admin fee logic) --  */
         a_calc_admin_fee_type                 char(3)  null,           /* admin fee type as calculated by the system (set by admin fee logic) --  */
         a_calc_admin_fee_subtype              char(1)  null,           /* admin fee subtype as calculated by the system (set by admin fee logic) --  */
@@ -3065,7 +3117,7 @@ create table a_subtrx_gift_item (
         a_gift_number                         integer  not null,       /* sequential gift number in the batch. --  */
         a_split_number                        integer  not null,       /* sequential split number for line items in a gift (split gift between multiple designations) --  */
         a_period                              char(8)  not null,       /* Accounting period this transaction is recorded in. --  */
-        a_cost_center                         char(20)  not null,      /* Which fund the gift is given to. --  */
+        a_fund                                char(20)  not null,      /* Which fund the gift is given to. --  */
         a_account_code                        char(16)  not null,      /* Which GL Account this gift posts to in the above fund. --  */
         a_amount                              decimal(14,4)  not null,
                                                                       /* Amount of the gift. --  */
@@ -3080,7 +3132,7 @@ create table a_subtrx_gift_item (
         a_posted                              bit  default 0,          /* Has this transaction been posted (in this table)? --  */
         a_posted_to_gl                        bit  default 0,          /* Has this transaction been posted to the GL - yes (1) or no (0)? --  */
         a_gift_admin_fee                      float  null,             /* Total administration fee percent to use (optionally specified by user) --  */
-        a_gift_admin_subtype                  char(1)  null,           /* Admin fee subtype to use (overrides that specified in a_cc_admin_fee) --  */
+        a_gift_admin_subtype                  char(1)  null,           /* Admin fee subtype to use (overrides that specified in a_fund_admin_fee) --  */
         a_calc_admin_fee                      float  null,             /* Total administration fee percent as calculated by the system (set by admin fee logic) --  */
         a_calc_admin_fee_type                 char(3)  null,           /* admin fee type as calculated by the system (set by admin fee logic) --  */
         a_calc_admin_fee_subtype              char(1)  null,           /* admin fee subtype as calculated by the system (set by admin fee logic) --  */
@@ -3118,7 +3170,7 @@ create table a_subtrx_gift_intent (
         a_pledge_id                           integer  null,           /* Reference to pledges table to associate this gift intent with a pledge --  */
         p_dn_donor_partner_id                 char(10)  not null,      /* Donor ID making the pledge - denormalized (from gift_group) --  */
         p_dn_ack_partner_id                   char(10)  null,          /* Acknowledgement ID making the pledge - denormalized (from gift_group) --  */
-        a_cost_center                         char(20)  null,          /* Fund being pledged to --  */
+        a_fund                                char(20)  null,          /* Fund being pledged to --  */
         a_intent_type                         varchar(1)  not null,    /* Intent type: P=pledge, F=faith promise, I=intention --  */
         a_amount                              decimal(14,4)  null,     /* Amount for this intent (e.g. monthly amount) - UI should default copy from gift data --  */
         a_total_amount                        decimal(14,4)  null,     /* Total amount for this intent (e.g. total pledge) --  */
@@ -3147,11 +3199,11 @@ create table a_subtrx_gift_rcptcnt (
 );
 
 
-/* a_cc_auto_subscribe */
+/* a_fund_auto_subscribe */
 
-create table a_cc_auto_subscribe (
-        a_cost_center                         char(20)  not null,      /* cost center code (alphanumeric allowed) --  */
-        a_ledger_number                       char(10)  not null,      /* ledger number that uses this cost center --  */
+create table a_fund_auto_subscribe (
+        a_fund                                char(20)  not null,      /* fund code (alphanumeric allowed) --  */
+        a_ledger_number                       char(10)  not null,      /* ledger number that uses this fund --  */
         m_list_code                           varchar(20)  not null,   /* the mailing list code of the mailing to subscribe the donor to. --  */
         a_minimum_gift                        decimal(14,4)  null,     /* sets a minimum gift before automatic subscription takes place. --  */
         a_subscribe_months                    integer  null,           /* how many months to subscribe the donor (or indefinitely, if null) --  */
@@ -3173,7 +3225,7 @@ create table a_motivational_code (
         a_motivational_code_status            char(1)  not null,       /* status of this motivational code: A=Active, O=Obsolete. --  */
         a_parent_motivational_code            varchar(16)  null,       /* motivational code parent or category --  */
         m_list_code                           varchar(20)  null,       /* (Optional) mailing list associated with this motivational code --  */
-        a_cost_center                         varchar(20)  null,       /* Optional cost center associated with this motivational code --  */
+        a_fund                                varchar(20)  null,       /* Optional fund associated with this motivational code --  */
         a_account_code                        varchar(16)  null,       /* Optional GL account associated with this motivational code --  */
         a_gift_admin_fee                      float  null,             /* Optional override percentage for admin fees for gifts on this motiv code. --  */
         a_gift_admin_subtype                  char(1)  null,           /* Optional override admin subtype for admin fees for gifts on this motiv code. --  */
@@ -3193,7 +3245,7 @@ create table a_motivational_code (
 create table a_giving_pattern (
         a_ledger_number                       char(10)  not null,      /* ledger number for this giving pattern --  */
         p_donor_partner_key                   char(10)  not null,      /* Partner ID for the donor --  */
-        a_cost_center                         char(20)  not null,      /* fund that this donor is giving toward --  */
+        a_fund                                char(20)  not null,      /* fund that this donor is giving toward --  */
         a_pattern_id                          integer  not null,       /* sequential integer ID of this giving pattern record. --  */
         a_history_id                          integer  not null,       /* sequential integer ID of the history of this giving pattern record. --  */
         a_review                              varchar(16)  null,       /* An identifier for the support review this entry is associated with --  */
@@ -3204,8 +3256,8 @@ create table a_giving_pattern (
         a_start_date                          datetime  not null,      /* Date that this donor began this current giving pattern --  */
         a_end_date                            datetime  null,          /* Date that we expect the donor to end this giving pattern (NOT A LEGAL OBLIGATION ON THE DONOR'S PART) --  */
         a_evaluation_date                     datetime  not null,      /* Date that this giving pattern was determined --  */
-        a_actual_cost_center                  char(20)  null,          /* Actual cost center that the donor donated to, if not to the one listed above. --  */
-        a_percent                             float  null,             /* Percent of gift (0.00 to 1.00) allocated to this fund, if a_actual_cost_center is supplied. --  */
+        a_actual_fund                         char(20)  null,          /* Actual fund that the donor donated to, if not to the one listed above. --  */
+        a_percent                             float  null,             /* Percent of gift (0.00 to 1.00) allocated to this fund, if a_actual_fund is supplied. --  */
         a_comment                             varchar(255)  null,      /* Giving pattern comments --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
@@ -3221,11 +3273,11 @@ create table a_giving_pattern (
 create table a_giving_pattern_allocation (
         a_ledger_number                       char(10)  not null,      /* ledger number for this giving pattern --  */
         p_donor_partner_key                   char(10)  not null,      /* Partner ID for the donor --  */
-        a_cost_center                         char(20)  not null,      /* fund that this donor is giving toward --  */
+        a_fund                                char(20)  not null,      /* fund that this donor is giving toward --  */
         a_pattern_id                          integer  not null,       /* sequential integer ID of this giving pattern record. --  */
         a_history_id                          integer  not null,       /* sequential integer ID of the history of this giving pattern record. --  */
         a_review                              varchar(16)  null,       /* An identifier for the support review this entry is associated with --  */
-        a_actual_cost_center                  char(20)  not null,      /* Actual cost center that the donor donated to --  */
+        a_actual_fund                         char(20)  not null,      /* Actual fund that the donor donated to --  */
         a_percent                             float  not null,         /* Percent of gift (0.00 to 1.00) allocated to this fund --  */
         a_comment                             varchar(255)  null,      /* Comments --  */
         s_date_created                        datetime  not null,      /*  --  */
@@ -3242,7 +3294,7 @@ create table a_giving_pattern_allocation (
 create table a_giving_pattern_flag (
         a_ledger_number                       char(10)  not null,      /* ledger number for this giving pattern --  */
         p_donor_partner_key                   char(10)  not null,      /* Partner ID for the donor --  */
-        a_cost_center                         char(20)  not null,      /* fund that this donor is giving toward --  */
+        a_fund                                char(20)  not null,      /* fund that this donor is giving toward --  */
         a_pattern_id                          integer  not null,       /* sequential integer ID of this giving pattern record. --  */
         a_history_id                          integer  not null,       /* sequential integer ID of the giving pattern flag (since past/historical ones are kept around). However this DOES NOT relate to the history ID in the a_giving_pattern table. --  */
         a_review                              varchar(16)  null,       /* An identifier for the support review this flag is associated with, if any --  */
@@ -3266,7 +3318,7 @@ create table a_giving_pattern_flag (
 
 create table a_funding_target (
         a_ledger_number                       char(10)  not null,      /* ledger number for the fund --  */
-        a_cost_center                         char(20)  not null,      /* fund that we're establishing a target for --  */
+        a_fund                                char(20)  not null,      /* fund that we're establishing a target for --  */
         a_target_id                           integer  not null,       /* sequential integer ID of this funding target record. --  */
         a_target_desc                         varchar(255)  not null,  /* Description for this funding target --  */
         a_review                              varchar(16)  null,       /* Support review ID that this target is connected with, if available --  */
@@ -3304,7 +3356,7 @@ create table a_support_review (
 
 create table a_support_review_target (
         a_ledger_number                       char(10)  not null,      /* ledger number for this fund --  */
-        a_cost_center                         char(20)  not null,      /* fund that is being reviewed --  */
+        a_fund                                char(20)  not null,      /* fund that is being reviewed --  */
         a_target_id                           integer  not null,       /* ID of the funding target we're working with --  */
         a_review                              varchar(16)  not null,   /* ID of the support review we're looking at --  */
         a_amount                              decimal(14,4)  not null,
@@ -3326,7 +3378,7 @@ create table a_support_review_target (
 create table a_descriptives (
         a_ledger_number                       char(10)  not null,      /* ledger number for the donations --  */
         p_donor_partner_key                   char(10)  not null,      /* Partner ID for the donor --  */
-        a_cost_center                         char(20)  not null,      /* fund that this donor is giving toward --  */
+        a_fund                                char(20)  not null,      /* fund that this donor is giving toward --  */
         a_first_gift                          datetime  null,          /* first gift date --  */
         a_first_gift_amount                   decimal(14,4)  null,     /* first gift amount --  */
         a_last_gift                           datetime  null,          /* most recent gift date --  */
@@ -3374,7 +3426,7 @@ create table a_descriptives (
 create table a_descriptives_hist (
         a_ledger_number                       char(10)  not null,      /* ledger number for the donations --  */
         p_donor_partner_key                   char(10)  not null,      /* Partner ID for the donor --  */
-        a_cost_center                         char(20)  not null,      /* fund that this donor is giving toward --  */
+        a_fund                                char(20)  not null,      /* fund that this donor is giving toward --  */
         a_hist_id                             integer  not null,       /* unique id for this history entry --  */
         a_amount                              decimal(14,4)  not null,
                                                                       /* amount given --  */
@@ -3411,7 +3463,7 @@ create table a_pledge (
         a_pledge_id                           integer  not null,       /* ID of this pledge --  */
         a_is_active                           bit  not null,           /* Active pledge? --  */
         p_donor_partner_id                    char(10)  not null,      /* Donor ID making the pledge --  */
-        a_cost_center                         char(20)  null,          /* Fund being pledged to --  */
+        a_fund                                char(20)  null,          /* Fund being pledged to --  */
         a_intent_type                         varchar(1)  not null,    /* Intent type: P=pledge, F=faith promise, I=intention, R=online recurring --  */
         a_amount                              decimal(14,4)  null,     /* Periodic amount for this intent (e.g. monthly) - UI should default copy from gift data --  */
         a_total_amount                        decimal(14,4)  null,     /* Total amount this intent (e.g. pledged total for the year) --  */
@@ -3462,7 +3514,7 @@ create table a_subtrx_cashdisb (
         a_cash_account_code                   char(10)  not null,      /* Cash account the funds are disbursed from --  */
         a_amount                              decimal(14,4)  not null,
                                                                       /* Amount of disbursement --  */
-        a_cost_center                         char(20)  not null,      /* Cost center for the expense / liability side of the transaction --  */
+        a_fund                                char(20)  not null,      /* Fund for the expense / liability side of the transaction --  */
         a_account_code                        char(10)  not null,      /* GL account for the expense / liability side of the transaction --  */
         a_payee_partner_key                   char(10)  not null,      /* Partner id of the payee (recipient) --  */
         a_check_number                        varchar(16)  null,       /* Check number being issued --  */
@@ -3531,9 +3583,9 @@ create table a_subtrx_payable_item (
         a_accrued_date                        datetime  not null,      /* When the payable accrues as an expense --  */
         a_amount                              decimal(14,4)  not null,
                                                                       /* Amount of payable --  */
-        a_cost_center                         char(20)  not null,      /* Cost center for the expense generated by the payable --  */
+        a_fund                                char(20)  not null,      /* Fund for the expense generated by the payable --  */
         a_account_code                        char(10)  not null,      /* GL account for the expense generated by the payable --  */
-        a_liab_cost_center                    char(20)  not null,      /* Cost center for the liability generated by the payable --  */
+        a_liab_fund                           char(20)  not null,      /* Fund for the liability generated by the payable --  */
         a_liab_account_code                   char(10)  not null,      /* GL account for the liability generated by the payable --  */
         a_comment                             varchar(255)  null,      /* Payable comments --  */
         s_date_created                        datetime  not null,      /*  --  */
@@ -3553,8 +3605,8 @@ create table a_subtrx_xfer (
         a_journal_number                      integer  not null,       /* journal id for this transfer (one per transfer) --  */
         a_period                              char(8)  not null,       /* Accounting period this transfer is recorded in. --  */
         a_effective_date                      datetime  not null,      /* Effective date of transfer (e.g., accrual date) --  */
-        a_source_cost_center                  char(20)  not null,      /* Cost center the funds are coming from --  */
-        a_dest_cost_center                    char(20)  not null,      /* Cost center the funds are going to --  */
+        a_source_fund                         char(20)  not null,      /* Fund that the money is coming from --  */
+        a_dest_fund                           char(20)  not null,      /* Fund that the money is going to --  */
         a_amount                              decimal(14,4)  not null,
                                                                       /* Amount to transfer --  */
         a_in_gl                               bit  default 0,          /* Has this transfer been posted into the GL - yes (1) or no (0)? --  */
@@ -3604,7 +3656,7 @@ create table a_subtrx_cashxfer (
         a_effective_date                      datetime  not null,      /* Effective date of transfer (e.g., accrual date) --  */
         a_source_cash_acct                    char(16)  not null,      /* Account the funds are coming from --  */
         a_dest_cash_acct                      char(16)  not null,      /* Account the funds are going to --  */
-        a_cost_center                         char(20)  not null,      /* Cost Center in which to perform the cash transfer --  */
+        a_fund                                char(20)  not null,      /* Fund in which to perform the cash transfer --  */
         a_amount                              decimal(14,4)  not null,
                                                                       /* Amount to transfer --  */
         a_in_gl                               bit  default 0,          /* Has this transfer been posted into the GL - yes (1) or no (0)? --  */
@@ -3670,7 +3722,7 @@ create table i_eg_gift_import (
         p_donor_partner_key                   char(10)  null,          /* Kardia partner key assigned by import process --  */
         i_eg_donormap_confidence              integer  null,           /* Confidence of mapping: 0=low, 1=medium, 2=high --  */
         i_eg_donormap_future                  integer  null,           /* Future applicability of donor mapping: 0=low, 1=medium, 2=high --  */
-        a_cost_center                         char(20)  null,          /* Kardia fund assigned by import process --  */
+        a_fund                                char(20)  null,          /* Kardia fund assigned by import process --  */
         i_eg_fundmap_confidence               integer  null,           /* Confidence of mapping: 0=low, 1=medium, 2=high --  */
         i_eg_fundmap_future                   integer  null,           /* Future applicability of the fund mapping: 0=low, 1=medium, 2=high --  */
         a_account_code                        char(16)  null,          /* Kardia GL account code assigned by import process --  */
@@ -3712,7 +3764,7 @@ create table i_eg_gift_trx_fees (
 
 create table i_eg_giving_url (
         a_ledger_number                       char(10)  not null,      /* ledger number for the fund --  */
-        a_cost_center                         char(20)  not null,      /* Kardia fund, or * to give a default URL for all funds in the ledger. --  */
+        a_fund                                char(20)  not null,      /* Kardia fund, or * to give a default URL for all funds in the ledger. --  */
         i_eg_url                              varchar(255)  not null,  /* URL a donor can visit to give an online donation. --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
@@ -4235,25 +4287,25 @@ create table s_sec_endorsement_type (
         __cx_osml_control                     varchar(255)  null       /*  --  */
 
 );
-insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:sys_admin" as s_endorsement, "System Admin" as s_endorsement_desc, "kardia" as s_endorsement_context_type, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:gl_entry" as s_endorsement, "Enter GL Journal Batches" as s_endorsement_desc, "kardia:ledger" as s_endorsement_context_type, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:gl_manage" as s_endorsement, "Manage GL" as s_endorsement_desc, "kardia:ledger" as s_endorsement_context_type, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:disb" as s_endorsement, "View Disbursements" as s_endorsement_desc, "kardia:ledger" as s_endorsement_context_type, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:disb_entry" as s_endorsement, "Enter Disbursements" as s_endorsement_desc, "kardia:ledger" as s_endorsement_context_type, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:disb_manage" as s_endorsement, "Manage Disbursements" as s_endorsement_desc, "kardia:ledger" as s_endorsement_context_type, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:gift" as s_endorsement, "View Gift Data" as s_endorsement_desc, "kardia:ledger" as s_endorsement_context_type, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:gift_amt" as s_endorsement, "View Gift Amounts" as s_endorsement_desc, "kardia:ledger" as s_endorsement_context_type, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:gift_entry" as s_endorsement, "Enter Gift Batches" as s_endorsement_desc, "kardia:ledger" as s_endorsement_context_type, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:gift_manage" as s_endorsement, "Manage Gift Receipting" as s_endorsement_desc, "kardia:ledger" as s_endorsement_context_type, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:portal_manage" as s_endorsement, "Manage Missionary Portal" as s_endorsement_desc, "kardia" as s_endorsement_context_type, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:lists" as s_endorsement, "View Mailing Lists" as s_endorsement_desc, "kardia" as s_endorsement_context_type, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:lists_manage" as s_endorsement, "Manage Mailing Lists" as s_endorsement_desc, "kardia" as s_endorsement_context_type, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:ptnr_manage" as s_endorsement, "Manage Partner System" as s_endorsement_desc, "kardia" as s_endorsement_context_type, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:crm" as s_endorsement, "View CRM Data" as s_endorsement_desc, "kardia" as s_endorsement_context_type, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:crm_entry" as s_endorsement, "Update CRM Info" as s_endorsement_desc, "kardia" as s_endorsement_context_type, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:crm_manage" as s_endorsement, "Manage CRM System" as s_endorsement_desc, "kardia" as s_endorsement_context_type, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:pay_manage" as s_endorsement, "Manage Payroll" as s_endorsement_desc, "kardia:ledger" as s_endorsement_context_type, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:gl" as s_endorsement, "View GL Data" as s_endorsement_desc, "kardia:ledger" as s_endorsement_context_type, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:sys_admin" as s_endorsement, "System Admin" as s_endorsement_desc, "kardia" as s_endorsement_context_type, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:gl_entry" as s_endorsement, "Enter GL Journal Batches" as s_endorsement_desc, "kardia:ledger" as s_endorsement_context_type, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:gl_manage" as s_endorsement, "Manage GL" as s_endorsement_desc, "kardia:ledger" as s_endorsement_context_type, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:disb" as s_endorsement, "View Disbursements" as s_endorsement_desc, "kardia:ledger" as s_endorsement_context_type, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:disb_entry" as s_endorsement, "Enter Disbursements" as s_endorsement_desc, "kardia:ledger" as s_endorsement_context_type, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:disb_manage" as s_endorsement, "Manage Disbursements" as s_endorsement_desc, "kardia:ledger" as s_endorsement_context_type, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:gift" as s_endorsement, "View Gift Data" as s_endorsement_desc, "kardia:ledger" as s_endorsement_context_type, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:gift_amt" as s_endorsement, "View Gift Amounts" as s_endorsement_desc, "kardia:ledger" as s_endorsement_context_type, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:gift_entry" as s_endorsement, "Enter Gift Batches" as s_endorsement_desc, "kardia:ledger" as s_endorsement_context_type, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:gift_manage" as s_endorsement, "Manage Gift Receipting" as s_endorsement_desc, "kardia:ledger" as s_endorsement_context_type, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:portal_manage" as s_endorsement, "Manage Missionary Portal" as s_endorsement_desc, "kardia" as s_endorsement_context_type, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:lists" as s_endorsement, "View Mailing Lists" as s_endorsement_desc, "kardia" as s_endorsement_context_type, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:lists_manage" as s_endorsement, "Manage Mailing Lists" as s_endorsement_desc, "kardia" as s_endorsement_context_type, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:ptnr_manage" as s_endorsement, "Manage Partner System" as s_endorsement_desc, "kardia" as s_endorsement_context_type, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:crm" as s_endorsement, "View CRM Data" as s_endorsement_desc, "kardia" as s_endorsement_context_type, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:crm_entry" as s_endorsement, "Update CRM Info" as s_endorsement_desc, "kardia" as s_endorsement_context_type, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:crm_manage" as s_endorsement, "Manage CRM System" as s_endorsement_desc, "kardia" as s_endorsement_context_type, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:pay_manage" as s_endorsement, "Manage Payroll" as s_endorsement_desc, "kardia:ledger" as s_endorsement_context_type, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:gl" as s_endorsement, "View GL Data" as s_endorsement_desc, "kardia:ledger" as s_endorsement_context_type, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
 
 
 /* s_sec_endorsement_context */
@@ -4268,7 +4320,7 @@ create table s_sec_endorsement_context (
         __cx_osml_control                     varchar(255)  null       /*  --  */
 
 );
-insert into s_sec_endorsement_context (s_context,s_context_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia" as s_context, "Kardia" as s_context_desc, '3-14-08' as s_date_created, 'IMPORT' as s_created_by,'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_sec_endorsement_context (s_context,s_context_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia" as s_context, "Kardia" as s_context_desc, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
 
 
 /* s_mykardia */

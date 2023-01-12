@@ -19,13 +19,13 @@ inc_exp_fund_matrix "system/report"
 
     // Parameters
     ledger "report/parameter" { type=string; default=null; }
-    //costctr "report/parameter" { type=string; default=null; }
+    //fund "report/parameter" { type=string; default=null; }
     year_period "report/parameter" { type=string; default=runserver( (select first(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_summary_only = 1 and datepart(year, :a_end_date) = datepart(year, getdate()) order by :a_start_date) ); }
     start_period "report/parameter" { type=string; default=runserver( (select first(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_summary_only = 0 and :a_parent_period = :this:year_period order by :a_start_date asc) ); }
     end_period "report/parameter" { type=string; default=runserver( (select last(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_summary_only = 0 and :a_parent_period = :this:year_period order by :a_start_date asc) ); }
     unposted "report/parameter" { type=integer; default=0; }
-    balcostctr "report/parameter" { type=string; }
-    exclude_balcostctr "report/parameter" { type=string; }
+    balfund "report/parameter" { type=string; }
+    exclude_balfund "report/parameter" { type=string; }
     accts "report/parameter" { type=string; }
     exclude_accts "report/parameter" { type=string; }
     accttype "report/parameter" { type=string; default='RE'; }
@@ -89,7 +89,7 @@ inc_exp_fund_matrix "system/report"
 	{
 	sql = runserver("
 		SELECT
-			:c:a_bal_cost_center,
+			:c:a_bal_fund,
 			cnt = count(condition(:t:a_transaction_type != 'B', 1, null)),
 			a1 = :inv_qy:inv * isnull(sum(condition(:t:a_account_code = :accts_qy:a1, :t:a_amount, $0)), $0),
 			a2 = :inv_qy:inv * isnull(sum(condition(:t:a_account_code = :accts_qy:a2, :t:a_amount, $0)), $0),
@@ -103,18 +103,18 @@ inc_exp_fund_matrix "system/report"
 			a10 = :inv_qy:inv * isnull(sum(condition(:t:a_account_code = :accts_qy:a10, :t:a_amount, $0)), $0),
 			other = :inv_qy:inv * isnull(sum(condition(:t:a_account_code != :accts_qy:a1 and :t:a_account_code != :accts_qy:a2 and :t:a_account_code != :accts_qy:a3 and :t:a_account_code != :accts_qy:a4 and :t:a_account_code != :accts_qy:a5 and :t:a_account_code != :accts_qy:a6 and :t:a_account_code != :accts_qy:a7 and :t:a_account_code != :accts_qy:a8, :t:a_amount, $0)), $0)
 		FROM
-			/apps/kardia/data/Kardia_DB/a_cost_center/rows c,
+			/apps/kardia/data/Kardia_DB/a_fund/rows c,
 			/apps/kardia/data/Kardia_DB/a_transaction/rows t
 		WHERE
 			:c:a_ledger_number = :this:ledger and
-			-- :c:a_cost_center = :c:a_bal_cost_center and
+			-- :c:a_fund = :c:a_bal_fund and
 			:t:a_ledger_number =* :c:a_ledger_number and
 			:t:a_period <= :this:end_period and
 			:t:a_period >= :this:start_period and
-			:t:a_cost_center =* :c:a_cost_center and
+			:t:a_fund =* :c:a_fund and
 			charindex(substring(:t:a_account_category,2,1), :this:ctltype) > 0
-			" + condition(:this:balcostctr is not null, "and charindex(',' + :c:a_bal_cost_center + ',', ',' + :this:balcostctr + ',') > 0", "") + "
-			" + condition(:this:exclude_balcostctr is not null, "and charindex(',' + :c:a_bal_cost_center + ',', ',' + :this:exclude_balcostctr + ',') = 0", "") + "
+			" + condition(:this:balfund is not null, "and charindex(',' + :c:a_bal_fund + ',', ',' + :this:balfund + ',') > 0", "") + "
+			" + condition(:this:exclude_balfund is not null, "and charindex(',' + :c:a_bal_fund + ',', ',' + :this:exclude_balfund + ',') = 0", "") + "
 			" + condition(:this:accts is not null and not :this:other, "and charindex(',' + :t:a_account_code + ',', ',' + :this:accts + ',') > 0", "") + "
 			" + condition(:this:exclude_accts is not null, "and charindex(',' + :t:a_account_code + ',', ',' + :this:exclude_accts + ',') = 0", "") + "
 			" + condition(:this:accttype = 'R', "and substring(:t:a_account_category,1,1) = '4'", "") + "
@@ -122,7 +122,7 @@ inc_exp_fund_matrix "system/report"
 			" + condition(:this:accttype = 'RE', "and (substring(:t:a_account_category,1,1) = '5' or substring(:t:a_account_category,1,1) = '4')", "") + "
 			" + condition(:this:unposted, "", "and :t:a_posted = 1") + "
 		GROUP BY
-			:c:a_bal_cost_center
+			:c:a_bal_fund
 		HAVING
 			:cnt > 0
 		");
@@ -142,11 +142,11 @@ inc_exp_fund_matrix "system/report"
     ccinfo_qy "report/query"
 	{
 	sql = " SELECT
-			:c:a_cc_desc
+			:c:a_fund_desc
 		FROM
-			/apps/kardia/data/Kardia_DB/a_cost_center/rows c
+			/apps/kardia/data/Kardia_DB/a_fund/rows c
 		WHERE
-			:c:a_cost_center = :funds_qy:a_bal_cost_center and
+			:c:a_fund = :funds_qy:a_bal_fund and
 			:c:a_ledger_number = :this:ledger
 		";
 	}
@@ -157,9 +157,9 @@ inc_exp_fund_matrix "system/report"
 		SELECT
 			cnt = count(1)
 		FROM
-			/apps/kardia/data/Kardia_DB/a_cost_center/rows c
+			/apps/kardia/data/Kardia_DB/a_fund/rows c
 		WHERE
-			:c:a_bal_cost_center = :funds_qy:a_bal_cost_center and
+			:c:a_bal_fund = :funds_qy:a_bal_fund and
 			:c:a_ledger_number = :this:ledger
 		");
 	}
@@ -169,8 +169,8 @@ inc_exp_fund_matrix "system/report"
 	sql = runserver("
 		SELECT
 			cnt = count(condition(:t:a_transaction_type != 'B', 1, null)),
-			:c:a_cost_center,
-			:c:a_cc_desc,
+			:c:a_fund,
+			:c:a_fund_desc,
 			a1 = :inv_qy:inv * isnull(sum(condition(:t:a_account_code = :accts_qy:a1, :t:a_amount, $0)), $0),
 			a2 = :inv_qy:inv * isnull(sum(condition(:t:a_account_code = :accts_qy:a2, :t:a_amount, $0)), $0),
 			a3 = :inv_qy:inv * isnull(sum(condition(:t:a_account_code = :accts_qy:a3, :t:a_amount, $0)), $0),
@@ -183,15 +183,15 @@ inc_exp_fund_matrix "system/report"
 			a10 = :inv_qy:inv * isnull(sum(condition(:t:a_account_code = :accts_qy:a10, :t:a_amount, $0)), $0),
 			other = :inv_qy:inv * isnull(sum(condition(:t:a_account_code != :accts_qy:a1 and :t:a_account_code != :accts_qy:a2 and :t:a_account_code != :accts_qy:a3 and :t:a_account_code != :accts_qy:a4 and :t:a_account_code != :accts_qy:a5 and :t:a_account_code != :accts_qy:a6 and :t:a_account_code != :accts_qy:a7 and :t:a_account_code != :accts_qy:a8, :t:a_amount, $0)), $0)
 		FROM
-			/apps/kardia/data/Kardia_DB/a_cost_center/rows c,
+			/apps/kardia/data/Kardia_DB/a_fund/rows c,
 			/apps/kardia/data/Kardia_DB/a_transaction/rows t
 		WHERE
-			:c:a_bal_cost_center = :funds_qy:a_bal_cost_center and
+			:c:a_bal_fund = :funds_qy:a_bal_fund and
 			:c:a_ledger_number = :this:ledger and
 			:t:a_ledger_number =* :c:a_ledger_number and
 			:t:a_period <= :this:end_period and
 			:t:a_period >= :this:start_period and
-			:t:a_cost_center =* :c:a_cost_center and
+			:t:a_fund =* :c:a_fund and
 			charindex(substring(:t:a_account_category,2,1), :this:ctltype) > 0
 			" + condition(:this:accts is not null and not :this:other, "and charindex(',' + :t:a_account_code + ',', ',' + :this:accts + ',') > 0", "") + "
 			" + condition(:this:exclude_accts is not null, "and charindex(',' + :t:a_account_code + ',', ',' + :this:exclude_accts + ',') = 0", "") + "
@@ -200,7 +200,7 @@ inc_exp_fund_matrix "system/report"
 			" + condition(:this:accttype = 'RE', "and (substring(:t:a_account_category,1,1) = '5' or substring(:t:a_account_category,1,1) = '4')", "") + "
 			" + condition(:this:unposted, "", "and :t:a_posted = 1") + "
 		GROUP BY
-			:c:a_cost_center
+			:c:a_fund
 		HAVING
 			:cnt > 0
 		");
@@ -262,8 +262,8 @@ inc_exp_fund_matrix "system/report"
 		marginbottom=0.0;
 		margintop=0.5;
 		style=bold;
-		d_cc "report/table-cell" { value=runserver(:funds_qy:a_bal_cost_center); align=left; font=helvetica; }
-		d_desc "report/table-cell" { value=runserver(:ccinfo_qy:a_cc_desc); align=left; font=helvetica; }
+		d_cc "report/table-cell" { value=runserver(:funds_qy:a_bal_fund); align=left; font=helvetica; }
+		d_desc "report/table-cell" { value=runserver(:ccinfo_qy:a_fund_desc); align=left; font=helvetica; }
 		d_a1 "report/table-cell" { value=runserver(:funds_qy:a1); align=right; }
 		d_a2 "report/table-cell" { value=runserver(:funds_qy:a2); align=right; }
 		d_a3 "report/table-cell" { value=runserver(:funds_qy:a3); align=right; }
@@ -282,8 +282,8 @@ inc_exp_fund_matrix "system/report"
 		font=courier;
 		fontsize=7;
 		marginbottom=0.0;
-		d2_cc "report/table-cell" { value=runserver("  " + :subfunds_qy:a_cost_center); align=left; font=helvetica; }
-		d2_desc "report/table-cell" { value=runserver(:subfunds_qy:a_cc_desc); align=left; font=helvetica; }
+		d2_cc "report/table-cell" { value=runserver("  " + :subfunds_qy:a_fund); align=left; font=helvetica; }
+		d2_desc "report/table-cell" { value=runserver(:subfunds_qy:a_fund_desc); align=left; font=helvetica; }
 		d2_a1 "report/table-cell" { value=runserver(:subfunds_qy:a1); align=right; }
 		d2_a2 "report/table-cell" { value=runserver(:subfunds_qy:a2); align=right; }
 		d2_a3 "report/table-cell" { value=runserver(:subfunds_qy:a3); align=right; }

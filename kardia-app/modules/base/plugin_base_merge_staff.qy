@@ -1,0 +1,42 @@
+$Version=2$
+plugin_base_merge_staff "system/query"
+    {
+    partner_a "query/parameter" { type=string; style=strnull; }
+    partner_b "query/parameter" { type=string; style=strnull; }
+    partner_c "query/parameter" { type=string; style=strnull; }
+
+    sql = " select
+		p_partner_key = :s:p_partner_key,
+		p_data_source = 'Staff',
+		p_data_key = :s:p_partner_key,
+		p_data_desc =
+		    condition(:s:p_is_staff, 'Active, ', 'Inactive, ') +
+		    isnull('Login ' + :s:p_kardia_login + ', ', '') + 
+		    (select condition(count(1) > 0, '' + count(1) + ' Lists Managed, ', '') from /apps/kardia/data/Kardia_DB/m_list_membership/rows lm where :lm:m_member_type = 'O' and :lm:p_partner_key = :s:p_partner_key) +
+		    (select condition(count(1) > 0, '' + count(1) + ' Reports, ', '') from /apps/kardia/data/Kardia_DB/r_group_report/rows gr where :gr:p_recipient_partner_key = :s:p_partner_key and :gr:r_is_active = 1) +
+		    (select condition(count(1) > 0, '' + count(1) + ' Funds Managed, ', '') from /apps/kardia/data/Kardia_DB/a_fund_staff/rows cs where :cs:p_staff_partner_key = :s:p_partner_key) - ', '
+		    ,
+		p_short_data_desc =
+		    condition(:s:p_is_staff, 'Act,', 'Dis,') +
+		    isnull(:s:p_kardia_login + ', ', '') + 
+		    (select 'L:' + isnull(sum(:lm:m_list_code + ':'),'') + ',' from /apps/kardia/data/Kardia_DB/m_list_membership/rows lm where :lm:m_member_type = 'O' and :lm:p_partner_key = :s:p_partner_key) +
+		    (select 'R:' + isnull(sum(:gr:r_group_name + ':'),'') + ',' from /apps/kardia/data/Kardia_DB/r_group_report/rows gr where :gr:p_recipient_partner_key = :s:p_partner_key and :gr:r_is_active = 1) +
+		    (select 'F:' + isnull(sum(:cs:a_fund + ':'),'') + ',' from /apps/kardia/data/Kardia_DB/a_fund_staff/rows cs where :cs:p_staff_partner_key = :s:p_partner_key) - ','
+		    ,
+		p_date_start = null,
+		p_date_end = null,
+		p_allow_copy = 0,
+		p_allow_multiple = 0,
+		p_allow_delete = 0,
+		p_default_copy = 0,
+		p_default_marriage_copy = 0,
+		p_default_marriage_move = 0,
+		p_default_multiple = 0,
+		p_allow_collate = 0,
+		p_comment = null
+	    from
+		identity /apps/kardia/data/Kardia_DB/p_staff/rows s
+	    where
+		(:s:p_partner_key = :parameters:partner_a or :s:p_partner_key = :parameters:partner_b or :s:p_partner_key = :parameters:partner_c)
+	    ";
+    }

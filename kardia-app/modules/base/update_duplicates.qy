@@ -1,0 +1,28 @@
+$Version=2$
+update_duplicates "system/query"
+    {
+    sql = " delete
+		/apps/kardia/data/Kardia_DB/p_dup/rows
+	    ;
+	    
+	    insert
+		/apps/kardia/data/Kardia_DB/p_dup/rows
+	    select
+		p_partner_key = :p_partner_key_1,
+		p_dup_partner_key = :p_partner_key_2,
+		p_match_quality = :priority,
+		p_location_id = nullif(:p_location_id_1, ''),
+		p_dup_location_id = nullif(:p_location_id_2, ''),
+		p_revision_id = nullif(:p_revision_id_1, ''),
+		p_dup_revision_id = nullif(:p_revision_id_2, ''),
+		p_contact_id = nullif(:p_contact_id_1, ''),
+		p_dup_contact_id = nullif(:p_contact_id_2, ''),
+		--p_comment = :ca1 + ', ' + :ca2 + ', ' + :cc1 + ', ' + :cc2,
+		s_date_created = getdate(),
+		s_created_by = user_name(),
+		s_date_modified = getdate(),
+		s_modified_by = user_name()
+	    from
+		/apps/kardia/modules/base/duplicate_checking.qy
+	    ";
+    }

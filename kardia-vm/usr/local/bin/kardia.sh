@@ -259,6 +259,7 @@ function GetOSInfo
 #
 function UpdateMenus
     {
+    whereToReturn="$@"
     lookupStatus
     GetOSInfo
     os_string=$(echo $OSSTR | sed 's/ /_/g')
@@ -309,7 +310,7 @@ function UpdateMenus
 		fi
 		echo "Successfully updated menu system.  Press [ENTER] to continue..."
 		read ANS
-		exec /usr/local/bin/kardia.sh
+		exec /usr/local/bin/kardia.sh $whereToReturn
 	    else
 		echo "Menus are already up to date.  Press [ENTER] to continue..."
 		read ANS
@@ -937,8 +938,13 @@ function repoSetStatus
     cd "$1/cx-git"
     CXORIGIN=$(cd "$1/cx-git" 2>/dev/null; git config --get remote.origin.url 2>/dev/null)
     CXMETHOD=${CXORIGIN%%:*}
-    CXUSER=${CXORIGIN##https://}
-    CXUSER=${CXUSER%%@*}
+    #if CXORIGIN has a @ in it, then we have a user set.  Pick it out
+    if [[ $CXORIGIN =~ "@" ]]; then
+	CXUSER=${CXORIGIN##https://}
+	CXUSER=${CXUSER%%@*}
+    else
+	CXUSER=""
+    fi
     if [ "$CXMETHOD" != "https" ]; then
 	CXUSER=""
     fi
@@ -4825,10 +4831,16 @@ function chooseSetupGuide
 # Set it up for kardia testing only
 function doQuickSetupGuide
     {
+    #if we are resuming, we pass in the number we start at
+    if [ $# -lt 1 ]; then
+	STEP=1
+    else
+	echo "Starting back at position $1"
+	STEP=$1
+    fi
     export SLOWMODDE=yes
     export STEPNUM="One"
     updateFirewall
-    STEP=1
     while true; do
 	if [ "$STEP" = 0 ]; then
 	    return 1
@@ -4856,7 +4868,8 @@ function doQuickSetupGuide
 		;;
 	    6)
 		STEPNUM=Six
-		sg10UpdateStuff
+		#We add the function we return to if we complete the rebuilding Kardia
+		sg10UpdateStuff doQuickSetupGuide 7
 		;;
 	    7)
 		STEPNUM=Seven
@@ -4882,8 +4895,13 @@ function doQuickSetupGuide
 # Setup Guide (aka "Wizard") for first-time run.
 function doSetupGuide
     {
+    #if we are resuming, we pass in the number we start at
+    if [ $# -lt 1 ]; then
+	STEP=1
+    else
+	STEP=$1
+    fi
     updateFirewall
-    STEP=1
     while true; do
 	if [ "$STEP" = 0 ]; then
 	    return 1
@@ -4927,7 +4945,8 @@ function doSetupGuide
 		;;
 	    10)
 		STEPNUM=Ten
-		sg10UpdateStuff
+		#We pass in the place to resume next if we restart kardia.sh
+		sg10UpdateStuff doSetupGuide 11
 		;;
 	    11)
 		STEPNUM=Eleven
@@ -5072,14 +5091,20 @@ GDB:  Run Centrallix in a console, using the GDB debugger.  This allows you to d
 function sg08InitRepo
     {
     if [ "$QUICKMODE" = "no" ]; then
-	dialog --backtitle "$TITLE" --title "Step $STEPNUM:  Initialize the Shared Repository" --yes-label OK --no-label Back --yesno "Next, let's initialize the shared source code repository on the VM Appliance.  This downloads the very latest source code for Kardia and Centrallix from Github  You'll need to separately initialize the per-user repositories if you are using 'team' or 'individual' workflow." 0 0
+	dialog --backtitle "$TITLE" --title "Step $STEPNUM:  Initialize the Shared Repository" --ok-label 'OK' --cancel-label 'Back' --extra-button --extra-label 'Skip' --yesno "Next, let's initialize the shared source code repository on the VM Appliance.  This downloads the very latest source code for Kardia and Centrallix from Github  You'll need to separately initialize the per-user repositories if you are using 'team' or 'individual' workflow." 0 0
     else
-	dialog --backtitle "$TITLE" --title "Step $STEPNUM:  Initialize the Shared Repository" --yes-label OK --no-label Back --yesno "Next, let's initialize the shared source code repository on the VM Appliance.  This downloads the very latest source code for Kardia and Centrallix from Github" 0 0
+	dialog --backtitle "$TITLE" --title "Step $STEPNUM:  Initialize the Shared Repository" --ok-label 'OK' --cancel-label 'Back' --extra-button --extra-label 'Skip' --yesno "Next, let's initialize the shared source code repository on the VM Appliance.  This downloads the very latest source code for Kardia and Centrallix from Github" 0 0
     fi
-    if [ "$?" != 0 ]; then
+    value=$?
+    if [ "$value" == 0 ]; then
+	repoInitShared
+    fi
+    if [ "$value" == 1 ]; then
 	return 1
     fi
-    repoInitShared
+    if [ "$value" == 3 ]; then
+	return #skip.  It looks like we did it
+    fi
     }
 
 function sg09SetSFUser
@@ -5093,12 +5118,13 @@ function sg09SetSFUser
 
 function sg10UpdateStuff
     {
+    whereToReturn="$@"
     dialog --backtitle "$TITLE" --title "Step $STEPNUM:  Download OS Updates" --yes-label OK --no-label Skip --yesno "Every OS needs to download updates at some time.  We like to start this VM as fully updated as possible.  Would you like to check to see if we need to download operating system and kardia.sh updates?" 0 0
     if [ "$?" != 0 ]; then
 	return 0
     fi
     doUpdates
-    UpdateMenus
+    UpdateMenus $whereToReturn
     }
 
 function sg11RootBuildRun
@@ -5255,3 +5281,6 @@ while true; do
 	    ;;
     esac
 done
+
+#clear the screen. Some terminals do not do this
+clear

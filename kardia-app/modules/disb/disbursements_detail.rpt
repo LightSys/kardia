@@ -16,7 +16,7 @@ disbursements_detail "system/report"
 
     // Parameters for GL Fund Balance
     ledger "report/parameter" { type=string; default=null; }
-    costctr "report/parameter" { type=string; default=null; }
+    fund "report/parameter" { type=string; default=null; }
     acct "report/parameter" { type=string; default=null; }
     cashacct "report/parameter" { type=string; default=null; }
     payee "report/parameter" { type=string; default=null; }
@@ -61,7 +61,7 @@ disbursements_detail "system/report"
 					:t:a_batch_number = :d:a_batch_number and
 					charindex(',' + rtrim(:t:a_account_code) + ',', ',' + isnull(:disbinfo:cashaccts, :d:a_cash_account_code) + ',') = 0
 					" + condition(:this:unposted, "", " and :t:a_posted = 1") + "
-					" + condition(:this:costctr is null, "", " and :t:a_cost_center = :this:costctr") + "
+					" + condition(:this:fund is null, "", " and :t:a_fund = :this:fund") + "
 					" + condition(:this:acct is null, "", " and :t:a_account_code = :this:acct") + "
 					" + condition(:this:cashacct is null, "", " and :t:a_cash_account_code = :this:cashacct") + "
 					" + condition(:this:payee is null, "", " and :t:p_ext_partner_id = :this:payee") + "),
@@ -74,7 +74,7 @@ disbursements_detail "system/report"
 			:d:a_period >= :period_qy:startp and
 			:d:a_period <= :period_qy:endp
 			" + condition(:this:payee is null, "", "and :d:a_payee_partner_key = :this:payee") + "
-			" + condition(:this:costctr is null, "", "and :d:a_cost_center = :this:costctr") + "
+			" + condition(:this:fund is null, "", "and :d:a_fund = :this:fund") + "
 			" + condition(:this:acct is null, "", "and :d:a_account_code = :this:acct") + "
 			" + condition(:this:cashacct is null, "", "and :d:a_cash_account_code = :this:cashacct") + "
 		group by
@@ -103,7 +103,7 @@ disbursements_detail "system/report"
 			check = condition(first(:d:a_check_number) = '0', 'EFT', first(:d:a_check_number)),
 			disbid = first(:d:a_disbursement_id),
 			dacct = :d:a_account_code,
-			dcc = :d:a_cost_center,
+			dcc = :d:a_fund,
 			dcash = :d:a_cash_account_code,
 			dcomm = first(:d:a_comment),
 			extname = rtrim(:d:a_payee_partner_key + condition(:p:p_partner_key is null, ' **INVALID**', condition(char_length(:p:p_org_name) > 0, ' ' + :p:p_org_name, isnull(' ' + isnull(rtrim(:p:p_given_name) + ' ', '') + isnull(:p:p_surname,''), '')))),
@@ -120,7 +120,7 @@ disbursements_detail "system/report"
 			:d:a_ledger_number = :this:ledger and
 			:d:a_batch_number = :disb_batch_qy:batch
 			" + condition(:this:payee is null, "", "and :d:a_payee_partner_key = :this:payee") + "
-			" + condition(:this:costctr is null, "", "and :d:a_cost_center = :this:costctr") + "
+			" + condition(:this:fund is null, "", "and :d:a_fund = :this:fund") + "
 			" + condition(:this:acct is null, "", "and :d:a_account_code = :this:acct") + "
 			" + condition(:this:cashacct is null, "", "and :d:a_cash_account_code = :this:cashacct") + "
 		group by
@@ -150,15 +150,15 @@ disbursements_detail "system/report"
 		select
 			:d:a_amount,
 			:d:a_check_number,
-			:d:a_cost_center,
+			:d:a_fund,
 			:d:a_account_code,
 			:d:a_comment,
-			:c:a_cc_desc,
+			:c:a_fund_desc,
 			:a:a_acct_desc,
 			:d:a_line_item
 		from
 			/apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows d,
-			/apps/kardia/data/Kardia_DB/a_cost_center/rows c,
+			/apps/kardia/data/Kardia_DB/a_fund/rows c,
 			/apps/kardia/data/Kardia_DB/a_account/rows a
 		where
 			:d:a_ledger_number = :this:ledger and
@@ -169,8 +169,8 @@ disbursements_detail "system/report"
 			:a:a_ledger_number = :d:a_ledger_number and
 			:a:a_account_code = :d:a_account_code and
 			:c:a_ledger_number = :d:a_ledger_number and
-			:c:a_cost_center = :d:a_cost_center
-			" + condition(:this:costctr is null, "", "and :d:a_cost_center = :this:costctr") + "
+			:c:a_fund = :d:a_fund
+			" + condition(:this:fund is null, "", "and :d:a_fund = :this:fund") + "
 			" + condition(:this:acct is null, "", "and :d:a_account_code = :this:acct") + "
 			" + condition(:this:cashacct is null, "", "and :d:a_cash_account_code = :this:cashacct") + "
 		order by
@@ -180,10 +180,10 @@ disbursements_detail "system/report"
 		select
 			a_amount = null,
 			a_check_number = :disb_qy:check,
-			a_cost_center = '-',
+			a_fund = '-',
 			a_account_code = '-',
 			a_comment = 'Additional other line items total ' + sum(:d:a_amount),
-			a_cc_desc = null,
+			a_fund_desc = null,
 			a_acct_desc = null,
 			a_line_item = 0,
 			cnt = count(1)
@@ -195,7 +195,7 @@ disbursements_detail "system/report"
 			:d:a_batch_number = :disb_qy:batch and
 			:d:a_check_number = :disb_qy:check and
 			:d:a_disbursement_id = :disb_qy:disbid and
-			(:d:a_cost_center != :this:costctr or :d:a_account_code != :this:acct or :d:a_cash_account_code != :this:cashacct)
+			(:d:a_fund != :this:fund or :d:a_account_code != :this:acct or :d:a_cash_account_code != :this:cashacct)
 		having
 			:cnt > 0
 		");
@@ -213,13 +213,13 @@ disbursements_detail "system/report"
 	    t_d1 "report/data" { value = runserver("Disbursements Detail Report for " + :ledger_qy:a_ledger_desc + " (" + :ledger_qy:a_ledger_number + ")\n"); }
 	    t_d2 "report/data" { condition=runserver(:this:start_period == :this:end_period); value = runserver("For Period " + :period_qy:endp + " (" + :period_qy:endp_desc + ")\n"); }
 	    t_d2a "report/data" { condition=runserver(:this:start_period != :this:end_period); value = runserver("For Periods " + :period_qy:startp + " (" + :period_qy:startp_desc + ") through " + :period_qy:endp + " (" + :period_qy:endp_desc + ")\n"); }
-	    t_d2b "report/data" { condition=runserver(:this:costctr is not null); value = runserver("For Fund " + :this:costctr + "\n"); }
+	    t_d2b "report/data" { condition=runserver(:this:fund is not null); value = runserver("For Fund " + :this:fund + "\n"); }
 	    t_d2c "report/data" { condition=runserver(:this:payee is not null); value = runserver("For Payee " + :this:payee + "\n"); }
 	    t_d2d "report/data" { condition=runserver(:this:acct is not null); value = runserver("For GL Account " + :this:acct + "\n"); }
 	    t_d2e "report/data" { condition=runserver(:this:cashacct is not null); value = runserver("For GL Cash Account " + :this:cashacct + "\n"); }
 	    t_d3 "report/data" { value = runserver("Requested by " + user_name() + " on " + getdate() + "\n"); }
 	    t_d4 "report/data" { condition=runserver(:this:unposted); value = runserver("*** WARNING:  GL DATA INCLUDES UNPOSTED TRANSACTIONS ***\n"); }
-	    t_d5 "report/data" { condition=runserver(:this:costctr is not null or :this:acct is not null or :this:cashacct is not null); value = runserver("\nNotice: this report contains data only for a specific fund and/or account.  A given disbursement (check) may be split between multiple funds or accounts.  Such disbursements below only show the total for the requested fund, but include a note indicating the additional amount attributable to other fund(s) or account(s).\n"); align=left; fontsize=8; }
+	    t_d5 "report/data" { condition=runserver(:this:fund is not null or :this:acct is not null or :this:cashacct is not null); value = runserver("\nNotice: this report contains data only for a specific fund and/or account.  A given disbursement (check) may be split between multiple funds or accounts.  Such disbursements below only show the total for the requested fund, but include a note indicating the additional amount attributable to other fund(s) or account(s).\n"); align=left; fontsize=8; }
 	    }
 
 	table "report/table"
@@ -302,8 +302,8 @@ disbursements_detail "system/report"
 		i_batch "report/table-cell" { value=runserver(''); align=left; }
 		i_ckno "report/table-cell" { value=runserver(''); align=left; }
 		i_cnt "report/table-cell" { value=runserver(''); align=left; font=helvetica; }
-		i_date "report/table-cell" { marginleft=0.0; value=runserver(:item_qy:a_cost_center + (' ' * (8 - char_length(:item_qy:a_cost_center))) + :item_qy:a_account_code); align=left; }
-		i_payee "report/table-cell" { marginleft=0.0; value=runserver(:item_qy:a_cc_desc + ' / ' + :item_qy:a_acct_desc); align=left; font=helvetica; }
+		i_date "report/table-cell" { marginleft=0.0; value=runserver(:item_qy:a_fund + (' ' * (8 - char_length(:item_qy:a_fund))) + :item_qy:a_account_code); align=left; }
+		i_payee "report/table-cell" { marginleft=0.0; value=runserver(:item_qy:a_fund_desc + ' / ' + :item_qy:a_acct_desc); align=left; font=helvetica; }
 		i_desc "report/table-cell" { value=runserver(:item_qy:a_comment); align=left; font=helvetica; }
 		i_disb "report/table-cell" { value=runserver(condition(:disb_qy:a_voided, '**VOID**', :item_qy:a_amount)); align=right; }
 		//i_gl "report/table-cell" { value=runserver(''); align=right; }

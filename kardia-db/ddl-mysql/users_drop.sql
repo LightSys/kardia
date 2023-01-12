@@ -96,6 +96,12 @@ revoke select on ra to public;
 /* p_nondup */
 
 
+/* p_dup */
+
+
+/* p_merge */
+
+
 /* m_list */
 
 
@@ -291,13 +297,13 @@ revoke select on ra to public;
 /* a_analysis_attr_value */
 
 
-/* a_cc_analysis_attr */
+/* a_fund_analysis_attr */
 
 
 /* a_acct_analysis_attr */
 
 
-/* a_cost_center */
+/* a_fund */
 
 
 /* a_account */
@@ -312,7 +318,7 @@ revoke select on ra to public;
 /* a_account_category */
 
 
-/* a_cc_acct */
+/* a_fund_acct */
 
 
 /* a_period */
@@ -339,16 +345,16 @@ revoke select on ra to public;
 /* a_account_class */
 
 
-/* a_cost_center_class */
+/* a_fund_class */
 
 
 /* a_reporting_level */
 
 
-/* a_cost_center_prefix */
+/* a_fund_prefix */
 
 
-/* a_cc_staff */
+/* a_fund_staff */
 
 
 /* a_ledger_office */
@@ -405,7 +411,7 @@ revoke select on ra to public;
 /* a_salary_review */
 
 
-/* a_cc_admin_fee */
+/* a_fund_admin_fee */
 
 
 /* a_admin_fee_type */
@@ -420,10 +426,10 @@ revoke select on ra to public;
 /* a_admin_fee_type_item_tmp */
 
 
-/* a_cc_receipting */
+/* a_fund_receipting */
 
 
-/* a_cc_receipting_accts */
+/* a_fund_receipting_accts */
 
 
 /* a_receipt_type */
@@ -450,7 +456,7 @@ revoke select on ra to public;
 /* a_subtrx_gift_rcptcnt */
 
 
-/* a_cc_auto_subscribe */
+/* a_fund_auto_subscribe */
 
 
 /* a_motivational_code */

@@ -172,7 +172,7 @@ de_batches "widget/component-decl"
 
 		sp3 "widget/autolayoutspacer" { height=8; }
 
-		gl_post_cc "widget/component" { height=20; path="/apps/kardia/modules/base/editbox_tree.cmp"; text="Cash CostCtr:"; tooltip="Cost Center / Fund for Cash Transactions"; label_width=120; popup_source = runserver("/apps/kardia/modules/gl/costctrs.qyt/" + :this:ledger + "/"); popup_text="Select CostCtr:"; width=300; empty_desc = "cost center"; }
+		gl_post_cc "widget/component" { height=20; path="/apps/kardia/modules/base/editbox_tree.cmp"; text="Cash Fund:"; tooltip="Fund for Cash Transactions"; label_width=120; popup_source = runserver("/apps/kardia/modules/gl/funds.qyt/" + :this:ledger + "/"); popup_text="Select Fund:"; width=300; empty_desc = "fund"; }
 		gl_post_pendacct "widget/component" { height=20; path="/apps/kardia/modules/base/editbox_tree.cmp"; text="Undeposited Account:"; tooltip="Undeposited Funds GL Account"; label_width=120; popup_source = runserver("/apps/kardia/modules/gl/accounts.qyt/" + :this:ledger + "/"); popup_text="Select Account:"; width=300; empty_desc = "GL account"; }
 		gl_post_acct "widget/component" { height=20; path="/apps/kardia/modules/base/editbox_tree.cmp"; text="Bank Account:"; tooltip="Cash GL Account for Deposit"; label_width=120; popup_source = runserver("/apps/kardia/modules/gl/accounts.qyt/" + :this:ledger + "/"); popup_text="Select Account:"; width=300; empty_desc = "GL account"; }
 		}

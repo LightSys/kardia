@@ -96,7 +96,7 @@ check_report "system/report"
 			:t:a_effective_date,
 			:t:a_cash_account_code,
 			:t:a_amount,
-			:t:a_cost_center,
+			:t:a_fund,
 			:t:a_account_code,
 			:t:a_payee_partner_key,
 			:t:a_check_number,
@@ -132,7 +132,7 @@ check_report "system/report"
 			:t:a_effective_date,
 			:t:a_cash_account_code,
 			:t:a_amount,
-			:t:a_cost_center,
+			:t:a_fund,
 			:t:a_account_code,
 			:t:a_payee_partner_key,
 			:t:a_check_number,
@@ -188,6 +188,11 @@ check_report "system/report"
 			:c:p_country_code =* :l:p_country_code and
 			:af:p_country_code =* :c:p_country_code and
 			:af:p_address_set = 'STANDARD'
+		ORDER BY
+			:p:p_partner_key asc,
+			:l:p_record_status_code asc
+		LIMIT
+			1
 			");
 		
 	} // END - payee_qy "report/query"
@@ -195,14 +200,14 @@ check_report "system/report"
 	acct_cc_name_qy "report/query"
 	{
 		sql = runserver("SELECT
-			cost_center_description = :c:a_cc_desc,
+			fund_description = :c:a_fund_desc,
 			account_description = :a:a_acct_desc
 		FROM
-			/apps/kardia/data/Kardia_DB/a_cost_center/rows c,
+			/apps/kardia/data/Kardia_DB/a_fund/rows c,
 			/apps/kardia/data/Kardia_DB/a_account/rows a
 		WHERE
 			:c:a_ledger_number = :check_qy:a_ledger_number and
-			:c:a_cost_center = :check_qy:a_cost_center and
+			:c:a_fund = :check_qy:a_fund and
 			:c:a_ledger_number = :a:a_ledger_number and
 			:a:a_account_code = :check_qy:a_account_code
 			");
@@ -353,7 +358,7 @@ check_report "system/report"
 			margintop=0.0;
 			marginbottom=0.0;
 			header=yes;
-			li_CC_header "report/table-cell" { value='CostCtr'; style=bold; align=left; }
+			li_CC_header "report/table-cell" { value='Fund'; style=bold; align=left; }
 			li_AcctCode_header "report/table-cell" { value='Acct'; style=bold; align=left; }
 			li_cc_acct_desc_header "report/table-cell" { value='Description'; style=bold; align=left; }
 			
@@ -364,9 +369,9 @@ check_report "system/report"
 		{
 			margintop=0.0;
 			marginbottom=0.0;
-			li_CC_header "report/table-cell" { value=runserver(:check_qy:a_cost_center); style=bold; align=left; }
+			li_CC_header "report/table-cell" { value=runserver(:check_qy:a_fund); style=bold; align=left; }
 			li_AcctCode_header "report/table-cell" { value=runserver(:check_qy:a_account_code); style=bold; align=left; }
-			li_cc_acct_desc_header "report/table-cell" { value=runserver(substring(isnull(:acct_cc_name_qy:cost_center_description, "<blank>") + " (" + isnull(:acct_cc_name_qy:account_description, "<blank>") + ")", 1, 48)); style=bold; align=left; } //  
+			li_cc_acct_desc_header "report/table-cell" { value=runserver(substring(isnull(:acct_cc_name_qy:fund_description, "<blank>") + " (" + isnull(:acct_cc_name_qy:account_description, "<blank>") + ")", 1, 48)); style=bold; align=left; } //  
 			
 			li_Comment_header "report/table-cell" { value=runserver(substring(:check_qy:a_comment, 1, 30)); style=bold; align=left; }
 			li_Amount_header "report/table-cell" { value=runserver(:check_qy:a_amount); style=bold; align=right; }
@@ -412,7 +417,7 @@ check_report "system/report"
 			margintop=0.0;
 			marginbottom=0.0;
 			header=yes;
-			li_CC_header "report/table-cell" { value='CostCtr'; style=bold; align=left; }
+			li_CC_header "report/table-cell" { value='Fund'; style=bold; align=left; }
 			li_AcctCode_header "report/table-cell" { value='Acct'; style=bold; align=left; }
 			li_cc_acct_desc_header "report/table-cell" { value='Description'; style=bold; align=left; }
 			
@@ -423,9 +428,9 @@ check_report "system/report"
 		{
 			margintop=0.0;
 			marginbottom=0.0;
-			li_CC_header "report/table-cell" { value=runserver(:check_qy:a_cost_center); style=bold; align=left; }
+			li_CC_header "report/table-cell" { value=runserver(:check_qy:a_fund); style=bold; align=left; }
 			li_AcctCode_header "report/table-cell" { value=runserver(:check_qy:a_account_code); style=bold; align=left; }
-			li_cc_acct_desc_header "report/table-cell" { value=runserver(substring(isnull(:acct_cc_name_qy:cost_center_description, "<blank>") + " (" + isnull(:acct_cc_name_qy:account_description, "<blank>") + ")", 1, 48)); style=bold; align=left; } //  
+			li_cc_acct_desc_header "report/table-cell" { value=runserver(substring(isnull(:acct_cc_name_qy:fund_description, "<blank>") + " (" + isnull(:acct_cc_name_qy:account_description, "<blank>") + ")", 1, 48)); style=bold; align=left; } //  
 			
 			li_Comment_header "report/table-cell" { value=runserver(substring(:check_qy:a_comment, 1, 30)); style=bold; align=left; }
 			li_Amount_header "report/table-cell" { value=runserver(:check_qy:a_amount); style=bold; align=right; }

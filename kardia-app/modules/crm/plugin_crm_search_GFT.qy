@@ -57,7 +57,7 @@ plugin_crm_search_GFT "system/query"
 		/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i
 	    where
 		(:stage:comment is null or charindex(lower(:stage:comment), lower(:i:a_comment)) > 0) and
-		(:stage:fund is null or charindex(',' + rtrim(:i:a_cost_center) + ',', ',' + :stage:fund + ',') > 0) and
+		(:stage:fund is null or charindex(',' + rtrim(:i:a_fund) + ',', ',' + :stage:fund + ',') > 0) and
 		(:stage:accts is null or charindex(',' + rtrim(:i:a_account_code) + ',', ',' + :stage:accts + ',') > 0) and
 		(:stage:ledger is null or rtrim(:i:a_ledger_number) = :stage:ledger) and
 		:i:a_posted = 1 and
@@ -94,7 +94,7 @@ plugin_crm_search_GFT "system/query"
 		/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i
 	    where
 		(:stage:comment is null or charindex(:stage:comment, :i:a_comment) > 0) and
-		(:stage:fund is null or charindex(',' + rtrim(:i:a_cost_center) + ',', ',' + :stage:fund + ',') > 0) and
+		(:stage:fund is null or charindex(',' + rtrim(:i:a_fund) + ',', ',' + :stage:fund + ',') > 0) and
 		(:stage:accts is null or charindex(',' + rtrim(:i:a_account_code) + ',', ',' + :stage:accts + ',') > 0) and
 		(:stage:ledger is null or rtrim(:i:a_ledger_number) = :stage:ledger) and
 		:i:a_posted = 1 and

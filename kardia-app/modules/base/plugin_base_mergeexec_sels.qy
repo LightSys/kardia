@@ -1,0 +1,98 @@
+$Version=2$
+plugin_base_mergeexec_sels "system/query"
+    {
+    partner_a "query/parameter" { type=string; style=strnull; }
+    partner_b "query/parameter" { type=string; style=strnull; }
+    partner_c "query/parameter" { type=string; style=strnull; }
+
+    sql = " -- Partner list
+	    declare object info;
+	    select :info:partners = ralign(:parameters:partner_a, 16) + ralign(:parameters:partner_b, 16) + ralign(isnull(:parameters:partner_c, ''), 16);
+
+	    -- Phase One, copy
+	    insert
+		/apps/kardia/data/Kardia_DB/m_list_membership/rows
+	    select
+		p_partner_key = '#' + ltrim(substring(:info:partners, (charindex(:abc:letter, 'ABC') - 1)*16 + 1, 16)),
+		:lm:m_list_code,
+		:lm:m_hist_id,
+		:lm:m_num_copies,
+		:lm:p_location_id,
+		:lm:p_contact_id,
+		:lm:m_delivery_method,
+		:lm:m_member_type,
+		:lm:m_num_issues_sub,
+		:lm:m_num_issues_recv,
+		:lm:m_start_date,
+		:lm:m_end_date,
+		:lm:m_hold_until_date,
+		:lm:m_renewal_date,
+		:lm:m_cancel_date,
+		:lm:m_notice_sent_date,
+		:lm:p_postal_mode,
+		:lm:m_membership_status,
+		:lm:m_complimentary,
+		:lm:m_comments,
+		:lm:m_show_contact,
+		:lm:m_contact,
+		:lm:m_reason_member,
+		:lm:m_reason_cancel,
+		:lm:m_sort_order,
+		:lm:s_date_created,
+		:lm:s_created_by,
+		:lm:s_date_modified,
+		:lm:s_modified_by
+	    from
+		/apps/kardia/modules/base/abc.csv/rows abc,
+		/apps/kardia/data/Kardia_DB/p_merge/rows m,
+		/apps/kardia/data/Kardia_DB/m_list_membership/rows lm,
+		/apps/kardia/data/Kardia_DB/m_list/rows l
+	    where
+		:m:p_data_source = 'Mailing Selec.' and
+		:m:p_partner_key_a = :parameters:partner_a and
+		:m:p_partner_key_b = :parameters:partner_b and
+		charindex(:abc:letter, :m:p_disposition) >= 2 and
+		:lm:m_member_type = 'M' and
+		:lm:p_partner_key = ltrim(substring(:info:partners, (charindex(upper(substring(:m:p_disposition, 1, 1)), 'ABC') - 1)*16 + 1, 16)) and
+		:l:m_list_code = :lm:m_list_code and
+		:l:m_list_type = 'S'
+	    ;
+
+	    -- Phase Two, delete/cut
+	    delete
+		identity /apps/kardia/data/Kardia_DB/m_list_membership/rows lm,
+		/apps/kardia/data/Kardia_DB/p_merge/rows m,
+		/apps/kardia/data/Kardia_DB/m_list/rows l
+	    where
+		:m:p_data_source = 'Mailing Selec.' and
+		:m:p_partner_key_a = :parameters:partner_a and
+		:m:p_partner_key_b = :parameters:partner_b and
+		ascii(:m:p_disposition) > 96 and
+		:lm:m_member_type = 'M' and
+		:lm:p_partner_key = ltrim(substring(:info:partners, (charindex(substring(:m:p_disposition, 1, 1), 'abc') - 1)*16 + 1, 16)) and
+		:l:m_list_code = :lm:m_list_code and
+		:l:m_list_type = 'S'
+	    ;
+
+	    -- Phase Three, correct our temporary keys
+	    update
+		/apps/kardia/data/Kardia_DB/m_list_membership/rows
+	    set
+		:p_partner_key = substring(rtrim(:p_partner_key), 2, 16)
+	    where
+		substring(:p_partner_key, 1, 1) = '#' and
+		(:p_partner_key = '#' + :parameters:partner_a or :p_partner_key = '#' + :parameters:partner_b or :p_partner_key = '#' + :parameters:partner_c)
+	    ;
+
+	    -- Phase four, clean up anything that would not copy over (conflicting records)
+	    delete
+		/apps/kardia/data/Kardia_DB/m_list_membership/rows
+	    where
+		substring(:p_partner_key, 1, 1) = '#' and
+		(:p_partner_key = '#' + :parameters:partner_a or :p_partner_key = '#' + :parameters:partner_b or :p_partner_key = '#' + :parameters:partner_c)
+	    ;
+
+	    -- Return
+	    select 1 where 1 = 0
+	    ";
+    }

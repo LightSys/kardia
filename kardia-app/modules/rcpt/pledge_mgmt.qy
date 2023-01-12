@@ -46,7 +46,7 @@ pledge_mgmt "system/query"
 		a_pledge_id = :p:a_pledge_id,
 		p_dn_donor_partner_id = :parameters:donor,
 		p_dn_ack_partner_id = condition(char_length(:parameters:ackdonor) > 0, :parameters:ackdonor, null),
-		:p:a_cost_center,
+		:p:a_fund,
 		:p:a_intent_type,
 		:p:a_amount,
 		:p:a_total_amount,
@@ -151,7 +151,7 @@ pledge_mgmt "system/query"
 		:id:marked is null and
 		(:id:has_intent = 0 or :id:a_autogen) and
 		:id:a_is_active = 1 and
-		(:gi:a_cost_center = :id:a_cost_center or :id:a_cost_center is null) and
+		(:gi:a_fund = :id:a_fund or :id:a_fund is null) and
 		(:gi:a_amount = :id:a_amount or :id:a_amount is null) and
 		:g:a_ledger_number = :gi:a_ledger_number and
 		:g:a_batch_number = :gi:a_batch_number and
@@ -173,7 +173,7 @@ pledge_mgmt "system/query"
 		:id:marked is null and
 		(:id:has_intent = 0 or :id:a_autogen) and
 		:id:a_is_active = 1 and
-		:id:a_cost_center = :parameters:curdesig and
+		:id:a_fund = :parameters:curdesig and
 		:id:a_amount = convert(money, :parameters:curamt) and
 		:parameters:do_automark = 1 and
 		:parameters:posted = 0 and
@@ -204,7 +204,7 @@ pledge_mgmt "system/query"
 		:id:a_pledge_id,
 		:id:p_dn_donor_partner_id,
 		:id:p_dn_ack_partner_id,
-		:id:a_cost_center,
+		:id:a_fund,
 		:id:a_intent_type,
 		:id:a_amount,
 		:id:a_total_amount,
@@ -229,7 +229,7 @@ pledge_mgmt "system/query"
 		:a_ledger_number,
 		:a_batch_number,
 		:a_gift_number,
-		:a_cost_center,
+		:a_fund,
 		:a_amount
 	    update set
 		:s_date_modified = getdate(),
@@ -257,7 +257,7 @@ pledge_mgmt "system/query"
 		a_autogen = 1,
 		p_dn_donor_partner_id = :parameters:donor,
 		p_dn_ack_partner_id = :parameters:ackdonor,
-		:i:a_cost_center,
+		:i:a_fund,
 		a_start_date = getdate(),
 		a_end_date = null,
 		:i:a_amount,
@@ -275,28 +275,28 @@ pledge_mgmt "system/query"
 		/apps/kardia/data/Kardia_DB/a_pledge/rows pl,
 		/apps/kardia/data/Kardia_DB/a_subtrx_gift_intent/rows in,
 		collection intentdata id,
-		/apps/kardia/data/Kardia_DB/a_cost_center/rows c
+		/apps/kardia/data/Kardia_DB/a_fund/rows c
 	    where
 		:i:a_ledger_number = :parameters:a_ledger_number and
 		:i:a_batch_number = :parameters:a_batch_number and
 		:i:a_gift_number = :parameters:a_gift_number and
 		:pl:a_ledger_number =* :i:a_ledger_number and
-		:pl:a_cost_center =* :i:a_cost_center and
+		:pl:a_fund =* :i:a_fund and
 		(:pl:p_donor_partner_id = :parameters:donor or :pl:p_donor_partner_id = :parameters:ackdonor) and
 		:pl:a_amount =* :i:a_amount and
 		:pl:a_is_active = 1 and
 		:in:a_ledger_number =* :i:a_ledger_number and
 		:in:a_batch_number =* :i:a_batch_number and
 		:in:a_gift_number =* :i:a_gift_number and
-		:in:a_cost_center =* :i:a_cost_center and
+		:in:a_fund =* :i:a_fund and
 		:in:a_amount =* :i:a_amount and
 		:id:a_ledger_number =* :i:a_ledger_number and
 		:id:a_batch_number =* :i:a_batch_number and
 		:id:a_gift_number =* :i:a_gift_number and
-		:id:a_cost_center =* :i:a_cost_center and
+		:id:a_fund =* :i:a_fund and
 		:id:a_amount =* :i:a_amount and
 		:c:a_ledger_number = :i:a_ledger_number and
-		:c:a_cost_center = :i:a_cost_center
+		:c:a_fund = :i:a_fund
 	    having
 		:in:a_ledger_number is null and
 		:id:a_ledger_number is null and
@@ -328,7 +328,7 @@ pledge_mgmt "system/query"
 		:in:a_autogen,
 		p_dn_donor_partner_id = :parameters:donor,
 		p_dn_ack_partner_id = condition(char_length(:parameters:ackdonor) > 0, :parameters:ackdonor, null),
-		a_cost_center = isnull(:in:a_cost_center, :pl:a_cost_center),
+		a_fund = isnull(:in:a_fund, :pl:a_fund),
 		a_start_date = isnull(:in:a_start_date, :pl:a_start_date),
 		a_end_date = isnull(:in:a_end_date, :pl:a_end_date),
 		a_amount = isnull(:in:a_amount, :pl:a_amount),
@@ -341,7 +341,7 @@ pledge_mgmt "system/query"
 		s_created_by = user_name(),
 		s_date_modified = getdate(),
 		s_modified_by = user_name(),
-		fund_desc = :pl:a_cost_center + isnull(' ' + :c:a_cc_desc, ''),
+		fund_desc = :pl:a_fund + isnull(' ' + :c:a_fund_desc, ''),
 		type_desc = isnull(:pt:a_intent_desc, :pl:a_intent_type),
 		interval_desc = isnull(:gi:text, 'Every ' + :pl:a_giving_interval + ' Months'),
 		start_desc = dateformat(:pl:a_start_date, 'dd-MMM-yyyy'),
@@ -353,7 +353,7 @@ pledge_mgmt "system/query"
 		/apps/kardia/data/Kardia_DB/a_subtrx_gift_intent/rows in,
 		/apps/kardia/data/Kardia_DB/a_intent_type/rows pt,
 		/apps/kardia/data/Kardia_DB/_a_giving_interval/rows gi,
-		/apps/kardia/data/Kardia_DB/a_cost_center/rows c
+		/apps/kardia/data/Kardia_DB/a_fund/rows c
 	    where
 		(:pl:p_donor_partner_id = :parameters:donor or :pl:p_donor_partner_id = :parameters:ackdonor) and
 		:pl:a_ledger_number = :parameters:a_ledger_number and
@@ -368,7 +368,7 @@ pledge_mgmt "system/query"
 		:pt:a_ledger_number =* :pl:a_ledger_number and
 		:gi:tag =* :pl:a_giving_interval and
 		:c:a_ledger_number = :pl:a_ledger_number and
-		:c:a_cost_center = :pl:a_cost_center and
+		:c:a_fund = :pl:a_fund and
 		:parameters:posted = 0
 	    having
 		:parameters:name is null and
@@ -399,7 +399,7 @@ pledge_mgmt "system/query"
 		:in:a_autogen,
 		:in:p_dn_donor_partner_id,
 		:in:p_dn_ack_partner_id,
-		:in:a_cost_center,
+		:in:a_fund,
 		:in:a_start_date,
 		:in:a_end_date,
 		:in:a_amount,
@@ -412,7 +412,7 @@ pledge_mgmt "system/query"
 		:in:s_created_by,
 		:in:s_date_modified,
 		:in:s_modified_by,
-		fund_desc = :in:a_cost_center + isnull(' ' + :c:a_cc_desc, ''),
+		fund_desc = :in:a_fund + isnull(' ' + :c:a_fund_desc, ''),
 		type_desc = isnull(:pt:a_intent_desc, :in:a_intent_type),
 		interval_desc = isnull(:gi:text, 'Every ' + :in:a_giving_interval + ' Months'),
 		start_desc = dateformat(:in:a_start_date, 'dd-MMM-yyyy'),
@@ -422,7 +422,7 @@ pledge_mgmt "system/query"
 		/apps/kardia/data/Kardia_DB/a_pledge/rows pl,
 		/apps/kardia/data/Kardia_DB/a_intent_type/rows pt,
 		/apps/kardia/data/Kardia_DB/_a_giving_interval/rows gi,
-		/apps/kardia/data/Kardia_DB/a_cost_center/rows c
+		/apps/kardia/data/Kardia_DB/a_fund/rows c
 	    where
 		:in:a_ledger_number = :parameters:a_ledger_number and
 		:in:a_batch_number = :parameters:a_batch_number and
@@ -433,7 +433,7 @@ pledge_mgmt "system/query"
 		:pt:a_ledger_number =* :in:a_ledger_number and
 		:gi:tag =* :in:a_giving_interval and
 		:c:a_ledger_number = :in:a_ledger_number and
-		:c:a_cost_center = :in:a_cost_center
+		:c:a_fund = :in:a_fund
 	    having
 		(:parameters:name is null or :in:name = :parameters:name)
 	    ";

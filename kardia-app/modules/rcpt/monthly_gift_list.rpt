@@ -13,7 +13,7 @@ monthly_gift_list "system/report"
     //       * p_partner
     //       * a_subtrx_gift_group
     //       * a_subtrx_gift_item
-    //       * a_cost_center
+    //       * a_fund
     //       * Filepro: Address (to ensure legacy donor# is right)
     //   - What mailing codes the donor is already subscribed to
     //       * m_list_membership
@@ -76,24 +76,24 @@ monthly_gift_list "system/report"
 	{
 	sql = "	SELECT
 			ledger = :i:a_ledger_number,
-			:c:a_cc_desc,
-			:i:a_cost_center,
+			:c:a_fund_desc,
+			:i:a_fund,
 			giftdate = isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date),
 			total = sum(:i:a_amount),
 			cnt = count(:i:a_amount)
 		FROM
 			/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i,
-			/apps/kardia/data/Kardia_DB/a_cost_center/rows c
+			/apps/kardia/data/Kardia_DB/a_fund/rows c
 		WHERE
 			:i:p_dn_donor_partner_id = :donor_list_qy:p_donor_partner_id and
 			:i:a_period = :this:period and
 			:i:a_ledger_number = :this:ledger and
 			:i:a_posted = 1 and
-			:c:a_cost_center = :i:a_cost_center and
+			:c:a_fund = :i:a_fund and
 			:c:a_ledger_number = :i:a_ledger_number
 		GROUP BY
 			:i:p_dn_donor_partner_id,
-			:i:a_cost_center
+			:i:a_fund
 		";
 	}
 
@@ -121,11 +121,11 @@ monthly_gift_list "system/report"
 	sql = "	SELECT
 			code = isnull(first(:d:m_list_code + ' '), '')
 		FROM
-			/apps/kardia/data/Kardia_DB/a_cc_auto_subscribe/rows d,
+			/apps/kardia/data/Kardia_DB/a_fund_auto_subscribe/rows d,
 			/apps/kardia/data/Kardia_DB/m_list/rows l
 		WHERE
 			:d:a_ledger_number = :this:ledger and
-			:d:a_cost_center = :gift_list_qy:a_cost_center and
+			:d:a_fund = :gift_list_qy:a_fund and
 			:l:m_list_code = :d:m_list_code and
 			:l:m_list_status = 'A' and
 			(:l:m_discard_after is null or getdate() < :l:m_discard_after) and
@@ -197,7 +197,7 @@ monthly_gift_list "system/report"
 		margintop=0;
 
 		g_donorid "report/table-cell" { value=runserver(''); }
-		g_name "report/table-cell" { value=runserver(:gift_list_qy:a_cost_center + ' ' + :gift_list_qy:a_cc_desc); font=helvetica; }
+		g_name "report/table-cell" { value=runserver(:gift_list_qy:a_fund + ' ' + :gift_list_qy:a_fund_desc); font=helvetica; }
 		g_amt "report/table-cell" { value=runserver(condition(has_endorsement('kardia:gift_amt', 'kardia:ledger:' + rtrim(:gift_list_qy:ledger)), :gift_list_qy:total, '-')); align=left; }
 		g_subs "report/table-cell" { value=runserver(condition(char_length(:list_qy:code) > 0 and not (charindex(' ' + rtrim(:list_qy:code) + ' ', ' ' + :subs_qy:lists + ' ') > 0), 'NEEDED: ' + :list_qy:code, '' )); font=helvetica; style=bold; }
 		}

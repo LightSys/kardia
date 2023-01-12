@@ -15,8 +15,8 @@ transaction_report "system/report"
 
     // Parameters for GL Transaction Report
     ledger "report/parameter" { type=string; default=null; }
-    costctr "report/parameter" { type=string; default=null; }
-    balcostctr "report/parameter" { type=string; default=null; }
+    fund "report/parameter" { type=string; default=null; }
+    balfund "report/parameter" { type=string; default=null; }
     account "report/parameter" { type=string; default=null; }
     ctlaccount "report/parameter" { type=string; default=null; }
     batch "report/parameter" { type=integer; default=null; }
@@ -43,7 +43,7 @@ transaction_report "system/report"
 
     fund_qy "report/query"
 	{
-	sql = "select fund_name = isnull(first(:a_cc_desc),'') from /apps/kardia/data/Kardia_DB/a_cost_center/rows c where :a_ledger_number = :this:ledger and :a_cost_center = :this:costctr";
+	sql = "select fund_name = isnull(first(:a_fund_desc),'') from /apps/kardia/data/Kardia_DB/a_fund/rows c where :a_ledger_number = :this:ledger and :a_fund = :this:fund";
 	}
 
     acct_qy "report/query"
@@ -59,16 +59,16 @@ transaction_report "system/report"
 			total = isnull(sum(:t:a_amount), $0.00)
 		from
 			/apps/kardia/data/Kardia_DB/a_transaction/rows t,
-			/apps/kardia/data/Kardia_DB/a_cost_center/rows c
+			/apps/kardia/data/Kardia_DB/a_fund/rows c
 		where
 			:t:a_ledger_number = :this:ledger and
-			:t:a_cost_center = :c:a_cost_center and
+			:t:a_fund = :c:a_fund and
 			:c:a_ledger_number = :this:ledger and
 			not (:this:startperiod is null and :this:startdate is null) and
 			datepart(year, :t:a_effective_date) = :year_qy:year " +
 
-			    condition(:this:balcostctr is null, '', ' and :c:a_bal_cost_center = :this:balcostctr') + 
-			    condition(:this:costctr is null, '', ' and :t:a_cost_center = :this:costctr') + 
+			    condition(:this:balfund is null, '', ' and :c:a_bal_fund = :this:balfund') + 
+			    condition(:this:fund is null, '', ' and :t:a_fund = :this:fund') + 
 			    condition(:this:account is null, '', ' and :t:a_account_code = :this:account') + 
 			    condition(:this:ctlaccount is null, '', ' and :t:a_account_category = :this:ctlaccount') + 
 			    condition(:this:batch is null, '', ' and :t:a_batch_number = :this:batch') + 
@@ -93,9 +93,9 @@ transaction_report "system/report"
 			:t:a_period,
 			:t:a_effective_date,
 			:t:a_origin,
-			:c:a_cost_center,
-			:c:a_cc_desc,
-			:c:a_bal_cost_center,
+			:c:a_fund,
+			:c:a_fund_desc,
+			:c:a_bal_fund,
 			:a:a_account_code,
 			:a:a_acct_desc,
 			:t:a_account_category,
@@ -107,18 +107,18 @@ transaction_report "system/report"
 			minus_amt = condition(:t:a_amount < $0, :t:a_amount, null)
 		from
 			/apps/kardia/data/Kardia_DB/a_transaction/rows t,
-			/apps/kardia/data/Kardia_DB/a_cost_center/rows c,
+			/apps/kardia/data/Kardia_DB/a_fund/rows c,
 			/apps/kardia/data/Kardia_DB/a_account/rows a
 		where
 			:t:a_ledger_number = :this:ledger and
-			:t:a_cost_center *= :c:a_cost_center and
+			:t:a_fund *= :c:a_fund and
 			:t:a_account_code *= :a:a_account_code and
 			:c:a_ledger_number =* :t:a_ledger_number and
 			:a:a_ledger_number =* :t:a_ledger_number and
 			datepart(year, :t:a_effective_date) = :year_qy:year " +
 
-			    condition(:this:balcostctr is null, '', ' and :c:a_bal_cost_center = :this:balcostctr') + 
-			    condition(:this:costctr is null, '', ' and :t:a_cost_center = :this:costctr') + 
+			    condition(:this:balfund is null, '', ' and :c:a_bal_fund = :this:balfund') + 
+			    condition(:this:fund is null, '', ' and :t:a_fund = :this:fund') + 
 			    condition(:this:account is null, '', ' and :t:a_account_code = :this:account') + 
 			    condition(:this:ctlaccount is null, '', ' and :t:a_account_category = :this:ctlaccount') + 
 			    condition(:this:batch is null, '', ' and :t:a_batch_number = :this:batch') + 
@@ -133,8 +133,8 @@ transaction_report "system/report"
 		" order by " +
 
 			    condition(:this:sortby == "pbjt", ":t:a_period, :t:a_batch_number, :t:a_journal_number, :t:a_transaction_number", "") +
-			    condition(:this:sortby == "cca", ":t:a_cost_center, :t:a_account_code", "") +
-			    condition(:this:sortby == "acc", ":t:a_account_code, :t:a_cost_center", "") +
+			    condition(:this:sortby == "cca", ":t:a_fund, :t:a_account_code", "") +
+			    condition(:this:sortby == "acc", ":t:a_account_code, :t:a_fund", "") +
 			    condition(:this:sortby == "date", ":t:a_effective_date, :t:a_batch_number, :t:a_journal_number, :t:a_transaction_number", "") +
 			    condition(:this:sortby == "pdate", ":t:a_period, :t:a_effective_date, :t:a_batch_number, :t:a_journal_number, :t:a_transaction_number", "") +
 		"");
@@ -172,13 +172,13 @@ transaction_report "system/report"
 	    c_d0 "report/data" { value = runserver("Year: " + :this:year_period + "\n"); }
 	    c_d1 "report/data"
 		{ 
-		condition = runserver(not (:this:balcostctr is null));
-		value = runserver("Balancing Cost Center: " + :this:balcostctr + "\n"); 
+		condition = runserver(not (:this:balfund is null));
+		value = runserver("Balancing Fund: " + :this:balfund + "\n"); 
 		}
 	    c_d2 "report/data"
 		{ 
-		condition = runserver(not (:this:costctr is null));
-		value = runserver("Cost Center: " + :this:costctr + " - " + :fund_qy:fund_name + "\n"); 
+		condition = runserver(not (:this:fund is null));
+		value = runserver("Fund: " + :this:fund + " - " + :fund_qy:fund_name + "\n"); 
 		}
 	    c_d3 "report/data"
 		{ 
@@ -262,7 +262,7 @@ transaction_report "system/report"
 		    h_batch "report/table-cell" { value='Batch'; align=center; style=bold; }
 		    h_jnl "report/table-cell" { value='Jnl'; align=center; style=bold; }
 		    h_trx "report/table-cell" { value='Trx'; align=center; style=bold; }
-		    h_cc "report/table-cell" { value='CostCtr'; align=center; style=bold; }
+		    h_cc "report/table-cell" { value='Fund'; align=center; style=bold; }
 		    h_ctlacct "report/table-cell" { value='Ctl'; align=center; style=bold; }
 		    h_acct "report/table-cell" { value='Account'; align=center; style=bold; }
 		    h_comment "report/table-cell" { value='Comments'; align=center; style=bold; }
@@ -294,14 +294,16 @@ transaction_report "system/report"
 		    {
 		    font=courier;
 		    fontsize=8;
-		    marginbottom=0.0;
+		    marginbottom=0.1;
+		    margintop=0.15;
+		    bgcolor = runserver(condition((:trx_qy:rowid / 2) * 2 == :trx_qy:rowid, '#f0f0f0', null));
 
 		    d_period "report/table-cell" { value=runserver(:trx_qy:a_period); align=left; }
 		    d_date "report/table-cell" { value=runserver(:trx_qy:a_effective_date); align=left; }
 		    d_batch "report/table-cell" { value=runserver(:trx_qy:a_batch_number); align=left; }
 		    d_jnl "report/table-cell" { value=runserver(:trx_qy:a_journal_number); align=left; }
 		    d_trx "report/table-cell" { value=runserver(:trx_qy:a_transaction_number); align=left; }
-		    d_cc "report/table-cell" { value=runserver(:trx_qy:a_cost_center); align=left; }
+		    d_cc "report/table-cell" { value=runserver(:trx_qy:a_fund); align=left; }
 		    d_ctlacct "report/table-cell" { value=runserver(:trx_qy:a_account_category); align=left; }
 		    d_acct "report/table-cell" { value=runserver(:trx_qy:a_account_code); align=left; }
 		    d_comment "report/table-cell" { value=runserver(:trx_qy:trunc_comment); align=left; font=helvetica; }
@@ -309,11 +311,11 @@ transaction_report "system/report"
 		    d_credit "report/table-cell" { value=runserver(:trx_qy:minus_amt); align=right; }
 		    }
 
-		tbl_sep_row "report/table-row"
-		    {
-		    condition = runserver((:trx_qy:rowid / 5) * 5 == :trx_qy:rowid);
-		    bottomborder=0.021;
-		    }
+//		tbl_sep_row "report/table-row"
+//		    {
+//		    condition = runserver((:trx_qy:rowid / 5) * 5 == :trx_qy:rowid);
+//		    bottomborder=0.021;
+//		    }
 
 		per_subtotal "report/table-row"
 		    {

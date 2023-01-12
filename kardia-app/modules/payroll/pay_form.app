@@ -30,7 +30,7 @@ pay_form_app "widget/page"
 	period=runserver(:this:period);
 	payroll_id=runserver(:this:payrollid);
 	group_id=runserver(:this:groupid);
-	costctr=runserver( (select :a_cost_center from /apps/kardia/data/Kardia_DB/a_payroll/rows y where :y:a_ledger_number = :this:ledger and :y:a_payroll_id = :this:payrollid and :y:a_payroll_group_id = :this:groupid) );
+	fund=runserver( (select :a_fund from /apps/kardia/data/Kardia_DB/a_payroll/rows y where :y:a_ledger_number = :this:ledger and :y:a_payroll_id = :this:payrollid and :y:a_payroll_group_id = :this:groupid) );
 	ref_period=runserver(:this:ref_period);
 	prev_period=runserver(:this:prev_period);
 	payee_name=runserver( (select :a_payee_name from /apps/kardia/data/Kardia_DB/a_payroll/rows y where :y:a_ledger_number = :this:ledger and :y:a_payroll_id = :this:payrollid and :y:a_payroll_group_id = :this:groupid) );

@@ -3,7 +3,7 @@ use Kardia_DB;
 
 
 /* p_partner */
-create  index p_cost_ctr_idx on p_partner (p_cost_center, p_partner_key);
+create  index p_fund_idx on p_partner (a_fund, p_partner_key);
 create  index p_given_name_idx on p_partner (p_given_name, p_partner_key);
 create  index p_legacy_key_1_idx on p_partner (p_legacy_key_1, p_partner_key);
 create  index p_legacy_key_2_idx on p_partner (p_legacy_key_2, p_partner_key);
@@ -189,6 +189,18 @@ create  index p_search_stage_idx on p_partner_search_results (s_username,p_searc
 /* create  index p_nondup_pk on p_nondup (p_partner_key, p_nondup_partner_key)*/ 
 /* go */
 create  index p_nondup_rev_idx on p_nondup (p_nondup_partner_key, p_partner_key);
+
+
+/* p_dup */
+/* create  index p_dup_pk on p_dup (p_partner_key, p_dup_partner_key)*/ 
+/* go */
+create  index p_dup_rev_idx on p_dup (p_dup_partner_key, p_partner_key);
+
+
+/* p_merge */
+/* create  index p_merge_pk on p_merge (p_partner_key_a, p_partner_key_b, p_data_source, p_data_key)*/ 
+/* go */
+create  index p_merge_rev_idx on p_merge (p_partner_key_b, p_partner_key_a, p_data_source, p_data_key);
 
 
 /* m_list */
@@ -592,8 +604,8 @@ create  index r_ps_modfile_idx on r_saved_paramset (r_module, r_file, r_paramset
 /* go */
 
 
-/* a_cc_analysis_attr */
-/* create  index a_cc_an_attr_pk on a_cc_analysis_attr (a_ledger_number, a_attr_code, a_cost_center)*/ 
+/* a_fund_analysis_attr */
+/* create  index a_fund_an_attr_pk on a_fund_analysis_attr (a_ledger_number, a_attr_code, a_fund)*/ 
 /* go */
 
 
@@ -602,12 +614,12 @@ create  index r_ps_modfile_idx on r_saved_paramset (r_module, r_file, r_paramset
 /* go */
 
 
-/* a_cost_center */
-create  index a_cc_bal_idx on a_cost_center (a_bal_cost_center, a_cost_center, a_ledger_number);
-create  index a_cc_ledger_number_idx on a_cost_center (a_ledger_number, a_cost_center);
-create  index a_cc_legacy_idx on a_cost_center (a_legacy_code, a_cost_center, a_ledger_number);
-create  index a_cc_parent_idx on a_cost_center (a_parent_cost_center, a_cost_center, a_ledger_number);
-/* create  index a_cost_center_pk on a_cost_center (a_cost_center, a_ledger_number)*/ 
+/* a_fund */
+create  index a_fund_bal_idx on a_fund (a_bal_fund, a_fund, a_ledger_number);
+create  index a_fund_ledger_number_idx on a_fund (a_ledger_number, a_fund);
+create  index a_fund_legacy_idx on a_fund (a_legacy_code, a_fund, a_ledger_number);
+create  index a_fund_parent_idx on a_fund (a_parent_fund, a_fund, a_ledger_number);
+/* create  index a_fund_pk on a_fund (a_fund, a_ledger_number)*/ 
 /* go */
 
 
@@ -636,8 +648,8 @@ create  index a_acctusg_ledger_number_idx on a_account_usage (a_ledger_number, a
 /* go */
 
 
-/* a_cc_acct */
-/* create  index a_cc_acct_pk on a_cc_acct (a_ledger_number, a_period, a_cost_center, a_account_code)*/ 
+/* a_fund_acct */
+/* create  index a_fund_acct_pk on a_fund_acct (a_ledger_number, a_period, a_fund, a_account_code)*/ 
 /* go */
 
 
@@ -672,13 +684,13 @@ create  index a_corr_batch_idx on a_batch (a_ledger_number, a_corrects_batch_num
 /* create  index a_transaction_pk on a_transaction (a_ledger_number, a_batch_number, a_journal_number, a_transaction_number)*/ 
 /* go */
 create  index a_trx_batch_idx on a_transaction (a_batch_number, a_ledger_number, a_journal_number, a_transaction_number);
-/* create  index a_trx_cc_clustered_idx on a_transaction (a_cost_center, a_account_code, a_ledger_number, a_batch_number, a_journal_number, a_transaction_number)*/ 
-/* go */
-create  index a_trx_cc_quicksum_idx on a_transaction (a_ledger_number, a_cost_center, a_effective_date, a_posted, a_amount, a_batch_number, a_journal_number, a_transaction_number);
-create  index a_trx_ccperiod_idx on a_transaction (a_ledger_number, a_cost_center, a_period, a_batch_number, a_journal_number, a_transaction_number);
 create  index a_trx_donor_id_idx on a_transaction (p_ext_partner_id, a_ledger_number, a_batch_number, a_journal_number, a_transaction_number);
+/* create  index a_trx_fund_clustered_idx on a_transaction (a_fund, a_account_code, a_ledger_number, a_batch_number, a_journal_number, a_transaction_number)*/ 
+/* go */
+create  index a_trx_fund_quicksum_idx on a_transaction (a_ledger_number, a_fund, a_effective_date, a_posted, a_amount, a_batch_number, a_journal_number, a_transaction_number);
+create  index a_trx_fundperiod_idx on a_transaction (a_ledger_number, a_fund, a_period, a_batch_number, a_journal_number, a_transaction_number);
 create  index a_trx_journal_idx on a_transaction (a_journal_number, a_ledger_number, a_batch_number, a_transaction_number);
-create  index a_trx_period_idx on a_transaction (a_ledger_number, a_period, a_cost_center, a_batch_number, a_journal_number, a_transaction_number);
+create  index a_trx_period_idx on a_transaction (a_ledger_number, a_period, a_fund, a_batch_number, a_journal_number, a_transaction_number);
 create  index a_trx_recip_id_idx on a_transaction (p_int_partner_id, a_ledger_number, a_batch_number, a_journal_number, a_transaction_number);
 create  index a_trx_transaction_idx on a_transaction (a_transaction_number, a_ledger_number, a_batch_number, a_journal_number);
 
@@ -687,10 +699,10 @@ create  index a_trx_transaction_idx on a_transaction (a_transaction_number, a_le
 /* create  index a_transaction_tmp_pk on a_transaction_tmp (a_ledger_number, a_batch_number, a_journal_number, a_transaction_number)*/ 
 /* go */
 create  index a_trxt_batch_idx on a_transaction_tmp (a_batch_number, a_ledger_number, a_journal_number, a_transaction_number);
-/* create  index a_trxt_cc_clustered_idx on a_transaction_tmp (a_cost_center, a_account_code, a_ledger_number, a_batch_number, a_journal_number, a_transaction_number)*/ 
-/* go */
-create  index a_trxt_cc_quicksum_idx on a_transaction_tmp (a_ledger_number, a_cost_center, a_effective_date, a_posted, a_amount, a_batch_number, a_journal_number, a_transaction_number);
 create  index a_trxt_donor_id_idx on a_transaction_tmp (p_ext_partner_id, a_ledger_number, a_batch_number, a_journal_number, a_transaction_number);
+/* create  index a_trxt_fund_clustered_idx on a_transaction_tmp (a_fund, a_account_code, a_ledger_number, a_batch_number, a_journal_number, a_transaction_number)*/ 
+/* go */
+create  index a_trxt_fund_quicksum_idx on a_transaction_tmp (a_ledger_number, a_fund, a_effective_date, a_posted, a_amount, a_batch_number, a_journal_number, a_transaction_number);
 create  index a_trxt_journal_idx on a_transaction_tmp (a_journal_number, a_ledger_number, a_batch_number, a_transaction_number);
 create  index a_trxt_recip_id_idx on a_transaction_tmp (p_int_partner_id, a_ledger_number, a_batch_number, a_journal_number, a_transaction_number);
 create  index a_trxt_transaction_idx on a_transaction_tmp (a_transaction_number, a_ledger_number, a_batch_number, a_journal_number);
@@ -701,8 +713,8 @@ create  index a_trxt_transaction_idx on a_transaction_tmp (a_transaction_number,
 /* go */
 
 
-/* a_cost_center_class */
-/* create  index a_costctr_class_pk on a_cost_center_class (a_cost_center_class, a_ledger_number)*/ 
+/* a_fund_class */
+/* create  index a_fund_class_pk on a_fund_class (a_fund_class, a_ledger_number)*/ 
 /* go */
 
 
@@ -711,14 +723,15 @@ create  index a_trxt_transaction_idx on a_transaction_tmp (a_transaction_number,
 /* go */
 
 
-/* a_cost_center_prefix */
-create  index a_cc_pfx_ledger_number_idx on a_cost_center_prefix (a_ledger_number, a_cost_center_prefix);
-/* create  index a_cost_center_prefix_pk on a_cost_center_prefix (a_cost_center_prefix, a_ledger_number)*/ 
+/* a_fund_prefix */
+create  index a_fund_pfx_ledger_number_idx on a_fund_prefix (a_ledger_number, a_fund_prefix);
+/* create  index a_fund_prefix_pk on a_fund_prefix (a_fund_prefix, a_ledger_number)*/ 
 /* go */
 
 
-/* a_cc_staff */
-/* create  index a_cc_staff_pk on a_cc_staff (a_ledger_number, a_cost_center, p_staff_partner_key)*/ 
+/* a_fund_staff */
+create  index a_fund_staff_partner_idx on a_fund_staff (p_staff_partner_key, a_ledger_number, a_fund);
+/* create  index a_fund_staff_pk on a_fund_staff (a_ledger_number, a_fund, p_staff_partner_key)*/ 
 /* go */
 
 
@@ -738,7 +751,7 @@ create  index a_cc_pfx_ledger_number_idx on a_cost_center_prefix (a_ledger_numbe
 
 
 /* a_payroll */
-create  index a_payroll_cc_idx on a_payroll (a_ledger_number, a_cost_center, a_payroll_group_id, a_payroll_id);
+create  index a_payroll_fund_idx on a_payroll (a_ledger_number, a_fund, a_payroll_group_id, a_payroll_id);
 create  index a_payroll_payee_idx on a_payroll (a_ledger_number, p_payee_partner_key, a_payroll_group_id, a_payroll_id);
 /* create  index a_payroll_pk on a_payroll (a_ledger_number, a_payroll_group_id, a_payroll_id)*/ 
 /* go */
@@ -756,12 +769,13 @@ create  index a_payperiod_idx on a_payroll_period (a_period, a_ledger_number, a_
 
 
 /* a_payroll_group */
+create  index a_payroll_fund_idx on a_payroll_group (a_ledger_number, a_fund, a_payroll_group_id);
 /* create  index a_payroll_grp_pk on a_payroll_group (a_ledger_number, a_payroll_group_id)*/ 
 /* go */
 
 
 /* a_payroll_import */
-create  index a_payrolli_cc_idx on a_payroll_import (a_ledger_number, a_cost_center, a_payroll_id);
+create  index a_payrolli_fund_idx on a_payroll_import (a_ledger_number, a_fund, a_payroll_id);
 create  index a_payrolli_payee_idx on a_payroll_import (a_ledger_number, p_payee_partner_key, a_payroll_id);
 /* create  index a_payrolli_pk on a_payroll_import (a_payroll_id)*/ 
 /* go */
@@ -820,9 +834,10 @@ create  index a_payrolli_payee_idx on a_payroll_import (a_ledger_number, p_payee
 create  index a_salreview_review_idx on a_salary_review (a_review, a_ledger_number, a_payroll_id);
 
 
-/* a_cc_admin_fee */
-/* create  index a_cc_admin_fee_pk on a_cc_admin_fee (a_cost_center, a_ledger_number)*/ 
+/* a_fund_admin_fee */
+/* create  index a_fund_admin_fee_pk on a_fund_admin_fee (a_fund, a_ledger_number)*/ 
 /* go */
+create  index a_fundaf_ledger_number_idx on a_fund_admin_fee (a_ledger_number, a_fund);
 
 
 /* a_admin_fee_type */
@@ -836,28 +851,28 @@ create  index a_salreview_review_idx on a_salary_review (a_review, a_ledger_numb
 
 
 /* a_admin_fee_type_item */
-/* create  index a_admin_fee_type_item_pk on a_admin_fee_type_item (a_ledger_number, a_admin_fee_type, a_admin_fee_subtype, a_dest_cost_center)*/ 
+/* create  index a_admin_fee_type_item_pk on a_admin_fee_type_item (a_ledger_number, a_admin_fee_type, a_admin_fee_subtype, a_dest_fund)*/ 
 /* go */
-create  index a_afti_ledger_number_idx on a_admin_fee_type_item (a_ledger_number, a_dest_cost_center, a_admin_fee_type, a_admin_fee_subtype);
+create  index a_afti_ledger_number_idx on a_admin_fee_type_item (a_ledger_number, a_dest_fund, a_admin_fee_type, a_admin_fee_subtype);
 
 
 /* a_admin_fee_type_item_tmp */
-/* create  index a_admin_fee_type_item_tmp_pk on a_admin_fee_type_item_tmp (a_ledger_number, a_admin_fee_type, a_admin_fee_subtype, a_dest_cost_center)*/ 
+/* create  index a_admin_fee_type_item_tmp_pk on a_admin_fee_type_item_tmp (a_ledger_number, a_admin_fee_type, a_admin_fee_subtype, a_dest_fund)*/ 
 /* go */
-create  index a_afti_tmp_ledger_number_idx on a_admin_fee_type_item_tmp (a_ledger_number, a_dest_cost_center, a_admin_fee_type, a_admin_fee_subtype);
+create  index a_afti_tmp_ledger_number_idx on a_admin_fee_type_item_tmp (a_ledger_number, a_dest_fund, a_admin_fee_type, a_admin_fee_subtype);
 
 
-/* a_cc_receipting */
-/* create  index a_cc_receipting_pk on a_cc_receipting (a_cost_center, a_ledger_number)*/ 
+/* a_fund_receipting */
+/* create  index a_fund_receipting_pk on a_fund_receipting (a_fund, a_ledger_number)*/ 
 /* go */
-create  index a_ccr_ledger_number_idx on a_cc_receipting (a_ledger_number, a_cost_center);
+create  index a_fundr_ledger_number_idx on a_fund_receipting (a_ledger_number, a_fund);
 
 
-/* a_cc_receipting_accts */
-/* create  index a_cc_rcptacct_pk on a_cc_receipting_accts (a_cost_center, a_ledger_number,a_account_code)*/ 
+/* a_fund_receipting_accts */
+/* create  index a_fund_rcptacct_pk on a_fund_receipting_accts (a_fund, a_ledger_number,a_account_code)*/ 
 /* go */
-create  index a_ccra_acct_number_idx on a_cc_receipting_accts (a_ledger_number, a_account_code, a_cost_center);
-create  index a_ccra_ledger_number_idx on a_cc_receipting_accts (a_ledger_number, a_cost_center, a_account_code);
+create  index a_fundra_acct_number_idx on a_fund_receipting_accts (a_ledger_number, a_account_code, a_fund);
+create  index a_fundra_ledger_number_idx on a_fund_receipting_accts (a_ledger_number, a_fund, a_account_code);
 
 
 /* a_receipt_type */
@@ -877,9 +892,9 @@ create  index a_ccra_ledger_number_idx on a_cc_receipting_accts (a_ledger_number
 
 /* a_subtrx_gift */
 create  index a_gifttrx_batch_idx on a_subtrx_gift (a_batch_number, a_ledger_number, a_gift_number);
-/* create  index a_gifttrx_cc_clustered_idx on a_subtrx_gift (a_cost_center, a_account_code, a_ledger_number, a_batch_number, a_gift_number)*/ 
-/* go */
 create  index a_gifttrx_donor_id_idx on a_subtrx_gift (p_donor_partner_id, a_ledger_number, a_batch_number, a_gift_number);
+/* create  index a_gifttrx_fund_clustered_idx on a_subtrx_gift (a_fund, a_account_code, a_ledger_number, a_batch_number, a_gift_number)*/ 
+/* go */
 create  index a_gifttrx_gift_idx on a_subtrx_gift (a_gift_number, a_ledger_number, a_batch_number);
 /* create  index a_gifttrx_pk on a_subtrx_gift (a_ledger_number, a_batch_number, a_gift_number)*/ 
 /* go */
@@ -900,10 +915,10 @@ create  index a_gifttrxgrp_pass_id_idx on a_subtrx_gift_group (p_pass_partner_id
 /* create  index a_gifttrx_pk on a_subtrx_gift_item (a_ledger_number, a_batch_number, a_gift_number, a_split_number)*/ 
 /* go */
 create  index a_gifttrxi_ack_idx on a_subtrx_gift_item (p_dn_ack_partner_id, a_ledger_number, a_batch_number, a_gift_number, a_split_number);
-/* create  index a_gifttrxi_cc_clustered_idx on a_subtrx_gift_item (a_cost_center, a_account_code, a_ledger_number, a_batch_number, a_gift_number, a_split_number)*/ 
-/* go */
 create  index a_gifttrxi_datetype_idx on a_subtrx_gift_item (a_dn_gift_received_date, a_dn_gift_postmark_date, a_dn_gift_type, a_ledger_number, a_batch_number, a_gift_number, a_split_number);
 create  index a_gifttrxi_donor_idx on a_subtrx_gift_item (p_dn_donor_partner_id, a_ledger_number, a_batch_number, a_gift_number, a_split_number);
+/* create  index a_gifttrxi_fund_clustered_idx on a_subtrx_gift_item (a_fund, a_account_code, a_ledger_number, a_batch_number, a_gift_number, a_split_number)*/ 
+/* go */
 create  index a_gifttrxi_gift_idx on a_subtrx_gift_item (a_gift_number, a_ledger_number, a_batch_number, a_split_number);
 create  index a_gifttrxi_mcode_idx on a_subtrx_gift_item (a_motivational_code, a_ledger_number, a_batch_number, a_gift_number, a_split_number);
 create  index a_gifttrxi_pass_idx on a_subtrx_gift_item (p_dn_pass_partner_id, a_ledger_number, a_batch_number, a_gift_number, a_split_number);
@@ -924,15 +939,15 @@ create  index a_gifttrxin_pledge_idx on a_subtrx_gift_intent (a_ledger_number, a
 /* go */
 
 
-/* a_cc_auto_subscribe */
-create  index a_cc_as_ledger_number_idx on a_cc_auto_subscribe (a_ledger_number, a_cost_center, m_list_code);
-create  index a_cc_as_listcode_idx on a_cc_auto_subscribe (m_list_code, a_cost_center, a_ledger_number);
-/* create  index a_cc_auto_subscribe_pk on a_cc_auto_subscribe (a_cost_center, a_ledger_number, m_list_code)*/ 
+/* a_fund_auto_subscribe */
+create  index a_fund_as_ledger_number_idx on a_fund_auto_subscribe (a_ledger_number, a_fund, m_list_code);
+create  index a_fund_as_listcode_idx on a_fund_auto_subscribe (m_list_code, a_fund, a_ledger_number);
+/* create  index a_fund_auto_subscribe_pk on a_fund_auto_subscribe (a_fund, a_ledger_number, m_list_code)*/ 
 /* go */
 
 
 /* a_motivational_code */
-create  index a_motiv_code_cc on a_motivational_code (a_ledger_number, a_cost_center, a_account_code, a_motivational_code);
+create  index a_motiv_code_fund on a_motivational_code (a_ledger_number, a_fund, a_account_code, a_motivational_code);
 create  index a_motiv_code_list on a_motivational_code (m_list_code, a_ledger_number, a_motivational_code);
 create  index a_motiv_code_parent on a_motivational_code (a_ledger_number, a_parent_motivational_code, a_motivational_code);
 /* create  index a_motivational_code_pk on a_motivational_code (a_ledger_number, a_motivational_code)*/ 
@@ -940,31 +955,31 @@ create  index a_motiv_code_parent on a_motivational_code (a_ledger_number, a_par
 
 
 /* a_giving_pattern */
-create  index a_givingp_actual_idx on a_giving_pattern (a_actual_cost_center, a_ledger_number, p_donor_partner_key, a_cost_center, a_pattern_id, a_history_id);
-create  index a_givingp_donor_idx on a_giving_pattern (p_donor_partner_key, a_ledger_number, a_cost_center, a_pattern_id, a_history_id);
-create  index a_givingp_fund_idx on a_giving_pattern (a_cost_center, a_ledger_number, p_donor_partner_key, a_pattern_id, a_history_id);
-/* create  index a_givingp_pk on a_giving_pattern (a_ledger_number, p_donor_partner_key, a_cost_center, a_pattern_id, a_history_id)*/ 
+create  index a_givingp_actual_idx on a_giving_pattern (a_actual_fund, a_ledger_number, p_donor_partner_key, a_fund, a_pattern_id, a_history_id);
+create  index a_givingp_donor_idx on a_giving_pattern (p_donor_partner_key, a_ledger_number, a_fund, a_pattern_id, a_history_id);
+create  index a_givingp_fund_idx on a_giving_pattern (a_fund, a_ledger_number, p_donor_partner_key, a_pattern_id, a_history_id);
+/* create  index a_givingp_pk on a_giving_pattern (a_ledger_number, p_donor_partner_key, a_fund, a_pattern_id, a_history_id)*/ 
 /* go */
-create  index a_givingp_review_idx on a_giving_pattern (a_review, a_ledger_number, p_donor_partner_key, a_cost_center, a_pattern_id, a_history_id);
+create  index a_givingp_review_idx on a_giving_pattern (a_review, a_ledger_number, p_donor_partner_key, a_fund, a_pattern_id, a_history_id);
 
 
 /* a_giving_pattern_allocation */
-create  index a_givingpa_actual_idx on a_giving_pattern_allocation (a_actual_cost_center, a_ledger_number, p_donor_partner_key, a_cost_center, a_pattern_id, a_history_id);
-create  index a_givingpa_donor_idx on a_giving_pattern_allocation (p_donor_partner_key, a_ledger_number, a_cost_center, a_pattern_id, a_history_id);
-create  index a_givingpa_fund_idx on a_giving_pattern_allocation (a_cost_center, a_ledger_number, p_donor_partner_key, a_pattern_id, a_history_id);
-/* create  index a_givingpa_pk on a_giving_pattern_allocation (a_ledger_number, p_donor_partner_key, a_cost_center, a_pattern_id, a_history_id)*/ 
+create  index a_givingpa_actual_idx on a_giving_pattern_allocation (a_actual_fund, a_ledger_number, p_donor_partner_key, a_fund, a_pattern_id, a_history_id);
+create  index a_givingpa_donor_idx on a_giving_pattern_allocation (p_donor_partner_key, a_ledger_number, a_fund, a_pattern_id, a_history_id);
+create  index a_givingpa_fund_idx on a_giving_pattern_allocation (a_fund, a_ledger_number, p_donor_partner_key, a_pattern_id, a_history_id);
+/* create  index a_givingpa_pk on a_giving_pattern_allocation (a_ledger_number, p_donor_partner_key, a_fund, a_pattern_id, a_history_id)*/ 
 /* go */
-create  index a_givingpa_review_idx on a_giving_pattern_allocation (a_review, a_ledger_number, p_donor_partner_key, a_cost_center, a_pattern_id, a_history_id);
+create  index a_givingpa_review_idx on a_giving_pattern_allocation (a_review, a_ledger_number, p_donor_partner_key, a_fund, a_pattern_id, a_history_id);
 
 
 /* a_giving_pattern_flag */
-/* create  index a_givingf_pk on a_giving_pattern_flag (a_ledger_number, p_donor_partner_key, a_cost_center, a_pattern_id, a_history_id)*/ 
+/* create  index a_givingf_pk on a_giving_pattern_flag (a_ledger_number, p_donor_partner_key, a_fund, a_pattern_id, a_history_id)*/ 
 /* go */
-create  index a_givingf_review_idx on a_giving_pattern_flag (a_review, a_ledger_number, p_donor_partner_key, a_cost_center, a_pattern_id, a_history_id);
+create  index a_givingf_review_idx on a_giving_pattern_flag (a_review, a_ledger_number, p_donor_partner_key, a_fund, a_pattern_id, a_history_id);
 
 
 /* a_funding_target */
-/* create  index a_target_pk on a_funding_target (a_ledger_number, a_cost_center, a_target_id)*/ 
+/* create  index a_target_pk on a_funding_target (a_ledger_number, a_fund, a_target_id)*/ 
 /* go */
 
 
@@ -974,30 +989,30 @@ create  index a_givingf_review_idx on a_giving_pattern_flag (a_review, a_ledger_
 
 
 /* a_support_review_target */
-/* create  index a_supptgt_pk on a_support_review_target (a_ledger_number, a_cost_center, a_target_id, a_review)*/ 
+/* create  index a_supptgt_pk on a_support_review_target (a_ledger_number, a_fund, a_target_id, a_review)*/ 
 /* go */
-create  index a_supptgt_review_idx on a_support_review_target (a_review, a_ledger_number, a_cost_center, a_target_id);
-create  index a_supptgt_target_idx on a_support_review_target (a_target_id, a_ledger_number, a_cost_center, a_review);
+create  index a_supptgt_review_idx on a_support_review_target (a_review, a_ledger_number, a_fund, a_target_id);
+create  index a_supptgt_target_idx on a_support_review_target (a_target_id, a_ledger_number, a_fund, a_review);
 
 
 /* a_descriptives */
-create  index a_descr_cc_idx on a_descriptives (a_ledger_number, a_cost_center, p_donor_partner_key);
-create  index a_descr_par_idx on a_descriptives (p_donor_partner_key, a_ledger_number, a_cost_center);
-/* create  index a_descr_pk on a_descriptives (a_ledger_number, p_donor_partner_key, a_cost_center)*/ 
+create  index a_descr_fund_idx on a_descriptives (a_ledger_number, a_fund, p_donor_partner_key);
+create  index a_descr_par_idx on a_descriptives (p_donor_partner_key, a_ledger_number, a_fund);
+/* create  index a_descr_pk on a_descriptives (a_ledger_number, p_donor_partner_key, a_fund)*/ 
 /* go */
 
 
 /* a_descriptives_hist */
-create  index a_descrhist_cc_idx on a_descriptives_hist (a_ledger_number, a_cost_center, p_donor_partner_key, a_hist_id);
-create  index a_descrhist_merge_idx on a_descriptives_hist (a_ledger_number, a_cost_center, p_donor_partner_key, a_merged_id, a_hist_id);
-create  index a_descrhist_par_idx on a_descriptives_hist (p_donor_partner_key, a_ledger_number, a_cost_center, a_hist_id);
-/* create  index a_descrhist_pk on a_descriptives_hist (a_ledger_number, p_donor_partner_key, a_cost_center, a_hist_id)*/ 
+create  index a_descrhist_fund_idx on a_descriptives_hist (a_ledger_number, a_fund, p_donor_partner_key, a_hist_id);
+create  index a_descrhist_merge_idx on a_descriptives_hist (a_ledger_number, a_fund, p_donor_partner_key, a_merged_id, a_hist_id);
+create  index a_descrhist_par_idx on a_descriptives_hist (p_donor_partner_key, a_ledger_number, a_fund, a_hist_id);
+/* create  index a_descrhist_pk on a_descriptives_hist (a_ledger_number, p_donor_partner_key, a_fund, a_hist_id)*/ 
 /* go */
 
 
 /* a_pledge */
 create  index a_pledge_donor_idx on a_pledge (a_ledger_number, p_donor_partner_id, a_pledge_id);
-create  index a_pledge_fund_idx on a_pledge (a_ledger_number, a_cost_center, a_pledge_id);
+create  index a_pledge_fund_idx on a_pledge (a_ledger_number, a_fund, a_pledge_id);
 /* create  index a_pledge_pk on a_pledge (a_ledger_number, a_pledge_id)*/ 
 /* go */
 
@@ -1039,6 +1054,12 @@ create  index a_subtrx_dep_batch_idx on a_subtrx_deposit (a_batch_number, a_ledg
 /* a_subtrx_cashxfer */
 /* create  index a_subtrx_cashxfer_pk on a_subtrx_cashxfer (a_ledger_number, a_batch_number, a_journal_number)*/ 
 /* go */
+create  index a_subtrx_cxf_batch_idx on a_subtrx_cashxfer (a_batch_number, a_ledger_number, a_journal_number);
+/* create  index a_subtrx_cxf_fund_clustered_idx on a_subtrx_cashxfer (a_fund, a_source_cash_acct, a_ledger_number, a_batch_number, a_journal_number)*/ 
+/* go */
+create  index a_subtrx_cxf_fund_rev1_idx on a_subtrx_cashxfer (a_source_cash_acct, a_fund, a_batch_number, a_journal_number);
+create  index a_subtrx_cxf_fund_rev2_idx on a_subtrx_cashxfer (a_dest_cash_acct, a_fund, a_batch_number, a_journal_number);
+create  index a_subtrx_cxf_journal_idx on a_subtrx_cashxfer (a_journal_number, a_ledger_number, a_batch_number);
 
 
 /* i_eg_gift_import */
@@ -1049,10 +1070,10 @@ create  index i_eg_egift_idx on i_eg_gift_import (i_eg_gift_uuid, a_ledger_numbe
 /* create  index i_eg_gift_import_pk on i_eg_gift_import (a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid)*/ 
 /* go */
 create  index i_eg_kdepbatch_idx on i_eg_gift_import (a_batch_number_deposit, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid);
-create  index i_eg_kdoncc_idx on i_eg_gift_import (p_donor_partner_key, a_ledger_number, a_cost_center, i_eg_trx_uuid, i_eg_desig_uuid);
+create  index i_eg_kdonfund_idx on i_eg_gift_import (p_donor_partner_key, a_ledger_number, a_fund, i_eg_trx_uuid, i_eg_desig_uuid);
 create  index i_eg_kdonor_idx on i_eg_gift_import (p_donor_partner_key, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid);
 create  index i_eg_kfeebatch_idx on i_eg_gift_import (a_batch_number_fees, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid);
-create  index i_eg_kfund_idx on i_eg_gift_import (a_cost_center, a_account_code, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid);
+create  index i_eg_kfund_idx on i_eg_gift_import (a_fund, a_account_code, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid);
 create  index i_eg_kgiftbatch_idx on i_eg_gift_import (a_batch_number, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid);
 
 
@@ -1062,8 +1083,8 @@ create  index i_eg_kgiftbatch_idx on i_eg_gift_import (a_batch_number, a_ledger_
 
 
 /* i_eg_giving_url */
-create  index i_eg_giveurl_revidx on i_eg_giving_url (a_cost_center, a_ledger_number);
-/* create  index i_eg_giving_url_pk on i_eg_giving_url (a_ledger_number, a_cost_center)*/ 
+create  index i_eg_giveurl_revidx on i_eg_giving_url (a_fund, a_ledger_number);
+/* create  index i_eg_giving_url_pk on i_eg_giving_url (a_ledger_number, a_fund)*/ 
 /* go */
 
 

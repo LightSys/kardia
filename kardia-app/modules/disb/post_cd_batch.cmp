@@ -192,7 +192,7 @@ post_cd_batch "widget/component-decl"
 			:c:a_period,
 			:c:a_effective_date,
 			a_transaction_type='T',
-			:c:a_cost_center,
+			:c:a_fund,
 			a_account_category=isnull((select :a:a_default_category from /apps/kardia/data/Kardia_DB/a_account/rows a where :a:a_ledger_number = :c:a_ledger_number and :a:a_account_code = :c:a_account_code), condition(:c:a_account_code >= '5000', '50', condition(:c:a_account_code >= '4000', '40', condition(:c:a_account_code <= '1999', '10', '20')))),
 			:c:a_account_code,
 			:c:a_amount,
@@ -233,7 +233,7 @@ post_cd_batch "widget/component-decl"
 			:c:a_period,
 			:c:a_effective_date,
 			a_transaction_type='T',
-			a_cost_center = isnull( (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows ac where :ac:a_ledger_number = :c:a_ledger_number and :ac:a_config_name = 'DisbCashFund'), 'GEN'),
+			a_fund = isnull( (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows ac where :ac:a_ledger_number = :c:a_ledger_number and :ac:a_config_name = 'DisbCashFund'), 'GEN'),
 			a_account_category=isnull((select :a:a_default_category from /apps/kardia/data/Kardia_DB/a_account/rows a where :a:a_ledger_number = :c:a_ledger_number and :a:a_account_code = :c:a_cash_account_code), '11'),
 			a_account_code = :c:a_cash_account_code,
 			a_amount = $0 - sum(:c:a_amount),
@@ -269,9 +269,9 @@ post_cd_batch "widget/component-decl"
 			/apps/kardia/data/Kardia_DB/a_transaction/rows
 		SELECT
 			a_amount = $0 - sum(:t:a_amount),
-			a_comment = '' + count(1) + ' transactions for ' + :c:a_bal_cost_center,
+			a_comment = '' + count(1) + ' transactions for ' + :c:a_bal_fund,
 			a_account_code = '1900',
-			a_cost_center=:c:a_bal_cost_center,
+			a_fund=:c:a_bal_fund,
 			:t:a_journal_number,
 			:t:a_batch_number,
 			:t:a_ledger_number,
@@ -300,16 +300,16 @@ post_cd_batch "widget/component-decl"
 			s_modified_by = user_name()
 		FROM
 			/apps/kardia/data/Kardia_DB/a_transaction/rows t,
-			/apps/kardia/data/Kardia_DB/a_cost_center/rows c
+			/apps/kardia/data/Kardia_DB/a_fund/rows c
 		WHERE
 			:t:a_ledger_number = :c:a_ledger_number and
-			:t:a_cost_center = :c:a_cost_center and
+			:t:a_fund = :c:a_fund and
 			:t:a_ledger_number = :parameters:a_ledger_number and
 			:t:a_batch_number = :parameters:a_batch_number
 		GROUP BY
-			:t:a_ledger_number, :t:a_batch_number, :t:a_journal_number, :c:a_bal_cost_center
+			:t:a_ledger_number, :t:a_batch_number, :t:a_journal_number, :c:a_bal_fund
 		ORDER BY
-			:t:a_cost_center
+			:t:a_fund
 		HAVING
 			:a_amount != $0
 		;

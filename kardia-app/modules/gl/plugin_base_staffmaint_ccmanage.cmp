@@ -7,9 +7,9 @@ plugin_base_staffmaint_ccmanage "widget/component-decl"
 
     sequence = 20;
     table_addon_title = "Funds";
-    table_addon_field = "cclist";
+    table_addon_field = "fundlist";
     table_addon_width = 200;
-    sql_addon = "cclist = (select isnull(sum(:a_cost_center + ',') - ',', '') from /apps/kardia/data/Kardia_DB/a_cc_staff/rows cs where :cs:p_staff_partner_key = :s:p_partner_key and :cs:a_ledger_number = :parameters:a_ledger_number)";
+    sql_addon = "fundlist = (select isnull(sum(:a_fund + ',') - ',', '') from /apps/kardia/data/Kardia_DB/a_fund_staff/rows cs where :cs:p_staff_partner_key = :s:p_partner_key and :cs:a_ledger_number = :parameters:a_ledger_number)";
 
     Modified "widget/component-decl-event" { }
 
@@ -55,7 +55,7 @@ plugin_base_staffmaint_ccmanage "widget/component-decl"
 	    sql = runserver("
 		    SELECT
 			:cs:a_ledger_number,
-			:cs:a_cost_center,
+			:cs:a_fund,
 			:cs:p_staff_partner_key,
 			:cs:s_date_created,
 			:cs:s_created_by,
@@ -73,30 +73,30 @@ plugin_base_staffmaint_ccmanage "widget/component-decl"
 					)
 				)
 			),
-			:c:a_cc_desc,
-			disp_name = :cs:a_cost_center + ' - ' + :c:a_cc_desc,
+			:c:a_fund_desc,
+			disp_name = :cs:a_fund + ' - ' + :c:a_fund_desc,
 			-- Below we build the list of report groups, as well as their
-			-- current setting for this costctr and this person.  We only
-			-- look at report groups that have a param named 'costctr' that
+			-- current setting for this fund and this person.  We only
+			-- look at report groups that have a param named 'fund' that
 			-- is specifiable by an individual report.
 			" + (select
-				isnull(sum(quote("_col_" + :r_group_name) + " = condition( (select count(1) from /apps/kardia/data/Kardia_DB/r_group_report_param/rows rp, /apps/kardia/data/Kardia_DB/r_group_report/rows gr where :rp:p_recipient_partner_key = :cs:p_staff_partner_key and :rp:r_group_name = " + quote(:r_group_name) + " and :gr:r_is_active = 1 and :rp:r_group_name = :gr:r_group_name and :rp:r_delivery_method = :gr:r_delivery_method and :rp:p_recipient_partner_key = :gr:p_recipient_partner_key" + " and :rp:r_report_id = :gr:r_report_id and :rp:r_param_name = 'costctr' and :rp:r_param_value = :cs:a_cost_center),'/sys/images/checkbox_checked.png', '/sys/images/checkbox_unchecked.png'), "),"")
+				isnull(sum(quote("_col_" + :r_group_name) + " = condition( (select count(1) from /apps/kardia/data/Kardia_DB/r_group_report_param/rows rp, /apps/kardia/data/Kardia_DB/r_group_report/rows gr where :rp:p_recipient_partner_key = :cs:p_staff_partner_key and :rp:r_group_name = " + quote(:r_group_name) + " and :gr:r_is_active = 1 and :rp:r_group_name = :gr:r_group_name and :rp:r_delivery_method = :gr:r_delivery_method and :rp:p_recipient_partner_key = :gr:p_recipient_partner_key" + " and :rp:r_report_id = :gr:r_report_id and :rp:r_param_name = 'fund' and :rp:r_param_value = :cs:a_fund),'/sys/images/checkbox_checked.png', '/sys/images/checkbox_unchecked.png'), "),"")
 			    from
 				/apps/kardia/data/Kardia_DB/r_group_param/rows
 			    where
-				:r_param_name = "costctr" and
+				:r_param_name = "fund" and
 				:r_is_report_param = 1
 			    ) + "
 			test = 1
 		    FROM
-			IDENTITY /apps/kardia/data/Kardia_DB/a_cc_staff/rows cs,
-			/apps/kardia/data/Kardia_DB/a_cost_center/rows c
+			IDENTITY /apps/kardia/data/Kardia_DB/a_fund_staff/rows cs,
+			/apps/kardia/data/Kardia_DB/a_fund/rows c
 		    WHERE
-			:c:a_cost_center = :cs:a_cost_center and
+			:c:a_fund = :cs:a_fund and
 			:c:a_ledger_number = :cs:a_ledger_number and
 			:cs:a_ledger_number = " + quote(:this:ledger) + "
 		    ");
-	    baseobj="/apps/kardia/data/Kardia_DB/a_cc_staff/rows";
+	    baseobj="/apps/kardia/data/Kardia_DB/a_fund_staff/rows";
 	    replicasize=25;
 	    readahead=25;
 
@@ -153,8 +153,8 @@ plugin_base_staffmaint_ccmanage "widget/component-decl"
 				width=756; height=147;
 				mode = dynamicrow;
 
-				//t_cc "widget/table-column" { title="Fund"; fieldname="a_cost_center"; width=70; }
-				//t_name "widget/table-column" { title="Name"; fieldname="a_cc_desc"; width=450; }
+				//t_cc "widget/table-column" { title="Fund"; fieldname="a_fund"; width=70; }
+				//t_name "widget/table-column" { title="Name"; fieldname="a_fund_desc"; width=450; }
 				t_disp "widget/table-column" { title="Fund"; fieldname="disp_name"; width=450; }
 				t_dates "widget/table-column" { title="Dates Managed"; fieldname="date_range"; width=160; }
 
@@ -168,7 +168,7 @@ plugin_base_staffmaint_ccmanage "widget/component-decl"
 					    where
 						:r:r_is_active = 1 and
 						:r:r_group_name = :rp:r_group_name and
-						:rp:r_param_name = 'costctr' and
+						:rp:r_param_name = 'fund' and
 						:rp:r_is_report_param = 1
 					    ";
 
@@ -184,8 +184,8 @@ plugin_base_staffmaint_ccmanage "widget/component-decl"
 
 				    // Parameters to ConnectFundReport
 				    method=runclient('E');
-				    param=runclient('costctr');
-				    value=runclient(:a_cost_center);
+				    param=runclient('fund');
+				    value=runclient(:a_fund);
 				    report_group=runclient(substring(:Column, 6));
 				    partner=runclient(:staff_osrc:p_partner_key);
 				    }
@@ -198,8 +198,8 @@ plugin_base_staffmaint_ccmanage "widget/component-decl"
 
 				    // Parameters to DisconnectFundReport
 				    method=runclient('E');
-				    param=runclient('costctr');
-				    value=runclient(:a_cost_center);
+				    param=runclient('fund');
+				    value=runclient(:a_fund);
 				    report_group=runclient(substring(:Column, 6));
 				    partner=runclient(:staff_osrc:p_partner_key);
 				    }
@@ -210,27 +210,27 @@ plugin_base_staffmaint_ccmanage "widget/component-decl"
 			    {
 			    height=24;
 
-			    f_costctr "widget/component"
+			    f_fund "widget/component"
 				{
 				width=260;
 				label_width=60;
 				path="/apps/kardia/modules/base/editbox_table.cmp";
-				field='a_cost_center';
+				field='a_fund';
 				text='Fund:';
 				popup_width=300;
 				popup_height=210;
 				popup_sql = runserver("
 					SELECT
-					    value = :a_cost_center,
-					    label = :a_cost_center + ' ' + :a_cc_desc
+					    value = :a_fund,
+					    label = :a_fund + ' ' + :a_fund_desc
 					FROM
-					    /apps/kardia/data/Kardia_DB/a_cost_center/rows c
+					    /apps/kardia/data/Kardia_DB/a_fund/rows c
 					WHERE
 					    :a_ledger_number = " + quote(:this:ledger) + " and
-					    :a_bal_cost_center = :a_cost_center
+					    :a_bal_fund = :a_fund
 					");
-				search_field_list="a_cost_center,*a_cc_desc*,a_legacy_code";
-				key_name="a_cost_center";
+				search_field_list="a_fund,*a_fund_desc*,a_legacy_code";
+				key_name="a_fund";
 				object_name="Funds";
 				popup_text="Choose Fund:";
 				empty_desc = "required";

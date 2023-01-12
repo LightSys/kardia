@@ -114,7 +114,7 @@ popover_contact "widget/component-decl"
 		    hdr_label "widget/label" { height=20; font_size=16; style=bold; value=runclient(condition(:is_new_var:value == 0, "Edit", "Record an") + " Interaction with this Person:"); align=center; }
 
 		    contact_type "widget/component" { field=e_contact_history_type; path="/sys/cmp/smart_field.cmp"; height=20; text="Type:"; ctl_type=dropdown; sql="select :e_description, :e_contact_history_type from /apps/kardia/data/Kardia_DB/e_contact_history_type/rows where :e_contact_history_type != 4 and :e_contact_history_type != 5 order by :e_description"; numdisplay=10; width=250; label_width=110; contact_type_hints "widget/hints" { style=notnull; } }
-		    contact_id "widget/component" { field=e_contact_id; path="/sys/cmp/smart_field.cmp"; height=20; text="Interaction Via:"; ctl_type=dropdown; sql="select null,null"; width=350; label_width=110; numdisplay=10; }
+		    contact_id "widget/component" { field=p_contact_id; path="/sys/cmp/smart_field.cmp"; height=20; text="Interaction Via:"; ctl_type=dropdown; sql="select null,null"; width=350; label_width=110; numdisplay=10; }
 
 		    contact_partner "widget/variable" { fieldname=p_partner_key; contact_partner_hints "widget/hints" { default=runclient(:partner_var:value); } }
 		    contact_whom "widget/variable" { fieldname=e_whom; contact_whom_hints "widget/hints" { default=runclient(:collab_var:value); } }

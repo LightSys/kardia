@@ -134,7 +134,7 @@ copy_gift "widget/component-decl"
 		    :parameters:a_batch_number,
 		    a_gift_number = :info:giftnum,
 		    :parameters:a_period,
-		    :i:a_cost_center,
+		    :i:a_fund,
 		    :i:a_account_code,
 		    :i:a_amount,
 		    a_recv_document_id = :parameters:new_checkno,

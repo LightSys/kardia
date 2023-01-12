@@ -127,7 +127,7 @@ receipt_report "system/report"
 				:item:a_ledger_number,
 				:item:a_batch_number,
 				:item:a_gift_number,
-				:item:a_cost_center,
+				:item:a_fund,
 				:item:a_account_code,
 				:item:a_amount,
 				:item:a_comment,
@@ -186,18 +186,18 @@ receipt_report "system/report"
 	} // END - donor_query "report/query"
 
 	
-	// Account / Cost Center Descriptions (given cost center / account codes)
+	// Account / Fund Descriptions (given fund / account codes)
 	acct_cc_name_qy "report/query"
 	{
 		sql = runserver("SELECT
-			cost_center_description = :c:a_cc_desc,
+			fund_description = :c:a_fund_desc,
 			account_description = :a:a_acct_desc
 		FROM
-			/apps/kardia/data/Kardia_DB/a_cost_center/rows c,
+			/apps/kardia/data/Kardia_DB/a_fund/rows c,
 			/apps/kardia/data/Kardia_DB/a_account/rows a
 		WHERE
 			:c:a_ledger_number = :receipt_item_query:a_ledger_number and
-			:c:a_cost_center = :receipt_item_query:a_cost_center and
+			:c:a_fund = :receipt_item_query:a_fund and
 			:a:a_ledger_number = :receipt_item_query:a_ledger_number and
 			:a:a_account_code = :receipt_item_query:a_account_code
 			");
@@ -372,8 +372,8 @@ receipt_report "system/report"
 				marginbottom=0.0;
 
 				
-				cell_cost_center_description "report/table-cell" { value=runserver( 
-					isnull(:acct_cc_name_qy:cost_center_description, "<blank>")
+				cell_fund_description "report/table-cell" { value=runserver( 
+					isnull(:acct_cc_name_qy:fund_description, "<blank>")
 				); style=bold; align=left; }
 				
 				cell_comment "report/table-cell" { value=runserver( 
@@ -381,7 +381,7 @@ receipt_report "system/report"
 					condition(:receipt_item_query:a_confidential == 1, "(Anonymous)", "")
 				); style=bold; align=left; }
 				
-				cell_cost_center_code "report/table-cell" { value=runserver( isnull(:receipt_item_query:a_cost_center, "<blank>")); style=bold; align=left; }
+				cell_fund_code "report/table-cell" { value=runserver( isnull(:receipt_item_query:a_fund, "<blank>")); style=bold; align=left; }
 				cell_non_tax_deductible "report/table-cell" { value=runserver( isnull(condition(:receipt_item_query:a_non_tax_deductible==1, 'X ', ''), "<blank>")); style=bold; align=center; }
 				cell_amount "report/table-cell" { value=runserver(isnull(:receipt_item_query:a_amount, "<blank>")); style=bold; align=right; }
 				
@@ -563,8 +563,8 @@ receipt_report "system/report"
 				marginbottom=0.0;
 
 				
-				cell_cost_center_description_bottom "report/table-cell" { value=runserver( 
-					isnull(:acct_cc_name_qy:cost_center_description, "<blank>")
+				cell_fund_description_bottom "report/table-cell" { value=runserver( 
+					isnull(:acct_cc_name_qy:fund_description, "<blank>")
 				); style=bold; align=left; }
 				
 				cell_comment_bottom "report/table-cell" { value=runserver( 
@@ -572,7 +572,7 @@ receipt_report "system/report"
 					condition(:receipt_item_query:a_confidential == 1, "(Anonymous)", "")
 				); style=bold; align=left; }
 				
-				cell_cost_center_code_bottom "report/table-cell" { value=runserver( isnull(:receipt_item_query:a_cost_center, "<blank>")); style=bold; align=left; }
+				cell_fund_code_bottom "report/table-cell" { value=runserver( isnull(:receipt_item_query:a_fund, "<blank>")); style=bold; align=left; }
 				cell_non_tax_deductible_bottom "report/table-cell" { value=runserver( isnull(condition(:receipt_item_query:a_non_tax_deductible==1, 'X ', ''), "<blank>")); style=bold; align=center; }
 				cell_amount_bottom "report/table-cell" { value=runserver(isnull(:receipt_item_query:a_amount, "<blank>")); style=bold; align=right; }
 				

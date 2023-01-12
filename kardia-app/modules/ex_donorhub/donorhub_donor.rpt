@@ -1,0 +1,321 @@
+$Version=2$
+donorhub_donor "system/report"
+    {
+    title = "Donor report for DonorHub";
+
+    document_format="text/csv";
+    resolution = 300;
+    pagewidth=110;
+    pageheight=2000;
+    marginleft=2.5;
+    marginright=2.5;
+    margintop=3;
+    marginbottom=3;
+
+    // Give it an intelligent filename
+    filename = runserver('donorhub_donor_' + isnull(:this:ledger, 'all') + '_' + isnull(:this:fund, 'all') + '_' + isnull(:this:from_date, 'nostart') + '_' + isnull(:this:to_date, 'noend') + '.csv');
+
+    // Parameters for donor report
+    ledger "report/parameter" { type=string; default=null; }
+    fund "report/parameter" { type=string; default=null; }
+    from_date "report/parameter" { type=string; default=null; allowchars='0123456789-/ :apmAPM'; }
+    to_date "report/parameter" { type=string; default=null; allowchars='0123456789-/ :apmAPM'; }
+
+    // Out parameters
+    rowcount "report/parameter" { type=integer; direction=out; default=runserver(isnull(:donor_qy:all_cnt, 0)); }
+    is_empty "report/parameter" { type=integer; direction=out; default=runserver(condition(isnull(:donor_qy:all_cnt, 0) == 0, 1, 0)); }
+
+    // Parse dates
+    dates_qy "report/query"
+	{
+	sql = "	select
+		    from_date = convert(datetime, condition(charindex(':', :this:from_date) > 0, :this:from_date, :this:from_date + ' 00:00:00')),
+		    to_date = convert(datetime, condition(charindex(':', :this:to_date) > 0, :this:to_date, :this:to_date + ' 23:59:59'))
+		";
+	}
+
+    // Get the list of donors.
+    donor_qy "report/query"
+	{
+	sql = "	declare collection funds scope application;
+		declare collection donors scope application;
+		declare object config;
+
+		-- Configuration
+		select
+		    :config:ExDonhubAbbrName = isnull(convert(integer, :ExDonhubAbbrName), 0),
+		    :config:ExDonhubAbbrAddr = isnull(convert(integer, :ExDonhubAbbrAddr), 0),
+		    :config:ExDonhubExcEmail = isnull(convert(integer, :ExDonhubExcEmail), 0),
+		    :config:ExDonhubExcPhone = isnull(convert(integer, :ExDonhubExcPhone), 0)
+		from
+		    object /apps/kardia/modules/base/config.qyp
+		;
+
+		-- Populate the fund list that we're finding donors for
+		insert
+		    collection funds
+		select
+		    fund = :grp:r_param_value,
+		    ledger = :f:a_ledger_number,
+		    lastmod = max(:grp:s_date_modified)
+		from
+		    /apps/kardia/data/Kardia_DB/r_group_report_param/rows grp,
+		    /apps/kardia/data/Kardia_DB/a_fund/rows f
+		where
+		    :grp:r_group_name = 'DonorHub' and
+		    :grp:r_param_name = 'fund' and
+		    :f:a_fund = :grp:r_param_value and
+		    (:this:ledger is null or :f:a_ledger_number = :this:ledger) and
+		    (:this:fund is null or :grp:r_param_value = :this:fund)
+		group by
+		    :grp:r_param_value,
+		    :f:a_ledger_number
+		having
+		    :fund is not null
+		;
+
+		-- Generate the list of donors
+		insert
+		    collection donors
+		select
+		    donor = condition(char_length(isnull(:i:p_dn_ack_partner_id,'')) > 1, :i:p_dn_ack_partner_id, :i:p_dn_donor_partner_id),
+		    lastmod = condition(:f:lastmod > min(:i:s_date_modified), :f:lastmod, min(:i:s_date_modified))
+		from
+		    /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i,
+		    collection funds f
+		where
+		    (:this:ledger is null or :i:a_ledger_number = :this:ledger) and
+		    :f:ledger = :i:a_ledger_number and
+		    :f:fund = :i:a_fund
+		group by
+		    :i:p_dn_donor_partner_id
+		having
+		    :donor is not null
+		;
+
+		-- Return the donor data
+		select
+		    'Donor ID' = :d:donor,
+		    'Is Organization' = condition(char_length(:p:p_org_name) > 1, 'TRUE', 'FALSE'),
+		    'Organization Name' = condition(char_length(:p:p_org_name) > 1, :p:p_org_name, null),
+		    'Title' = condition(char_length(:p:p_org_name) > 1, null, :p:p_title),
+		    'First Name' =
+			    condition(char_length(:p:p_org_name) > 1,
+				    null,
+				    condition(:config:ExDonhubAbbrName,
+					    substring(:p:p_given_name, 1, 1)
+					    + condition(charindex(' and ', :p:p_given_name) > 0,
+						    substring(:p:p_given_name, charindex(' and ', :p:p_given_name), 6),
+						    condition(charindex(' & ', :p:p_given_name) > 0,
+							    substring(:p:p_given_name, charindex(' & ', :p:p_given_name), 4),
+							    ''
+						    )
+					    ),
+					    :p:p_given_name
+				    )
+			    ),
+		    'Middle Name' = null,
+		    'Last Name' = condition(char_length(:p:p_org_name) > 1, null, :p:p_surname),
+		    'Suffix' = condition(char_length(:p:p_org_name) > 1, null, :p:p_suffix),
+		    'Spouse Title' = null,
+		    'Spouse First/Given Name' = null,
+		    'Spouse Middle Name' = null,
+		    'Spouse Last Name' = null,
+		    'Street Address' =
+				condition(:config:ExDonhubAbbrAddr, 
+					'',
+					condition(char_length(:l:p_in_care_of) > 1, :l:p_in_care_of + '\r\n', '')
+					+ condition(char_length(:l:p_address_1) > 1, :l:p_address_1 + '\r\n', '')
+					+ condition(char_length(:l:p_address_2) > 1, :l:p_address_2 + '\r\n', '')
+					+ condition(char_length(:l:p_address_3) > 1, :l:p_address_3 + '\r\n', '')
+					- '\r\n'
+				),
+		    'City' = :l:p_city,
+		    'State/Province' = :l:p_state_province,
+		    'ZIP/Postal Code' = :l:p_postal_code,
+		    'Country/Region' = :c:p_iso3166_2_code,
+		    'Phone' =
+			    condition(:config:ExDonhubExcPhone,
+				    '',
+				    first(condition(:ci:p_contact_type = 'P', (isnull(:ci:p_phone_country + ' ', '') + isnull(:ci:p_phone_area_city + ' ', '') + :ci:p_contact_data), null))
+			    ),
+		    'Mobile Phone' =
+			    condition(:config:ExDonhubExcPhone,
+				    '',
+				    first(condition(:ci:p_contact_type = 'C', (isnull(:ci:p_phone_country + ' ', '') + isnull(:ci:p_phone_area_city + ' ', '') + :ci:p_contact_data), null))
+			    ),
+		    'Spouse Mobile Phone' = null,
+		    'Email' = 
+			    condition(:config:ExDonhubExcEmail,
+				    '',
+				    first(condition(:ci:p_contact_type = 'E', (isnull(:ci:p_phone_country + ' ', '') + isnull(:ci:p_phone_area_city + ' ', '') + :ci:p_contact_data), null))
+			    ),
+		    'Spouse Email' = null,
+		    'Staff Memo' = :p:p_comments,
+		    'Donor Memo' = null,
+		    'Category' = :pc:text,
+		    'Organization Contact Person' =
+			    condition(char_length(:p:p_org_name) > 1,
+				    isnull(condition(:config:ExDonhubAbbrName,
+					    substring(:p:p_given_name, 1, 1)
+					    + condition(charindex(' and ', :p:p_given_name) > 0,
+						    substring(:p:p_given_name, charindex(' and ', :p:p_given_name), 6),
+						    condition(charindex(' & ', :p:p_given_name) > 0,
+							    substring(:p:p_given_name, charindex(' & ', :p:p_given_name), 4),
+							    ''
+						    )
+					    ),
+					    :p:p_given_name
+				    ) + ' ', '')
+				    + isnull(:p:p_surname, '')
+				    - ' ',
+				    null
+			    ),
+		    'Deceased' = condition(:p:p_no_mail_reason = 'D' or :p:p_status_code = 'D', 'TRUE', 'FALSE'),
+		    lastmod = condition(
+					max(:l:s_date_modified) >
+					condition(
+						max(:ci:s_date_modified) >
+						condition(
+							:d:lastmod >
+							max(:p:s_date_modified),
+							:d:lastmod,
+							max(:p:s_date_modified)
+						),
+						max(:ci:s_date_modified),
+						condition(
+							:d:lastmod >
+							max(:p:s_date_modified),
+							:d:lastmod,
+							max(:p:s_date_modified)
+						)
+					),
+					max(:l:s_date_modified),
+					condition(
+						max(:ci:s_date_modified) >
+						condition(
+							:d:lastmod >
+							max(:p:s_date_modified),
+							:d:lastmod,
+							max(:p:s_date_modified)
+						),
+						max(:ci:s_date_modified),
+						condition(
+							:d:lastmod >
+							max(:p:s_date_modified),
+							:d:lastmod,
+							max(:p:s_date_modified)
+						)
+					)
+				)
+		from
+		    collection donors d,
+		    /apps/kardia/data/Kardia_DB/p_partner/rows p,
+		    /apps/kardia/data/Kardia_DB/p_location/rows l,
+		    /apps/kardia/data/Kardia_DB/p_contact_info/rows ci,
+		    /apps/kardia/data/Kardia_DB/p_country/rows c,
+		    /apps/kardia/data/Kardia_DB/p_address_format/rows af,
+		    /apps/kardia/data/Kardia_DB/_p_partner_class/rows pc
+		where
+		    :p:p_partner_key = :d:donor and
+		    :l:p_partner_key =* :p:p_partner_key and
+		    (:l:p_record_status_code = 'A' or :l:p_record_status_code = 'Q') and
+		    :l:p_revision_id = 0 and
+		    :ci:p_partner_key =* :p:p_partner_key and
+		    :ci:p_record_status_code = 'A' and
+		    :c:p_country_code =* :l:p_country_code and
+		    :af:p_country_code =* :l:p_country_code and
+		    :af:p_address_set = 'STANDARD' and
+		    :pc:tag =* :p:p_partner_class
+		group by
+		    :d:donor
+		having
+		    (:dates_qy:from_date is null or :lastmod >= :dates_qy:from_date) and
+		    (:dates_qy:to_date is null or :lastmod <= :dates_qy:to_date) and
+		    :'Donor ID' is not null
+		";
+
+	all_cnt "report/aggregate" { compute="count(:'Donor ID')"; reset=0; }
+	}
+
+    // Table for file heading and donor list
+    donor_table "report/table"
+	{
+	x=0; width=110; height=0;
+	columns=28;
+	widths=2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2;
+	colsep=1;
+	nullformat="";
+	moneyformat = "-0.00";
+	dateformat = "yyyy-MM-dd";
+	source=dates_qy,donor_qy;
+
+	hdr_donor "report/table-row"
+	    {
+	    header = yes;
+
+	    t_did "report/table-cell" { value='Donor ID'; }
+	    t_iso "report/table-cell" { value='Is Organization'; }
+	    t_org "report/table-cell" { value='Organization Name'; }
+	    t_ttl "report/table-cell" { value='Title'; }
+	    t_fnm "report/table-cell" { value='First Name'; }
+	    t_mnm "report/table-cell" { value='Middle Name'; }
+	    t_lnm "report/table-cell" { value='Last Name'; }
+	    t_suf "report/table-cell" { value='Suffix'; }
+	    t_stt "report/table-cell" { value='Spouse Title'; }
+	    t_sfn "report/table-cell" { value='Spouse First/Given Name'; }
+	    t_smn "report/table-cell" { value='Spouse Middle Name'; }
+	    t_sln "report/table-cell" { value='Spouse Last Name'; }
+	    t_sta "report/table-cell" { value='Street Address'; }
+	    t_cit "report/table-cell" { value='City'; }
+	    t_spr "report/table-cell" { value='State/Province'; }
+	    t_zip "report/table-cell" { value='ZIP/Postal Code'; }
+	    t_cou "report/table-cell" { value='Country/Region'; }
+	    t_pho "report/table-cell" { value='Phone'; }
+	    t_mph "report/table-cell" { value='Mobile Phone'; }
+	    t_smp "report/table-cell" { value='Spouse Mobile Phone'; }
+	    t_eml "report/table-cell" { value='Email'; }
+	    t_sem "report/table-cell" { value='Spouse Email'; }
+	    t_mem "report/table-cell" { value='Staff Memo'; }
+	    t_dmm "report/table-cell" { value='Donor Memo'; }
+	    t_cat "report/table-cell" { value='Category'; }
+	    t_orc "report/table-cell" { value='Organization Contact Person'; }
+	    t_dec "report/table-cell" { value='Deceased'; }
+	    t_lmd "report/table-cell" { value='Last Modified Date'; }
+	    }
+
+	dat_donor "report/table-row"
+	    {
+	    allowbreak=no;
+
+	    d_did "report/table-cell" { value=runserver(:donor_qy:'Donor ID'); }
+	    d_iso "report/table-cell" { value=runserver(:donor_qy:'Is Organization'); }
+	    d_org "report/table-cell" { value=runserver(:donor_qy:'Organization Name'); }
+	    d_ttl "report/table-cell" { value=runserver(:donor_qy:'Title'); }
+	    d_fnm "report/table-cell" { value=runserver(:donor_qy:'First Name'); }
+	    d_mnm "report/table-cell" { value=runserver(:donor_qy:'Middle Name'); }
+	    d_lnm "report/table-cell" { value=runserver(:donor_qy:'Last Name'); }
+	    d_suf "report/table-cell" { value=runserver(:donor_qy:'Suffix'); }
+	    d_stt "report/table-cell" { value=runserver(:donor_qy:'Spouse Title'); }
+	    d_sfn "report/table-cell" { value=runserver(:donor_qy:'Spouse First/Given Name'); }
+	    d_smn "report/table-cell" { value=runserver(:donor_qy:'Spouse Middle Name'); }
+	    d_sln "report/table-cell" { value=runserver(:donor_qy:'Spouse Last Name'); }
+	    d_sta "report/table-cell" { value=runserver(:donor_qy:'Street Address'); }
+	    d_cit "report/table-cell" { value=runserver(:donor_qy:'City'); }
+	    d_spr "report/table-cell" { value=runserver(:donor_qy:'State/Province'); }
+	    d_zip "report/table-cell" { value=runserver(:donor_qy:'ZIP/Postal Code'); }
+	    d_cou "report/table-cell" { value=runserver(:donor_qy:'Country/Region'); }
+	    d_pho "report/table-cell" { value=runserver(:donor_qy:'Phone'); }
+	    d_mph "report/table-cell" { value=runserver(:donor_qy:'Mobile Phone'); }
+	    d_smp "report/table-cell" { value=runserver(:donor_qy:'Spouse Mobile Phone'); }
+	    d_eml "report/table-cell" { value=runserver(:donor_qy:'Email'); }
+	    d_sem "report/table-cell" { value=runserver(:donor_qy:'Spouse Email'); }
+	    d_mem "report/table-cell" { value=runserver(:donor_qy:'Staff Memo'); }
+	    d_dmm "report/table-cell" { value=runserver(:donor_qy:'Donor Memo'); }
+	    d_cat "report/table-cell" { value=runserver(:donor_qy:'Category'); }
+	    d_orc "report/table-cell" { value=runserver(:donor_qy:'Organization Contact Person'); }
+	    d_dec "report/table-cell" { value=runserver(:donor_qy:'Deceased'); }
+	    d_lmd "report/table-cell" { value=runserver(:donor_qy:lastmod); }
+	    }
+	}
+    }

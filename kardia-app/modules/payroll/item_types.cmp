@@ -27,7 +27,7 @@ item_types_cmp "widget/component-decl"
 		    :a_payroll_item_class_code,
 		    :a_payroll_item_subclass_code,
 		    :a_ref_account_code,
-		    :a_xfer_cost_center,
+		    :a_xfer_fund,
 		    :a_xfer_account_code,
 		    :a_state_province,
 		    :a_desc,
@@ -155,7 +155,7 @@ item_types_cmp "widget/component-decl"
 		    width=300; height=26; style=flat;
 		    enabled = runclient(charindex(:it_osrc:a_payroll_item_class_code, "BMPRV") > 0);
 
-		    f_a_xfer_cc "widget/component" { x=0;y=0;height=26;width=300; path="/apps/kardia/modules/base/editbox_tree.cmp"; field=a_xfer_cost_center; text="Xfer Costctr:"; tooltip="Cost Center for inter-fund xfer"; label_width=100; popup_source = runserver("/apps/kardia/modules/gl/costctrs.qyt/" + :this:ledger + "/"); popup_text="Select Cost Center:"; empty_desc="Default costctr to transfer TO"; }
+		    f_a_xfer_cc "widget/component" { x=0;y=0;height=26;width=300; path="/apps/kardia/modules/base/editbox_tree.cmp"; field=a_xfer_fund; text="Xfer Fund:"; tooltip="Fund for inter-fund xfer"; label_width=100; popup_source = runserver("/apps/kardia/modules/gl/funds.qyt/" + :this:ledger + "/"); popup_text="Select Fund:"; empty_desc="Default fund to transfer TO"; }
 		    }
 
 		acct_xfer_pane "widget/pane"

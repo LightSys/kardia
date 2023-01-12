@@ -17,10 +17,10 @@ update_descriptives_merge_adjacent_singles "system/query"
 	    set
 		:a_merged_id = :dh2:a_hist_id
 	    where
-		(:parameters:fund is null or :parameters:fund = :dh2:a_cost_center) and
+		(:parameters:fund is null or :parameters:fund = :dh2:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :dh2:p_donor_partner_key) and
 		:dh2:a_ledger_number = :dh1:a_ledger_number and
-		:dh2:a_cost_center = :dh1:a_cost_center and
+		:dh2:a_fund = :dh1:a_fund and
 		:dh2:p_donor_partner_key = :dh1:p_donor_partner_key and
 		:dh2:a_amount = :dh1:a_amount and
 		:dh1:a_hist_id < :dh2:a_hist_id and
@@ -36,10 +36,10 @@ update_descriptives_merge_adjacent_singles "system/query"
 	    set
 		:a_merged_id = isnull(:dh2:a_merged_id, :dh2:a_hist_id)
 	    where
-		(:parameters:fund is null or :parameters:fund = :dh2:a_cost_center) and
+		(:parameters:fund is null or :parameters:fund = :dh2:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :dh2:p_donor_partner_key) and
 		:dh2:a_ledger_number = :dh1:a_ledger_number and
-		:dh2:a_cost_center = :dh1:a_cost_center and
+		:dh2:a_fund = :dh1:a_fund and
 		:dh2:p_donor_partner_key = :dh1:p_donor_partner_key and
 		:dh1:a_merged_id = :dh2:a_hist_id
 	    ;
@@ -49,10 +49,10 @@ update_descriptives_merge_adjacent_singles "system/query"
 	    set
 		:a_merged_id = isnull(:dh2:a_merged_id, :dh2:a_hist_id)
 	    where
-		(:parameters:fund is null or :parameters:fund = :dh2:a_cost_center) and
+		(:parameters:fund is null or :parameters:fund = :dh2:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :dh2:p_donor_partner_key) and
 		:dh2:a_ledger_number = :dh1:a_ledger_number and
-		:dh2:a_cost_center = :dh1:a_cost_center and
+		:dh2:a_fund = :dh1:a_fund and
 		:dh2:p_donor_partner_key = :dh1:p_donor_partner_key and
 		:dh1:a_merged_id = :dh2:a_hist_id
 	    ;
@@ -62,7 +62,7 @@ update_descriptives_merge_adjacent_singles "system/query"
                 collection tmp_merge_aggregates
             select
                 ledger = :dh1:a_ledger_number,
-                fund = :dh1:a_cost_center,
+                fund = :dh1:a_fund,
                 donor = :dh1:p_donor_partner_key,
                 merged = :dh1:a_merged_id,
 
@@ -78,21 +78,21 @@ update_descriptives_merge_adjacent_singles "system/query"
                 collection a_descriptives_hist dh1,
                 collection a_descriptives_hist dh2
             where
-                (:parameters:fund is null or :parameters:fund = :dh1:a_cost_center) and
+                (:parameters:fund is null or :parameters:fund = :dh1:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :dh1:p_donor_partner_key) and
                 :dh2:a_ledger_number = :dh1:a_ledger_number and
-		:dh2:a_cost_center = :dh1:a_cost_center and
+		:dh2:a_fund = :dh1:a_fund and
 		:dh2:p_donor_partner_key = :dh1:p_donor_partner_key and
 		:dh1:a_merged_id = :dh2:a_hist_id
             group by
                 :dh1:a_ledger_number,
                 :dh1:p_donor_partner_key,
-                :dh1:a_cost_center,
+                :dh1:a_fund,
                 :dh1:a_merged_id
             order by
                 :dh1:a_ledger_number,
                 :dh1:p_donor_partner_key,
-                :dh1:a_cost_center,
+                :dh1:a_fund,
                 :dh1:a_hist_id
             ;
 
@@ -134,10 +134,10 @@ update_descriptives_merge_adjacent_singles "system/query"
                                 (datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) / 30.5) / (:dh2:a_total / :dh2:a_amount - 1)
                                 )
 	    where
-		(:parameters:fund is null or :parameters:fund = :dh2:a_cost_center) and
+		(:parameters:fund is null or :parameters:fund = :dh2:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :dh2:p_donor_partner_key) and
                 :t:ledger = :dh2:a_ledger_number and
-                :t:fund = :dh2:a_cost_center and
+                :t:fund = :dh2:a_fund and
                 :t:donor = :dh2:p_donor_partner_key and
                 :t:merged = :dh2:a_hist_id and
                 :dh2:a_merged_id is null
@@ -147,7 +147,7 @@ update_descriptives_merge_adjacent_singles "system/query"
 	    delete
 		collection a_descriptives_hist dh1
 	    where
-		(:parameters:fund is null or :parameters:fund = :dh1:a_cost_center) and
+		(:parameters:fund is null or :parameters:fund = :dh1:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :dh1:p_donor_partner_key) and
 		:dh1:a_merged_id is not null
 	    ";

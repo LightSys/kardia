@@ -16,7 +16,7 @@ annual_statement "system/report"
     //   - Gift receipt number
     //   - Gift total amount
     //   - Goods provided
-    //   - N * Designation CostCtr + Description
+    //   - N * Designation Fund + Description
     //   - N * Designation amount
     //   - N * Check#
     //   - N * Anonymous/Confidential Flag
@@ -377,8 +377,8 @@ annual_statement "system/report"
 			show_amt = condition(:pt:a_is_cash = 1, :i:a_amount, 'noncash'),
 			start_limit = :stmt_start_period_qy:a_period,
 			this_period = :i:a_period,
-			cc = :i:a_cost_center,
-			ccname = :c:a_cc_desc,
+			cc = :i:a_fund,
+			ccname = :c:a_fund_desc,
 			ckno = :i:a_recv_document_id,
 			:i:a_confidential,
 			:i:a_non_tax_deductible,
@@ -387,7 +387,7 @@ annual_statement "system/report"
 		FROM
 			/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i,
 			/apps/kardia/data/Kardia_DB/a_gift_payment_type/rows pt,
-			/apps/kardia/data/Kardia_DB/a_cost_center/rows c
+			/apps/kardia/data/Kardia_DB/a_fund/rows c
 		WHERE
 			:i:a_ledger_number = :gifts_qy:a_ledger_number and
 			:i:a_batch_number = :gifts_qy:a_batch_number and
@@ -396,7 +396,7 @@ annual_statement "system/report"
 			:pt:a_gift_payment_type = :i:a_dn_gift_type " +
 			condition(:this:which_accts = "only4100", " and :i:a_account_code = '4100' ", "") +
 			condition(:this:which_accts = "non2120", " and :i:a_account_code != '2120' ", "") +
-			"and :c:a_cost_center = :i:a_cost_center
+			"and :c:a_fund = :i:a_fund
 			and :c:a_ledger_number = :i:a_ledger_number
 		");
 	disp_item_total "report/aggregate" { compute="isnull(sum(:item_amt),$0)"; reset=1; where=":this_period >= :start_limit and :a_is_cash = 1"; }

@@ -16,7 +16,7 @@ timeline_svg "system/report"
 
     // Partner ID
     //partner "report/parameter" { type=string; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"; default=""; }
-    //cclist "report/parameter" { type=string; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.,:-"; default=""; }
+    //fundlist "report/parameter" { type=string; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.,:-"; default=""; }
     id "report/parameter" { type=integer; }
     image_width "report/parameter" { type=double; default=450.0; }
     timeline_width "report/parameter" { type=double; default=430.0; }

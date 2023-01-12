@@ -175,7 +175,7 @@ email_reports "widget/component-decl"
 			    :s:p_partner_key,
 			    email = isnull(:ci2:p_contact_data, :ci1:p_contact_data),
 			    disp_name = rtrim(condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name + ' ' + condition(char_length(:p:p_given_name + :p:p_surname) > 0, '- ', ''), '') + isnull(:p:p_given_name + ' ','') + isnull(:p:p_surname + ' ','')),
-			    costctr = sum(:rp:r_param_value + ',') - ','
+			    fund = sum(:rp:r_param_value + ',') - ','
 			FROM
 			    /apps/kardia/data/Kardia_DB/r_group_report/rows r,
 			    /apps/kardia/data/Kardia_DB/r_group_report_param/rows rp,
@@ -183,7 +183,7 @@ email_reports "widget/component-decl"
 			    /apps/kardia/data/Kardia_DB/p_partner/rows p,
 			    /apps/kardia/data/Kardia_DB/p_contact_info/rows ci1,
 			    /apps/kardia/data/Kardia_DB/p_contact_info/rows ci2,
-			    /apps/kardia/data/Kardia_DB/a_cc_staff/rows cs
+			    /apps/kardia/data/Kardia_DB/a_fund_staff/rows cs
 			WHERE
 			    (:r:r_group_name = 'DonLists' or :r:r_group_name = 'TntLists') and
 			    :r:r_is_active = 1 and
@@ -191,7 +191,7 @@ email_reports "widget/component-decl"
 			    :rp:r_delivery_method = :r:r_delivery_method and
 			    :rp:p_recipient_partner_key = :r:p_recipient_partner_key and
 			    :rp:r_report_id = :r:r_report_id and
-			    :rp:r_param_name = 'costctr' and
+			    :rp:r_param_name = 'fund' and
 			    :s:p_partner_key = :rp:p_recipient_partner_key and
 			    :p:p_partner_key = :s:p_partner_key and
 			    :ci1:p_partner_key =* :p:p_partner_key and
@@ -203,7 +203,7 @@ email_reports "widget/component-decl"
 			    :ci2:p_contact_id =* :s:p_preferred_email_id and
 			    :s:p_is_staff = 1 and
 			    :cs:p_staff_partner_key = :s:p_partner_key and
-			    :cs:a_cost_center = :rp:r_param_value
+			    :cs:a_fund = :rp:r_param_value
 			GROUP BY
 			    :r:r_group_name,
 			    :r:p_recipient_partner_key --,
@@ -226,7 +226,7 @@ email_reports "widget/component-decl"
 			t_partner "widget/table-column" { title="Partner"; fieldname=p_partner_key; width=80; }
 			t_name "widget/table-column" { title="Name"; fieldname=disp_name; width=200; }
 			t_email "widget/table-column" { title="Email"; fieldname=email; width=200; }
-			t_costctr "widget/table-column" { title="Funds"; fieldname=costctr; width=200; }
+			t_fund "widget/table-column" { title="Funds"; fieldname=fund; width=200; }
 			}
 		    }
 		}

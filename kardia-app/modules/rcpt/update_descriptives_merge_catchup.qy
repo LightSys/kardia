@@ -16,10 +16,10 @@ update_descriptives_merge_catchup "system/query"
 	    set
 		:a_merged_id = isnull(:dh2:a_merged_id, :dh2:a_hist_id)
 	    where
-		(:parameters:fund is null or :parameters:fund = :dh2:a_cost_center) and
+		(:parameters:fund is null or :parameters:fund = :dh2:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :dh2:p_donor_partner_key) and
 		:dh2:a_ledger_number = :dh1:a_ledger_number and
-		:dh2:a_cost_center = :dh1:a_cost_center and
+		:dh2:a_fund = :dh1:a_fund and
 		:dh2:p_donor_partner_key = :dh1:p_donor_partner_key and
 		:dh1:a_amount <= 8 * :dh2:a_amount and -- catchup more than regular within reason
 		(:dh1:a_amount / :dh2:a_amount) = round(:dh1:a_amount / :dh2:a_amount, 0) and -- even multiple of regular
@@ -71,10 +71,10 @@ update_descriptives_merge_catchup "system/query"
                                 (datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) / 30.5) / (:dh2:a_total / :dh2:a_amount - 1)
                                 )
 	    where
-		(:parameters:fund is null or :parameters:fund = :dh2:a_cost_center) and
+		(:parameters:fund is null or :parameters:fund = :dh2:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :dh2:p_donor_partner_key) and
 		:dh2:a_ledger_number = :dh1:a_ledger_number and
-		:dh2:a_cost_center = :dh1:a_cost_center and
+		:dh2:a_fund = :dh1:a_fund and
 		:dh2:p_donor_partner_key = :dh1:p_donor_partner_key and
 		:dh1:a_merged_id = :dh2:a_hist_id
 	    ;
@@ -83,7 +83,7 @@ update_descriptives_merge_catchup "system/query"
 	    delete
 		collection a_descriptives_hist dh1
 	    where
-		(:parameters:fund is null or :parameters:fund = :dh1:a_cost_center) and
+		(:parameters:fund is null or :parameters:fund = :dh1:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :dh1:p_donor_partner_key) and
 		:dh1:a_merged_id is not null
 	    ";

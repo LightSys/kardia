@@ -1,0 +1,10 @@
+$Version=2$
+kardia_modinfo "system/structure"
+    {
+    module_name = "DonorHub Integration";
+    module_abbrev = "DonorHub";
+    module_description = "This module provides integration with DonorHub for TntConnect and MPDx";
+    module_sequence = null;
+    module_context = 'kardia:ledger';
+    module_endorsement = 'kardia:gift';
+    }

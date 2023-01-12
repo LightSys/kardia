@@ -155,6 +155,21 @@ drop table p_search_stage_criteria
 go
 
 
+/* p_nondup */
+drop table p_nondup
+go
+
+
+/* p_dup */
+drop table p_dup
+go
+
+
+/* p_merge */
+drop table p_merge
+go
+
+
 /* m_list */
 drop table m_list
 go
@@ -1042,4 +1057,9 @@ go
 
 /* s_stats_cache */
 drop table s_stats_cache
+go
+
+
+/* s_document_scanner */
+drop table s_document_scanner
 go

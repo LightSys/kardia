@@ -1,0 +1,1155 @@
+$Version=2$
+plugin_base_dataqa_merge "widget/component-decl"
+    {
+    width=958;
+    height=633;
+    title="Merge / Relate";
+    sequence=300;
+
+    ledger "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
+
+    MergeRequest "widget/component-decl-action" { }
+
+    on_MergeRequest_0 "widget/connector" { event=MergeRequest; target=merge_form; action=New; }
+    on_MergeRequest_1 "widget/connector" { event=MergeRequest; target=partner_a; action=SetValue; Value=runclient(:partner_a); event_delay=0.25; }
+    on_MergeRequest_2 "widget/connector" { event=MergeRequest; target=partner_b; action=SetValue; Value=runclient(:partner_b); event_delay=0.25; }
+
+    used_partner_c_desc "widget/variable" { type=string; value=null; }
+
+    merge_vbox "widget/vbox"
+	{
+	x=0; y=0;
+	width=958;
+	height=633;
+	spacing=8;
+
+	merge_form "widget/form"
+	    {
+	    allow_new = yes;
+	    allow_obscure = yes;
+
+	    merge_lbl "widget/component"
+		{
+		path="/apps/kardia/modules/base/section_label.cmp";
+		height=26;
+		fl_height=0;
+		text = runclient("Merge or Relate Two Partners...");
+		}
+
+	    partner_a_pane "widget/pane"
+		{
+		height=26;
+		style=flat;
+		border_radius=8;
+		bgcolor=runclient(condition(:primary:value = 'A', '#c0ffc0', condition(:merge_method:value = 'M' and :primary:value = 'B', '#ffc8b8', "#e8e8e8")));
+
+		partner_a_hbox "widget/hbox"
+		    {
+		    height=20;
+		    width=958;
+		    x=0; y=1;
+		    spacing=10;
+
+		    partner_a "widget/component"
+			{
+			height=20;
+			width=802;
+			path="/apps/kardia/modules/base/field_p_partner_key_with_desc.cmp";
+			label="Partner A";
+			field=partner_a;
+
+			pa_hints "widget/hints" { style=strnull; }
+
+			on_a_change "widget/connector"
+			    {
+			    event=DataChange;
+			    event_condition=runclient(char_length(:partner_a:value) > 1 and char_length(:partner_b:value) > 1);
+			    target=logic_osrc;
+			    action=QueryParam;
+			    }
+
+			on_a_change_rel "widget/connector"
+			    {
+			    event=DataChange;
+			    event_condition=runclient(char_length(:relation:value) > 1);
+			    target=relation_osrc;
+			    action=QueryParam;
+			    }
+
+			on_a_change_assoc "widget/connector"
+			    {
+			    event=DataChange;
+			    event_condition=runclient(char_length(:merge_method:value) > 0);
+			    target=assoc_osrc;
+			    action=QueryParam;
+			    }
+
+			on_a_clear_form "widget/connector"
+			    {
+			    event=DataChange;
+			    target=partner_form;
+			    action=Clear;
+			    }
+
+			on_a_desc "widget/connector"
+			    {
+			    event=Description;
+			    target=partner_a_desc;
+			    action=SetValue;
+			    Value=runclient(:Text + condition(:Status = 'O', ' (obsolete)', ''));
+			    }
+
+			on_a_name "widget/connector"
+			    {
+			    event=Description;
+			    target=partner_a_nameid;
+			    action=SetValue;
+			    Value=runclient(:NameID);
+			    }
+			}
+
+		    edit_partner_a "widget/textbutton"
+			{
+			y=1;
+			height=24;
+			width=68;
+			text="Edit";
+			enabled=runclient(char_length(:partner_a:value) > 1);
+
+			on_edit_a "widget/connector"
+			    {
+			    event=Click;
+			    target=plugin_base_dataqa_merge;
+			    action=Launch;
+			    Multi = 1;
+			    Source = runclient("/apps/kardia/modules/base/partner_window.app");
+			    Width=844;
+			    Height=600;
+			    id=runclient(:partner_a:value);
+			    ledger=runclient(:ledger:value);
+			    }
+			}
+
+		    crm_partner_a "widget/textbutton"
+			{
+			y=1;
+			height=24;
+			width=68;
+			text="CRM";
+			enabled=runclient(char_length(:partner_a:value) > 1 and has_endorsement('kardia:crm', 'kardia'));
+
+			on_crm_a "widget/connector"
+			    {
+			    event=Click;
+			    target=plugin_base_dataqa_merge;
+			    action=Launch;
+			    Multi = 1;
+			    Source = runclient("/apps/kardia/modules/crm/profile.app");
+			    Width=1000;
+			    Height=630;
+			    partner_key=runclient(:partner_a:value);
+			    ledger=runclient(:ledger:value);
+			    }
+			}
+
+		    partner_a_desc "widget/variable" { type=string; }
+		    partner_a_nameid "widget/variable" { type=string; }
+		    }
+		}
+
+	    partner_b_pane "widget/pane"
+		{
+		height=26;
+		style=flat;
+		border_radius=8;
+		bgcolor=runclient(condition(:primary:value = 'B', '#c0ffc0', condition(:merge_method:value = 'M' and :primary:value = 'A', '#ffc8b8', "#e8e8e8")));
+
+		partner_b_hbox "widget/hbox"
+		    {
+		    height=20;
+		    width=958;
+		    x=0; y=1;
+		    spacing=10;
+
+		    partner_b "widget/component"
+			{
+			height=20;
+			width=802;
+			path="/apps/kardia/modules/base/field_p_partner_key_with_desc.cmp";
+			label="Partner B";
+			field=partner_b;
+
+			pb_hints "widget/hints" { style=strnull; }
+
+			on_b_change "widget/connector"
+			    {
+			    event=DataChange;
+			    event_condition=runclient(char_length(:partner_a:value) > 1 and char_length(:partner_b:value) > 1);
+			    target=logic_osrc;
+			    action=QueryParam;
+			    }
+
+			on_b_change_rel "widget/connector"
+			    {
+			    event=DataChange;
+			    event_condition=runclient(char_length(:relation:value) > 1);
+			    target=relation_osrc;
+			    action=QueryParam;
+			    }
+
+			on_b_change_assoc "widget/connector"
+			    {
+			    event=DataChange;
+			    event_condition=runclient(char_length(:merge_method:value) > 0);
+			    target=assoc_osrc;
+			    action=QueryParam;
+			    }
+
+			on_b_clear_form "widget/connector"
+			    {
+			    event=DataChange;
+			    target=partner_form;
+			    action=Clear;
+			    }
+
+			on_b_desc "widget/connector"
+			    {
+			    event=Description;
+			    target=partner_b_desc;
+			    action=SetValue;
+			    Value=runclient(:Text + condition(:Status = 'O', ' (obsolete)', ''));
+			    }
+
+			on_b_name "widget/connector"
+			    {
+			    event=Description;
+			    target=partner_b_nameid;
+			    action=SetValue;
+			    Value=runclient(:NameID);
+			    }
+			}
+
+		    edit_partner_b "widget/textbutton"
+			{
+			y=1;
+			height=24;
+			width=68;
+			text="Edit";
+			enabled=runclient(char_length(:partner_b:value) > 1);
+
+			on_edit_b "widget/connector"
+			    {
+			    event=Click;
+			    target=plugin_base_dataqa_merge;
+			    action=Launch;
+			    Multi = 1;
+			    Source = runclient("/apps/kardia/modules/base/partner_window.app");
+			    Width=844;
+			    Height=600;
+			    id=runclient(:partner_b:value);
+			    ledger=runclient(:ledger:value);
+			    }
+			}
+
+		    crm_partner_b "widget/textbutton"
+			{
+			y=1;
+			height=24;
+			width=68;
+			text="CRM";
+			enabled=runclient(char_length(:partner_a:value) > 1 and has_endorsement('kardia:crm', 'kardia'));
+
+			on_crm_b "widget/connector"
+			    {
+			    event=Click;
+			    target=plugin_base_dataqa_merge;
+			    action=Launch;
+			    Multi = 1;
+			    Source = runclient("/apps/kardia/modules/crm/profile.app");
+			    Width=1000;
+			    Height=630;
+			    partner_key=runclient(:partner_b:value);
+			    ledger=runclient(:ledger:value);
+			    }
+			}
+
+		    partner_b_desc "widget/variable" { type=string; }
+		    partner_b_nameid "widget/variable" { type=string; }
+		    }
+		}
+
+	    method_hbox "widget/hbox"
+		{
+		height=20; spacing=10;
+
+		merge_method "widget/component"
+		    {
+		    height=20;
+		    width=580;
+		    path="/sys/cmp/smart_field.cmp";
+		    ctl_type=dropdown;
+		    sql = " select 'Merge: merge data and mark one partner obsolete.', 'M';
+			    select 'Marriage: create a household record and connect the two partners to the household.', 'R';
+			    select 'Household: rearrange data and create a household/individual association.', 'H';
+			    select 'Associate: rearrange data and connect the two partners as parts of one entity.', 'A';
+			    select 'None: only rearrange data, if needed.', 'N'";
+		    numdisplay=10;
+		    text="Merge Method:";
+		    field=merge_method;
+
+		    on_method_change_1 "widget/connector" { event=DataChange; target=assoc_osrc; action=QueryParam; }
+
+		    on_method_change_2 "widget/connector" { event=DataChange; event_delay=0.1; event_condition=runclient(:merge_method:value != 'N' and char_length(:partner_c:value) > 1); target=logic_osrc; action=QueryParam; do_reset=1; }
+		    on_method_change_3 "widget/connector" { event=DataChange; event_condition=runclient(:merge_method:value != 'N'); target=partner_form; action=Clear; }
+		    }
+
+		assoc_osrc "widget/osrc"
+		    {
+		    ao_method "widget/parameter" { type=string; param_name=method; default=runclient(:merge_method:value); }
+		    ao_p1 "widget/parameter" { type=string; param_name=partner_a; default=runclient(:partner_a:value); }
+		    ao_p2 "widget/parameter" { type=string; param_name=partner_b; default=runclient(:partner_b:value); }
+
+		    sql = " select
+				a_parent = (select :p_parent_key from /apps/kardia/data/Kardia_DB/p_partner/rows where :p_partner_key = :parameters:partner_a),
+				b_parent = (select :p_parent_key from /apps/kardia/data/Kardia_DB/p_partner/rows where :p_partner_key = :parameters:partner_b),
+				a_parent_name = (select condition(char_length(rtrim(:p2:p_org_name)) > 0, :p2:p_org_name + ' ' + condition(char_length(:p2:p_given_name + :p2:p_surname) > 0, '- ', ''), '') + isnull(:p2:p_given_name + ' ','') + isnull(:p2:p_surname + ' ','') from /apps/kardia/data/Kardia_DB/p_partner/rows p2, /apps/kardia/data/Kardia_DB/p_partner/rows p where :p:p_partner_key = :parameters:partner_a and :p2:p_partner_key = :p:p_parent_key),
+				b_parent_name = (select condition(char_length(rtrim(:p2:p_org_name)) > 0, :p2:p_org_name + ' ' + condition(char_length(:p2:p_given_name + :p2:p_surname) > 0, '- ', ''), '') + isnull(:p2:p_given_name + ' ','') + isnull(:p2:p_surname + ' ','') from /apps/kardia/data/Kardia_DB/p_partner/rows p2, /apps/kardia/data/Kardia_DB/p_partner/rows p where :p:p_partner_key = :parameters:partner_b and :p2:p_partner_key = :p:p_parent_key)
+			    ";
+		    autoquery=never;
+		    replicasize=2;
+		    readahead=2;
+
+		    assoc_comm "widget/label"
+			{
+			width=368;
+			valign=middle;
+			height=20;
+			style=italic;
+			font_size=11;
+			fgcolor=runclient(condition((:merge_method:value = 'R' or :merge_method:value = 'H' or :merge_method:value = 'A') and (:assoc_osrc:a_parent_name is not null or :assoc_osrc:b_parent_name is not null), 'red', 'black'));
+			value=runclient(condition((:merge_method:value = 'R' or :merge_method:value = 'H' or :merge_method:value = 'A') and (:assoc_osrc:a_parent_name is not null or :assoc_osrc:b_parent_name is not null), 'Warning: ' + condition(:assoc_osrc:a_parent_name is not null, condition(:assoc_osrc:b_parent_name is not null, 'each partner', 'partner #' + :partner_a:value), 'partner #' + :partner_b:value) + ' has an existing association (' + isnull(:assoc_osrc:a_parent_name, '') + condition(:assoc_osrc:a_parent_name is not null and :assoc_osrc:b_parent_name is not null and :assoc_osrc:a_parent_name != :assoc_osrc:b_parent_name, ' and ', '') + condition(:assoc_osrc:a_parent_name != :assoc_osrc:b_parent_name, isnull(:assoc_osrc:b_parent_name, ''), '') + '), which will be dissociated by this merge.', ''));
+			}
+		    }
+		}
+
+	    primary_hbox "widget/hbox"
+		{
+		height=20; spacing=10;
+
+		primary "widget/component"
+		    {
+		    width=340;
+		    path="/sys/cmp/smart_field.cmp";
+		    ctl_type=dropdown;
+		    sql="select 'Partner A is primary', 'A'; select 'Partner B is primary', 'B'";
+		    text="Primary Partner:";
+		    field=primary;
+		    }
+
+		primary_comm "widget/label"
+		    {
+		    width=608;
+		    valign=middle;
+		    height=20;
+		    style=italic;
+		    font_size=11;
+		    value=runclient(condition(:primary:value is null or :merge_method:value is null or :partner_a_nameid:value is null or :partner_b_nameid:value is null,
+					'(required)',
+					condition(:merge_method:value = 'M'
+					    , 'Merging '
+						+ condition(:primary:value == 'A', :partner_b_nameid:value, :partner_a_nameid:value)
+						+ ' into ' 
+						+ condition(:primary:value == 'A', :partner_a_nameid:value, :partner_b_nameid:value)
+						+ ' and marking '
+						+ condition(:primary:value == 'A', :partner_b_nameid:value, :partner_a_nameid:value)
+						+ ' obsolete.'
+					    , condition(:merge_method:value = 'R'
+						, 'Creating a NEW household record and associating ' 
+						    + :partner_a_nameid:value 
+						    + ' and ' 
+						    + :partner_b_nameid:value 
+						    + ' with it.'
+						, condition(:merge_method:value = 'H'
+						    , 'Associating'
+							+ ' individual ' + condition(:primary:value == 'A', :partner_b_nameid:value, :partner_a_nameid:value)
+							+ ' with household ' + condition(:primary:value == 'A', :partner_a_nameid:value, :partner_b_nameid:value) 
+						    , condition(:merge_method:value = 'A'
+							, 'Associating'
+							    + ' sub-record ' + condition(:primary:value == 'A', :partner_b_nameid:value, :partner_a_nameid:value)
+							    + ' as a part of main record ' + condition(:primary:value == 'A', :partner_a_nameid:value, :partner_b_nameid:value)
+							, condition(:merge_method:value = 'N'
+							    , 'Only rearranging data'
+							    , ''
+							)
+						    )
+						)
+					    )
+					)
+				    )
+				);
+		    }
+		}
+
+	    relation_hbox "widget/hbox"
+		{
+		height=20;
+		spacing=10;
+
+		relation "widget/component"
+		    {
+		    height=20;
+		    width=340;
+		    path="/sys/cmp/smart_field.cmp";
+		    ctl_type=dropdown;
+		    sql="   declare collection reltmp;
+
+			    insert
+				collection reltmp
+			    select
+				label = condition(:p_relation_type_label = :p_relation_type_rev_label,
+				    :p_relation_type_label + 's',
+				    :p_relation_type_label + ' of ' + :p_relation_type_rev_label),
+				value = 'F' + :p_relation_type
+			    from
+				/apps/kardia/data/Kardia_DB/p_partner_relationship_type/rows
+			    ;
+
+			    insert
+				collection reltmp
+			    select
+				label = :p_relation_type_rev_label + ' of ' + :p_relation_type_label,
+				value = 'R' + :p_relation_type
+			    from
+				/apps/kardia/data/Kardia_DB/p_partner_relationship_type/rows
+			    where
+				:p_relation_type_label != :p_relation_type_rev_label
+			    ;
+
+			    select
+				:label,
+				:value
+			    from
+				collection reltmp
+			    order by
+				:label
+			    ";
+		    numdisplay=10;
+		    text="Relationship:";
+		    field=relation;
+
+		    on_rel_change "widget/connector" { event=DataChange; target=relation_osrc; action=QueryParam; }
+		    }
+
+		relation_osrc "widget/osrc"
+		    {
+		    ro_type "widget/parameter" { type=string; param_name=type; default=runclient(:relation:value); }
+		    ro_p1 "widget/parameter" { type=string; param_name=partner_a; default=runclient(:partner_a:value); }
+		    ro_p2 "widget/parameter" { type=string; param_name=partner_b; default=runclient(:partner_b:value); }
+
+		    sql = " select
+				label = condition(:p_relation_type_label = :p_relation_type_rev_label, :p_relation_type_label + 's', :p_relation_type_label + ' of ' + :p_relation_type_rev_label),
+				forward = condition(substring(:parameters:type, 1, 1) = 'F', :p_relation_type_label + ' of ' + :p_relation_type_rev_label, :p_relation_type_rev_label + ' of ' + :p_relation_type_label),
+				reverse = condition(substring(:parameters:type, 1, 1) = 'R', :p_relation_type_label + ' of ' + :p_relation_type_rev_label, :p_relation_type_rev_label + ' of ' + :p_relation_type_label),
+				warning = (select 'Warning - a ' + :rt2:p_relation_type_label + '/' + :rt2:p_relation_type_rev_label + ' relationship already exists; see below.' from /apps/kardia/data/Kardia_DB/p_partner_relationship/rows r, /apps/kardia/data/Kardia_DB/p_partner_relationship_type/rows rt2 where ((:r:p_partner_key = :parameters:partner_a and :r:p_relation_key = :parameters:partner_b) or (:r:p_relation_key = :parameters:partner_a and :r:p_partner_key = :parameters:partner_b)) and :rt2:p_relation_type = :r:p_relation_type)
+			    from
+				/apps/kardia/data/Kardia_DB/p_partner_relationship_type/rows rt
+			    where
+				:rt:p_relation_type = convert(integer,substring(:parameters:type, 2, 10))
+			    ";
+		    autoquery=never;
+		    replicasize=2;
+		    readahead=2;
+
+		    relation_comm "widget/label"
+			{
+			width=608;
+			valign=middle;
+			height=20;
+			style=italic;
+			font_size=11;
+			fgcolor=runclient(condition(:relation_osrc:warning is not null, 'red', 'black'));
+			value=runclient(condition(:relation:value is null
+					    , '(optionally create a relationship)'
+					    , isnull(:relation_osrc:warning + ' ', '')
+						+ 'Creating relationship: '
+						+ condition(:relation_osrc:forward != :relation_osrc:reverse
+						    , :partner_a_nameid:value
+							+ ' is '
+							+ :relation_osrc:forward
+							+ ' '
+							+ :partner_b_nameid:value
+						    , :partner_a_nameid:value
+							+ ' and '
+							+ :partner_b_nameid:value
+							+ ' are '
+							+ :relation_osrc:label
+					    )
+					)
+				    );
+			}
+		    }
+		}
+	    }
+
+	data_lbl "widget/component"
+	    {
+	    condition=0;
+	    path="/apps/kardia/modules/base/section_label.cmp";
+	    height=26;
+	    fl_height=0;
+	    text = runclient("Data to be Merged...");
+	    }
+
+	data_sep "widget/autolayoutspacer" { height=8; fl_height=0; }
+
+	logic_osrc "widget/osrc"
+	    {
+	    lo_partner_a "widget/parameter" { param_name=partner_a; default=runclient(:partner_a:value); }
+	    lo_partner_b "widget/parameter" { param_name=partner_b; default=runclient(:partner_b:value); }
+	    lo_partner_c "widget/parameter" { param_name=partner_c; default=runclient(:partner_c:value); }
+	    lo_method "widget/parameter" { param_name=method; default=runclient(:merge_method:value); }
+	    lo_primary "widget/parameter" { param_name=primary; default=runclient(:primary:value); }
+	    lo_relation "widget/parameter" { param_name=relation; default=runclient(:relation:value); }
+
+	    lo_reset "widget/parameter" { param_name=do_reset; type=integer; default=0; }
+	    lo_smart "widget/parameter" { param_name=do_smart; type=integer; default=0; }
+	    lo_merge "widget/parameter" { param_name=do_merge; type=integer; default=0; }
+	    lo_ctl_a "widget/parameter" { param_name=do_ctl_a; type=integer; default=0; }
+	    lo_ctl_b "widget/parameter" { param_name=do_ctl_b; type=integer; default=0; }
+	    lo_ctl_c "widget/parameter" { param_name=do_ctl_c; type=integer; default=0; }
+	    lo_source "widget/parameter" { param_name=do_source; type=string; default=""; }
+	    lo_key "widget/parameter" { param_name=do_key; type=string; default=""; }
+
+	    sql = " exec /apps/kardia/modules/base/merge_logic.qy
+			partner_a = :parameters:partner_a,
+			partner_b = :parameters:partner_b,
+			partner_c = :parameters:partner_c,
+			method = :parameters:method,
+			primary = :parameters:primary,
+			relation = :parameters:relation,
+			do_reset = :parameters:do_reset,
+			do_smart = :parameters:do_smart,
+			do_merge = :parameters:do_merge,
+			do_ctl_a = :parameters:do_ctl_a,
+			do_ctl_b = :parameters:do_ctl_b,
+			do_ctl_c = :parameters:do_ctl_c,
+			do_source = :parameters:do_source,
+			do_key = :parameters:do_key
+		    ";
+	    autoquery=never;
+	    replicasize=2;
+	    readahead=2;
+
+	    on_logic_done_1 "widget/connector"
+		{
+		event=EndQuery;
+		event_condition=runclient(:logic_osrc:do_ctl_a or :logic_osrc:do_ctl_b or :logic_osrc:do_ctl_c);
+		target=data_osrc; 
+		action=Refresh;
+		}
+
+	    on_logic_done_2 "widget/connector"
+		{
+		event=EndQuery;
+		event_condition=runclient(not (:logic_osrc:do_ctl_a or :logic_osrc:do_ctl_b or :logic_osrc:do_ctl_c));
+		target=data_osrc; 
+		action=Refresh;
+		}
+
+	    on_merge_done_1 "widget/connector"
+		{
+		event=EndQuery;
+		event_condition=runclient(:logic_osrc:merge_complete = 1);
+		target=merge_method;
+		action=SetValue;
+		Value=runclient('N');
+		}
+
+	    on_merge_done_2 "widget/connector"
+		{
+		event=EndQuery;
+		event_condition=runclient(:logic_osrc:merge_complete = 1);
+		target=relation;
+		action=SetValue;
+		Value=runclient(null);
+		}
+
+	    on_merge_done_3 "widget/connector"
+		{
+		condition=0;
+		event=EndQuery;
+		event_condition=runclient(:logic_osrc:merge_complete = 1);
+		target=primary;
+		action=SetValue;
+		Value=runclient(null);
+		}
+
+	    on_merge_done_4 "widget/connector"
+		{
+		event=EndQuery;
+		event_condition=runclient(:logic_osrc:merge_complete = 1);
+		target=partner_a;
+		action=Refresh;
+		}
+
+	    on_merge_done_5 "widget/connector"
+		{
+		event=EndQuery;
+		event_condition=runclient(:logic_osrc:merge_complete = 1);
+		target=partner_b;
+		action=Refresh;
+		}
+
+	    on_merge_done_6 "widget/connector"
+		{
+		event=EndQuery;
+		event_condition=runclient(:logic_osrc:merge_complete = 1);
+		target=used_partner_c_desc;
+		action=SetValue;
+		Value=runclient(:logic_osrc:used_partner_c_desc);
+		}
+
+	    on_merge_done_7 "widget/connector"
+		{
+		event=EndQuery;
+		event_condition=runclient(:logic_osrc:merge_complete = 1);
+		target=plugin_base_dataqa_merge;
+		action=Alert;
+		Message=runclient("Merge complete.");
+		}
+	    }
+
+	data_osrc "widget/osrc"
+	    {
+	    do_partner_a "widget/parameter" { param_name=partner_a; default=runclient(:partner_a:value); }
+	    do_partner_b "widget/parameter" { param_name=partner_b; default=runclient(:partner_b:value); }
+
+	    sql = " select
+			*,
+			conflict_a = (	select
+					    'Cannot have more than one of this item per partner'
+					from
+					    /apps/kardia/data/Kardia_DB/p_merge/rows m2
+					where 
+					    :m2:p_partner_key_a = :parameters:partner_a and
+					    :m2:p_partner_key_b = :parameters:partner_b and
+					    :m2:p_data_source = :m:p_data_source and
+					    :m2:p_data_key != :m:p_data_key and
+					    (:m2:p_allow_multiple = 0 or :m:p_allow_multiple = 0)
+					having
+					    charindex('A', :m2:p_disposition) > 0 and
+					    charindex('A', :m:p_disposition) > 0
+					),
+			conflict_b = (	select
+					    'Cannot have more than one of this item per partner'
+					from
+					    /apps/kardia/data/Kardia_DB/p_merge/rows m2
+					where 
+					    :m2:p_partner_key_a = :parameters:partner_a and
+					    :m2:p_partner_key_b = :parameters:partner_b and
+					    :m2:p_data_source = :m:p_data_source and
+					    :m2:p_data_key != :m:p_data_key and
+					    (:m2:p_allow_multiple = 0 or :m:p_allow_multiple = 0)
+					having
+					    charindex('B', :m2:p_disposition) > 0 and
+					    charindex('B', :m:p_disposition) > 0
+					),
+			conflict_c = (	select
+					    'Cannot have more than one of this item per partner'
+					from
+					    /apps/kardia/data/Kardia_DB/p_merge/rows m2
+					where 
+					    :m2:p_partner_key_a = :parameters:partner_a and
+					    :m2:p_partner_key_b = :parameters:partner_b and
+					    :m2:p_data_source = :m:p_data_source and
+					    :m2:p_data_key != :m:p_data_key and
+					    (:m2:p_allow_multiple = 0 or :m:p_allow_multiple = 0)
+					having
+					    charindex('C', :m2:p_disposition) > 0 and
+					    charindex('C', :m:p_disposition) > 0
+					),
+			create_date_txt = dateformat(:m:p_date_start, 'dd-MMM-yyyy'),
+			modify_date_txt = dateformat(:m:p_date_end, 'dd-MMM-yyyy')
+		    from
+			identity /apps/kardia/data/Kardia_DB/p_merge/rows m
+		    where
+			:p_partner_key_a = :parameters:partner_a and
+			:p_partner_key_b = :parameters:partner_b
+		    order by
+			:m:p_data_source,
+			:m:p_data_key
+		    ";
+	    autoquery=never;
+	    replicasize=200;
+	    readahead=200;
+
+	    data_table_pane "widget/pane"
+		{
+		height=402;
+		style=flat;
+
+		par_a_highlight "widget/pane"
+		    {
+		    x=107; y=0;
+		    width=283;
+		    height=402;
+		    style=flat;
+		    bgcolor=runclient(condition(:primary:value = 'A', '#c0ffc0', condition(:merge_method:value = 'M' and :primary:value = 'B', '#ffc8b8', "#f8f8f8")));
+		    border_radius=8;
+		    }
+
+		par_b_highlight "widget/pane"
+		    {
+		    x=394; y=0;
+		    width=283;
+		    height=402;
+		    style=flat;
+		    bgcolor=runclient(condition(:primary:value = 'B', '#c0ffc0', condition(:merge_method:value = 'M' and :primary:value = 'A', '#ffc8b8', "#f8f8f8")));
+		    border_radius=8;
+		    }
+
+		par_c_highlight "widget/pane"
+		    {
+		    x=681; y=0;
+		    width=277;
+		    height=402;
+		    style=flat;
+		    bgcolor=runclient(condition(:merge_method:value = 'R', '#ffffc0', "#f8f8f8"));
+		    border_radius=8;
+		    }
+
+		data_table "widget/table"
+		    {
+		    x=0; y=4;
+		    width=958;
+		    height=398;
+		    //titlebar=no;
+		    overlap_scrollbar=yes;
+		    demand_scrollbar=yes;
+		    rowheight=null;
+		    cellvspacing=4;
+		    inner_padding=2;
+		    colsep=0;
+		    row_border_radius=6;
+		    show_selection=no;
+		    hdr_background=null;
+		    hdr_bgcolor="#a8c1d8";
+		    row_shadow_radius=2;
+		    row_shadow_offset=1;
+		    row_shadow_color="#a0a0a0";
+		    row_shadow_angle=135;
+		    row1_bgcolor = runclient(condition(charindex(:data_osrc:p_disposition, "A,B,C") > 0, "#ffffffc0", "#ffffb0"));
+		    row2_bgcolor = runclient(condition(charindex(:data_osrc:p_disposition, "A,B,C") > 0, "#f0f0f0c0", "#ffffb0"));
+		    nodata_message="(please select two partners to merge)";
+
+		    t_type "widget/table-column"
+			{
+			//title="Data To Merge:";
+			title="";
+			value=runclient(:data_osrc:p_data_source);
+			width=110;
+			style=bold;
+			align=center;
+			}
+		    t_check_a "widget/table-column"
+			{
+			title=runclient(condition(char_length(:partner_a:value) > 1, :partner_a:value + ":", "A:"));
+			value=runclient(condition(substring(:data_osrc:p_disposition, 1, 1) == 'A', condition(char_length(:data_osrc:p_disposition) > 1, '/apps/kardia/images/icons/tango-edit-copy-dark.svg', '/sys/images/green_check.gif'), condition(substring(:data_osrc:p_disposition, 1, 1) == 'a', '/apps/kardia/images/icons/tango-edit-cut.svg', condition(charindex('A', substring(:data_osrc:p_disposition, 2, 2)) > 0, '/apps/kardia/images/icons/tango-edit-paste.svg', '/sys/images/tbl_dash.gif'))));
+			width=70;
+			style=bold;
+			align=right;
+			type=image;
+			image_maxheight=18;
+			image_maxwidth=18;
+			fieldname=ctl_a;
+			}
+		    t_desc_a "widget/table-column"
+			{
+			title=runclient(isnull(:partner_a_desc:value, '-'));
+			value=runclient(condition(charindex('A', upper(:data_osrc:p_disposition)) > 0, :data_osrc:p_data_desc, ''));
+			width=250;
+			wrap=yes;
+			textcolor=runclient(condition(charindex('a', :data_osrc:p_disposition) > 0, '#b0b0b0', null));
+			caption_textcolor=runclient(condition(:data_osrc:conflict_a is not null, 'red', '#808080'));
+			caption_value=runclient(isnull(:data_osrc:conflict_a, condition(upper(substring(:data_osrc:p_disposition, 1, 1)) = 'A' and :data_osrc:p_allow_delete, 'Created: ' + :data_osrc:create_date_txt + ', Modified: ' + :data_osrc:modify_date_txt, '')));
+			caption_style=italic;
+			}
+		    t_check_b "widget/table-column"
+			{
+			title=runclient(condition(char_length(:partner_b:value) > 1, :partner_b:value + ":", "B:"));
+			value=runclient(condition(substring(:data_osrc:p_disposition, 1, 1) == 'B', condition(char_length(:data_osrc:p_disposition) > 1, '/apps/kardia/images/icons/tango-edit-copy-dark.svg', '/sys/images/green_check.gif'), condition(substring(:data_osrc:p_disposition, 1, 1) == 'b', '/apps/kardia/images/icons/tango-edit-cut.svg', condition(charindex('B', substring(:data_osrc:p_disposition, 2, 2)) > 0, '/apps/kardia/images/icons/tango-edit-paste.svg', '/sys/images/tbl_dash.gif'))));
+			width=70;
+			style=bold;
+			align=right;
+			type=image;
+			image_maxheight=18;
+			image_maxwidth=18;
+			fieldname=ctl_b;
+			}
+		    t_desc_b "widget/table-column"
+			{
+			title=runclient(isnull(:partner_b_desc:value, '-'));
+			value=runclient(condition(charindex('B', upper(:data_osrc:p_disposition)) > 0, :data_osrc:p_data_desc, ''));
+			width=250;
+			wrap=yes;
+			textcolor=runclient(condition(charindex('b', :data_osrc:p_disposition) > 0, '#b0b0b0', null));
+			caption_textcolor=runclient(condition(:data_osrc:conflict_b is not null, 'red', '#808080'));
+			caption_value=runclient(isnull(:data_osrc:conflict_b, condition(upper(substring(:data_osrc:p_disposition, 1, 1)) = 'B' and :data_osrc:p_allow_delete, 'Created: ' + :data_osrc:create_date_txt + ', Modified: ' + :data_osrc:modify_date_txt, '')));
+			caption_style=italic;
+			}
+		    t_check_c "widget/table-column"
+			{
+			title=runclient(condition(char_length(:partner_c:value) > 1, :partner_c:value + ':', ''));
+			//:logic_osrc:merge_complete = 1 and :logic_osrc:used_method = 'R' and :partner_a:value = :logic_osrc:used_partner_a and :partner_b:value = :logic_osrc:used_partner_b, :logic_osrc:used_partner_c + ':', ''));
+			value=runclient(condition(char_length(:partner_c:value) > 1 or :merge_method:value = 'R', condition(substring(:data_osrc:p_disposition, 1, 1) == 'C', '/sys/images/green_check.gif', condition(substring(:data_osrc:p_disposition, 1, 1) == 'c', '/apps/kardia/images/icons/tango-edit-cut.svg', condition(charindex('C', substring(:data_osrc:p_disposition, 2, 2)) > 0, '/apps/kardia/images/icons/tango-edit-paste.svg', '/sys/images/tbl_dash.gif'))), '/sys/images/trans_1.gif'));
+			width=70;
+			style=bold;
+			align=right;
+			type=image;
+			image_maxheight=18;
+			image_maxwidth=18;
+			fieldname=ctl_c;
+			//visible=runclient(:merge_method:value == 'R');
+			}
+		    t_desc_c "widget/table-column"
+			{
+			title=runclient(condition(:merge_method:value == 'R', 'Creating a NEW Household Record', condition(char_length(:partner_c:value) > 1, :used_partner_c_desc:value, '')));
+			//title=runclient(condition(:merge_method:value == 'R', 'Creating a NEW Household Record', condition(:logic_osrc:merge_complete = 1 and :logic_osrc:used_method = 'R' and :partner_a:value = :logic_osrc:used_partner_a and :partner_b:value = :logic_osrc:used_partner_b, :logic_osrc:used_partner_c_desc, '')));
+			value=runclient(condition((char_length(:partner_c:value) > 1 or :merge_method:value = 'R') and charindex('C', upper(:data_osrc:p_disposition)) > 0, :data_osrc:p_data_desc, ''));
+			width=250;
+			wrap=yes;
+			caption_textcolor=runclient(condition(:data_osrc:conflict_c is not null, 'red', '#808080'));
+			caption_value=runclient(condition(char_length(:partner_c:value) > 1 or :merge_method:value = 'R', isnull(:data_osrc:conflict_c, condition(upper(substring(:data_osrc:p_disposition, 1, 1)) = 'C' and :data_osrc:p_allow_delete, 'Created: ' + :data_osrc:create_date_txt + ', Modified: ' + :data_osrc:modify_date_txt, '')), ''));
+			caption_style=italic;
+			//visible=runclient(:merge_method:value == 'R');
+			}
+
+		    // Click of column A control
+		    on_col_a_click "widget/connector"
+			{
+			event=Click;
+			event_condition=runclient(:Column == 'ctl_a');
+			target=logic_osrc;
+			action=QueryParam;
+			do_ctl_a=1;
+			do_source=runclient(:data_osrc:p_data_source);
+			do_key=runclient(:data_osrc:p_data_key);
+			}
+
+		    // Click of column B control
+		    on_col_b_click "widget/connector"
+			{
+			event=Click;
+			event_condition=runclient(:Column == 'ctl_b');
+			target=logic_osrc;
+			action=QueryParam;
+			do_ctl_b=1;
+			do_source=runclient(:data_osrc:p_data_source);
+			do_key=runclient(:data_osrc:p_data_key);
+			}
+
+		    // Click of column C control
+		    on_col_c_click "widget/connector"
+			{
+			event=Click;
+			event_condition=runclient(:Column == 'ctl_c' and char_length(:partner_c:value) > 1);
+			//(:merge_method:value = 'R' or (:logic_osrc:merge_complete = 1 and :logic_osrc:used_method = 'R' and :merge_method:value = 'N' and :partner_a:value = :logic_osrc:used_partner_a and :partner_b:value = :logic_osrc:used_partner_b)));
+			target=logic_osrc;
+			action=QueryParam;
+			do_ctl_c=1;
+			do_source=runclient(:data_osrc:p_data_source);
+			do_key=runclient(:data_osrc:p_data_key);
+			}
+		    }
+		}
+	    }
+
+	ctl_hbox "widget/hbox"
+	    {
+	    height=24;
+	    align=center;
+	    spacing=10;
+
+	    reset_btn "widget/textbutton"
+		{
+		text = "Reset";
+		width=130; height=24;
+		enabled = runclient(char_length(:partner_a:value) > 1 and char_length(:partner_b:value) > 1);
+
+		on_reset "widget/connector" { event=Click; target=logic_osrc; action=QueryParam; do_reset=1; }
+		}
+
+	    smart_btn "widget/textbutton"
+		{
+		text = "Recommend";
+		width=130; height=24;
+		enabled = runclient((:merge_method:value = 'M' or :merge_method:value = 'R') and :primary:value is not null and char_length(:partner_a:value) > 1 and char_length(:partner_b:value) > 1);
+		on_smart "widget/connector" { event=Click; target=logic_osrc; action=QueryParam; do_smart=1; }
+		}
+
+	    apply_btn "widget/textbutton"
+		{
+		text = "Do Merge";
+		width=130; height=24;
+		enabled = runclient(:merge_method:value is not null and :primary:value is not null and char_length(:partner_a:value) > 1 and char_length(:partner_b:value) > 1);
+
+		on_merge_marriage "widget/connector"
+		    {
+		    event=Click;
+		    event_condition=runclient(:merge_method:value = 'R');
+		    target=popover_newhousehold;
+		    action=Open;
+		    IsModal=1;
+		    }
+
+		on_merge_other "widget/connector"
+		    {
+		    event=Click;
+		    event_condition=runclient(:merge_method:value != 'R');
+		    event_confirm=runclient("Merge these records?");
+		    target=logic_osrc;
+		    action=QueryParam;
+		    do_merge=1;
+		    }
+		}
+	    }
+	}
+
+    popover_newhousehold "widget/childwindow"
+	{
+	width=600; height=240;
+	x=179; y=196;
+	fl_y=0;
+	titlebar=no;
+	visible=no;
+	toplevel=yes;
+	border_style=solid;
+	border_color="#f8f8f8";
+	background=null;
+	bgcolor="#f8f8f8";
+	border_radius=12;
+	shadow_radius=4;
+	shadow_offset=2;
+	shadow_color="#808080";
+	shadow_angle=135;
+
+	//onclose_close_itemlist "widget/connector" { event=Close; target=popover_add_item; action=Close; event_delay=0.05; }
+	onopen_new_partner "widget/connector" { event=Open; target=partner_form; action=New; }
+
+	partner_osrc "widget/osrc"
+	    {
+	    sql = "select * from /apps/kardia/data/Kardia_DB/p_partner/rows";
+	    baseobj = "/apps/kardia/data/Kardia_DB/p_partner/rows";
+	    autoquery=never;
+	    readahead=2;
+	    replicasize=2;
+
+	    partner_form "widget/form"
+		{
+		allow_modify = no;
+		allow_query = no;
+		allow_new = yes;
+
+		on_form_discard "widget/connector" { event=Discard; target=popover_newhousehold; action=Close; }
+		on_form_save1 "widget/connector" { event=DataSaved; target=popover_newhousehold; action=Close; }
+		on_form_save2 "widget/connector"
+		    {
+		    event=DataSaved;
+		    target=logic_osrc;
+		    action=QueryParam;
+		    do_merge=1;
+		    }
+
+		partner_vbox "widget/vbox"
+		    {
+		    x=20; y=15; width=560; height=200;
+		    spacing=15;
+
+		    partner_title "widget/label" { height=16; font_size=16; style=bold; align=center; text="Create a New Household"; }
+
+		    partner_fields "widget/component" { height=140; path="/apps/kardia/modules/base/p_partner_fields.cmp"; }
+
+		    partner_ctls_hbox "widget/hbox"
+			{
+			height=24;
+			spacing=10;
+			align=center;
+
+			partner_save "widget/textbutton"
+			    {
+			    width=130; height=24;
+			    text="Save & Merge";
+			    enabled=runclient(:partner_form:is_savable);
+
+			    on_save1 "widget/connector"
+				{
+				event=Click;
+				event_confirm=runclient("Create new partner and merge these records?");
+				target=partner_form;
+				action=Save;
+				}
+			    }
+
+			partner_cancel "widget/textbutton"
+			    {
+			    width=130; height=24;
+			    text=runclient(condition(:partner_form:is_discardable, "Cancel", "Close"));
+
+			    on_cancel1 "widget/connector" { event=Click; target=partner_form; action=Discard; }
+			    on_cancel2 "widget/connector" { event=Click; target=popover_newhousehold; action=Close; }
+			    }
+			}
+		    }
+
+		get_key_on_new "widget/connector"
+		    {
+		    event=New;
+		    target=nextpartner;
+		    action=GetPartnerKey;
+		    }
+
+		prefill_on_new "widget/connector"
+		    {
+		    event=New;
+		    target=prefill_osrc;
+		    action=QueryParam;
+		    }
+
+		prefill_osrc "widget/osrc"
+		    {
+		    po_par_a "widget/parameter" { param_name=partner_a; type=string; default=runclient(:partner_a:value); }
+		    po_par_b "widget/parameter" { param_name=partner_b; type=string; default=runclient(:partner_b:value); }
+		    po_pri "widget/parameter" { param_name=primary; type=string; default=runclient(:primary:value); }
+
+		    sql = " select
+				given_name = condition(:parameters:primary = 'A', :a:p_given_name + ' and ' + :b:p_given_name, :b:p_given_name + ' and ' + :a:p_given_name),
+				surname = condition(:parameters:primary = 'A', :a:p_surname, :b:p_surname),
+				title = (select condition(char_length(:a:p_title) > 1 and char_length(:b:p_title) > 1, :t:p_title, null) from /apps/kardia/data/Kardia_DB/p_title/rows t where (replace(:t:p_title, '.', '') = replace(condition(:parameters:primary = 'A', :a:p_title + ' & ' + :b:p_title, :b:p_title + ' & ' + :a:p_title), '.', '') or replace(:t:p_title, '.', '') = replace(condition(:parameters:primary = 'A', :a:p_title + ' and ' + :b:p_title, :b:p_title + ' and ' + :a:p_title), '.', ''))),
+				salutation = condition(:parameters:primary = 'A', :a:p_preferred_name + ' and ' + :b:p_preferred_name, :b:p_preferred_name + ' and ' + :a:p_preferred_name),
+				nosol = condition(:a:p_no_solicitations or :b:p_no_solicitations, 1, 0),
+				nomail = condition(:a:p_no_mail or :b:p_no_mail, 1, 0),
+				nomailreason = isnull(:a:p_no_mail_reason, :b:p_no_mail_reason),
+				gender = 'C',
+				class = 'HOU'
+			    from
+				/apps/kardia/data/Kardia_DB/p_partner/rows a,
+				/apps/kardia/data/Kardia_DB/p_partner/rows b
+			    where
+				:a:p_partner_key = :parameters:partner_a and
+				:b:p_partner_key = :parameters:partner_b
+			    ";
+		    autoquery=never;
+		    readahead=2;
+		    replicasize=2;
+
+		    given_name_prefill "widget/connector"
+			{
+			event=EndQuery;
+			target=partner_form;
+			action=SetValue;
+			Field=runclient("p_given_name");
+			Value=runclient(:prefill_osrc:given_name);
+			}
+
+		    surname_prefill "widget/connector"
+			{
+			event=EndQuery;
+			target=partner_form;
+			action=SetValue;
+			Field=runclient("p_surname");
+			Value=runclient(:prefill_osrc:surname);
+			}
+
+		    title_prefill "widget/connector"
+			{
+			event=EndQuery;
+			target=partner_form;
+			action=SetValue;
+			Field=runclient("p_title");
+			Value=runclient(:prefill_osrc:title);
+			}
+
+		    salutation_prefill "widget/connector"
+			{
+			event=EndQuery;
+			target=partner_form;
+			action=SetValue;
+			Field=runclient("p_preferred_name");
+			Value=runclient(:prefill_osrc:salutation);
+			}
+
+		    nosol_prefill "widget/connector"
+			{
+			event=EndQuery;
+			target=partner_form;
+			action=SetValue;
+			Field=runclient("p_no_solicitations");
+			Value=runclient(:prefill_osrc:nosol);
+			}
+
+		    nomail_prefill "widget/connector"
+			{
+			event=EndQuery;
+			target=partner_form;
+			action=SetValue;
+			Field=runclient("p_no_mail");
+			Value=runclient(:prefill_osrc:nomail);
+			}
+
+		    nomailreason_prefill "widget/connector"
+			{
+			event=EndQuery;
+			target=partner_form;
+			action=SetValue;
+			Field=runclient("p_no_mail_reason");
+			Value=runclient(:prefill_osrc:nomailreason);
+			}
+
+		    gender_prefill "widget/connector"
+			{
+			event=EndQuery;
+			target=partner_form;
+			action=SetValue;
+			Field=runclient("p_gender");
+			Value=runclient(:prefill_osrc:gender);
+			}
+
+		    ptype_prefill "widget/connector"
+			{
+			event=EndQuery;
+			target=partner_form;
+			action=SetValue;
+			Field=runclient("p_partner_class");
+			Value=runclient(:prefill_osrc:class);
+			}
+		    }
+
+		partner_c "widget/variable" { fieldname=p_partner_key; type=string; }
+		rec_stat_internal "widget/variable" { fieldname=p_record_status_code; type=string; rec_stat_hints "widget/hints" { default=runclient('A'); } }
+		surname_first_internal "widget/variable" { fieldname=p_surname_first; type=string; surname_first_hints "widget/hints" { default=runclient(0); } }
+		creating_office_internal "widget/variable" { fieldname=p_creating_office; type=string; creating_office_hints "widget/hints" { default=runclient('USA'); } }
+		rec_fields "widget/component" { path="record_metadata_hidden.cmp"; visual=no; }
+		}
+
+	    nextpartner "widget/component"
+		{
+		path = "/apps/kardia/modules/base/next_partner.cmp";
+
+		got_key "widget/connector"
+		    {
+		    event=PartnerKey;
+		    target=partner_c;
+		    action=SetValue;
+		    Value=runclient(:p_partner_key);
+		    }
+		got_key2 "widget/connector"
+		    {
+		    event=PartnerKey;
+		    target=partner_fields;
+		    action=SetPartner;
+		    p_partner_key=runclient(:p_partner_key);
+		    }
+		}
+	    }
+	}
+    }

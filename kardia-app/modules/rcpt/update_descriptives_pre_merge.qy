@@ -18,13 +18,13 @@ update_descriptives_pre_merge "system/query"
 	    delete
 		collection a_descriptives d
 	    where
-		(:parameters:fund is null or :parameters:fund = :d:a_cost_center) and
+		(:parameters:fund is null or :parameters:fund = :d:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
 	    ;
 	    delete
 		collection a_descriptives_hist dh
 	    where
-		(:parameters:fund is null or :parameters:fund = :dh:a_cost_center) and
+		(:parameters:fund is null or :parameters:fund = :dh:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :dh:p_donor_partner_key)
 	    ;
 
@@ -35,21 +35,21 @@ update_descriptives_pre_merge "system/query"
 		donor = :i:p_dn_donor_partner_id,
 		giftdate = isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date),
 		amount = :i:a_amount,
-		fund = :i:a_cost_center,
+		fund = :i:a_fund,
 		ledger = :i:a_ledger_number,
 		id = row_number(),
-		seg = row_number() - row_number(:i:a_ledger_number, :i:a_cost_center, :i:p_dn_donor_partner_id, :i:a_amount)
+		seg = row_number() - row_number(:i:a_ledger_number, :i:a_fund, :i:p_dn_donor_partner_id, :i:a_amount)
 	    from
 		/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i
 	    where
 		isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) > dateadd(month, 0 - :parameters:lookback, getdate()) and
 		:i:a_posted = 1 and
 		:i:a_amount != $0 and
-		(:parameters:fund is null or :parameters:fund = :i:a_cost_center) and
+		(:parameters:fund is null or :parameters:fund = :i:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :i:p_dn_donor_partner_id)
 	    order by
 		:i:a_ledger_number,
-		:i:a_cost_center,
+		:i:a_fund,
 		:i:p_dn_donor_partner_id,
 		isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) desc
 	    ;
@@ -62,7 +62,7 @@ update_descriptives_pre_merge "system/query"
 	    select
 		-- Primary key
 		a_ledger_number = :ledger,
-		a_cost_center = :fund,
+		a_fund = :fund,
 		p_donor_partner_key = :donor,
 
 		-- Basic descriptives
@@ -112,7 +112,7 @@ update_descriptives_pre_merge "system/query"
 	    select
 		a_ledger_number = :ledger,
 		p_donor_partner_key = :donor,
-		a_cost_center = :fund,
+		a_fund = :fund,
 		a_amount = :amount,
 		a_first_gift = last(:giftdate),
 		a_last_gift = first(:giftdate),
@@ -153,10 +153,10 @@ update_descriptives_pre_merge "system/query"
 	    update
 		collection a_descriptives_hist dh1
 	    set
-		:dh1:a_prev_end = (select :a_last_gift from collection a_descriptives_hist dh2 where :dh2:a_ledger_number = :dh1:a_ledger_number and :dh2:a_cost_center = :dh1:a_cost_center and :dh2:p_donor_partner_key = :dh1:p_donor_partner_key and :dh2:a_last_gift < :dh1:a_first_gift order by :dh2:a_last_gift desc limit 1),
-		:dh1:a_next_start = (select :a_first_gift from collection a_descriptives_hist dh2 where :dh2:a_ledger_number = :dh1:a_ledger_number and :dh2:a_cost_center = :dh1:a_cost_center and :dh2:p_donor_partner_key = :dh1:p_donor_partner_key and :dh2:a_first_gift > :dh1:a_last_gift order by :dh2:a_first_gift asc limit 1)
+		:dh1:a_prev_end = (select :a_last_gift from collection a_descriptives_hist dh2 where :dh2:a_ledger_number = :dh1:a_ledger_number and :dh2:a_fund = :dh1:a_fund and :dh2:p_donor_partner_key = :dh1:p_donor_partner_key and :dh2:a_last_gift < :dh1:a_first_gift order by :dh2:a_last_gift desc limit 1),
+		:dh1:a_next_start = (select :a_first_gift from collection a_descriptives_hist dh2 where :dh2:a_ledger_number = :dh1:a_ledger_number and :dh2:a_fund = :dh1:a_fund and :dh2:p_donor_partner_key = :dh1:p_donor_partner_key and :dh2:a_first_gift > :dh1:a_last_gift order by :dh2:a_first_gift asc limit 1)
 	    where
-		(:parameters:fund is null or :parameters:fund = :dh1:a_cost_center) and
+		(:parameters:fund is null or :parameters:fund = :dh1:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :dh1:p_donor_partner_key)
 	    ;
             
@@ -166,7 +166,7 @@ update_descriptives_pre_merge "system/query"
 	    from
 		collection a_descriptives_hist d
 	    where
-		(:parameters:fund is null or :parameters:fund = :d:a_cost_center) and
+		(:parameters:fund is null or :parameters:fund = :d:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
             ";    
     }

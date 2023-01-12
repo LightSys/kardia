@@ -46,29 +46,29 @@ gift_import "widget/component-decl"
 		update
 			/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e1
 		set
-			:a_cost_center = (select :e2:a_cost_center from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e2 where upper(:e1:i_eg_desig_name) = upper(:e2:i_eg_desig_name) and :e1:a_ledger_number = :e2:a_ledger_number and :e2:i_eg_fundmap_future = 1 and :e2:i_eg_fundmap_confidence = 2 and :e2:a_cost_center is not null order by :e2:i_eg_gift_trx_date desc),
-			:i_eg_fundmap_confidence = condition((select :e2:a_cost_center from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e2 where upper(:e1:i_eg_desig_name) = upper(:e2:i_eg_desig_name) and :e1:a_ledger_number = :e2:a_ledger_number and :e2:i_eg_fundmap_future = 1 and :e2:i_eg_fundmap_confidence = 2 and :e2:a_cost_center is not null order by :e2:i_eg_gift_trx_date desc) is null, null, 2)
+			:a_fund = (select :e2:a_fund from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e2 where upper(:e1:i_eg_desig_name) = upper(:e2:i_eg_desig_name) and :e1:a_ledger_number = :e2:a_ledger_number and :e2:i_eg_fundmap_future = 1 and :e2:i_eg_fundmap_confidence = 2 and :e2:a_fund is not null order by :e2:i_eg_gift_trx_date desc),
+			:i_eg_fundmap_confidence = condition((select :e2:a_fund from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e2 where upper(:e1:i_eg_desig_name) = upper(:e2:i_eg_desig_name) and :e1:a_ledger_number = :e2:a_ledger_number and :e2:i_eg_fundmap_future = 1 and :e2:i_eg_fundmap_confidence = 2 and :e2:a_fund is not null order by :e2:i_eg_gift_trx_date desc) is null, null, 2)
 		where
-			:a_cost_center is null and char_length(rtrim(:i_eg_trx_uuid)) > 1
+			:a_fund is null and char_length(rtrim(:i_eg_trx_uuid)) > 1
 		;
 
 		-- Try to make the GL account code assignment based on prior data,
-		-- first checking both donor and cost ctr match, and second checking
-		-- just cost ctr match.
+		-- first checking both donor and fund match, and second checking
+		-- just fund match.
 		--
 		update
 			/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e1
 		set
-			:a_account_code = (select :e2:a_account_code from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e2 where upper(:e1:i_eg_desig_name) = upper(:e2:i_eg_desig_name) and :e1:a_ledger_number = :e2:a_ledger_number and :e1:a_cost_center = :e2:a_cost_center and :e2:i_eg_acctmap_future = 1 and :e2:i_eg_acctmap_confidence = 2 and (:e1:i_eg_donor_uuid = :e2:i_eg_donor_uuid or isnull(:e1:i_eg_donor_alt_id, 'NOTEXIST1') = isnull(:e2:i_eg_donor_alt_id, 'NOTEXIST2')) and :e2:a_account_code is not null order by :e2:i_eg_gift_trx_date desc),
-			:i_eg_acctmap_confidence = condition((select :e2:a_account_code from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e2 where upper(:e1:i_eg_desig_name) = upper(:e2:i_eg_desig_name) and :e1:a_ledger_number = :e2:a_ledger_number and :e1:a_cost_center = :e2:a_cost_center and :e2:i_eg_acctmap_future = 1 and :e2:i_eg_acctmap_confidence = 2 and (:e1:i_eg_donor_uuid = :e2:i_eg_donor_uuid or isnull(:e1:i_eg_donor_alt_id, 'NOTEXIST1') = isnull(:e2:i_eg_donor_alt_id, 'NOTEXIST2')) and :e2:a_account_code is not null order by :e2:i_eg_gift_trx_date desc) is null, null, 2)
+			:a_account_code = (select :e2:a_account_code from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e2 where upper(:e1:i_eg_desig_name) = upper(:e2:i_eg_desig_name) and :e1:a_ledger_number = :e2:a_ledger_number and :e1:a_fund = :e2:a_fund and :e2:i_eg_acctmap_future = 1 and :e2:i_eg_acctmap_confidence = 2 and (:e1:i_eg_donor_uuid = :e2:i_eg_donor_uuid or isnull(:e1:i_eg_donor_alt_id, 'NOTEXIST1') = isnull(:e2:i_eg_donor_alt_id, 'NOTEXIST2')) and :e2:a_account_code is not null order by :e2:i_eg_gift_trx_date desc),
+			:i_eg_acctmap_confidence = condition((select :e2:a_account_code from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e2 where upper(:e1:i_eg_desig_name) = upper(:e2:i_eg_desig_name) and :e1:a_ledger_number = :e2:a_ledger_number and :e1:a_fund = :e2:a_fund and :e2:i_eg_acctmap_future = 1 and :e2:i_eg_acctmap_confidence = 2 and (:e1:i_eg_donor_uuid = :e2:i_eg_donor_uuid or isnull(:e1:i_eg_donor_alt_id, 'NOTEXIST1') = isnull(:e2:i_eg_donor_alt_id, 'NOTEXIST2')) and :e2:a_account_code is not null order by :e2:i_eg_gift_trx_date desc) is null, null, 2)
 		where
 			:a_account_code is null and char_length(rtrim(:i_eg_trx_uuid)) > 1
 		;
 		update
 			/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e1
 		set
-			:a_account_code = (select :e2:a_account_code from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e2 where upper(:e1:i_eg_desig_name) = upper(:e2:i_eg_desig_name) and :e1:a_ledger_number = :e2:a_ledger_number and :e1:a_cost_center = :e2:a_cost_center and :e2:i_eg_acctmap_future = 1 and :e2:i_eg_acctmap_confidence = 2 and :e2:a_account_code is not null order by :e2:i_eg_gift_trx_date desc),
-			:i_eg_acctmap_confidence = condition((select :e2:a_account_code from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e2 where upper(:e1:i_eg_desig_name) = upper(:e2:i_eg_desig_name) and :e1:a_ledger_number = :e2:a_ledger_number and :e1:a_cost_center = :e2:a_cost_center and :e2:i_eg_acctmap_future = 1 and :e2:i_eg_acctmap_confidence = 2 and :e2:a_account_code is not null order by :e2:i_eg_gift_trx_date desc) is null, null, 2)
+			:a_account_code = (select :e2:a_account_code from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e2 where upper(:e1:i_eg_desig_name) = upper(:e2:i_eg_desig_name) and :e1:a_ledger_number = :e2:a_ledger_number and :e1:a_fund = :e2:a_fund and :e2:i_eg_acctmap_future = 1 and :e2:i_eg_acctmap_confidence = 2 and :e2:a_account_code is not null order by :e2:i_eg_gift_trx_date desc),
+			:i_eg_acctmap_confidence = condition((select :e2:a_account_code from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e2 where upper(:e1:i_eg_desig_name) = upper(:e2:i_eg_desig_name) and :e1:a_ledger_number = :e2:a_ledger_number and :e1:a_fund = :e2:a_fund and :e2:i_eg_acctmap_future = 1 and :e2:i_eg_acctmap_confidence = 2 and :e2:a_account_code is not null order by :e2:i_eg_gift_trx_date desc) is null, null, 2)
 		where
 			:a_account_code is null and char_length(rtrim(:i_eg_trx_uuid)) > 1
 		");
@@ -214,10 +214,10 @@ gift_import "widget/component-decl"
 				    gs_donor_info = :eg:i_eg_donor_name + isnull(' (' + :eg:i_eg_donor_city + ', ' + :eg:i_eg_donor_state + ')', ''),
 				    kardia_donor_info = :eg:p_donor_partner_key + isnull(' ' + :p:p_org_name, '') + isnull(' ' + :p:p_given_name,'') + isnull(' ' + :p:p_surname,'') + isnull(' (' + :l:p_city + ', ' + :l:p_state_province + ')', ''),
 				    gs_desig_info = :eg:i_eg_desig_name,
-				    kardia_desig_info = :eg:a_cost_center + isnull(' ' + :c:a_cc_desc,''),
+				    kardia_desig_info = :eg:a_fund + isnull(' ' + :c:a_fund_desc,''),
 				    amount = :eg:i_eg_gift_amount,
 				    :eg:p_donor_partner_key,
-				    :eg:a_cost_center,
+				    :eg:a_fund,
 				    :eg:a_account_code,
 				    :eg:a_batch_number,
 				    :eg:i_eg_donormap_confidence,
@@ -269,7 +269,7 @@ gift_import "widget/component-decl"
 				    identity /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows eg,
 				    /apps/kardia/data/Kardia_DB/p_partner/rows p,
 				    /apps/kardia/data/Kardia_DB/p_location/rows l,
-				    /apps/kardia/data/Kardia_DB/a_cost_center/rows c,
+				    /apps/kardia/data/Kardia_DB/a_fund/rows c,
 				    /apps/kardia/data/Kardia_DB/a_account/rows a,
 				    /apps/kardia/data/Kardia_DB/p_country/rows co,
 				    /apps/kardia/data/Kardia_DB/p_address_format/rows af,
@@ -279,7 +279,7 @@ gift_import "widget/component-decl"
 				    :p:p_partner_key =* :eg:p_donor_partner_key and
 				    :l:p_partner_key =* :p:p_partner_key and
 				    :c:a_ledger_number =* :eg:a_ledger_number and
-				    :c:a_cost_center =* :eg:a_cost_center and
+				    :c:a_fund =* :eg:a_fund and
 				    :a:a_ledger_number =* :eg:a_ledger_number and
 				    :a:a_account_code =* :eg:a_account_code and
 				    (:parameters:ptime is null or :parameters:ptime = '0' or substring(:parameters:ptime,7,1) = 'M' or (dateadd(hour, convert(integer, substring(:parameters:ptime,1,6)), :eg:i_eg_gift_trx_date) > getdate())) and
@@ -482,14 +482,14 @@ gift_import "widget/component-decl"
 					{
 					height=20;
 					path="/apps/kardia/modules/base/editbox_table.cmp";
-					field='a_cost_center';
+					field='a_fund';
 					text='Desig.:';
 					label_width=60;
 					popup_width=380;
-					popup_sql=runserver("select value = :c:a_cost_center, label = :c:a_cost_center + ' - ' + condition(isnull(:cr:a_receiptable,0) = 1, :c:a_cc_desc + isnull(' (legacy # ' + :c:a_legacy_code + ')',''), '** CLOSED **') from /apps/kardia/data/Kardia_DB/a_cost_center/rows c, /apps/kardia/data/Kardia_DB/a_cc_receipting/rows cr where :c:a_is_posting = 1 and :c:a_ledger_number = " + quote(:this:ledger) + " and :cr:a_ledger_number =* :c:a_ledger_number and :cr:a_cost_center =* :c:a_cost_center");
-					search_field_list="a_cost_center*,*a_cc_desc*,a_legacy_code*";
-					key_name="a_cost_center";
-					object_name="Fund / Cost Center";
+					popup_sql=runserver("select value = :c:a_fund, label = :c:a_fund + ' - ' + condition(isnull(:cr:a_receiptable,0) = 1, :c:a_fund_desc + isnull(' (legacy # ' + :c:a_legacy_code + ')',''), '** CLOSED **') from /apps/kardia/data/Kardia_DB/a_fund/rows c, /apps/kardia/data/Kardia_DB/a_fund_receipting/rows cr where :c:a_is_posting = 1 and :c:a_ledger_number = " + quote(:this:ledger) + " and :cr:a_ledger_number =* :c:a_ledger_number and :cr:a_fund =* :c:a_fund");
+					search_field_list="a_fund*,*a_fund_desc*,a_legacy_code*";
+					key_name="a_fund";
+					object_name="Fund";
 					popup_text="Select Designation:";
 					empty_desc="required";
 
@@ -500,7 +500,7 @@ gift_import "widget/component-decl"
 					    event = DataChange;
 					    target = f_desig_acct_dd;
 					    action = SetItems;
-					    SQL=runclient("select label = :a:a_account_code + ': ' + :a:a_acct_desc, value = :a:a_account_code, selected = 1 from /apps/kardia/data/Kardia_DB/a_cc_receipting_accts/rows cr, /apps/kardia/data/Kardia_DB/a_account/rows a where :cr:a_cost_center = " + quote(:f_desig_cc:content) + " and :cr:a_ledger_number = " + quote(:gift_import:ledger) + " and :a:a_ledger_number = :cr:a_ledger_number and :a:a_account_code = :cr:a_account_code order by :cr:a_is_default asc");
+					    SQL=runclient("select label = :a:a_account_code + ': ' + :a:a_acct_desc, value = :a:a_account_code, selected = 1 from /apps/kardia/data/Kardia_DB/a_fund_receipting_accts/rows cr, /apps/kardia/data/Kardia_DB/a_account/rows a where :cr:a_fund = " + quote(:f_desig_cc:content) + " and :cr:a_ledger_number = " + quote(:gift_import:ledger) + " and :a:a_ledger_number = :cr:a_ledger_number and :a:a_account_code = :cr:a_account_code order by :cr:a_is_default asc");
 					    }
 
 					set_confidence_cc "widget/connector"
@@ -840,11 +840,11 @@ gift_import "widget/component-decl"
 				sql = runserver("
 					SELECT
 						trx_date = substring(convert(string,:eg:i_eg_gift_trx_date),1,11),
-						:eg:a_cost_center,
-						cctext = isnull(:eg:a_cost_center + ' - ' + isnull(:c:a_cc_desc, '**INVALID**'), 'Needs QA: ' + :eg:i_eg_desig_name),
+						:eg:a_fund,
+						cctext = isnull(:eg:a_fund + ' - ' + isnull(:c:a_fund_desc, '**INVALID**'), 'Needs QA: ' + :eg:i_eg_desig_name),
 						:eg:i_eg_gift_amount,
 						:eg:i_eg_net_amount,
-						:eg:i_eg_net_amount,
+						:eg:a_batch_number,
 						fees = :eg:i_eg_gift_amount - :eg:i_eg_net_amount,
 						import_status = condition(
 								    :eg:a_batch_number is not null,
@@ -862,14 +862,14 @@ gift_import "widget/component-decl"
 						identity /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows eg,
 						/apps/kardia/data/Kardia_DB/p_partner/rows p,
 						/apps/kardia/data/Kardia_DB/p_location/rows l,
-						/apps/kardia/data/Kardia_DB/a_cost_center/rows c
+						/apps/kardia/data/Kardia_DB/a_fund/rows c
 					WHERE
 						:eg:a_ledger_number = " + quote(:this:ledger) + " and
 						:p:p_partner_key =* :eg:p_donor_partner_key and
 						:l:p_partner_key =* :p:p_partner_key and
 						:l:p_revision_id = 0 and
 						:c:a_ledger_number =* :eg:a_ledger_number and
-						:c:a_cost_center =* :eg:a_cost_center
+						:c:a_fund =* :eg:a_fund
 					ORDER BY
 						:eg:i_eg_gift_trx_date desc
 					");
@@ -899,10 +899,11 @@ gift_import "widget/component-decl"
 
 					dep_g_stat "widget/table-column" { width=34; fieldname=import_status; title="Stat."; type=image; }
 					dep_g_date "widget/table-column" { width=80; fieldname=trx_date; title="Gift Date"; }
-					dep_g_fund "widget/table-column" { width=206; fieldname=cctext; title="Designation"; }
-					dep_g_gross "widget/table-column" { width=95; fieldname=i_eg_gift_amount; title="Amt Given"; align=right; }
-					dep_g_fees "widget/table-column" { width=95; fieldname=fees; title="- Fees"; align=right; }
-					dep_g_net "widget/table-column" { width=95; fieldname=i_eg_net_amount; title="= Net Amt"; align=right; }
+					dep_g_batch "widget/table-column" { width=65; fieldname=a_batch_number; title="Gift Batch"; }
+					dep_g_fund "widget/table-column" { width=186; fieldname=cctext; title="Designation"; }
+					dep_g_gross "widget/table-column" { width=80; fieldname=i_eg_gift_amount; title="Amt Given"; align=right; }
+					dep_g_fees "widget/table-column" { width=80; fieldname=fees; title="- Fees"; align=right; }
+					dep_g_net "widget/table-column" { width=80; fieldname=i_eg_net_amount; title="= Net Amt"; align=right; }
 					}
 				    }
 				}
@@ -1213,7 +1214,7 @@ gift_import "widget/component-decl"
 					:eg2:i_eg_deposit_uuid is not null and
 					(:a_batch_number_deposit is null or
 					    (:a_batch_number_deposit >= convert(integer,:parameters:batchno) and :a_batch_number_deposit <= convert(integer,:parameters:endbatchno))) and
-					:a_batch_number is not null and
+					--:a_batch_number is not null and
 					(:eg2:i_eg_deposit_date < :eg:i_eg_deposit_date or
 					    (:eg2:i_eg_deposit_date = :eg:i_eg_deposit_date and :eg2:i_eg_deposit_uuid < :eg:i_eg_deposit_uuid))
 				  group by
@@ -1467,7 +1468,7 @@ gift_import "widget/component-decl"
 					:eg2:i_eg_deposit_uuid is not null and
 					(:a_batch_number_fees is null or
 					    (:a_batch_number_fees >= convert(integer,:parameters:batchno) and :a_batch_number_fees <= convert(integer,:parameters:endbatchno))) and
-					:a_batch_number is not null and
+					--:a_batch_number is not null and
 					(:eg2:i_eg_deposit_date < :eg:i_eg_deposit_date or
 					    (:eg2:i_eg_deposit_date = :eg:i_eg_deposit_date and :eg2:i_eg_deposit_uuid < :eg:i_eg_deposit_uuid))
 				  group by
@@ -1517,7 +1518,7 @@ gift_import "widget/component-decl"
 			    a_period = (select :a_period from /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = :parameters:ledger and :a_start_date <= :eg:i_eg_deposit_date and :a_end_date >= :eg:i_eg_deposit_date and :a_summary_only = 0),
 			    a_effective_date = :eg:i_eg_deposit_date,
 			    a_transaction_type = 'T',
-			    a_cost_center = (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :parameters:ledger and :a_config_name = 'RcptCashFund'),
+			    a_fund = (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :parameters:ledger and :a_config_name = 'RcptCashFund'),
 			    a_account_code = (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :parameters:ledger and :a_config_name = 'RcptCashAcct'),
 			    a_account_category = (select :a:a_default_category from /apps/kardia/data/Kardia_DB/a_config/rows conf, /apps/kardia/data/Kardia_DB/a_account/rows a where :conf:a_ledger_number = :parameters:ledger and :conf:a_config_name = 'RcptCashAcct' and :a:a_ledger_number = :conf:a_ledger_number and :a:a_account_code = :conf:a_config_value),
 			    a_amount = $0 - (:eg:i_eg_deposit_gross_amt - :eg:i_eg_deposit_amt),
@@ -1558,7 +1559,7 @@ gift_import "widget/component-decl"
 			    a_period = (select :a_period from /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = :parameters:ledger and :a_start_date <= :eg:i_eg_deposit_date and :a_end_date >= :eg:i_eg_deposit_date and :a_summary_only = 0),
 			    a_effective_date = :eg:i_eg_deposit_date,
 			    a_transaction_type = 'T',
-			    a_cost_center = condition( isnull((select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :parameters:ledger and :a_config_name = 'EgFeesFund'),'*') == '*', :eg:a_cost_center, (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :parameters:ledger and :a_config_name = 'EgFeesFund')),
+			    a_fund = condition( isnull((select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :parameters:ledger and :a_config_name = 'EgFeesFund'),'*') == '*', :eg:a_fund, (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :parameters:ledger and :a_config_name = 'EgFeesFund')),
 			    a_account_code = (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :parameters:ledger and :a_config_name = 'EgFeesAcct'),
 			    a_account_category = (select :a:a_default_category from /apps/kardia/data/Kardia_DB/a_config/rows conf, /apps/kardia/data/Kardia_DB/a_account/rows a where :conf:a_ledger_number = :parameters:ledger and :conf:a_config_name = 'EgFeesAcct' and :a:a_ledger_number = :conf:a_ledger_number and :a:a_account_code = :conf:a_config_value),
 			    a_amount = isnull(sum(:eg:i_eg_gift_amount - :eg:i_eg_net_amount),$0),
@@ -1575,7 +1576,7 @@ gift_import "widget/component-decl"
 			    a_receipt_desired = 0,
 			    a_first_gift = 0,
 			    a_goods_provided = $0,
-			    a_comment = 'Electronic giving fees - ' + :eg:a_cost_center,
+			    a_comment = 'Electronic giving fees - ' + :eg:a_fund,
 			    s_date_created = getdate(),
 			    s_created_by = user_name(),
 			    s_date_modified = getdate(),
@@ -1587,7 +1588,7 @@ gift_import "widget/component-decl"
 			    :a_batch_number_fees >= convert(integer,:parameters:batchno) and
 			    :a_batch_number_fees <= convert(integer,:parameters:endbatchno)
 		    group by
-			    :eg:a_cost_center,
+			    :eg:a_fund,
 			    :eg:a_batch_number_fees
 		    ";
 
@@ -1913,15 +1914,15 @@ gift_import "widget/component-decl"
 			    a_period = :parameters:period,
 			    a_amount = :i_eg_gift_amount,
 			    a_gift_number = (select :a_gift_number from /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g where :g:a_batch_number = convert(integer, :parameters:batchno) and :g:p_donor_partner_id = :eg:p_donor_partner_key and :g:a_ledger_number = :eg:a_ledger_number),
-			    :a_cost_center,
+			    :a_fund,
 			    :a_account_code,
 			    a_recv_document_id = condition(:i_eg_gift_pmt_type == 'ACH', 'EFT-', condition(:i_eg_gift_pmt_type == 'Visa', 'VISA-', condition(:i_eg_gift_pmt_type == 'MasterCard', 'MC-', condition(:i_eg_gift_pmt_type == 'Discover', 'DISC-', condition(:i_eg_gift_pmt_type == 'Amex', 'AMEX-', ''))))) + :i_eg_gift_lastfour,
 			    a_posted = 0,
 			    a_posted_to_gl = 0,
 			    a_confidential = condition(isnull(:eg:i_eg_anonymous, 'NO') = 'YES', 1, 0),
-			    a_non_tax_deductible = isnull((select :a_non_tax_deductible from /apps/kardia/data/Kardia_DB/a_cc_receipting_accts/rows ra where :ra:a_cost_center = :eg:a_cost_center and :ra:a_ledger_number = :eg:a_ledger_number and :ra:a_account_code = :eg:a_account_code), 0),
+			    a_non_tax_deductible = isnull((select :a_non_tax_deductible from /apps/kardia/data/Kardia_DB/a_fund_receipting_accts/rows ra where :ra:a_fund = :eg:a_fund and :ra:a_ledger_number = :eg:a_ledger_number and :ra:a_account_code = :eg:a_account_code), 0),
 			    a_comment = :i_eg_desig_notes,
-			    a_gift_admin_subtype = (select :ac:a_default_subtype from /apps/kardia/data/Kardia_DB/a_cc_admin_fee/rows ac where :ac:a_ledger_number = :eg:a_ledger_number and :ac:a_cost_center = :eg:a_cost_center),
+			    a_gift_admin_subtype = (select :ac:a_default_subtype from /apps/kardia/data/Kardia_DB/a_fund_admin_fee/rows ac where :ac:a_ledger_number = :eg:a_ledger_number and :ac:a_fund = :eg:a_fund),
 			    p_dn_donor_partner_id = :p_donor_partner_key,
 			    a_dn_gift_type = condition(:i_eg_gift_pmt_type == 'ACH', 'E', 'D'),
 			    a_dn_gift_received_date = :i_eg_gift_trx_date,
@@ -1952,7 +1953,7 @@ gift_import "widget/component-decl"
 			    a_giving_interval = condition(:i_eg_gift_interval = 'MONTHLY', 1, condition(:i_eg_gift_interval = 'QUARTERLY', 3, condition(:i_eg_gift_interval = 'ANNUAL', 12, null))),
 			    p_dn_donor_partner_id = :eg:p_donor_partner_key,
 			    a_autogen = 0,
-			    a_cost_center = :eg:a_cost_center,
+			    a_fund = :eg:a_fund,
 			    s_date_created = getdate(),
 			    s_created_by = user_name(),
 			    s_date_modified = getdate(),
@@ -1979,7 +1980,7 @@ gift_import "widget/component-decl"
 			    :p:a_giving_interval = isnull(:in:a_giving_interval, :p:a_giving_interval) and
 			    :p:a_amount = :in:a_amount and
 			    :p:p_donor_partner_id = :in:p_dn_donor_partner_id and
-			    :p:a_cost_center = :in:a_cost_center and
+			    :p:a_fund = :in:a_fund and
 			    :p:a_is_active = 1 and
 			    isnull(:p:a_start_date, dateadd(day, -1, getdate())) <= getdate() and
 			    isnull(:p:a_end_date, dateadd(day, 1, getdate())) >= getdate()

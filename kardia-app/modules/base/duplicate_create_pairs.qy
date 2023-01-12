@@ -1,5 +1,5 @@
 $Version=2$
-update_descriptives_new "system/query"
+duplicate_create_pairs "system/query"
     {
     sort_type "query/parameter" { type=string; style=notnull; }
     match_dist "query/parameter" { type=integer;}

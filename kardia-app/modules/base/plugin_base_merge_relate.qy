@@ -1,0 +1,34 @@
+$Version=2$
+plugin_base_merge_relate "system/query"
+    {
+    partner_a "query/parameter" { type=string; style=strnull; }
+    partner_b "query/parameter" { type=string; style=strnull; }
+    partner_c "query/parameter" { type=string; style=strnull; }
+
+    sql = " select
+		p_partner_key = condition(:r:p_partner_key = :parameters:partner_a or :r:p_partner_key = :parameters:partner_b or :r:p_partner_key = :parameters:partner_c, :r:p_partner_key, :r:p_relation_key),
+		p_data_source = 'Relationship',
+		p_data_key = replace(:r:name, '|', ':'),
+		p_data_desc = condition(:r:p_partner_key = :parameters:partner_a or :r:p_partner_key = :parameters:partner_b or :r:p_partner_key = :parameters:partner_c, :rt:p_relation_type_rev_label + ' of ' + :rt:p_relation_type_label, :rt:p_relation_type_label + ' of ' + :rt:p_relation_type_rev_label) + ' ' + condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name + ' ' + condition(char_length(:p:p_given_name + :p:p_surname) > 0, '- ', ''), '') + isnull(:p:p_given_name + ' ','') + isnull(:p:p_surname + ' ',''),
+		p_short_data_desc = condition(:r:p_partner_key = :parameters:partner_a or :r:p_partner_key = :parameters:partner_b or :r:p_partner_key = :parameters:partner_c, :rt:p_relation_type_rev_label + '|' + :rt:p_relation_type_label, :rt:p_relation_type_label + '|' + :rt:p_relation_type_rev_label) + ' ' + condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name + ' ' + condition(char_length(:p:p_given_name + :p:p_surname) > 0, '- ', ''), '') + isnull(:p:p_given_name + ' ','') + isnull(:p:p_surname + ' ',''),
+		p_date_start = null,
+		p_date_end = null,
+		p_allow_copy = 1,
+		p_allow_multiple = 1,
+		p_allow_delete = 1,
+		p_default_copy = 0,
+		p_default_marriage_copy = 0,
+		p_default_marriage_move = 0,
+		p_default_multiple = 1,
+		p_allow_collate = 1,
+		p_comment = null
+	    from
+		identity /apps/kardia/data/Kardia_DB/p_partner_relationship/rows r,
+		/apps/kardia/data/Kardia_DB/p_partner_relationship_type/rows rt,
+		/apps/kardia/data/Kardia_DB/p_partner/rows p
+	    where
+		(:r:p_partner_key = :parameters:partner_a or :r:p_partner_key = :parameters:partner_b or :r:p_partner_key = :parameters:partner_c or :r:p_relation_key = :parameters:partner_a or :r:p_relation_key = :parameters:partner_b or :r:p_relation_key = :parameters:partner_c) and
+		:rt:p_relation_type =* :r:p_relation_type and
+		:p:p_partner_key = condition(:r:p_partner_key = :parameters:partner_a or :r:p_partner_key = :parameters:partner_b or :r:p_partner_key = :parameters:partner_c, :r:p_relation_key, :r:p_partner_key)
+	    ";
+    }

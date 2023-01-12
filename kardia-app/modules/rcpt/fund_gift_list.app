@@ -12,7 +12,7 @@ fund_gift_list "widget/page"
 
     ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; deploy_to_client=yes; }
     period "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
-    costctr "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
+    fund "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
 
     rpt_form "widget/form"
 	{
@@ -30,7 +30,7 @@ fund_gift_list "widget/page"
 
 	    f_ledger "widget/component" { width=350; height=24; path="/sys/cmp/smart_field.cmp"; field='ledger'; ctl_type=label; text='Ledger:'; value=runserver(:this:ledger); form=rpt_form; label_width=120; }
 
-	    f_costctr "widget/component" { width=350; height=24; path="/apps/kardia/modules/base/editbox_tree.cmp"; field="costctr"; popup_source=runserver("/apps/kardia/modules/gl/costctrs.qyt/" + :this:ledger + "/"); popup_text="Choose Cost Center:"; text="Cost Center:"; attach_point=editbox; empty_desc = "required"; label_width=120; }
+	    f_fund "widget/component" { width=350; height=24; path="/apps/kardia/modules/base/editbox_tree.cmp"; field="fund"; popup_source=runserver("/apps/kardia/modules/gl/funds.qyt/" + :this:ledger + "/"); popup_text="Choose Fund:"; text="Fund:"; attach_point=editbox; empty_desc = "required"; label_width=120; }
 
 	    f_period "widget/component" { width=350; height=24; path="/sys/cmp/smart_field.cmp"; field="period"; text="Beginning Period:"; empty_desc = "required"; ctl_type=dropdown; sql=runserver("select :a_period_desc + ' - ' + :a_period, :a_period from /apps/kardia/data/Kardia_DB/a_period/rows where :a_summary_only = 0 and :a_ledger_number = " + quote(:this:ledger) + " order by :a_start_date desc"); label_width=120; }
 	    f_startday "widget/component" { width=350; height=24; path="/sys/cmp/smart_field.cmp"; field="startday"; text="Start Day:"; ctl_type=editbox; empty_desc = "optional: 1 - 31"; label_width=120; }

@@ -70,7 +70,7 @@ journal_entry "widget/component-decl"
 
     trx_osrc "widget/osrc"
 	{
-	sql = "SELECT a_amount_plus = condition(:t:a_amount > $0, :t:a_amount, null), a_amount_minus = condition(:t:a_amount < $0, :t:a_amount, null), a_cc_disp = '' + :t:a_cost_center + ' - ' + isnull(:c:a_cc_desc, '**INVALID**'), a_acct_disp = '' + :t:a_account_code + ' - ' + isnull(:a:a_acct_desc, '**INVALID**'), :t:a_account_category, :t:a_ledger_number, :t:a_batch_number, :t:a_journal_number, :t:a_transaction_number, :t:a_period, :t:a_effective_date, :t:a_cost_center, :t:a_account_code, :t:a_amount, :t:a_modified, :t:a_posted, :t:a_corrected, :t:a_correcting, :t:a_transaction_type, :t:a_reconciled, :t:a_postprocessed, :t:a_postprocess_type, :t:a_origin, :t:a_recv_document_id, :t:a_sent_document_id, :t:p_ext_partner_id, :t:p_int_partner_id, :t:a_receipt_sent, :t:a_receipt_desired, :t:a_first_gift, :t:a_gift_type, :t:a_goods_provided, :t:a_gift_received_date, :t:a_gift_postmark_date, :t:a_comment, :t:s_date_created, :t:s_created_by, :t:s_date_modified, :t:s_modified_by FROM IDENTITY /apps/kardia/data/Kardia_DB/a_transaction/rows t, /apps/kardia/data/Kardia_DB/a_account/rows a, /apps/kardia/data/Kardia_DB/a_cost_center/rows c WHERE :t:a_account_code *= :a:a_account_code and :t:a_ledger_number *= :a:a_ledger_number and :t:a_cost_center *= :c:a_cost_center and :t:a_ledger_number *= :c:a_ledger_number ORDER BY :t:a_journal_number, :t:a_transaction_number";
+	sql = "SELECT a_amount_plus = condition(:t:a_amount > $0, :t:a_amount, null), a_amount_minus = condition(:t:a_amount < $0, :t:a_amount, null), a_cc_disp = '' + :t:a_fund + ' - ' + isnull(:c:a_fund_desc, '**INVALID**'), a_acct_disp = '' + :t:a_account_code + ' - ' + isnull(:a:a_acct_desc, '**INVALID**'), :t:a_account_category, :t:a_ledger_number, :t:a_batch_number, :t:a_journal_number, :t:a_transaction_number, :t:a_period, :t:a_effective_date, :t:a_fund, :t:a_account_code, :t:a_amount, :t:a_modified, :t:a_posted, :t:a_corrected, :t:a_correcting, :t:a_transaction_type, :t:a_reconciled, :t:a_postprocessed, :t:a_postprocess_type, :t:a_origin, :t:a_recv_document_id, :t:a_sent_document_id, :t:p_ext_partner_id, :t:p_int_partner_id, :t:a_receipt_sent, :t:a_receipt_desired, :t:a_first_gift, :t:a_gift_type, :t:a_goods_provided, :t:a_gift_received_date, :t:a_gift_postmark_date, :t:a_comment, :t:s_date_created, :t:s_created_by, :t:s_date_modified, :t:s_modified_by FROM IDENTITY /apps/kardia/data/Kardia_DB/a_transaction/rows t, /apps/kardia/data/Kardia_DB/a_account/rows a, /apps/kardia/data/Kardia_DB/a_fund/rows c WHERE :t:a_account_code *= :a:a_account_code and :t:a_ledger_number *= :a:a_ledger_number and :t:a_fund *= :c:a_fund and :t:a_ledger_number *= :c:a_ledger_number ORDER BY :t:a_journal_number, :t:a_transaction_number";
 	baseobj = "/apps/kardia/data/Kardia_DB/a_transaction/rows";
 	replicasize=100;
 	readahead=25;
@@ -162,7 +162,7 @@ journal_entry "widget/component-decl"
 		    t_a_posted "widget/table-column" { title="Post"; fieldname="a_posted"; width=40; type=check; }
 		    t_a_jnl_num "widget/table-column" { title="Jnl"; fieldname="a_journal_number"; width=30; }
 		    t_a_trx_num "widget/table-column" { title="Trx"; fieldname="a_transaction_number"; width=30; }
-		    t_a_costctr "widget/table-column" { title="Cost Center"; fieldname="a_cc_disp"; width=135; }
+		    t_a_fund "widget/table-column" { title="Fund"; fieldname="a_cc_disp"; width=135; }
 		    t_a_ctlacct "widget/table-column" { title="Ctl"; fieldname="a_account_category"; width=30; }
 		    t_a_acct "widget/table-column" { title="Account"; fieldname="a_acct_disp"; width=125; }
 		    t_a_amtp "widget/table-column" { title="Debit (+)"; fieldname="a_amount_plus"; width=90; align=right; }
@@ -190,25 +190,25 @@ journal_entry "widget/component-decl"
 		    f_trx_cc "widget/component" 
 			{ 
 			path="/apps/kardia/modules/base/editbox_tree.cmp"; 
-			field=a_cost_center; 
-			text="Cost Ctr:"; 
-			tooltip="Cost Center Number"; 
+			field=a_fund; 
+			text="Fund:"; 
+			tooltip="Fund Number"; 
 			label_width=90; 
-			popup_source = runserver("/apps/kardia/modules/gl/costctrs.qyt/" + :this:ledger + "/");
-			popup_text="Select Cost Center:";
+			popup_source = runserver("/apps/kardia/modules/gl/funds.qyt/" + :this:ledger + "/");
+			popup_text="Select Fund:";
 
-			cc_get_desc_1 "widget/connector" { event=LoseFocus; event_condition=runclient(:trx_form:is_savable); target=ccdesc_osrc; action=QueryParam; a_ledger_number=runclient(:batch_osrc:a_ledger_number); a_cost_center=runclient(:f_trx_cc:content); }
+			cc_get_desc_1 "widget/connector" { event=LoseFocus; event_condition=runclient(:trx_form:is_savable); target=ccdesc_osrc; action=QueryParam; a_ledger_number=runclient(:batch_osrc:a_ledger_number); a_fund=runclient(:f_trx_cc:content); }
 
 			ccdesc_osrc "widget/osrc"
 			    {
-			    ccdesc_param1 "widget/parameter" { type=string; param_name=a_cost_center; }
+			    ccdesc_param1 "widget/parameter" { type=string; param_name=a_fund; }
 			    ccdesc_param2 "widget/parameter" { type=string; param_name=a_ledger_number; }
-			    sql = "select a_cc_desc = isnull(first(:cc:a_cc_desc),'**INVALID**'), :parameters:a_cost_center from /apps/kardia/data/Kardia_DB/a_cost_center/rows cc where :cc:a_cost_center = :parameters:a_cost_center and :cc:a_ledger_number = :parameters:a_ledger_number";
+			    sql = "select a_fund_desc = isnull(first(:cc:a_fund_desc),'**INVALID**'), :parameters:a_fund from /apps/kardia/data/Kardia_DB/a_fund/rows cc where :cc:a_fund = :parameters:a_fund and :cc:a_ledger_number = :parameters:a_ledger_number";
 			    autoquery = never;
 			    replicasize=2;
 			    readahead=2;
 
-			    cc_get_desc_2 "widget/connector" { event=EndQuery; event_condition=runclient(:ccdesc_osrc:a_cost_center = :f_trx_cc:content); target=f_trx_cc; action=SetValueDescription; Description=runclient(:ccdesc_osrc:a_cc_desc); }
+			    cc_get_desc_2 "widget/connector" { event=EndQuery; event_condition=runclient(:ccdesc_osrc:a_fund = :f_trx_cc:content); target=f_trx_cc; action=SetValueDescription; Description=runclient(:ccdesc_osrc:a_fund_desc); }
 			    }
 			}
 		    f_trx_acct "widget/component"

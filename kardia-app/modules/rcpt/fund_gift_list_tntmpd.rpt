@@ -13,11 +13,11 @@ fund_gift_list_tntmpd "system/report"
     marginbottom=3;
 
     // Give it an intelligent filename
-    filename = runserver("gifts_" + :this:costctr + "_" + :this:period + "_day" + :this:startday + "-" + :this:endday + ".tntdatasync");
+    filename = runserver("gifts_" + :this:fund + "_" + :this:period + "_day" + :this:startday + "-" + :this:endday + ".tntdatasync");
 
     // Parameters for TntMPD gift/donor list report
     ledger "report/parameter" { type=string; default=null; }
-    costctr "report/parameter" { type=string; default=null; }
+    fund "report/parameter" { type=string; default=null; }
     period "report/parameter" { type=string; default=null; }
     startday "report/parameter" { type=integer; default=1; }
     endday "report/parameter" { type=integer; default=31; }
@@ -30,20 +30,20 @@ fund_gift_list_tntmpd "system/report"
     rowcount "report/parameter" { type=integer; direction=out; default=runserver(isnull(:gift_qy:all_cnt, 0)); }
     is_empty "report/parameter" { type=integer; direction=out; default=runserver(condition(isnull(:gift_qy:all_cnt, 0) == 0, 1, 0)); }
 
-    // What costctrs are we reporting on?
-    cclist_qy "report/query"
+    // What funds are we reporting on?
+    fundlist_qy "report/query"
 	{
 	sql = "	SELECT
-			cclist = ',' + sum(:c:a_cost_center + ',')
+			fundlist = ',' + sum(:c:a_fund + ',')
 		FROM
-			/apps/kardia/data/Kardia_DB/a_cost_center/rows c
+			/apps/kardia/data/Kardia_DB/a_fund/rows c
 		WHERE
 			:c:a_ledger_number = :this:ledger and
-			(:c:a_bal_cost_center = :this:costctr or :c:a_cost_center = :this:costctr)
+			(:c:a_bal_fund = :this:fund or :c:a_fund = :this:fund)
 		";
 	}
 
-    // Which gift items match the cost ctr list?
+    // Which gift items match the fund list?
     item_qy "report/query"
 	{
 	sql = "	SELECT
@@ -56,7 +56,7 @@ fund_gift_list_tntmpd "system/report"
 			:i:a_amount != $0 and
 			:i:a_posted = 1 and
 			:i:a_confidential = 0 and
-			charindex(',' + rtrim(:i:a_cost_center) + ',', :cclist_qy:cclist) > 0
+			charindex(',' + rtrim(:i:a_fund) + ',', :fundlist_qy:fundlist) > 0
 		";
 	}
 
@@ -79,7 +79,7 @@ fund_gift_list_tntmpd "system/report"
 			-- :i:a_period = :g:a_period and
 			-- :i:a_batch_number = :g:a_batch_number and
 			-- :i:a_gift_number = :g:a_gift_number and
-			-- charindex(',' + rtrim(:i:a_cost_center) + ',', :cclist_qy:cclist) > 0
+			-- charindex(',' + rtrim(:i:a_fund) + ',', :fundlist_qy:fundlist) > 0
 		GROUP BY
 			:g:p_donor_partner_id
 		";
@@ -139,7 +139,7 @@ fund_gift_list_tntmpd "system/report"
 			-- amount = round(convert(double,:i:a_amount),2),
 			amount = :i:a_amount,
 			donation_id = :i:name,
-			designation = :i:a_cost_center + condition(:i:a_account_code != '4100' and :i:a_account_code != '2120', ':' + :i:a_account_code, ''),
+			designation = :i:a_fund + condition(:i:a_account_code != '4100' and :i:a_account_code != '2120', ':' + :i:a_account_code, ''),
 			motivation = :i:a_motivational_code,
 			anon = :i:a_confidential
 		FROM
@@ -159,7 +159,7 @@ fund_gift_list_tntmpd "system/report"
 			:i:a_gift_number = :g:a_gift_number and
 			:i:a_amount != $0 and
 			:i:a_confidential = 0 and
-			charindex(',' + rtrim(:i:a_cost_center) + ',', :cclist_qy:cclist) > 0
+			charindex(',' + rtrim(:i:a_fund) + ',', :fundlist_qy:fundlist) > 0
 		ORDER BY
 			isnull(:g:a_gift_postmark_date, :g:a_gift_received_date)
 		";
@@ -181,10 +181,10 @@ fund_gift_list_tntmpd "system/report"
 		";
 	}
 
-    // Cost center list - entire report
+    // Fund list - entire report
     form "report/form"
 	{
-	source = cclist_qy,item_qy;
+	source = fundlist_qy,item_qy;
 
 	// Table for file heading and donor list
 	donor_table "report/table"
