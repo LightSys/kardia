@@ -227,8 +227,9 @@ def main():
 	# Check the conf file for valid entry
 	if ("Host " not in lines[0] or
 	"HostName " not in lines[1] or
-	"IdentityFile ~/.ssh/id_rsa" not in lines[2] or
-	"User " not in lines[3]):
+	"Port " not in lines[2] or
+	"IdentityFile ~/.ssh/id_rsa" not in lines[3] or
+	"User " not in lines[4]):
 		return "ERROR: ssh config is invalid"
 		
 	# Validate RSA keys-------------------------------------------------

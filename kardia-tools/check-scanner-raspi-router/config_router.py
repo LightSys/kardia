@@ -997,8 +997,8 @@ except:
 
 try:
 	ssh_config = open(r"/root/.ssh/config", "w")
-	ssh_config.write("Host " + server_ip + "\nHostName " + server_ip + "\n"
-	"IdentityFile ~/.ssh/id_rsa\nUser " + server_user + "\n")
+	ssh_config.write("Host " + server_ip + "\n  HostName " + server_ip + "\n  Port " + server_conn_port + "\n"
+	"  IdentityFile ~/.ssh/id_rsa\n  User " + server_user + "\n")
 	ssh_config.close()
 except:
 	exit_with_error("Failed to create ssh config file")
@@ -1069,7 +1069,7 @@ else:
 	print_status("Copying public key to server...")
 	try:
 		os.system('sudo sshpass -p ' + server_password + ' ssh-copy-id ' 
-		+ server_ip)
+		+ '-p ' + server_conn_port + ' ' + server_ip)
 	except:
 		exit_with_error("Failed to copy public key to server: Check"
 		"server username, IP address, and password")
