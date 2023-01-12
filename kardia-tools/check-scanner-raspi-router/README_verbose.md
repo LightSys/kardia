@@ -1,7 +1,7 @@
 # How to set up a Raspberry Pi as a router for a check scanner
 ## 1. Set up the Raspberry Pi as an Ethernet-to-Wifi router
 
-Taken from these tutorials:
+These tutorials have useful info:
 - https://www.elementzonline.com/blog/sharing-or-bridging-internet-to-ethernet-from-wifi-raspberry-pI
 - https://www.youtube.com/watch?v=TtLNue7gzZA
 
@@ -9,7 +9,8 @@ Taken from these tutorials:
 
 Open the terminal and enter:\
 `sudo -i`\
-This will have you running commands as root on the Pi. **Ensure you are running as root on the Pi for this entire setup process.**
+This will have you running commands as root on the Pi.\
+**Ensure you are running as root on the Pi for this entire setup process.**
 
 Enter this command:\
 `raspi-config`\
@@ -31,14 +32,16 @@ Add this to the file:\
 This will cause the Raspberry Pi to automatically connect to the WiFi network on startup.\
 Save and close the file.
 
-### 2. Install the dnsmasq package with these commands:
+### 2. Update and install needed packages with these commands:
 `apt update`\
 `apt upgrade` # This command will likely take a long time to complete\
-`apt install dnsmasq`
+`apt install dnsmasq`\
+`apt install udhcpd`\
+`apt install autossh`
 
-### 3. Set up routing:
+### 3. Configure IP addresses:
 
-Open the DHCP configuration file with:\
+Open the DHCP client configuration file with:\
 `nano /etc/dhcpcd.conf`\
 Scroll to the bottom and enter these two lines to set up the subnet:\
 `interface eth0`\
@@ -50,9 +53,20 @@ Rename the old DNS config file and create a new one with these commands:\
 `nano /etc/dnsmasq.conf`\
 Enter these two lines in the new file:\
 `interface=eth0`\
-`dhcp-range=*ex_ip_start*, *ex_ip_end*,*ex_subnet_masq*,*ex_dhcp_reservation_duration*` # Example: dhcp-range=192.168.2.15, 192,168.2.15,255.255.255.0,30d\
+`dhcp-range=*ex_ip_start*, *ex_ip_end*,*ex_subnet_masq*,*ex_dhcp_reservation_duration*` # Example: dhcp-range=192.168.2.15,192,168.2.15,255.255.255.0,10d\
 ***Important Note:** You probably want to make sure you have the same IP address for \*ex_ip_start\* and \*ex_ip_end\* to ensure your check scanner is always assigned the same IP address. Otherwise, you will have to look up the IP address and change your AutoSSH script every time the IP address gets renewed.*\
 Save and close the file.
+
+Open the DHCP server configuration file with:\
+`nano /etc/udhcpd.conf`\
+Find the two lines that begin with `start` and `end`.\
+Replace the default IP addresses with `*ex_ip_start*` and `*ex_ip_end*`, the same addresses you used in the DNS config file.\
+When you are done, the two lines should look something like this:\
+`start *ex_ip_start*`\
+`end *ex_ip_end*`\
+Save and close the file.
+
+### 4. Set up routing:
 
 Configure the firewall to forward traffic by opening this file:\
 `nano /etc/sysctl.conf`\
@@ -70,14 +84,10 @@ Add these three lines above `exit 0`:\
 `sudo iptables -A FORWARD -i eth0 -o wlan0 -j ACCEPT`\
 Save and close the file.
 
-Finally, reboot the Pi, open the terminal, run as root, and run these commands to start dhcp and dnsmasq:\
-`systemctl daemon-reload`\
-`service dnsmasq start`\
-`service dhcpcd start`
-
 ## 2. Set up key authentication for SSH on the Raspberry Pi
 
-This page has useful troubleshooting hints: https://superuser.com/questions/1137438/ssh-key-authentication-fails
+This page has useful troubleshooting hints:\
+https://superuser.com/questions/1137438/ssh-key-authentication-fails
 
 ### 1. Configure the connection:
 
@@ -98,8 +108,8 @@ Save and close the file.
 
 ### 2. Generate a new public/private key pair:
 
-Enter this command:\
-`ssh-keygen -m pem`\
+Enter this command to generate the key pair:\
+`ssh-keygen -q -m pem -N '' -f ~/.ssh/id_rsa`\
 Hit Enter to save the keys in the default location, then hit Enter twice more to ignore the password prompts.\
 
 Check to ensure the keys were generated with this command:\
@@ -134,17 +144,16 @@ Now exit the server and reconnect using SSH. You should not be prompted for a pa
 
 ## 3. Set up an AutoSSH Tunnel from the Pi to the Server
 
-This article has a lot of useful info: https://www.everythingcli.org/ssh-tunnelling-for-fun-and-profit-autossh/
+This article has a lot of useful info:\
+https://www.everythingcli.org/ssh-tunnelling-for-fun-and-profit-autossh/
 
 ### 1. Setup AutoSSH and Create a systemd Script:
 
 **Ensure you are still runnning as root on the Pi.**
 
-Install AutoSSH using:\
-`apt install autossh`
-
-To ensure it is working properly, connect to your server using:\
+To ensure AutoSSH installed properly, connect to your server using:\
 `autossh *ex_ip_address*`
+Exit the connection and continue.
 
 Create a new file on the Pi using:\
 `nano /etc/systemd/system/check-scanner-autossh.service` (The name of the .service file can be different if you would like)\
@@ -167,15 +176,18 @@ In the file, enter this:\
 `WantedBy=multi-user.target`\
 Save and close the file.
 
-### 2. Run the systemd AutoSSH Service
+### 2. Enable and run all services
 
-Enter these commands to enable the service to start at boot and run the service:\
+Enter these commands to enable the service to start at boot and start all modified services:\
 `systemctl daemon-reload`\
+`service dnsmasq start`\
+`service dhcpcd start`\
+`service udhcpd start`\
 `systemctl enable check-scanner-autossh.service`\
 `sytemctl start check-scanner-autossh.service`
 
 Check the status of the service with:\
-`systemctl status check-scanner-autossh.service`
+`systemctl status check-scanner-autossh.service`\
 The output should look something like this:\
 `● check-scanner-autossh.service - Check Scanner AutoSSH Tunnel`\
    `Loaded: loaded (/etc/systemd/system/check-scanner-autossh.service; enabled; vendor preset: enabled)`\
@@ -183,11 +195,11 @@ The output should look something like this:\
  `Main PID: 459 (autossh)`\
     `Tasks: 2 (limit: 1592)`\
    `CGroup: /system.slice/check-scanner-autossh.service`\
-           `├─ 459 /usr/lib/autossh/autossh -N -o ServerAliveInterval 30 -o ServerAliveCountMax 3 -R 0:localhost:22 -R 21443:192.168.2.15:443 10.5.128.92 -o ExitOnForwardFailure yes`\
-           `└─1022 /usr/bin/ssh -L 45032:127.0.0.1:45032 -R 45032:127.0.0.1:45033 -N -o ServerAliveInterval 30 -o ServerAliveCountMax 3 -R 0:localhost:22 -R 21443:192.168.2.15:443 -o ExitOnForwardFailure yes 10.5.128.92`
+           `├─ 459 /usr/lib/autossh/autossh -N -o ServerAliveInterval 30 -o ServerAliveCountMax 3 -R 0:localhost:22 -R 21443:192.168.2.15:443 ##.#.###.## -o ExitOnForwardFailure yes`\
+           `└─1022 /usr/bin/ssh -L 45032:127.0.0.1:45032 -R 45032:127.0.0.1:45033 -N -o ServerAliveInterval 30 -o ServerAliveCountMax 3 -R 0:localhost:22 -R 21443:192.168.2.15:443 -o ExitOnForwardFailure yes ##.#.###.##`
 
 `Jun 29 14:50:25 raspberrypi autossh[459]: ssh child pid is 932`\
-`Jun 29 14:50:25 raspberrypi autossh[459]: ssh: connect to host 10.5.128.92 port 22: Network is unreachable`\
+`Jun 29 14:50:25 raspberrypi autossh[459]: ssh: connect to host ##.#.###.## port 22: Network is unreachable`\
 `Jun 29 14:50:25 raspberrypi autossh[459]: ssh exited with error status 255; restarting ssh`\
 `Jun 29 14:50:32 raspberrypi autossh[459]: starting ssh (count 12)`\
 `Jun 29 14:50:32 raspberrypi autossh[459]: ssh child pid is 1022`\
@@ -197,14 +209,15 @@ The output should look something like this:\
 `Jun 29 14:50:32 raspberrypi autossh[459]:`\
 `Jun 29 14:50:32 raspberrypi autossh[459]: Allocated port 36562 for remote forward to localhost:22`
 
-Reboot the Pi, open the terminal, and check the status of check-scanner-autossh.service again. If you see the above output again, then the AutoSSH correctly started during boot.
+Reboot the Pi, open the terminal, and check the status of check-scanner-autossh.service again. If you see something like the above output again, then the AutoSSH service correctly started during boot.
 
 ### 3. (Troubleshooting Step) If AutoSSH is failing on boot:
 
 In the terminal, manually run your AutoSSH command on the ExecStart line of your .service systemd script, i.e.:\
 `autossh -N -o "ServerAliveInterval 30" -o "ServerAliveCountMax 3" -R 0:localhost:22 -R *ex_port_number*:192.168.2.15:443 *ex_ip_address* -o "ExitOnForwardFailure yes"` # Make sure you use the settings you put in your systemd script.\
+
 This command may produce an error like this:\
 `Error: remote port forwarding failed for listen port *ex_port_number*`
 
-If this happens, simply try changing your port number to a different version of `xx443`.\
+If this happens, simply try changing your `*ex_port_number*` to a different version of `xx443`.\
 Repeat until you no longer get this error.
