@@ -83,8 +83,8 @@ manage_support_review "widget/component-decl"
 
 	    sql = " select
 			:srt:a_ledger_number,
-			:srt:a_cost_center,
-			:c:a_cc_desc,
+			:srt:a_fund,
+			:c:a_fund_desc,
 			:srt:a_comment,
 			:srt:a_amount,
 			:srt:a_target_amount,
@@ -94,7 +94,7 @@ manage_support_review "widget/component-decl"
 					from
 					    /apps/kardia/data/Kardia_DB/a_giving_pattern_flag/rows gpf
 					where
-					    :gpf:a_cost_center = :srt:a_cost_center and
+					    :gpf:a_fund = :srt:a_fund and
 					    :gpf:a_ledger_number = :srt:a_ledger_number and
 					    :a_flag_resolution is null),
 			support_amt =   (select
@@ -102,7 +102,7 @@ manage_support_review "widget/component-decl"
 					from
 					    /apps/kardia/data/Kardia_DB/a_giving_pattern/rows gp
 					where
-					    :gp:a_cost_center = :srt:a_cost_center and
+					    :gp:a_fund = :srt:a_fund and
 					    :gp:a_ledger_number = :srt:a_ledger_number),
 			status = condition(isnull(:a_amount,$0) = $0, 'Incomplete', 'Complete'),
 			review_amt =    condition(isnull(:a_amount,$0) = $0, null, :a_amount),
@@ -112,37 +112,37 @@ manage_support_review "widget/component-decl"
 					from
 					    /apps/kardia/data/Kardia_DB/a_giving_pattern/rows gp
 					where
-					    :gp:a_cost_center = :srt:a_cost_center and
+					    :gp:a_fund = :srt:a_fund and
 					    :gp:a_ledger_number = :srt:a_ledger_number))
 					/ convert(double, :a_target_amount), 1),
-			manager_list = (select sum(condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, condition(char_length(:p:p_preferred_name) > 1, :p:p_preferred_name, :p:p_given_name) + ' ' + :p:p_surname) + '\n') - '\n' from /apps/kardia/data/Kardia_DB/a_cc_staff/rows cs, /apps/kardia/data/Kardia_DB/p_partner/rows p where :cs:a_ledger_number = :srt:a_ledger_number and :cs:a_cost_center = :srt:a_cost_center and :p:p_partner_key = :cs:p_staff_partner_key),
+			manager_list = (select sum(condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, condition(char_length(:p:p_preferred_name) > 1, :p:p_preferred_name, :p:p_given_name) + ' ' + :p:p_surname) + '\n') - '\n' from /apps/kardia/data/Kardia_DB/a_fund_staff/rows cs, /apps/kardia/data/Kardia_DB/p_partner/rows p where :cs:a_ledger_number = :srt:a_ledger_number and :cs:a_fund = :srt:a_fund and :p:p_partner_key = :cs:p_staff_partner_key),
 			:srt:s_date_created,
 			:srt:s_created_by,
 			:srt:s_date_modified,
 			:srt:s_modified_by
 		    from
 			identity /apps/kardia/data/Kardia_DB/a_support_review_target/rows srt,
-			/apps/kardia/data/Kardia_DB/a_cost_center/rows c
+			/apps/kardia/data/Kardia_DB/a_fund/rows c
 		    where
 			:srt:a_ledger_number = :parameters:a_ledger_number and
 			:srt:a_review = :parameters:a_review and
-			:srt:a_cost_center = :c:a_cost_center and
+			:srt:a_fund = :c:a_fund and
 			:srt:a_ledger_number = :c:a_ledger_number
 		    order by
-			:srt:a_cost_center asc
+			:srt:a_fund asc
 		    ;
 
 		    select
 			a_ledger_number = '',
-			a_cost_center = 'TOTAL:',
-			a_cc_desc = '',
+			a_fund = 'TOTAL:',
+			a_fund_desc = '',
 			manager_list = '',
 			unanswered = sum( (select
 					    count(1)
 					from
 					    /apps/kardia/data/Kardia_DB/a_giving_pattern_flag/rows gpf
 					where
-					    :gpf:a_cost_center = :srt:a_cost_center and
+					    :gpf:a_fund = :srt:a_fund and
 					    :gpf:a_ledger_number = :srt:a_ledger_number and
 					    :a_flag_resolution is null)
 					),
@@ -230,14 +230,14 @@ manage_support_review "widget/component-decl"
 				    :gpf:s_date_modified < dateadd(day, 10, :sr:a_review_date) and
 				    :gpf:a_ledger_number = :sr:a_ledger_number and
 				    :gp:a_ledger_number = :gpf:a_ledger_number and
-				    :gp:a_cost_center = :gpf:a_cost_center and
+				    :gp:a_fund = :gpf:a_fund and
 				    :gp:p_donor_partner_key = :gpf:p_donor_partner_key and
 				    :gp:a_pattern_id = :gpf:a_pattern_id and
 				    :p:p_partner_key = :gpf:p_donor_partner_key and
 				    :ft:flag_code = :gpf:a_flag_type and
 				    :fr:tag =* :gpf:a_flag_resolution and
 				    :gpf:a_ledger_number = :parameters:p_ledger and
-				    :gpf:a_cost_center = :parameters:p_fund and
+				    :gpf:a_fund = :parameters:p_fund and
 				    :sr:a_review = :parameters:p_review
 				";
 			readahead=20;
@@ -262,7 +262,7 @@ manage_support_review "widget/component-decl"
 			    key_1=p_ledger;
 			    target_key_1=a_ledger_number;
 			    key_2=p_fund;
-			    target_key_2=a_cost_center;
+			    target_key_2=a_fund;
 			    key_3=p_review;
 			    target_key_3=a_review;
 			    revealed_only=yes;
@@ -298,7 +298,7 @@ manage_support_review "widget/component-decl"
 			}
 		    }
 
-		ft_fund "widget/table-column" { title = "Fund"; value=runclient(:funds_osrc:a_cost_center); width=140; style="bold"; font_size=16; caption_value=runclient(:funds_osrc:a_cc_desc); }
+		ft_fund "widget/table-column" { title = "Fund"; value=runclient(:funds_osrc:a_fund); width=140; style="bold"; font_size=16; caption_value=runclient(:funds_osrc:a_fund_desc); }
 		ft_managers "widget/table-column" { title = ""; value=runclient(:funds_osrc:manager_list); width=140; wrap=yes; }
 		ft_stat "widget/table-column" { title = "Status"; value=runclient(:funds_osrc:status); width=100; style=bold; font_size=16; }
 		ft_qs "widget/table-column" { title = "Q's"; value=runclient(condition(:review_osrc:is_latest, :funds_osrc:unanswered, '-')); width=40; style=bold; font_size=16; align=right; }

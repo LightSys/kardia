@@ -20,6 +20,7 @@ egsapi "application/http"
     // Other common parameters
     DonorGUID "http/parameter" { type=string; source=param; usage=post; }
     StatusType "http/parameter" { type=string; source=param; usage=post; }
+    ShowAll "http/parameter" { type=string; source=param; usage=post; }
 
     // Connection information -- https://www.egsnetwork.com/post/post_responder_v2.php
     server = "www.egsnetwork.com";

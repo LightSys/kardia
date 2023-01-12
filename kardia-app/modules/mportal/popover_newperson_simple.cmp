@@ -863,7 +863,7 @@ popover_newperson_simple "widget/component-decl"
 						    /apps/kardia/data/Kardia_DB/a_giving_pattern/rows gp
 						where
 						    :gp:a_ledger_number = :parameters:donation_ledger and
-						    :gp:a_cost_center = :parameters:donation_fund
+						    :gp:a_fund = :parameters:donation_fund
 						";
 					baseobj = "/apps/kardia/data/Kardia_DB/a_giving_pattern/rows";
 					readahead=100;
@@ -882,7 +882,7 @@ popover_newperson_simple "widget/component-decl"
 
 					donation_form "widget/form"
 					    {
-					    on_save_signal_parent "widget/connector" { event=DataSaved; target=popover_newperson_simple; action=SupportChanged; Ledger=runclient(:donation_osrc:a_ledger_number); Form=runclient(:donation_osrc:a_cost_center); }
+					    on_save_signal_parent "widget/connector" { event=DataSaved; target=popover_newperson_simple; action=SupportChanged; Ledger=runclient(:donation_osrc:a_ledger_number); Form=runclient(:donation_osrc:a_fund); }
 					    on_save_close_win "widget/connector" { event=DataSaved; target=newp_win; action=Close; }
 
 					    donation_amount "widget/component"
@@ -928,7 +928,7 @@ popover_newperson_simple "widget/component-decl"
 					    don_start "widget/variable" { fieldname=a_start_date; d_s_hints "widget/hints" { default=runclient(getdate()); } }
 					    don_review "widget/variable" { fieldname=a_evaluation_date; d_r_hints "widget/hints" { default=runclient(getdate()); } }
 					    don_ledger "widget/variable" { fieldname=a_ledger_number; d_l_hints "widget/hints" { default=runclient(:ledger_var:value); } }
-					    don_fund "widget/variable" { fieldname=a_cost_center; d_c_hints "widget/hints" { default=runclient(:fund_var:value); } }
+					    don_fund "widget/variable" { fieldname=a_fund; d_c_hints "widget/hints" { default=runclient(:fund_var:value); } }
 
 					    newdonation_meta "widget/component" { visual=no; path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
 					    }

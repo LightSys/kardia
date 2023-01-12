@@ -35,19 +35,19 @@ period_comparison "system/report"
 	{
 	sql = runserver("
 		select
-			:c:a_cost_center,
-			:c:a_cc_desc,
-			:c:a_bal_cost_center,
+			:c:a_fund,
+			:c:a_fund_desc,
+			:c:a_bal_fund,
 			:c:a_ledger_number,
 			:c:a_is_posting
 		from
-			/apps/kardia/data/Kardia_DB/a_cost_center/rows c
+			/apps/kardia/data/Kardia_DB/a_fund/rows c
 		where
 			:c:a_ledger_number = :this:ledger
-			" + condition(:this:only_funds is null, '', " and charindex(',' + rtrim(:c:a_bal_cost_center) + ',', ',' + :this:only_funds + ',') > 0") + "
-			" + condition(:this:excl_funds is null, '', " and charindex(',' + rtrim(:c:a_bal_cost_center) + ',', ',' + :this:excl_funds + ',') = 0") + "
+			" + condition(:this:only_funds is null, '', " and charindex(',' + rtrim(:c:a_bal_fund) + ',', ',' + :this:only_funds + ',') > 0") + "
+			" + condition(:this:excl_funds is null, '', " and charindex(',' + rtrim(:c:a_bal_fund) + ',', ',' + :this:excl_funds + ',') = 0") + "
 		order by
-			:c:a_cost_center
+			:c:a_fund
 		");
 	}
 
@@ -68,7 +68,7 @@ period_comparison "system/report"
 			/apps/kardia/data/Kardia_DB/a_account/rows a
 		where
 			:tt:a_ledger_number = :funds_qy:a_ledger_number and
-			:tt:a_cost_center = :funds_qy:a_cost_center and
+			:tt:a_fund = :funds_qy:a_fund and
 			:a:a_account_code = :tt:a_account_code and
 			((:tt:a_account_code >= :info:estart and :tt:a_account_code <= :info:eend) or (:tt:a_account_code >= :info:rstart and :tt:a_account_code <= :info:rend)) and
 			:tt:a_transaction_type != 'B' and
@@ -152,9 +152,9 @@ period_comparison "system/report"
 		font=courier;
 		fontsize=8;
 		marginbottom=0.0;
-		d_cc "report/table-cell" { value=runserver(:funds_qy:a_cost_center); align=left; }
+		d_cc "report/table-cell" { value=runserver(:funds_qy:a_fund); align=left; }
 		d_acct "report/table-cell" { value=runserver(:accts_qy:a_account_code); align=left; }
-		d_desc "report/table-cell" { font=helvetica; value=runserver(:funds_qy:a_cc_desc + " (" + :accts_qy:a_acct_desc + ")"); align=left; }
+		d_desc "report/table-cell" { font=helvetica; value=runserver(:funds_qy:a_fund_desc + " (" + :accts_qy:a_acct_desc + ")"); align=left; }
 		d_amt1 "report/table-cell" { value=runserver(:accts_qy:amt1); align=right; }
 		d_amt2 "report/table-cell" { value=runserver(:accts_qy:amt2); align=right; }
 		d_chg "report/table-cell" { value=runserver(:accts_qy:amt2 - :accts_qy:amt1); align=right; }
@@ -165,7 +165,7 @@ period_comparison "system/report"
 		{
 		condition=runserver(:this:sep_funds != 0);
 		summary=yes;
-		summarize_for = runserver(:funds_qy:a_bal_cost_center);
+		summarize_for = runserver(:funds_qy:a_bal_fund);
 		font=courier;
 		fontsize=8;
 		topborder=0.05;

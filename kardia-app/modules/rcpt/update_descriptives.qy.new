@@ -13,13 +13,13 @@ update_descriptives "system/query"
 	    delete
 		/apps/kardia/data/Kardia_DB/a_descriptives/rows d
 	    where
-		(:parameters:fund is null or :parameters:fund = :d:a_cost_center) and
+		(:parameters:fund is null or :parameters:fund = :d:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
 	    ;
 	    delete
 		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh
 	    where
-		(:parameters:fund is null or :parameters:fund = :dh:a_cost_center) and
+		(:parameters:fund is null or :parameters:fund = :dh:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :dh:p_donor_partner_key)
 	    ;
 
@@ -30,21 +30,21 @@ update_descriptives "system/query"
 		donor = :i:p_dn_donor_partner_id,
 		giftdate = isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date),
 		amount = :i:a_amount,
-		fund = :i:a_cost_center,
+		fund = :i:a_fund,
 		ledger = :i:a_ledger_number,
 		id = row_number(),
-		seg = row_number() - row_number(:i:a_ledger_number, :i:a_cost_center, :i:p_dn_donor_partner_id, :i:a_amount)
+		seg = row_number() - row_number(:i:a_ledger_number, :i:a_fund, :i:p_dn_donor_partner_id, :i:a_amount)
 	    from
 		/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i
 	    where
 		isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) > dateadd(month, 0 - :parameters:lookback, getdate()) and
 		:i:a_posted = 1 and
 		:i:a_amount != $0 and
-		(:parameters:fund is null or :parameters:fund = :i:a_cost_center) and
+		(:parameters:fund is null or :parameters:fund = :i:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :i:p_dn_donor_partner_id)
 	    order by
 		:i:a_ledger_number,
-		:i:a_cost_center,
+		:i:a_fund,
 		:i:p_dn_donor_partner_id,
 		isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) desc
 	    ;
@@ -59,7 +59,7 @@ update_descriptives "system/query"
 	    select
 		-- Primary key
 		a_ledger_number = :ledger,
-		a_cost_center = :fund,
+		a_fund = :fund,
 		p_donor_partner_key = :donor,
 
 		-- Basic descriptives
@@ -109,7 +109,7 @@ update_descriptives "system/query"
 	    select
 		a_ledger_number = :ledger,
 		p_donor_partner_key = :donor,
-		a_cost_center = :fund,
+		a_fund = :fund,
 		a_amount = :amount,
 		a_first_gift = last(:giftdate),
 		a_last_gift = first(:giftdate),
@@ -150,10 +150,10 @@ update_descriptives "system/query"
 	    update
 		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh1
 	    set
-		:dh1:a_prev_end = (select :a_last_gift from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2 where :dh2:a_ledger_number = :dh1:a_ledger_number and :dh2:a_cost_center = :dh1:a_cost_center and :dh2:p_donor_partner_key = :dh1:p_donor_partner_key and :dh2:a_last_gift < :dh1:a_first_gift order by :dh2:a_last_gift desc limit 1),
-		:dh1:a_next_start = (select :a_first_gift from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2 where :dh2:a_ledger_number = :dh1:a_ledger_number and :dh2:a_cost_center = :dh1:a_cost_center and :dh2:p_donor_partner_key = :dh1:p_donor_partner_key and :dh2:a_first_gift > :dh1:a_last_gift order by :dh2:a_first_gift asc limit 1)
+		:dh1:a_prev_end = (select :a_last_gift from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2 where :dh2:a_ledger_number = :dh1:a_ledger_number and :dh2:a_fund = :dh1:a_fund and :dh2:p_donor_partner_key = :dh1:p_donor_partner_key and :dh2:a_last_gift < :dh1:a_first_gift order by :dh2:a_last_gift desc limit 1),
+		:dh1:a_next_start = (select :a_first_gift from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2 where :dh2:a_ledger_number = :dh1:a_ledger_number and :dh2:a_fund = :dh1:a_fund and :dh2:p_donor_partner_key = :dh1:p_donor_partner_key and :dh2:a_first_gift > :dh1:a_last_gift order by :dh2:a_first_gift asc limit 1)
 	    where
-		(:parameters:fund is null or :parameters:fund = :dh1:a_cost_center) and
+		(:parameters:fund is null or :parameters:fund = :dh1:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :dh1:p_donor_partner_key)
 	    ;
 
@@ -179,13 +179,13 @@ update_descriptives "system/query"
 					/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh
 				    where
 					:d:a_ledger_number = :dh:a_ledger_number and
-					:d:a_cost_center = :dh:a_cost_center and
+					:d:a_fund = :dh:a_fund and
 					:d:p_donor_partner_key = :dh:p_donor_partner_key
 				    order by
 					:dh:a_last_gift desc
 				    )
 	    where
-		(:parameters:fund is null or :parameters:fund = :d:a_cost_center) and
+		(:parameters:fund is null or :parameters:fund = :d:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
 	    ;
 	    update
@@ -197,10 +197,10 @@ update_descriptives "system/query"
 		:d:a_hist_1_last = :dh:a_last_gift
 	    where
 		:d:a_ledger_number = :dh:a_ledger_number and
-		:d:a_cost_center = :dh:a_cost_center and
+		:d:a_fund = :dh:a_fund and
 		:d:p_donor_partner_key = :dh:p_donor_partner_key and
 		:d:a_hist_1_amount = :dh:a_amount and
-		(:parameters:fund is null or :parameters:fund = :d:a_cost_center) and
+		(:parameters:fund is null or :parameters:fund = :d:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
 	    ;
 
@@ -214,14 +214,14 @@ update_descriptives "system/query"
 					/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh
 				    where
 					:d:a_ledger_number = :dh:a_ledger_number and
-					:d:a_cost_center = :dh:a_cost_center and
+					:d:a_fund = :dh:a_fund and
 					:d:p_donor_partner_key = :dh:p_donor_partner_key and
 					:dh:a_amount != :d:a_hist_1_amount
 				    order by
 					:dh:a_last_gift desc
 				    )
 	    where
-		(:parameters:fund is null or :parameters:fund = :d:a_cost_center) and
+		(:parameters:fund is null or :parameters:fund = :d:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
 	    ;
 	    update
@@ -233,10 +233,10 @@ update_descriptives "system/query"
 		:d:a_hist_2_last = :dh:a_last_gift
 	    where
 		:d:a_ledger_number = :dh:a_ledger_number and
-		:d:a_cost_center = :dh:a_cost_center and
+		:d:a_fund = :dh:a_fund and
 		:d:p_donor_partner_key = :dh:p_donor_partner_key and
 		:d:a_hist_2_amount = :dh:a_amount and
-		(:parameters:fund is null or :parameters:fund = :d:a_cost_center) and
+		(:parameters:fund is null or :parameters:fund = :d:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
 	    ;
 
@@ -250,7 +250,7 @@ update_descriptives "system/query"
 					/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh
 				    where
 					:d:a_ledger_number = :dh:a_ledger_number and
-					:d:a_cost_center = :dh:a_cost_center and
+					:d:a_fund = :dh:a_fund and
 					:d:p_donor_partner_key = :dh:p_donor_partner_key and
 					:dh:a_amount != :d:a_hist_1_amount and
 					:dh:a_amount != :d:a_hist_2_amount
@@ -258,7 +258,7 @@ update_descriptives "system/query"
 					:dh:a_last_gift desc
 				    )
 	    where
-		(:parameters:fund is null or :parameters:fund = :d:a_cost_center) and
+		(:parameters:fund is null or :parameters:fund = :d:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
 	    ;
 	    update
@@ -270,10 +270,10 @@ update_descriptives "system/query"
 		:d:a_hist_3_last = :dh:a_last_gift
 	    where
 		:d:a_ledger_number = :dh:a_ledger_number and
-		:d:a_cost_center = :dh:a_cost_center and
+		:d:a_fund = :dh:a_fund and
 		:d:p_donor_partner_key = :dh:p_donor_partner_key and
 		:d:a_hist_3_amount = :dh:a_amount and
-		(:parameters:fund is null or :parameters:fund = :d:a_cost_center) and
+		(:parameters:fund is null or :parameters:fund = :d:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
 	    ;
 
@@ -290,7 +290,7 @@ update_descriptives "system/query"
 		(datediff(day, :a_hist_1_first, :a_hist_1_last) >= 365 and
 		(isnull(:a_hist_2_count, 0) <= 1 or :a_hist_2_last < :a_hist_1_first) and
 		(isnull(:a_hist_3_count, 0) <= 1 or :a_hist_3_last < :a_hist_1_first)) and
-		(:parameters:fund is null or :parameters:fund = :d:a_cost_center) and
+		(:parameters:fund is null or :parameters:fund = :d:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
 	    ;
 	    update 
@@ -303,7 +303,7 @@ update_descriptives "system/query"
 		:a_act_lookback_date = condition(:a_hist_1_last < dateadd(day, -366, getdate()), dateadd(day, -366, getdate()), :a_hist_1_last)
 	    where
 		:a_act_average_months = 0 and
-		(:parameters:fund is null or :parameters:fund = :d:a_cost_center) and
+		(:parameters:fund is null or :parameters:fund = :d:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
 	    ;
 	    update 
@@ -314,15 +314,15 @@ update_descriptives "system/query"
 			count(1) = 0 or datediff(day, :d:a_act_lookback_date, :d:a_act_lookahead_date) = 0,
 			null,
 			sum(:i:a_amount) / (datediff(day, :d:a_act_lookback_date, :d:a_act_lookahead_date) / 30.5)
-		) from /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i where isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) >= :d:a_act_lookback_date and isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) <= :d:a_act_lookahead_date and (:i:a_cost_center = :d:a_cost_center) and :i:a_ledger_number = :d:a_ledger_number and :i:p_dn_donor_partner_id = :d:p_donor_partner_key), $0),
+		) from /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i where isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) >= :d:a_act_lookback_date and isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) <= :d:a_act_lookahead_date and (:i:a_fund = :d:a_fund) and :i:a_ledger_number = :d:a_ledger_number and :i:p_dn_donor_partner_id = :d:p_donor_partner_key), $0),
 		:a_act_average_interval = (select condition(
 			count(1) = 0 or datediff(day, :d:a_act_lookback_date, :d:a_act_lookahead_date) = 0,
 			null,
 			(datediff(day, :d:a_act_lookback_date, :d:a_act_lookahead_date) / 30.5) / convert(double, count(1))
-		) from /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i where isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) >= :d:a_act_lookback_date and isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) <= :d:a_act_lookahead_date and :i:a_cost_center = :d:a_cost_center and :i:a_ledger_number = :d:a_ledger_number and :i:p_dn_donor_partner_id = :d:p_donor_partner_key)
+		) from /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i where isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) >= :d:a_act_lookback_date and isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) <= :d:a_act_lookahead_date and :i:a_fund = :d:a_fund and :i:a_ledger_number = :d:a_ledger_number and :i:p_dn_donor_partner_id = :d:p_donor_partner_key)
 	    where
 		:d:a_act_average_interval is null and
-		(:parameters:fund is null or :parameters:fund = :d:a_cost_center) and
+		(:parameters:fund is null or :parameters:fund = :d:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
 	    ;
 
@@ -364,7 +364,7 @@ update_descriptives "system/query"
 				    datediff(day, dateadd(day, 365, :a_last_gift), getdate())
 				    )
 	    where
-		(:parameters:fund is null or :parameters:fund = :dh:a_cost_center) and
+		(:parameters:fund is null or :parameters:fund = :dh:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :dh:p_donor_partner_key)
 	    ;
 
@@ -374,10 +374,10 @@ update_descriptives "system/query"
 	    update
 		identity /apps/kardia/data/Kardia_DB/a_descriptives/rows d
 	    set
-		:a_is_current = (select first(:dh:a_is_current) from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh where :dh:a_ledger_number = :d:a_ledger_number and :dh:a_cost_center = :d:a_cost_center and :dh:p_donor_partner_key = :d:p_donor_partner_key order by :a_last_gift desc limit 1),
-		:a_lapsed_days = (select first(:dh:a_lapsed_days) from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh where :dh:a_ledger_number = :d:a_ledger_number and :dh:a_cost_center = :d:a_cost_center and :dh:p_donor_partner_key = :d:p_donor_partner_key order by :a_last_gift desc limit 1)
+		:a_is_current = (select first(:dh:a_is_current) from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh where :dh:a_ledger_number = :d:a_ledger_number and :dh:a_fund = :d:a_fund and :dh:p_donor_partner_key = :d:p_donor_partner_key order by :a_last_gift desc limit 1),
+		:a_lapsed_days = (select first(:dh:a_lapsed_days) from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh where :dh:a_ledger_number = :d:a_ledger_number and :dh:a_fund = :d:a_fund and :dh:p_donor_partner_key = :d:p_donor_partner_key order by :a_last_gift desc limit 1)
 	    where
-		(:parameters:fund is null or :parameters:fund = :d:a_cost_center) and
+		(:parameters:fund is null or :parameters:fund = :d:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
 	    ;
 
@@ -389,12 +389,12 @@ update_descriptives "system/query"
 		identity /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh,
 		/apps/kardia/data/Kardia_DB/a_descriptives/rows d
 	    set
-		:dh:a_is_extra = condition(:dh:a_count == 1 and :d:a_act_average_interval < 7.0 and (select count(1) from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2 where :dh2:a_ledger_number = :dh:a_ledger_number and :dh2:a_cost_center = :dh:a_cost_center and :dh2:p_donor_partner_key = :dh:p_donor_partner_key and :dh2:a_count > 1 and :dh2:a_first_gift <= :dh:a_first_gift and :dh2:a_last_gift >= :dh:a_last_gift) >= 1, 1, 0)
+		:dh:a_is_extra = condition(:dh:a_count == 1 and :d:a_act_average_interval < 7.0 and (select count(1) from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2 where :dh2:a_ledger_number = :dh:a_ledger_number and :dh2:a_fund = :dh:a_fund and :dh2:p_donor_partner_key = :dh:p_donor_partner_key and :dh2:a_count > 1 and :dh2:a_first_gift <= :dh:a_first_gift and :dh2:a_last_gift >= :dh:a_last_gift) >= 1, 1, 0)
 	    where
 		:d:a_ledger_number = :dh:a_ledger_number and
-		:d:a_cost_center = :dh:a_cost_center and
+		:d:a_fund = :dh:a_fund and
 		:d:p_donor_partner_key = :dh:p_donor_partner_key and
-		(:parameters:fund is null or :parameters:fund = :dh:a_cost_center) and
+		(:parameters:fund is null or :parameters:fund = :dh:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :dh:p_donor_partner_key)
 	    ;
 
@@ -405,9 +405,9 @@ update_descriptives "system/query"
 	    update
 		identity /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh
 	    set
-		:dh:a_increase_pct = convert(double, :dh:a_amount) / convert(double, isnull((select :dh2:a_amount from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2 where :dh2:a_ledger_number = :dh:a_ledger_number and :dh2:a_cost_center = :dh:a_cost_center and :dh2:p_donor_partner_key = :dh:p_donor_partner_key and isnull(:dh2:a_is_extra, 0) = 0 and :dh2:a_last_gift < :dh:a_first_gift order by :dh2:a_last_gift desc limit 1), :dh:a_amount)) - 1.0
+		:dh:a_increase_pct = convert(double, :dh:a_amount) / convert(double, isnull((select :dh2:a_amount from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2 where :dh2:a_ledger_number = :dh:a_ledger_number and :dh2:a_fund = :dh:a_fund and :dh2:p_donor_partner_key = :dh:p_donor_partner_key and isnull(:dh2:a_is_extra, 0) = 0 and :dh2:a_last_gift < :dh:a_first_gift order by :dh2:a_last_gift desc limit 1), :dh:a_amount)) - 1.0
 	    where
-		(:parameters:fund is null or :parameters:fund = :dh:a_cost_center) and
+		(:parameters:fund is null or :parameters:fund = :dh:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :dh:p_donor_partner_key)
 	    ;
 	    update
@@ -417,9 +417,9 @@ update_descriptives "system/query"
 		:dh:a_increase_pct = condition((:dh:a_count > 1 or :d:a_act_average_interval > 1.8) and :dh:a_increase_pct > 0.001, :dh:a_increase_pct, null)
 	    where
 		:d:a_ledger_number = :dh:a_ledger_number and
-		:d:a_cost_center = :dh:a_cost_center and
+		:d:a_fund = :dh:a_fund and
 		:d:p_donor_partner_key = :dh:p_donor_partner_key and
-		(:parameters:fund is null or :parameters:fund = :dh:a_cost_center) and
+		(:parameters:fund is null or :parameters:fund = :dh:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :dh:p_donor_partner_key)
 	    ;
 
@@ -429,9 +429,9 @@ update_descriptives "system/query"
 	    update
 		identity /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh
 	    set
-		:dh:a_decrease_pct = 1.0 - convert(double, :dh:a_amount) / convert(double, isnull((select :dh2:a_amount from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2 where :dh2:a_ledger_number = :dh:a_ledger_number and :dh2:a_cost_center = :dh:a_cost_center and :dh2:p_donor_partner_key = :dh:p_donor_partner_key and isnull(:dh2:a_is_extra, 0) = 0 and :dh2:a_last_gift < :dh:a_first_gift order by :dh2:a_last_gift desc limit 1), :dh:a_amount))
+		:dh:a_decrease_pct = 1.0 - convert(double, :dh:a_amount) / convert(double, isnull((select :dh2:a_amount from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh2 where :dh2:a_ledger_number = :dh:a_ledger_number and :dh2:a_fund = :dh:a_fund and :dh2:p_donor_partner_key = :dh:p_donor_partner_key and isnull(:dh2:a_is_extra, 0) = 0 and :dh2:a_last_gift < :dh:a_first_gift order by :dh2:a_last_gift desc limit 1), :dh:a_amount))
 	    where
-		(:parameters:fund is null or :parameters:fund = :dh:a_cost_center) and
+		(:parameters:fund is null or :parameters:fund = :dh:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :dh:p_donor_partner_key)
 	    ;
 	    update
@@ -439,7 +439,7 @@ update_descriptives "system/query"
 	    set
 		:dh:a_decrease_pct = condition(:dh:a_decrease_pct > 0.001, :dh:a_decrease_pct, null)
 	    where
-		(:parameters:fund is null or :parameters:fund = :dh:a_cost_center) and
+		(:parameters:fund is null or :parameters:fund = :dh:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :dh:p_donor_partner_key)
 	    ;
 
@@ -447,13 +447,13 @@ update_descriptives "system/query"
 	    update
 		identity /apps/kardia/data/Kardia_DB/a_descriptives/rows d
 	    set
-		:a_increase_pct = (select :dh:a_increase_pct from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh where :dh:a_ledger_number = :d:a_ledger_number and :dh:a_cost_center = :d:a_cost_center and :dh:p_donor_partner_key = :d:p_donor_partner_key where :a_is_extra = 0 order by :a_last_gift desc limit 1),
-		:a_increase_date = (select condition(:dh:a_increase_pct is not null, :dh:a_first_gift, convert(datetime, null)) from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh where :dh:a_ledger_number = :d:a_ledger_number and :dh:a_cost_center = :d:a_cost_center and :dh:p_donor_partner_key = :d:p_donor_partner_key where :a_is_extra = 0 order by :a_last_gift desc limit 1),
-		:a_decrease_pct = (select :dh:a_decrease_pct from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh where :dh:a_ledger_number = :d:a_ledger_number and :dh:a_cost_center = :d:a_cost_center and :dh:p_donor_partner_key = :d:p_donor_partner_key where :a_is_extra = 0 order by :a_last_gift desc limit 1),
-		:a_decrease_date = (select condition(:dh:a_decrease_pct is not null, :dh:a_first_gift, convert(datetime, null)) from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh where :dh:a_ledger_number = :d:a_ledger_number and :dh:a_cost_center = :d:a_cost_center and :dh:p_donor_partner_key = :d:p_donor_partner_key where :a_is_extra = 0 order by :a_last_gift desc limit 1),
-		:a_is_extra = (select max(:dh:a_is_extra) from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh where :dh:a_ledger_number = :d:a_ledger_number and :dh:a_cost_center = :d:a_cost_center and :dh:p_donor_partner_key = :d:p_donor_partner_key where datediff(day, :dh:a_last_gift, getdate()) < 366 order by :a_last_gift desc limit 2)
+		:a_increase_pct = (select :dh:a_increase_pct from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh where :dh:a_ledger_number = :d:a_ledger_number and :dh:a_fund = :d:a_fund and :dh:p_donor_partner_key = :d:p_donor_partner_key where :a_is_extra = 0 order by :a_last_gift desc limit 1),
+		:a_increase_date = (select condition(:dh:a_increase_pct is not null, :dh:a_first_gift, convert(datetime, null)) from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh where :dh:a_ledger_number = :d:a_ledger_number and :dh:a_fund = :d:a_fund and :dh:p_donor_partner_key = :d:p_donor_partner_key where :a_is_extra = 0 order by :a_last_gift desc limit 1),
+		:a_decrease_pct = (select :dh:a_decrease_pct from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh where :dh:a_ledger_number = :d:a_ledger_number and :dh:a_fund = :d:a_fund and :dh:p_donor_partner_key = :d:p_donor_partner_key where :a_is_extra = 0 order by :a_last_gift desc limit 1),
+		:a_decrease_date = (select condition(:dh:a_decrease_pct is not null, :dh:a_first_gift, convert(datetime, null)) from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh where :dh:a_ledger_number = :d:a_ledger_number and :dh:a_fund = :d:a_fund and :dh:p_donor_partner_key = :d:p_donor_partner_key where :a_is_extra = 0 order by :a_last_gift desc limit 1),
+		:a_is_extra = (select max(:dh:a_is_extra) from /apps/kardia/data/Kardia_DB/a_descriptives_hist/rows dh where :dh:a_ledger_number = :d:a_ledger_number and :dh:a_fund = :d:a_fund and :dh:p_donor_partner_key = :d:p_donor_partner_key where datediff(day, :dh:a_last_gift, getdate()) < 366 order by :a_last_gift desc limit 2)
 	    where
-		(:parameters:fund is null or :parameters:fund = :d:a_cost_center) and
+		(:parameters:fund is null or :parameters:fund = :d:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
 	    ;
 
@@ -463,7 +463,7 @@ update_descriptives "system/query"
 	    from
 		/apps/kardia/data/Kardia_DB/a_descriptives_hist/rows d
 	    where
-		(:parameters:fund is null or :parameters:fund = :d:a_cost_center) and
+		(:parameters:fund is null or :parameters:fund = :d:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
 	    order by
 		:a_hist_id desc

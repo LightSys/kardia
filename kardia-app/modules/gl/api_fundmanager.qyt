@@ -9,7 +9,7 @@ api_fundmanager "system/querytree"
 			manager_login = :s:p_kardia_login,
 		    fund_cnt = count(1)
 		from
-		    /apps/kardia/data/Kardia_DB/a_cc_staff/rows cs,
+		    /apps/kardia/data/Kardia_DB/a_fund_staff/rows cs,
 		    identity /apps/kardia/data/Kardia_DB/p_staff/rows s,
 		    /apps/kardia/data/Kardia_DB/p_partner/rows p
 		where
@@ -27,18 +27,18 @@ api_fundmanager "system/querytree"
 	    fundlist "system/querytree"
 		{
 		sql = "	select
-			    fund = :cs:a_cost_center,
+			    fund = :cs:a_fund,
 			    ledger = :cs:a_ledger_number,
-			    fund_desc = :c:a_cc_desc,
+			    fund_desc = :c:a_fund_desc,
 			    ledger_desc = :l:a_ledger_desc,
-			    fund_class = (select :a_acct_class_desc from /apps/kardia/data/Kardia_DB/a_cost_center_class/rows cc where :cc:a_ledger_number = :c:a_ledger_number and :cc:a_cost_center_class = :c:a_cost_center_class),
-			    subfund_list = (select sum(:c2:a_cost_center + ',') - ',' from /apps/kardia/data/Kardia_DB/a_cost_center/rows c2 where :c2:a_ledger_number = :c:a_ledger_number and (:c2:a_cost_center = :c:a_cost_center or :c2:a_bal_cost_center = :c:a_cost_center) )
+			    fund_class = (select :a_fund_class_desc from /apps/kardia/data/Kardia_DB/a_fund_class/rows cc where :cc:a_ledger_number = :c:a_ledger_number and :cc:a_fund_class = :c:a_fund_class),
+			    subfund_list = (select sum(:c2:a_fund + ',') - ',' from /apps/kardia/data/Kardia_DB/a_fund/rows c2 where :c2:a_ledger_number = :c:a_ledger_number and (:c2:a_fund = :c:a_fund or :c2:a_bal_fund = :c:a_fund) )
 			from 
-			    /apps/kardia/data/Kardia_DB/a_cc_staff/rows cs,
-			    identity /apps/kardia/data/Kardia_DB/a_cost_center/rows c,
+			    /apps/kardia/data/Kardia_DB/a_fund_staff/rows cs,
+			    identity /apps/kardia/data/Kardia_DB/a_fund/rows c,
 			    /apps/kardia/data/Kardia_DB/a_ledger/rows l
 			where
-			    :c:a_cost_center = :cs:a_cost_center and
+			    :c:a_fund = :cs:a_fund and
 			    :c:a_ledger_number = :cs:a_ledger_number and
 			    :cs:p_staff_partner_key = :managerlist:manager_id and
 			    :l:a_ledger_number = :cs:a_ledger_number
@@ -78,8 +78,8 @@ api_fundmanager "system/querytree"
 						amount = :tt:a_amount,
 						debit = condition(:tt:a_amount > $0, :tt:a_amount, null),
 						credit = condition(:tt:a_amount < $0, $0 - :tt:a_amount, null),
-						fund = :tt:a_cost_center,
-						fund_desc = :c:a_cc_desc,
+						fund = :tt:a_fund,
+						fund_desc = :c:a_fund_desc,
 						account = :tt:a_account_code,
 						account_desc = :a:a_acct_desc,
 						trx_date = :tt:a_effective_date,
@@ -89,18 +89,18 @@ api_fundmanager "system/querytree"
 					FROM
 						identity /apps/kardia/data/Kardia_DB/a_transaction/rows tt,
 						/apps/kardia/data/Kardia_DB/a_account/rows a,
-						/apps/kardia/data/Kardia_DB/a_cost_center/rows c,
+						/apps/kardia/data/Kardia_DB/a_fund/rows c,
 						/apps/kardia/data/Kardia_DB/p_partner/rows p
 					WHERE
 						:tt:a_ledger_number = :fundlist:ledger and
-						charindex(',' + rtrim(:tt:a_cost_center) + ',', ',' + :fundlist:subfund_list + ',') > 0 and
+						charindex(',' + rtrim(:tt:a_fund) + ',', ',' + :fundlist:subfund_list + ',') > 0 and
 						:tt:a_period = :fundbalperiods:period and
 						:tt:a_transaction_type = 'T' and
 						:tt:a_account_code >= '3000' and
 						:a:a_ledger_number = :tt:a_ledger_number and
 						:a:a_account_code = :tt:a_account_code and
 						:c:a_ledger_number = :tt:a_ledger_number and
-						:c:a_cost_center = :tt:a_cost_center and
+						:c:a_fund = :tt:a_fund and
 						:p:p_partner_key =* :tt:p_ext_partner_id
 					ORDER BY
 						:tt:a_effective_date,
@@ -121,7 +121,7 @@ api_fundmanager "system/querytree"
 					/apps/kardia/data/Kardia_DB/a_transaction/rows t
 				    where
 					:t:a_ledger_number = :fundlist:ledger and
-					charindex(',' + rtrim(:t:a_cost_center) + ',', ',' + :fundlist:subfund_list + ',') > 0 and
+					charindex(',' + rtrim(:t:a_fund) + ',', ',' + :fundlist:subfund_list + ',') > 0 and
 					:t:a_period >= :fundbalperiods:ref_period and
 					:t:a_period <= :fundbalperiods:period and
 					:t:a_account_code >= '3000' and
@@ -139,16 +139,16 @@ api_fundmanager "system/querytree"
 		    subflist "system/querytree"
 			{
 			sql = "	SELECT
-				    fund = :c:a_cost_center,
+				    fund = :c:a_fund,
 				    ledger = :c:a_ledger_number,
-				    fund_desc = :c:a_cc_desc,
+				    fund_desc = :c:a_fund_desc,
 				    ledger_desc = :l:a_ledger_desc,
-				    fund_class = (select :a_acct_class_desc from /apps/kardia/data/Kardia_DB/a_cost_center_class/rows cc where :cc:a_ledger_number = :c:a_ledger_number and :cc:a_cost_center_class = :c:a_cost_center_class)
+				    fund_class = (select :a_fund_class_desc from /apps/kardia/data/Kardia_DB/a_fund_class/rows cc where :cc:a_ledger_number = :c:a_ledger_number and :cc:a_fund_class = :c:a_fund_class)
 				FROM 
-				    identity /apps/kardia/data/Kardia_DB/a_cost_center/rows c,
+				    identity /apps/kardia/data/Kardia_DB/a_fund/rows c,
 				    /apps/kardia/data/Kardia_DB/a_ledger/rows l
 				WHERE
-				    :c:a_bal_cost_center = :fundlist:fund and
+				    :c:a_bal_fund = :fundlist:fund and
 				    :c:a_ledger_number = :fundlist:ledger and
 				    :l:a_ledger_number = :c:a_ledger_number
 				";
@@ -187,8 +187,8 @@ api_fundmanager "system/querytree"
 							amount = :tt:a_amount,
 							debit = condition(:tt:a_amount > $0, :tt:a_amount, null),
 							credit = condition(:tt:a_amount < $0, $0 - :tt:a_amount, null),
-							fund = :tt:a_cost_center,
-							fund_desc = :c:a_cc_desc,
+							fund = :tt:a_fund,
+							fund_desc = :c:a_fund_desc,
 							account = :tt:a_account_code,
 							account_desc = :a:a_acct_desc,
 							trx_date = :tt:a_effective_date,
@@ -198,18 +198,18 @@ api_fundmanager "system/querytree"
 						FROM
 							identity /apps/kardia/data/Kardia_DB/a_transaction/rows tt,
 							/apps/kardia/data/Kardia_DB/a_account/rows a,
-							/apps/kardia/data/Kardia_DB/a_cost_center/rows c,
+							/apps/kardia/data/Kardia_DB/a_fund/rows c,
 							/apps/kardia/data/Kardia_DB/p_partner/rows p
 						WHERE
 							:tt:a_ledger_number = :subflist:ledger and
-							:tt:a_cost_center = :subflist:fund and
+							:tt:a_fund = :subflist:fund and
 							:tt:a_period = :subperiodslist:period and
 							:tt:a_transaction_type = 'T' and
 							:tt:a_account_code >= '3000' and
 							:a:a_ledger_number = :tt:a_ledger_number and
 							:a:a_account_code = :tt:a_account_code and
 							:c:a_ledger_number = :tt:a_ledger_number and
-							:c:a_cost_center = :tt:a_cost_center and
+							:c:a_fund = :tt:a_fund and
 							:p:p_partner_key =* :tt:p_ext_partner_id
 						ORDER BY
 							:tt:a_effective_date,
@@ -230,7 +230,7 @@ api_fundmanager "system/querytree"
 						/apps/kardia/data/Kardia_DB/a_transaction/rows t
 					    where
 						:t:a_ledger_number = :subflist:ledger and
-						:t:a_cost_center = :subflist:fund and
+						:t:a_fund = :subflist:fund and
 						:t:a_period >= :subperiodslist:ref_period and
 						:t:a_period <= :subperiodslist:period and
 						:t:a_account_code >= '3000' and

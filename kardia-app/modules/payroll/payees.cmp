@@ -52,14 +52,14 @@ payees_cmp "widget/component-decl"
 		    :a:a_priority,
 		    :a:a_payroll_interval,
 		    :a:a_ledger_number,
-		    :a:a_cost_center,
+		    :a:a_fund,
 		    :a:a_start_date,
 		    :a:a_end_date,
 		    :a:s_date_created,
 		    :a:s_created_by,
 		    :a:s_date_modified,
 		    :a:s_modified_by,
-		    cctxt = '' + :a:a_cost_center + ' - ' + :c:a_cc_desc,
+		    cctxt = '' + :a:a_fund + ' - ' + :c:a_fund_desc,
 		    txtdate = '' + datepart(month, :a_start_date) + '/' + datepart(day, :a_start_date) + '/' + datepart(year, :a_start_date),
 		    ptxt = condition(char_length(:a:a_payee_name) > 1, :a:a_payee_name, :p:p_surname + ', ' + :p:p_given_name),
 		    pidtxt = :p:p_partner_key + ' (' + :p:p_surname + ', ' + :p:p_given_name + ')',
@@ -70,11 +70,11 @@ payees_cmp "widget/component-decl"
 		    /apps/kardia/data/Kardia_DB/a_payroll/rows a,
 		    /apps/kardia/data/Kardia_DB/p_partner/rows p,
 		    /apps/kardia/data/Kardia_DB/_a_payroll_interval/rows iv,
-		    /apps/kardia/data/Kardia_DB/a_cost_center/rows c
+		    /apps/kardia/data/Kardia_DB/a_fund/rows c
 		WHERE
 		    :p:p_partner_key = :a:p_payee_partner_key
 		    and :a:a_payroll_interval = :iv:tag
-		    and :a:a_cost_center = :c:a_cost_center
+		    and :a:a_fund = :c:a_fund
 		    and :a:a_ledger_number = :c:a_ledger_number
 		";
 	baseobj = "/apps/kardia/data/Kardia_DB/a_payroll/rows";
@@ -148,7 +148,7 @@ payees_cmp "widget/component-decl"
 		//f_from "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_start_date; text="Valid From:"; ctl_type="datetime"; tooltip="Date that this payroll entry begins to be valid"; label_width=100; }
 		//f_to "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_end_date; text="Valid To:"; ctl_type="datetime"; tooltip="Last day that this payroll entry is valid"; label_width=100; }
 		f_per "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_payroll_interval; text="Pay Period:"; ctl_type="dropdown"; tooltip="Payroll Period"; label_width=100; sql="select :tag + ' - ' + :text, :tag from /apps/kardia/data/Kardia_DB/_a_payroll_interval/rows order by :tag"; }
-		f_costctr "widget/component" { height=20; path="/apps/kardia/modules/base/editbox_tree.cmp"; field="a_cost_center"; popup_source=runserver("/apps/kardia/modules/gl/costctrs.qyt/" + :this:ledger + "/"); popup_text="Choose Fund:"; text="Fund:"; attach_point=editbox; label_width=100; empty_desc="required"; }
+		f_fund "widget/component" { height=20; path="/apps/kardia/modules/base/editbox_tree.cmp"; field="a_fund"; popup_source=runserver("/apps/kardia/modules/gl/funds.qyt/" + :this:ledger + "/"); popup_text="Choose Fund:"; text="Fund:"; attach_point=editbox; label_width=100; empty_desc="required"; }
 		f_prio "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_priority; text="Order:"; ctl_type="editbox"; tooltip="Priority of this payroll record (lower number means it is run first)"; label_width=100; }
 		}
 

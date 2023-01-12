@@ -1,0 +1,34 @@
+$Version=2$
+duplicate_create_pairs_altnames "system/query"
+    {
+    match_dist "query/parameter" { type=integer; default=3; }
+		//TODO: can we add a default match_dist=3? Can we add a minvalue=1?
+
+    sql = " select
+		p_partner_key_1 = condition(:p:p_partner_key > lag(:p:p_partner_key, :n:number * :parameters:match_dist), :p:p_partner_key, lag(:p:p_partner_key, :n:number * :parameters:match_dist)),
+		p_partner_key_2 = condition(:p:p_partner_key > lag(:p:p_partner_key, :n:number * :parameters:match_dist), lag(:p:p_partner_key, :n:number * :parameters:match_dist), :p:p_partner_key),
+		val = ltrim(
+			isnull(:p:p_surname,'') 
+			+ substring(:p:p_given_name, condition(charindex(' and ', :p:p_given_name) > charindex(' & ', :p:p_given_name), charindex(' and ', :p:p_given_name) + 5, charindex(' & ', :p:p_given_name) + 3), 64)
+			+ isnull(:p:p_preferred_name,'') 
+			+ isnull(:p:p_org_name,'')
+		    )
+	    from
+		identity /apps/kardia/data/Kardia_DB/p_partner/rows p,
+		/apps/kardia/modules/base/123.csv/rows n
+	    where
+		:n:number <= :parameters:match_dist and
+		(charindex(' and ', :p:p_given_name) > 0 or charindex(' & ', :p:p_given_name) > 0)
+	    order by
+		ltrim(
+			isnull(:p:p_surname,'') 
+			+ substring(:p:p_given_name, condition(charindex(' and ', :p:p_given_name) > charindex(' & ', :p:p_given_name), charindex(' and ', :p:p_given_name) + 5, charindex(' & ', :p:p_given_name) + 3), 64)
+			+ isnull(:p:p_preferred_name,'') 
+			+ isnull(:p:p_org_name,'')
+		    )
+	    having
+		:p_partner_key_1 is not null and
+		:p_partner_key_2 is not null and
+		:p_partner_key_1 != :p_partner_key_2
+	    ";
+    }

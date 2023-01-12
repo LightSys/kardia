@@ -51,7 +51,7 @@ plugin_base_staffmaint_ccmanage "widget/component-decl"
 		    WHERE
 			:r:r_is_active = 1
 		    HAVING
-			(select count(1) from /apps/kardia/data/Kardia_DB/r_group_param/rows rgp where :rgp:r_group_name = :this:r_group_name and :rgp:r_param_name = 'costctr' and :rgp:r_is_report_param = 1) = 0
+			(select count(1) from /apps/kardia/data/Kardia_DB/r_group_param/rows rgp where :rgp:r_group_name = :this:r_group_name and :rgp:r_param_name = 'fund' and :rgp:r_is_report_param = 1) = 0
 		    ");
 
 	    baseobj="/apps/kardia/data/Kardia_DB/r_group/rows";
@@ -67,7 +67,7 @@ plugin_base_staffmaint_ccmanage "widget/component-decl"
 
 	    rpt_form "widget/form"
 		{
-		form_txt "widget/label" { value=runclient("You can select below what general reports the staff member receives.  For reports associated with one particular fund (cost center), please see the 'Funds Managed' tab."); height=32; }
+		form_txt "widget/label" { value=runclient("You can select below what general reports the staff member receives.  For reports associated with one particular fund, please see the 'Funds Managed' tab."); height=32; }
 
 		rpt_pane "widget/pane"
 		    {
@@ -95,8 +95,8 @@ plugin_base_staffmaint_ccmanage "widget/component-decl"
 				width=756; height=230;
 				mode = dynamicrow;
 
-				//t_cc "widget/table-column" { title="Fund"; fieldname="a_cost_center"; width=70; }
-				//t_name "widget/table-column" { title="Name"; fieldname="a_cc_desc"; width=450; }
+				//t_cc "widget/table-column" { title="Fund"; fieldname="a_fund"; width=70; }
+				//t_name "widget/table-column" { title="Name"; fieldname="a_fund_desc"; width=450; }
 				t_disp "widget/table-column" { title="Report Name"; fieldname="r_group_description"; width=450; }
 				t_item "widget/table-column" { title="Enabled"; fieldname="report_active"; width=70; type=image; align=center; }
 

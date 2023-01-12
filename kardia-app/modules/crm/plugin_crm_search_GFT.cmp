@@ -62,10 +62,10 @@ plugin_crm_search_GFT "widget/component-decl"
 	    label_width=150;
 	    width=400;
 	    popup_width=380;
-	    popup_sql=runserver("select value = :c:a_cost_center, label = :c:a_cost_center + ' - ' + condition(isnull(:cr:a_receiptable,0) = 1, :c:a_cc_desc + ' (legacy # ' + :c:a_legacy_code + ')', '** CLOSED **') from /apps/kardia/data/Kardia_DB/a_cost_center/rows c, /apps/kardia/data/Kardia_DB/a_cc_receipting/rows cr where :c:a_is_posting = 1 and :cr:a_ledger_number =* :c:a_ledger_number and :cr:a_cost_center =* :c:a_cost_center having has_endorsement('kardia:gift', 'kardia:ledger:' + rtrim(:cr:a_ledger_number)) or has_endorsement('kardia:gift_amt', 'kardia:ledger:' + rtrim(:cr:a_ledger_number))");
-	    search_field_list="a_cost_center*,*a_cc_desc*,a_legacy_code*";
-	    key_name="a_cost_center";
-	    object_name="Fund / Cost Center";
+	    popup_sql=runserver("select value = :c:a_fund, label = :c:a_fund + ' - ' + condition(isnull(:cr:a_receiptable,0) = 1, :c:a_fund_desc + ' (legacy # ' + :c:a_legacy_code + ')', '** CLOSED **') from /apps/kardia/data/Kardia_DB/a_fund/rows c, /apps/kardia/data/Kardia_DB/a_fund_receipting/rows cr where :c:a_is_posting = 1 and :cr:a_ledger_number =* :c:a_ledger_number and :cr:a_fund =* :c:a_fund having has_endorsement('kardia:gift', 'kardia:ledger:' + rtrim(:cr:a_ledger_number)) or has_endorsement('kardia:gift_amt', 'kardia:ledger:' + rtrim(:cr:a_ledger_number))");
+	    search_field_list="a_fund*,*a_fund_desc*,a_legacy_code*";
+	    key_name="a_fund";
+	    object_name="Fund";
 	    popup_text="Select Designation:";
 	    empty_desc="one or more, separated by commas";
 	    form=criteria_params_form;
@@ -73,18 +73,18 @@ plugin_crm_search_GFT "widget/component-decl"
 
 	    desig_hints "widget/hints" { style=applyonchange,uppercase,strnull; badchars=' '; }
 
-	    cc_get_desc_1 "widget/connector" { event=LoseFocus; event_condition=runclient(char_length(:f_desig_cc:value) > 0); target=ccdesc_osrc; action=QueryParam; a_ledger_number=runclient(:f_org_dd:value); a_cost_center=runclient(:f_desig_cc:content); }
+	    cc_get_desc_1 "widget/connector" { event=LoseFocus; event_condition=runclient(char_length(:f_desig_cc:value) > 0); target=ccdesc_osrc; action=QueryParam; a_ledger_number=runclient(:f_org_dd:value); a_fund=runclient(:f_desig_cc:content); }
 
 	    ccdesc_osrc "widget/osrc"
 		{
-		ccdesc_param1 "widget/parameter" { type=string; param_name=a_cost_center; }
+		ccdesc_param1 "widget/parameter" { type=string; param_name=a_fund; }
 		ccdesc_param2 "widget/parameter" { type=string; param_name=a_ledger_number; }
-		sql = "select a_cc_desc = condition(charindex(',', :parameters:a_cost_center) > 0, '**MULTIPLE**', isnull(first(:cc:a_cc_desc),'**INVALID**')), :parameters:a_cost_center from /apps/kardia/data/Kardia_DB/a_cost_center/rows cc where :cc:a_cost_center = :parameters:a_cost_center and (:parameters:a_ledger_number is null or :cc:a_ledger_number = :parameters:a_ledger_number) limit 1";
+		sql = "select a_fund_desc = condition(charindex(',', :parameters:a_fund) > 0, '**MULTIPLE**', isnull(first(:cc:a_fund_desc),'**INVALID**')), :parameters:a_fund from /apps/kardia/data/Kardia_DB/a_fund/rows cc where :cc:a_fund = :parameters:a_fund and (:parameters:a_ledger_number is null or :cc:a_ledger_number = :parameters:a_ledger_number) limit 1";
 		autoquery = never;
 		replicasize=2;
 		readahead=2;
 
-		cc_get_desc_2 "widget/connector" { event=EndQuery; event_condition=runclient(:ccdesc_osrc:a_cost_center = :f_desig_cc:content); target=f_desig_cc; action=SetValueDescription; Description=runclient(:ccdesc_osrc:a_cc_desc); }
+		cc_get_desc_2 "widget/connector" { event=EndQuery; event_condition=runclient(:ccdesc_osrc:a_fund = :f_desig_cc:content); target=f_desig_cc; action=SetValueDescription; Description=runclient(:ccdesc_osrc:a_fund_desc); }
 		}
 	    }
 

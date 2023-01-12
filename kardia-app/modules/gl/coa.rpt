@@ -42,17 +42,17 @@ coa "system/report"
 			:a_account_code
 			");
 	}
-    costctrs "report/query"
+    funds "report/query"
 	{
 	sql =  runserver("
 		SELECT
 			:name, *
 		FROM
-			/apps/kardia/data/Kardia_DB/a_cost_center/rows
+			/apps/kardia/data/Kardia_DB/a_fund/rows
 		WHERE
 			:a_ledger_number = :this:ledger
 		ORDER BY
-			:a_cost_center
+			:a_fund
 			");
 	}
 
@@ -148,13 +148,13 @@ coa "system/report"
 
     spacer_s "report/area" { x=0; width=75; height=2; }
 
-    costctr_data "report/table"
+    fund_data "report/table"
 	{
 	x=0; width=75; height=0;
 	columns=6;
 	widths=7,7,7,7,8,34;
 	colsep=0.9;
-	source=costctrs;
+	source=funds;
 	topborder=0.3;
 	bottomborder=0.3;
 	nullformat="-";
@@ -165,9 +165,9 @@ coa "system/report"
 	    fontsize=8;
 	    header=yes;
 	    bottomborder=0.05;
-	    h_cc "report/table-cell" { value='CostCtr'; align=center; style=bold; }
+	    h_cc "report/table-cell" { value='Fund'; align=center; style=bold; }
 	    h_ccroll "report/table-cell" { value='Rollup'; align=center; style=bold; }
-	    h_ccbal "report/table-cell" { value='Fund'; align=center; style=bold; }
+	    h_ccbal "report/table-cell" { value='Balancing'; align=center; style=bold; }
 	    h_ccclass "report/table-cell" { value='Class'; align=center; style=bold; }
 	    h_ccconv "report/table-cell" { value='Convert'; align=center; style=bold; }
 	    h_ccdesc "report/table-cell" { value='Description'; align=center; style=bold; }
@@ -179,12 +179,12 @@ coa "system/report"
 	    fontsize=8;
 	    margintop=0.15;
 	    marginbottom=0.15;
-	    d_cc "report/table-cell" { value=runserver(:costctrs:a_cost_center); align=left; }
-	    d_ccroll "report/table-cell" { value=runserver(:costctrs:a_parent_cost_center); align=left; }
-	    d_ccbal "report/table-cell" { value=runserver(:costctrs:a_bal_cost_center); align=left; }
-	    d_ccclass "report/table-cell" { value=runserver(:costctrs:a_cost_center_class); align=left; }
-	    d_ccconv "report/table-cell" { value=runserver(:costctrs:a_legacy_code); align=left; }
-	    d_ccdesc "report/table-cell" { font=helvetica; value=runserver(:costctrs:a_cc_desc); align=left; }
+	    d_cc "report/table-cell" { value=runserver(:funds:a_fund); align=left; }
+	    d_ccroll "report/table-cell" { value=runserver(:funds:a_parent_fund); align=left; }
+	    d_ccbal "report/table-cell" { value=runserver(:funds:a_bal_fund); align=left; }
+	    d_ccclass "report/table-cell" { value=runserver(:funds:a_fund_class); align=left; }
+	    d_ccconv "report/table-cell" { value=runserver(:funds:a_legacy_code); align=left; }
+	    d_ccdesc "report/table-cell" { font=helvetica; value=runserver(:funds:a_fund_desc); align=left; }
 	    }
 	}
     }

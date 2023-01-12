@@ -1,0 +1,45 @@
+$Version=2$
+plugin_base_merge_intents "system/query"
+    {
+    partner_a "query/parameter" { type=string; style=strnull; }
+    partner_b "query/parameter" { type=string; style=strnull; }
+    partner_c "query/parameter" { type=string; style=strnull; }
+
+    sql = " select
+		p_partner_key = :p:p_donor_partner_id,
+		p_data_source = 'Giver Intent',
+		p_data_key = :p:p_donor_partner_id,
+		p_data_desc = (	select
+				    condition(count(count(1)) > 0, sum('' + count(1) + ' ' + :it:a_intent_desc + '(s), ') - ', ', '')
+				from
+				    /apps/kardia/data/Kardia_DB/a_pledge/rows p2,
+				    /apps/kardia/data/Kardia_DB/a_intent_type/rows it
+				where
+				    :p2:p_donor_partner_id = :p:p_donor_partner_id and
+				    :it:a_intent_type = :p2:a_intent_type and
+				    :it:a_ledger_number = :p2:a_ledger_number
+				group by
+				    :p2:a_intent_type
+				),
+		p_short_data_desc = 'Intent data',
+		p_date_start = null,
+		p_date_end = null,
+		p_allow_copy = 0,
+		p_allow_multiple = 1,
+		p_allow_delete = 0,
+		p_default_copy = 0,
+		p_default_marriage_copy = 0,
+		p_default_marriage_move = 1,
+		p_default_multiple = 1,
+		p_allow_collate = 0,
+		p_comment = null
+	    from
+		identity /apps/kardia/data/Kardia_DB/a_pledge/rows p
+	    where
+		(:p:p_donor_partner_id = :parameters:partner_a or :p:p_donor_partner_id = :parameters:partner_b or :p:p_donor_partner_id = :parameters:partner_c)
+	    group by
+		:p:p_donor_partner_id
+	    having
+		char_length(:p_data_desc) > 1
+	    ";
+    }

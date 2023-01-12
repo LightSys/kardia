@@ -14,10 +14,10 @@ funds "widget/component-decl"
 	staff_login "widget/parameter" { type=string; }
 	sql = "	declare object fundinfo;
 
-		-- Find what cost centers we can view
+		-- Find what funds we can view
 		select
 		    :fundinfo:staff_key = :p_partner_key,
-		    :fundinfo:my_cclist = isnull( (select sum(rtrim(:cc:a_ledger_number) + '|' + rtrim(:cc:a_cost_center) + ',') - ',' from /apps/kardia/data/Kardia_DB/a_cc_staff/rows cs, /apps/kardia/data/Kardia_DB/a_cost_center/rows cc where :cs:p_staff_partner_key = :s:p_partner_key and (:cc:a_bal_cost_center = :cs:a_cost_center or :cc:a_cost_center = :cs:a_cost_center) and :cc:a_ledger_number = :cs:a_ledger_number), '')
+		    :fundinfo:my_fundlist = isnull( (select sum(rtrim(:cc:a_ledger_number) + '|' + rtrim(:cc:a_fund) + ',') - ',' from /apps/kardia/data/Kardia_DB/a_fund_staff/rows cs, /apps/kardia/data/Kardia_DB/a_fund/rows cc where :cs:p_staff_partner_key = :s:p_partner_key and (:cc:a_bal_fund = :cs:a_fund or :cc:a_fund = :cs:a_fund) and :cc:a_ledger_number = :cs:a_ledger_number), '')
 		from
 		    /apps/kardia/data/Kardia_DB/p_staff/rows s
 		where
@@ -26,33 +26,33 @@ funds "widget/component-decl"
 
 		select
 		    staff_login = :parameters:staff_login,
-		    :cc:a_cost_center,
-		    :cc:a_bal_cost_center,
-		    a_cc_desc = :cc:a_cc_desc + ' ' ,
+		    :cc:a_fund,
+		    :cc:a_bal_fund,
+		    a_fund_desc = :cc:a_fund_desc + ' ' ,
 		    :l:a_ledger_number,
 		    :l:a_ledger_desc,
-		    isbal = condition(:cc:a_cost_center = :cc:a_bal_cost_center, 1, 0),
-		    p_openbal = (select isnull($0 - sum(:t:a_amount), '-') from /apps/kardia/data/Kardia_DB/a_transaction/rows t where :t:a_cost_center = :cc:a_cost_center and :t:a_ledger_number = :cc:a_ledger_number and :t:a_period = :pps:a_period and :t:a_transaction_type = 'B' and :t:a_account_code >= '3000' and :t:a_account_code <= '3999' and (:cs:p_start_date is null or :t:a_effective_date >= :cs:p_start_date) and (:cs:p_end_date is null or :t:a_effective_date <= :cs:p_end_date)),
-		    p_rev = (select isnull($0 - sum(:t:a_amount), '-') from /apps/kardia/data/Kardia_DB/a_transaction/rows t where :t:a_cost_center = :cc:a_cost_center and :t:a_ledger_number = :cc:a_ledger_number and :t:a_period >= :pps:a_period and :t:a_period <= :ppe:a_period and :t:a_account_code >= '4000' and :t:a_account_code <= '4999' and (:cs:p_start_date is null or :t:a_effective_date >= :cs:p_start_date) and (:cs:p_end_date is null or :t:a_effective_date <= :cs:p_end_date)),
-		    p_exp = (select isnull($0 - sum(:t:a_amount), '-') from /apps/kardia/data/Kardia_DB/a_transaction/rows t where :t:a_cost_center = :cc:a_cost_center and :t:a_ledger_number = :cc:a_ledger_number and :t:a_period >= :pps:a_period and :t:a_period <= :ppe:a_period and :t:a_account_code >= '5000' and :t:a_account_code <= '5999' and (:cs:p_start_date is null or :t:a_effective_date >= :cs:p_start_date) and (:cs:p_end_date is null or :t:a_effective_date <= :cs:p_end_date)),
-		    openbal = (select isnull($0 - sum(:t:a_amount), '-') from /apps/kardia/data/Kardia_DB/a_transaction/rows t where :t:a_cost_center = :cc:a_cost_center and :t:a_ledger_number = :cc:a_ledger_number and :t:a_period = :pc:a_period and :t:a_transaction_type = 'B' and :t:a_account_code >= '3000' and :t:a_account_code <= '3999' and (:cs:p_start_date is null or :t:a_effective_date >= :cs:p_start_date) and (:cs:p_end_date is null or :t:a_effective_date <= :cs:p_end_date)),
-		    rev = (select isnull($0 - sum(:t:a_amount), '-') from /apps/kardia/data/Kardia_DB/a_transaction/rows t where :t:a_cost_center = :cc:a_cost_center and :t:a_ledger_number = :cc:a_ledger_number and :t:a_period >= :pc:a_period and :t:a_account_code >= '4000' and :t:a_account_code <= '4999' and (:cs:p_start_date is null or :t:a_effective_date >= :cs:p_start_date) and (:cs:p_end_date is null or :t:a_effective_date <= :cs:p_end_date)),
-		    exp = (select isnull($0 - sum(:t:a_amount), '-') from /apps/kardia/data/Kardia_DB/a_transaction/rows t where :t:a_cost_center = :cc:a_cost_center and :t:a_ledger_number = :cc:a_ledger_number and :t:a_period >= :pc:a_period and :t:a_account_code >= '5000' and :t:a_account_code <= '5999' and (:cs:p_start_date is null or :t:a_effective_date >= :cs:p_start_date) and (:cs:p_end_date is null or :t:a_effective_date <= :cs:p_end_date)),
+		    isbal = condition(:cc:a_fund = :cc:a_bal_fund, 1, 0),
+		    p_openbal = (select isnull($0 - sum(:t:a_amount), '-') from /apps/kardia/data/Kardia_DB/a_transaction/rows t where :t:a_fund = :cc:a_fund and :t:a_ledger_number = :cc:a_ledger_number and :t:a_period = :pps:a_period and :t:a_transaction_type = 'B' and :t:a_account_code >= '3000' and :t:a_account_code <= '3999' and (:cs:p_start_date is null or :t:a_effective_date >= :cs:p_start_date) and (:cs:p_end_date is null or :t:a_effective_date <= :cs:p_end_date)),
+		    p_rev = (select isnull($0 - sum(:t:a_amount), '-') from /apps/kardia/data/Kardia_DB/a_transaction/rows t where :t:a_fund = :cc:a_fund and :t:a_ledger_number = :cc:a_ledger_number and :t:a_period >= :pps:a_period and :t:a_period <= :ppe:a_period and :t:a_account_code >= '4000' and :t:a_account_code <= '4999' and (:cs:p_start_date is null or :t:a_effective_date >= :cs:p_start_date) and (:cs:p_end_date is null or :t:a_effective_date <= :cs:p_end_date)),
+		    p_exp = (select isnull($0 - sum(:t:a_amount), '-') from /apps/kardia/data/Kardia_DB/a_transaction/rows t where :t:a_fund = :cc:a_fund and :t:a_ledger_number = :cc:a_ledger_number and :t:a_period >= :pps:a_period and :t:a_period <= :ppe:a_period and :t:a_account_code >= '5000' and :t:a_account_code <= '5999' and (:cs:p_start_date is null or :t:a_effective_date >= :cs:p_start_date) and (:cs:p_end_date is null or :t:a_effective_date <= :cs:p_end_date)),
+		    openbal = (select isnull($0 - sum(:t:a_amount), '-') from /apps/kardia/data/Kardia_DB/a_transaction/rows t where :t:a_fund = :cc:a_fund and :t:a_ledger_number = :cc:a_ledger_number and :t:a_period = :pc:a_period and :t:a_transaction_type = 'B' and :t:a_account_code >= '3000' and :t:a_account_code <= '3999' and (:cs:p_start_date is null or :t:a_effective_date >= :cs:p_start_date) and (:cs:p_end_date is null or :t:a_effective_date <= :cs:p_end_date)),
+		    rev = (select isnull($0 - sum(:t:a_amount), '-') from /apps/kardia/data/Kardia_DB/a_transaction/rows t where :t:a_fund = :cc:a_fund and :t:a_ledger_number = :cc:a_ledger_number and :t:a_period >= :pc:a_period and :t:a_account_code >= '4000' and :t:a_account_code <= '4999' and (:cs:p_start_date is null or :t:a_effective_date >= :cs:p_start_date) and (:cs:p_end_date is null or :t:a_effective_date <= :cs:p_end_date)),
+		    exp = (select isnull($0 - sum(:t:a_amount), '-') from /apps/kardia/data/Kardia_DB/a_transaction/rows t where :t:a_fund = :cc:a_fund and :t:a_ledger_number = :cc:a_ledger_number and :t:a_period >= :pc:a_period and :t:a_account_code >= '5000' and :t:a_account_code <= '5999' and (:cs:p_start_date is null or :t:a_effective_date >= :cs:p_start_date) and (:cs:p_end_date is null or :t:a_effective_date <= :cs:p_end_date)),
 		    --
 		    -- Current balance should be NULL if we 1) have no trans-
 		    -- actions at all for the fund in question, or 2) if we
 		    -- have prior year transactions but no opening balance yet.
 		    --
-		    bal = condition((select count(1) from /apps/kardia/data/Kardia_DB/a_transaction/rows t where :t:a_cost_center = :cc:a_cost_center and :t:a_ledger_number = :cc:a_ledger_number limit 1) = 0 or ((select count(1) from /apps/kardia/data/Kardia_DB/a_transaction/rows t where :t:a_cost_center = :cc:a_cost_center and :t:a_ledger_number = :cc:a_ledger_number and :t:a_period >= :pps:a_period and :t:a_period <= :ppe:a_period  and (:cs:p_start_date is null or :t:a_effective_date >= :cs:p_start_date) and (:cs:p_end_date is null or :t:a_effective_date <= :cs:p_end_date) limit 1) > 0 and (select count(1) from /apps/kardia/data/Kardia_DB/a_transaction/rows t where :t:a_cost_center = :cc:a_cost_center and :t:a_ledger_number = :cc:a_ledger_number and :t:a_period = :pc:a_period and :t:a_transaction_type = 'B'  and (:cs:p_start_date is null or :t:a_effective_date >= :cs:p_start_date) and (:cs:p_end_date is null or :t:a_effective_date <= :cs:p_end_date) limit 1) == 0), '-', isnull((select $0 - sum(:t:a_amount) from /apps/kardia/data/Kardia_DB/a_transaction/rows t where :t:a_cost_center = :cc:a_cost_center and :t:a_ledger_number = :cc:a_ledger_number and :t:a_period >= :pc:a_period and :t:a_account_code >= '3000' and :t:a_account_code <= '5999' and :t:a_transaction_type != 'B'  and (:cs:p_start_date is null or :t:a_effective_date >= :cs:p_start_date) and (:cs:p_end_date is null or :t:a_effective_date <= :cs:p_end_date)), $0) + isnull((select $0 - sum(:t:a_amount) from /apps/kardia/data/Kardia_DB/a_transaction/rows t where :t:a_cost_center = :cc:a_cost_center and :t:a_ledger_number = :cc:a_ledger_number and :t:a_period = :pc:a_period and :t:a_transaction_type = 'B' and :t:a_account_code >= '3000' and :t:a_account_code <= '3999'  and (:cs:p_start_date is null or :t:a_effective_date >= :cs:p_start_date) and (:cs:p_end_date is null or :t:a_effective_date <= :cs:p_end_date)), $0))
+		    bal = condition((select count(1) from /apps/kardia/data/Kardia_DB/a_transaction/rows t where :t:a_fund = :cc:a_fund and :t:a_ledger_number = :cc:a_ledger_number limit 1) = 0 or ((select count(1) from /apps/kardia/data/Kardia_DB/a_transaction/rows t where :t:a_fund = :cc:a_fund and :t:a_ledger_number = :cc:a_ledger_number and :t:a_period >= :pps:a_period and :t:a_period <= :ppe:a_period  and (:cs:p_start_date is null or :t:a_effective_date >= :cs:p_start_date) and (:cs:p_end_date is null or :t:a_effective_date <= :cs:p_end_date) limit 1) > 0 and (select count(1) from /apps/kardia/data/Kardia_DB/a_transaction/rows t where :t:a_fund = :cc:a_fund and :t:a_ledger_number = :cc:a_ledger_number and :t:a_period = :pc:a_period and :t:a_transaction_type = 'B'  and (:cs:p_start_date is null or :t:a_effective_date >= :cs:p_start_date) and (:cs:p_end_date is null or :t:a_effective_date <= :cs:p_end_date) limit 1) == 0), '-', isnull((select $0 - sum(:t:a_amount) from /apps/kardia/data/Kardia_DB/a_transaction/rows t where :t:a_fund = :cc:a_fund and :t:a_ledger_number = :cc:a_ledger_number and :t:a_period >= :pc:a_period and :t:a_account_code >= '3000' and :t:a_account_code <= '5999' and :t:a_transaction_type != 'B'  and (:cs:p_start_date is null or :t:a_effective_date >= :cs:p_start_date) and (:cs:p_end_date is null or :t:a_effective_date <= :cs:p_end_date)), $0) + isnull((select $0 - sum(:t:a_amount) from /apps/kardia/data/Kardia_DB/a_transaction/rows t where :t:a_fund = :cc:a_fund and :t:a_ledger_number = :cc:a_ledger_number and :t:a_period = :pc:a_period and :t:a_transaction_type = 'B' and :t:a_account_code >= '3000' and :t:a_account_code <= '3999'  and (:cs:p_start_date is null or :t:a_effective_date >= :cs:p_start_date) and (:cs:p_end_date is null or :t:a_effective_date <= :cs:p_end_date)), $0))
 		from
-		    /apps/kardia/data/Kardia_DB/a_cost_center/rows cc,
-		    /apps/kardia/data/Kardia_DB/a_cc_staff/rows cs,
+		    /apps/kardia/data/Kardia_DB/a_fund/rows cc,
+		    /apps/kardia/data/Kardia_DB/a_fund_staff/rows cs,
 		    /apps/kardia/data/Kardia_DB/a_period/rows pc,
 		    /apps/kardia/data/Kardia_DB/a_period/rows pps,
 		    /apps/kardia/data/Kardia_DB/a_period/rows ppe,
 		    /apps/kardia/data/Kardia_DB/a_ledger/rows l
 		where
-		    charindex(',' + rtrim(:cc:a_ledger_number) + '|' + rtrim(:cc:a_cost_center) + ',', ',' + :fundinfo:my_cclist + ',') > 0 and
+		    charindex(',' + rtrim(:cc:a_ledger_number) + '|' + rtrim(:cc:a_fund) + ',', ',' + :fundinfo:my_fundlist + ',') > 0 and
 		    :l:a_ledger_number = :cc:a_ledger_number and
 		    :pc:a_ledger_number = :cc:a_ledger_number and
 		    :pc:a_summary_only = 0 and
@@ -66,11 +66,11 @@ funds "widget/component-decl"
 		    :ppe:a_summary_only = 0 and
 		    datepart(year, :ppe:a_start_date) = datepart(year, getdate()) - 1 and
 		    datepart(month, :ppe:a_start_date) = 12 and
-		    (:cs:a_cost_center = :cc:a_bal_cost_center or :cs:a_cost_center = :cc:a_bal_cost_center) and
+		    (:cs:a_fund = :cc:a_bal_fund or :cs:a_fund = :cc:a_bal_fund) and
 		    :cs:a_ledger_number = :cc:a_ledger_number and
 		    :cs:p_staff_partner_key = :fundinfo:staff_key
 		order by
-		    :cc:a_cost_center asc
+		    :cc:a_fund asc
 		";
 	readahead=50;
 	replicasize=50;
@@ -115,19 +115,19 @@ funds "widget/component-decl"
 	    rowhighlight_bgcolor="#faf8ff";
 	    nodata_message = runclient(condition(:funds_osrc:cx__pending, "No funds that you're the 'manager' of.", "Looking up your funds..."));
 
-	    ft_name "widget/table-column" { title = "Fund"; value=runclient(:funds_osrc:a_cost_center + ' - ' + :funds_osrc:a_cc_desc); width=300; style=runclient(condition(:funds_osrc:a_cost_center = :funds_osrc:a_bal_cost_center, 'bold', 'plain')); font_size=16; caption_value=runclient('Ledger "' + :funds_osrc:a_ledger_number + '" - ' + :funds_osrc:a_ledger_desc); }
-	    ft_p_openbal "widget/table-column" { title = runserver("Open " + (datepart(year, getdate()) - 1)); value=runclient(:funds_osrc:p_openbal); width=100; style=runclient(condition(:funds_osrc:a_cost_center = :funds_osrc:a_bal_cost_center, 'bold', 'plain')); font_size=16; fgcolor=runclient(condition(:funds_osrc:p_openbal is not null, condition(charindex('-$', :funds_osrc:p_openbal) > 0, '#c00000', '#000000'), 'white')); align=right; }
-	    ft_p_rev "widget/table-column" { title = runserver("Revenue " + (datepart(year, getdate()) - 1)); value=runclient(:funds_osrc:p_rev); width=100; style=runclient(condition(:funds_osrc:a_cost_center = :funds_osrc:a_bal_cost_center, 'bold', 'plain')); font_size=16; fgcolor=runclient(condition(:funds_osrc:p_rev is not null, condition(charindex('-$', :funds_osrc:p_rev) > 0, '#c00000', '#000000'), 'white')); align=right; }
-	    ft_p_exp "widget/table-column" { title = runserver("Expense " + (datepart(year, getdate()) - 1)); value=runclient(:funds_osrc:p_exp); width=100; style=runclient(condition(:funds_osrc:a_cost_center = :funds_osrc:a_bal_cost_center, 'bold', 'plain')); font_size=16; fgcolor=runclient(condition(:funds_osrc:p_exp is not null, condition(charindex('-$', :funds_osrc:p_exp) > 0, '#c00000', '#000000'), 'white')); align=right; }
-	    ft_openbal "widget/table-column" { title = runserver("Open " + datepart(year, getdate())); value=runclient(:funds_osrc:openbal); width=100; style=runclient(condition(:funds_osrc:a_cost_center = :funds_osrc:a_bal_cost_center, 'bold', 'plain')); font_size=16; fgcolor=runclient(condition(:funds_osrc:openbal is not null, condition(charindex('-$', :funds_osrc:openbal) > 0, '#c00000', '#000000'), 'white')); align=right; }
-	    ft_rev "widget/table-column" { title = runserver("Revenue " + datepart(year, getdate())); value=runclient(:funds_osrc:rev); width=100; style=runclient(condition(:funds_osrc:a_cost_center = :funds_osrc:a_bal_cost_center, 'bold', 'plain')); font_size=16; fgcolor=runclient(condition(:funds_osrc:rev is not null, condition(charindex('-$', :funds_osrc:rev) > 0, '#c00000', '#000000'), 'white')); align=right; }
-	    ft_exp "widget/table-column" { title = runserver("Expense " + datepart(year, getdate())); value=runclient(:funds_osrc:exp); width=100; style=runclient(condition(:funds_osrc:a_cost_center = :funds_osrc:a_bal_cost_center, 'bold', 'plain')); font_size=16; fgcolor=runclient(condition(:funds_osrc:exp is not null, condition(charindex('-$', :funds_osrc:exp) > 0, '#c00000', '#000000'), 'white')); align=right; }
-	    ft_bal "widget/table-column" { title = "Current"; value=runclient(:funds_osrc:bal); width=100; style=runclient(condition(:funds_osrc:a_cost_center = :funds_osrc:a_bal_cost_center, 'bold', 'plain')); font_size=16; fgcolor=runclient(condition(:funds_osrc:bal is not null, condition(charindex('-$', :funds_osrc:bal) > 0, '#c00000', '#000000'), 'white')); align=right; }
+	    ft_name "widget/table-column" { title = "Fund"; value=runclient(:funds_osrc:a_fund + ' - ' + :funds_osrc:a_fund_desc); width=300; style=runclient(condition(:funds_osrc:a_fund = :funds_osrc:a_bal_fund, 'bold', 'plain')); font_size=16; caption_value=runclient('Ledger "' + :funds_osrc:a_ledger_number + '" - ' + :funds_osrc:a_ledger_desc); }
+	    ft_p_openbal "widget/table-column" { title = runserver("Open " + (datepart(year, getdate()) - 1)); value=runclient(:funds_osrc:p_openbal); width=100; style=runclient(condition(:funds_osrc:a_fund = :funds_osrc:a_bal_fund, 'bold', 'plain')); font_size=16; fgcolor=runclient(condition(:funds_osrc:p_openbal is not null, condition(charindex('-$', :funds_osrc:p_openbal) > 0, '#c00000', '#000000'), 'white')); align=right; }
+	    ft_p_rev "widget/table-column" { title = runserver("Revenue " + (datepart(year, getdate()) - 1)); value=runclient(:funds_osrc:p_rev); width=100; style=runclient(condition(:funds_osrc:a_fund = :funds_osrc:a_bal_fund, 'bold', 'plain')); font_size=16; fgcolor=runclient(condition(:funds_osrc:p_rev is not null, condition(charindex('-$', :funds_osrc:p_rev) > 0, '#c00000', '#000000'), 'white')); align=right; }
+	    ft_p_exp "widget/table-column" { title = runserver("Expense " + (datepart(year, getdate()) - 1)); value=runclient(:funds_osrc:p_exp); width=100; style=runclient(condition(:funds_osrc:a_fund = :funds_osrc:a_bal_fund, 'bold', 'plain')); font_size=16; fgcolor=runclient(condition(:funds_osrc:p_exp is not null, condition(charindex('-$', :funds_osrc:p_exp) > 0, '#c00000', '#000000'), 'white')); align=right; }
+	    ft_openbal "widget/table-column" { title = runserver("Open " + datepart(year, getdate())); value=runclient(:funds_osrc:openbal); width=100; style=runclient(condition(:funds_osrc:a_fund = :funds_osrc:a_bal_fund, 'bold', 'plain')); font_size=16; fgcolor=runclient(condition(:funds_osrc:openbal is not null, condition(charindex('-$', :funds_osrc:openbal) > 0, '#c00000', '#000000'), 'white')); align=right; }
+	    ft_rev "widget/table-column" { title = runserver("Revenue " + datepart(year, getdate())); value=runclient(:funds_osrc:rev); width=100; style=runclient(condition(:funds_osrc:a_fund = :funds_osrc:a_bal_fund, 'bold', 'plain')); font_size=16; fgcolor=runclient(condition(:funds_osrc:rev is not null, condition(charindex('-$', :funds_osrc:rev) > 0, '#c00000', '#000000'), 'white')); align=right; }
+	    ft_exp "widget/table-column" { title = runserver("Expense " + datepart(year, getdate())); value=runclient(:funds_osrc:exp); width=100; style=runclient(condition(:funds_osrc:a_fund = :funds_osrc:a_bal_fund, 'bold', 'plain')); font_size=16; fgcolor=runclient(condition(:funds_osrc:exp is not null, condition(charindex('-$', :funds_osrc:exp) > 0, '#c00000', '#000000'), 'white')); align=right; }
+	    ft_bal "widget/table-column" { title = "Current"; value=runclient(:funds_osrc:bal); width=100; style=runclient(condition(:funds_osrc:a_fund = :funds_osrc:a_bal_fund, 'bold', 'plain')); font_size=16; fgcolor=runclient(condition(:funds_osrc:bal is not null, condition(charindex('-$', :funds_osrc:bal) > 0, '#c00000', '#000000'), 'white')); align=right; }
 
 	    ft_detail_pane "widget/table-row-detail"
 		{
 		// Only display for self-balancing (main) funds
-		//display_for=runclient(:funds_osrc:a_cost_center = :funds_osrc:a_bal_cost_center);
+		//display_for=runclient(:funds_osrc:a_fund = :funds_osrc:a_bal_fund);
 		height=165;
 		width=1172;
 
@@ -142,7 +142,7 @@ funds "widget/component-decl"
 			on_begin_qy_gift "widget/connector" { event=BeginQuery; target=monthly_detail_table; action=Clear; }
 
 			gd_param_ledger "widget/parameter" { param_name=a_ledger_number; type=string; }
-			gd_param_cc "widget/parameter" { param_name=a_cost_center; type=string; }
+			gd_param_cc "widget/parameter" { param_name=a_fund; type=string; }
 			gd_param_staff "widget/parameter" { param_name=staff_login; type=string; }
 
 			sql = "	declare object info;
@@ -151,14 +151,14 @@ funds "widget/component-decl"
 				    :info:startdate = :cs:p_start_date,
 				    :info:enddate = :cs:p_end_date
 				from
-				    /apps/kardia/data/Kardia_DB/a_cost_center/rows cc,
-				    /apps/kardia/data/Kardia_DB/a_cc_staff/rows cs,
+				    /apps/kardia/data/Kardia_DB/a_fund/rows cc,
+				    /apps/kardia/data/Kardia_DB/a_fund_staff/rows cs,
 				    /apps/kardia/data/Kardia_DB/p_staff/rows s
 				where
 				    :s:p_kardia_login = :parameters:staff_login and
 				    :cs:p_staff_partner_key = :s:p_partner_key and
-				    (:cs:a_cost_center = :cc:a_cost_center or :cs:a_cost_center = :cc:a_bal_cost_center) and
-				    :cc:a_cost_center = :parameters:a_cost_center
+				    (:cs:a_fund = :cc:a_fund or :cs:a_fund = :cc:a_bal_fund) and
+				    :cc:a_fund = :parameters:a_fund
 				;
 				
 				select
@@ -167,7 +167,7 @@ funds "widget/component-decl"
 				    /apps/kardia/data/Kardia_DB/a_transaction/rows
 				where
 				    :a_ledger_number = :parameters:a_ledger_number and
-				    :a_cost_center = :parameters:a_cost_center and
+				    :a_fund = :parameters:a_fund and
 				    (:info:startdate is null or :a_effective_date >= :info:startdate) and
 				    (:info:enddate is null or :a_effective_date <= :info:enddate)
 				order by
@@ -182,7 +182,7 @@ funds "widget/component-decl"
 				    /apps/kardia/data/Kardia_DB/a_transaction/rows
 				where
 				    :a_ledger_number = :parameters:a_ledger_number and
-				    :a_cost_center = :parameters:a_cost_center and
+				    :a_fund = :parameters:a_fund and
 				    (:info:startdate is null or :a_effective_date >= :info:startdate) and
 				    (:info:enddate is null or :a_effective_date <= :info:enddate)
 				order by
@@ -193,7 +193,7 @@ funds "widget/component-decl"
 
 				select
 				    rptperiod = :p:a_period_desc,
-				    gifts_rptname = :p:a_period + isnull(' - ' + (select sum(1) from /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows gi where :gi:a_ledger_number = :parameters:a_ledger_number and :gi:a_period = :p:a_period and :gi:a_cost_center = :parameters:a_cost_center and :gi:a_posted = 1) + ' gifts', ''),
+				    gifts_rptname = :p:a_period + isnull(' - ' + (select sum(1) from /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows gi where :gi:a_ledger_number = :parameters:a_ledger_number and :gi:a_period = :p:a_period and :gi:a_fund = :parameters:a_fund and :gi:a_posted = 1) + ' gifts', ''),
 				    :p:a_period
 				from
 				    /apps/kardia/data/Kardia_DB/a_period/rows p
@@ -217,8 +217,8 @@ funds "widget/component-decl"
 			    target=funds_osrc;
 			    key_1=a_ledger_number;
 			    target_key_1=a_ledger_number;
-			    key_2=a_cost_center;
-			    target_key_2=a_cost_center;
+			    key_2=a_fund;
+			    target_key_2=a_fund;
 			    key_3=staff_login;
 			    target_key_3=staff_login;
 			    revealed_only=yes;
@@ -261,7 +261,7 @@ funds "widget/component-decl"
 				period=runclient(:monthly_detail_osrc:a_period);
 				endperiod=runclient(:monthly_detail_osrc:a_period);
 				ledger=runclient(:funds_osrc:a_ledger_number);
-				costctr=runclient(:funds_osrc:a_cost_center);
+				fund=runclient(:funds_osrc:a_fund);
 				show_amounts=runclient(1);
 				}
 			    }
@@ -272,7 +272,7 @@ funds "widget/component-decl"
 			on_begin_qy_incexp "widget/connector" { event=BeginQuery; target=yearly_detail_table; action=Clear; }
 
 			id_param_ledger "widget/parameter" { param_name=a_ledger_number; type=string; }
-			id_param_cc "widget/parameter" { param_name=a_cost_center; type=string; }
+			id_param_cc "widget/parameter" { param_name=a_fund; type=string; }
 			id_param_isbal "widget/parameter" { param_name=isbal; type=integer; }
 			id_param_staff "widget/parameter" { param_name=staff_login; type=string; }
 
@@ -282,14 +282,14 @@ funds "widget/component-decl"
 				    :info:startdate = :cs:p_start_date,
 				    :info:enddate = :cs:p_end_date
 				from
-				    /apps/kardia/data/Kardia_DB/a_cost_center/rows cc,
-				    /apps/kardia/data/Kardia_DB/a_cc_staff/rows cs,
+				    /apps/kardia/data/Kardia_DB/a_fund/rows cc,
+				    /apps/kardia/data/Kardia_DB/a_fund_staff/rows cs,
 				    /apps/kardia/data/Kardia_DB/p_staff/rows s
 				where
 				    :s:p_kardia_login = :parameters:staff_login and
 				    :cs:p_staff_partner_key = :s:p_partner_key and
-				    (:cs:a_cost_center = :cc:a_cost_center or :cs:a_cost_center = :cc:a_bal_cost_center) and
-				    :cc:a_cost_center = :parameters:a_cost_center
+				    (:cs:a_fund = :cc:a_fund or :cs:a_fund = :cc:a_bal_fund) and
+				    :cc:a_fund = :parameters:a_fund
 				;
 				
 				select
@@ -298,7 +298,7 @@ funds "widget/component-decl"
 				    /apps/kardia/data/Kardia_DB/a_transaction/rows
 				where
 				    :a_ledger_number = :parameters:a_ledger_number and
-				    :a_cost_center = :parameters:a_cost_center and
+				    :a_fund = :parameters:a_fund and
 				    (:info:startdate is null or :a_effective_date >= :info:startdate) and
 				    (:info:enddate is null or :a_effective_date <= :info:enddate)
 				order by
@@ -313,7 +313,7 @@ funds "widget/component-decl"
 				    /apps/kardia/data/Kardia_DB/a_transaction/rows
 				where
 				    :a_ledger_number = :parameters:a_ledger_number and
-				    :a_cost_center = :parameters:a_cost_center and
+				    :a_fund = :parameters:a_fund and
 				    (:info:startdate is null or :a_effective_date >= :info:startdate) and
 				    (:info:enddate is null or :a_effective_date <= :info:enddate)
 				order by
@@ -383,8 +383,8 @@ funds "widget/component-decl"
 			    target=funds_osrc;
 			    key_1=a_ledger_number;
 			    target_key_1=a_ledger_number;
-			    key_2=a_cost_center;
-			    target_key_2=a_cost_center;
+			    key_2=a_fund;
+			    target_key_2=a_fund;
 			    key_3=isbal;
 			    target_key_3=isbal;
 			    key_4=staff_login;
@@ -421,7 +421,7 @@ funds "widget/component-decl"
 			    it_don "widget/table-column" { title = "Donors"; fieldname=donor_rptname; width=120; style=runclient(condition(:yearly_detail_osrc:donor_rptname is not null, 'underline', 'bold')); }
 			    it_mtx "widget/table-column" { title = "Gifts by Month"; fieldname=mtx_rptname; width=120; style=runclient(condition(:yearly_detail_osrc:mtx_rptname is not null, 'underline', 'bold')); }
 			    //it_revexp "widget/table-column" { title = "Rev. & Exp."; fieldname=incexp_rptname; width=120; style=runclient(condition(:yearly_detail_osrc:incexp_rptname is not null, 'underline', 'bold')); }
-			    it_revexpall "widget/table-column" { title = "Rev. & Exp. (all)"; fieldname=incexpall_rptname; width=120; style=runclient(condition(:yearly_detail_osrc:incexpall_rptname is not null, condition(:funds_osrc:a_cost_center = :funds_osrc:a_bal_cost_center, 'underline', 'plain'), 'bold')); }
+			    it_revexpall "widget/table-column" { title = "Rev. & Exp. (all)"; fieldname=incexpall_rptname; width=120; style=runclient(condition(:yearly_detail_osrc:incexpall_rptname is not null, condition(:funds_osrc:a_fund = :funds_osrc:a_bal_fund, 'underline', 'plain'), 'bold')); }
 
 			    on_trx_click "widget/connector"
 				{
@@ -434,7 +434,7 @@ funds "widget/component-decl"
 				startperiod=runclient(:yearly_detail_osrc:firstmonth);
 				endperiod=runclient(:yearly_detail_osrc:lastmonth);
 				ledger=runclient(:funds_osrc:a_ledger_number);
-				costctr=runclient(:funds_osrc:a_cost_center);
+				fund=runclient(:funds_osrc:a_fund);
 				onlyequity=runclient(1);
 				persubttl=runclient(1);
 				sortby=runclient('pdate');
@@ -449,7 +449,7 @@ funds "widget/component-decl"
 				start_period=runclient(:yearly_detail_osrc:firstmonth);
 				end_period=runclient(:yearly_detail_osrc:lastmonth);
 				ledger=runclient(:funds_osrc:a_ledger_number);
-				include_funds=runclient(:funds_osrc:a_cost_center);
+				include_funds=runclient(:funds_osrc:a_fund);
 				show_amounts=runclient(1);
 				}
 			    on_mtx_click "widget/connector"
@@ -461,7 +461,7 @@ funds "widget/component-decl"
 				Source="/apps/kardia/modules/rcpt/gift_matrix.rpt";
 				end_period=runclient(:yearly_detail_osrc:lastmonth);
 				ledger=runclient(:funds_osrc:a_ledger_number);
-				costctr=runclient(:funds_osrc:a_cost_center);
+				fund=runclient(:funds_osrc:a_fund);
 				}
 			    on_incexp_click "widget/connector"
 				{
@@ -473,21 +473,21 @@ funds "widget/component-decl"
 				end_period=runclient(:yearly_detail_osrc:lastmonth);
 				trx_end_period=runclient(:yearly_detail_osrc:lasttrxmonth);
 				ledger=runclient(:funds_osrc:a_ledger_number);
-				costctr=runclient(:funds_osrc:a_cost_center);
+				fund=runclient(:funds_osrc:a_fund);
 				invert=runclient(1);
 				reserve_factor=runclient(2);
 				}
 			    on_incexpall_click "widget/connector"
 				{
 				event=Click;
-				event_condition=runclient(:Column == "incexpall_rptname" and :funds_osrc:a_cost_center = :funds_osrc:a_bal_cost_center);
+				event_condition=runclient(:Column == "incexpall_rptname" and :funds_osrc:a_fund = :funds_osrc:a_bal_fund);
 				target=funds;
 				action=Launch;
 				Source="/apps/kardia/modules/gl/inc_exp_matrix.rpt";
 				end_period=runclient(:yearly_detail_osrc:lastmonth);
 				trx_end_period=runclient(:yearly_detail_osrc:lasttrxmonth);
 				ledger=runclient(:funds_osrc:a_ledger_number);
-				balcostctr=runclient(:funds_osrc:a_bal_cost_center);
+				balfund=runclient(:funds_osrc:a_bal_fund);
 				invert=runclient(1);
 				reserve_factor=runclient(2);
 				}

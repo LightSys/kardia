@@ -149,7 +149,7 @@ check_search_component "widget/component-decl"
 				:c:a_line_item,
 				:c:a_effective_date,
 				:c:a_amount,
-				:c:a_cost_center,
+				:c:a_fund,
 				:c:a_account_code,
 				:c:a_payee_partner_key,
 				:c:a_voided,
@@ -272,7 +272,7 @@ check_search_component "widget/component-decl"
 						// CC No Label
 						
 						// CC No Box
-						p_cc_number_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=a_cost_center; text="Cost Center No."; lookup_width=325; ctl_type="editbox"; tooltip="Lookup by Cost Center Code"; }
+						p_cc_number_cmp "widget/component" { type="readonly"; path="/sys/cmp/smart_field.cmp"; field=a_fund; text="Fund No."; lookup_width=325; ctl_type="editbox"; tooltip="Lookup by Fund Code"; }
 						
 						// CC (+) Symbol thingy...   (see/get from cashdish_subform)... =D  Combo...
 						
@@ -284,23 +284,23 @@ check_search_component "widget/component-decl"
 					
 					
 					
-					// // Cost Center Field
-					// cost_ctr_box "widget/component"
+					// // Fund Field
+					// fund_box "widget/component"
 					// {
 						// // path="/apps/kardia/modules/base/smart_field.cmp";
 						// path="/apps/kardia/modules/base/editbox_tree.cmp";
 						// type="readonly";
-						// field=a_cost_center;
-						// text="Cost Ctr:";
-						// tooltip="Cost Center Number";
+						// field=a_fund;
+						// text="Fund:";
+						// tooltip="Fund Number";
 						// label_width=99;
 						// // enabled=runclient(:partner_search_form:is_queryexecutable);
 						
 						// // Prerequiste: Need to be able to add ledger paramater pass in...
 						// // Action Item: Look at Tutorial for passing in parameter and let's get the show on the road! yeah!
 						
-						// popup_source = runserver("/apps/kardia/modules/gl/costctrs.qyt/" + :this:ledger + "/");
-						// popup_text="Select Cost Center:";
+						// popup_source = runserver("/apps/kardia/modules/gl/funds.qyt/" + :this:ledger + "/");
+						// popup_text="Select Fund:";
 						// auto_focus=no;	// the secret that allows it all to work (no form state change)
 						
 						// cc_get_desc_1 "widget/connector"
@@ -311,17 +311,17 @@ check_search_component "widget/component-decl"
 							// target=cc_desc_osrc;
 							// action=QueryParam;
 							// a_ledger_number=runclient(:ledger_osrc:a_ledger_number);
-							// a_cost_center=runclient(:cost_ctr_box:content);
+							// a_fund=runclient(:fund_box:content);
 						// }
 
 						// cc_desc_osrc "widget/osrc"
 						// {
-							// sql = "select a_cc_desc = isnull(first(:a_cc_desc),'**INVALID**') from /apps/kardia/data/Kardia_DB/a_cost_center/rows";
+							// sql = "select a_fund_desc = isnull(first(:a_fund_desc),'**INVALID**') from /apps/kardia/data/Kardia_DB/a_fund/rows";
 							// autoquery = never;
 							// replicasize=2;
 							// readahead=2;
 
-							// cc_get_desc_2 "widget/connector" { event=EndQuery; target=cost_ctr_box; action=SetValueDescription; Description=runclient(:cc_desc_osrc:a_cc_desc); }
+							// cc_get_desc_2 "widget/connector" { event=EndQuery; target=fund_box; action=SetValueDescription; Description=runclient(:cc_desc_osrc:a_fund_desc); }
 						// }
 					// }
 					
@@ -511,7 +511,7 @@ check_search_component "widget/component-decl"
 				// :c:a_disbursement_id,
 				// :c:a_line_item,
 				// :c:a_amount,
-				// :c:a_cost_center,
+				// :c:a_fund,
 				// :c:a_account_code,
 				// :c:a_payee_partner_key,
 				// :c:a_check_number,
@@ -551,10 +551,10 @@ check_search_component "widget/component-decl"
 					fieldname = a_line_item;
 					width = 40;
 				}
-				table_cost_center "widget/table-column"
+				table_fund "widget/table-column"
 				{
 					title = "CC";
-					fieldname = a_cost_center;
+					fieldname = a_fund;
 				}
 				table_acct_no "widget/table-column"
 				{

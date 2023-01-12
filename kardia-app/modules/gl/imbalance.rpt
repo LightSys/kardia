@@ -47,39 +47,39 @@ imbalance "system/report"
 	{
 	sql = runserver("
 		select
-			:cb:a_cost_center,
-			:cb:a_cc_desc,
-			:c:a_bal_cost_center,
+			:cb:a_fund,
+			:cb:a_fund_desc,
+			:c:a_bal_fund,
 			batchbal = sum(:tt:a_amount),
 			:b:a_batch_number,
 			:b:a_batch_desc
 		from
 			/apps/kardia/data/Kardia_DB/a_transaction/rows tt,
-			/apps/kardia/data/Kardia_DB/a_cost_center/rows c,
-			/apps/kardia/data/Kardia_DB/a_cost_center/rows cb,
+			/apps/kardia/data/Kardia_DB/a_fund/rows c,
+			/apps/kardia/data/Kardia_DB/a_fund/rows cb,
 			/apps/kardia/data/Kardia_DB/a_batch/rows b
 		where
 			:tt:a_batch_number = :b:a_batch_number and
 			:b:a_ledger_number = :this:ledger and
 			:tt:a_ledger_number = :this:ledger and
-			:tt:a_cost_center = :c:a_cost_center and
+			:tt:a_fund = :c:a_fund and
 			:c:a_ledger_number = :this:ledger and
-			:cb:a_cost_center = :c:a_bal_cost_center and
+			:cb:a_fund = :c:a_bal_fund and
 			:cb:a_ledger_number = :this:ledger and
 			:tt:a_period >= :this:ref_period and
 			:tt:a_period <= :this:end_period
 			" + condition(:this:unposted, "", "and :tt:a_posted = 1") + "
 		group by
 			:tt:a_batch_number,
-			:tt:a_cost_center
+			:tt:a_fund
 		");
 	bnum_agg "report/aggregate" { compute="last(:a_batch_number)"; reset=0; }
 	bname_agg "report/aggregate" { compute="last(:a_batch_desc)"; reset=0; }
 	bbal_sum "report/aggregate" { compute="sum(:batchbal)"; }
 	bbal_sum2 "report/aggregate" { compute="sum(:batchbal)"; }
 	bbal_sum3 "report/aggregate" { compute="sum(:batchbal)"; }
-	cnum_agg "report/aggregate" { compute="last(:a_cost_center)"; reset=0; }
-	cname_agg "report/aggregate" { compute="last(:a_cc_desc)"; reset=0; }
+	cnum_agg "report/aggregate" { compute="last(:a_fund)"; reset=0; }
+	cname_agg "report/aggregate" { compute="last(:a_fund_desc)"; reset=0; }
 	}
 
     check1900_qy "report/query"
@@ -136,7 +136,7 @@ imbalance "system/report"
 
 		h_batch "report/table-cell" { value='Batch'; align=center; style=bold; }
 		h_bdesc "report/table-cell" { value='Description'; align=center; style=bold; }
-		h_cc "report/table-cell" { value='Cost Ctr'; align=center; style=bold; }
+		h_cc "report/table-cell" { value='Fund'; align=center; style=bold; }
 		h_cdesc "report/table-cell" { value='Description'; align=center; style=bold; }
 		h_cur "report/table-cell" { value='Balance'; align=center; style=bold; }
 		}
@@ -144,7 +144,7 @@ imbalance "system/report"
 	    tbl_sum_all "report/table-row"
 		{
 		summary=yes;
-		summarize_for = runserver(:accts_qy:a_bal_cost_center + ":" + :accts_qy:a_batch_number);
+		summarize_for = runserver(:accts_qy:a_bal_fund + ":" + :accts_qy:a_batch_number);
 		condition = runserver(:accts_qy:bbal_sum != $0.00);
 		font=courier;
 		fontsize=8;

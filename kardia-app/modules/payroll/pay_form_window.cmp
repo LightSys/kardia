@@ -10,7 +10,7 @@ pay_form_window "widget/component-decl"
 
     ReviewPayee "widget/component-decl-action" {}
     ReviewPayee_cn1 "widget/connector" { event=ReviewPayee; target=pfwin; action=Open; Cascade=1; }
-    ReviewPayee_cn2 "widget/connector" { event=ReviewPayee; target=pf_cmp; action=Instantiate; ledger=runclient(:ledger); period=runclient(:period); payroll_id=runclient(:payroll_id); group_id=runclient(:group_id); payee_data_osrc=runclient(:payee_data_osrc); costctr=runclient(:costctr); payee_name=runclient(:payee_name); ref_period=runclient(:ref_period); }
+    ReviewPayee_cn2 "widget/connector" { event=ReviewPayee; target=pf_cmp; action=Instantiate; ledger=runclient(:ledger); period=runclient(:period); payroll_id=runclient(:payroll_id); group_id=runclient(:group_id); payee_data_osrc=runclient(:payee_data_osrc); fund=runclient(:fund); payee_name=runclient(:payee_name); ref_period=runclient(:ref_period); }
 
     ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
 

@@ -104,7 +104,7 @@ batch_post "widget/component-decl"
 		gen_osrc_ledger "widget/parameter" { param_name="ledger"; type=string; default=runclient(:batch_osrc:a_ledger_number); }
 		gen_osrc_batch "widget/parameter" { param_name="batch"; type=integer; default=runclient(:batch_osrc:a_batch_number); }
 
-		sql = "INSERT INTO /apps/kardia/data/Kardia_DB/a_transaction/rows  SELECT a_amount = $0 - sum(:t:a_amount), a_comment = '' + count(1) + ' transactions for ' + :c:a_bal_cost_center, a_account_code = '1900', a_cost_center=:c:a_bal_cost_center, :t:a_journal_number, :t:a_batch_number, :t:a_ledger_number, :t:a_period, :t:a_effective_date, :t:a_transaction_type, a_account_category = '19', a_posted = 0, a_modified = 0, a_corrected = 0, :t:a_correcting, :t:a_corrected_batch, :t:a_corrected_journal, :t:a_corrected_transaction, :t:a_reconciled, :t:a_postprocessed, :t:a_postprocess_type, :t:a_origin, a_receipt_sent = 0, a_receipt_desired = 0, a_first_gift = 0, a_goods_provided = $0, s_date_created = getdate(), s_created_by = user_name(), s_date_modified = getdate(), s_modified_by = user_name()  FROM /apps/kardia/data/Kardia_DB/a_transaction/rows t, /apps/kardia/data/Kardia_DB/a_cost_center/rows c  WHERE :t:a_ledger_number = :c:a_ledger_number and :t:a_cost_center = :c:a_cost_center and :t:a_ledger_number = :parameters:ledger and :t:a_batch_number = :parameters:batch  GROUP BY :t:a_ledger_number, :t:a_batch_number, :t:a_journal_number, :c:a_bal_cost_center  ORDER BY :t:a_cost_center  HAVING :a_amount != $0";
+		sql = "INSERT INTO /apps/kardia/data/Kardia_DB/a_transaction/rows  SELECT a_amount = $0 - sum(:t:a_amount), a_comment = '' + count(1) + ' transactions for ' + :c:a_bal_fund, a_account_code = '1900', a_fund=:c:a_bal_fund, :t:a_journal_number, :t:a_batch_number, :t:a_ledger_number, :t:a_period, :t:a_effective_date, :t:a_transaction_type, a_account_category = '19', a_posted = 0, a_modified = 0, a_corrected = 0, :t:a_correcting, :t:a_corrected_batch, :t:a_corrected_journal, :t:a_corrected_transaction, :t:a_reconciled, :t:a_postprocessed, :t:a_postprocess_type, :t:a_origin, a_receipt_sent = 0, a_receipt_desired = 0, a_first_gift = 0, a_goods_provided = $0, s_date_created = getdate(), s_created_by = user_name(), s_date_modified = getdate(), s_modified_by = user_name()  FROM /apps/kardia/data/Kardia_DB/a_transaction/rows t, /apps/kardia/data/Kardia_DB/a_fund/rows c  WHERE :t:a_ledger_number = :c:a_ledger_number and :t:a_fund = :c:a_fund and :t:a_ledger_number = :parameters:ledger and :t:a_batch_number = :parameters:batch  GROUP BY :t:a_ledger_number, :t:a_batch_number, :t:a_journal_number, :c:a_bal_fund  ORDER BY :t:a_fund  HAVING :a_amount != $0";
 
 		autoquery=never;
 
@@ -113,7 +113,7 @@ batch_post "widget/component-decl"
 
 	    show_1900_osrc "widget/osrc"
 		{
-		sql = "select :a_amount, :a_cost_center, :a_journal_number, :a_transaction_number, :a_account_code, :a_comment from /apps/kardia/data/Kardia_DB/a_transaction/rows where :a_account_code = '1900'";
+		sql = "select :a_amount, :a_fund, :a_journal_number, :a_transaction_number, :a_account_code, :a_comment from /apps/kardia/data/Kardia_DB/a_transaction/rows where :a_account_code = '1900'";
 		autoquery=never;
 		replicasize=50;
 		readahead=25;
@@ -138,7 +138,7 @@ batch_post "widget/component-decl"
 
 		    t_jnl "widget/table-column" { title="Jnl"; fieldname="a_journal_number"; width=40; }
 		    t_trx "widget/table-column" { title="Trx"; fieldname="a_transaction_number"; width=40; }
-		    t_cc "widget/table-column" { title="CostCtr"; fieldname="a_cost_center"; width=80; }
+		    t_cc "widget/table-column" { title="Fund"; fieldname="a_fund"; width=80; }
 		    t_acct "widget/table-column" { title="Acct"; fieldname="a_account_code"; width=80; }
 		    t_amt "widget/table-column" { title="Amount"; fieldname="a_amount"; width=100; align=right; }
 		    t_cmt "widget/table-column" { title="Comments"; fieldname="a_comment"; width=300; }
@@ -159,13 +159,13 @@ batch_post "widget/component-decl"
 	task_vfyjnl "widget/tabpage"
 	    {
 	    ttl2_lbl "widget/label" { x=8;y=8;width=100;height=20; text="Step Two:"; style=bold; }
-	    desc2_lbl "widget/label" { x=8;y=28;width=588;height=80; text="Next, we will double-check the journal balances within the batch.  All journals should sum to zero.  An (incomplete) list of cost centers affected by the journal are listed with each journal."; }
+	    desc2_lbl "widget/label" { x=8;y=28;width=588;height=80; text="Next, we will double-check the journal balances within the batch.  All journals should sum to zero.  An (incomplete) list of funds affected by the journal are listed with each journal."; }
 
 	    jnl_bal_osrc "widget/osrc"
 		{
 		jnl_bal_ledger "widget/parameter" { param_name="ledger"; type=string; default=runclient(:batch_osrc:a_ledger_number); }
 		jnl_bal_batch "widget/parameter" { param_name="batch"; type=integer; default=runclient(:batch_osrc:a_batch_number); }
-		sql = "SELECT :a_journal_number, bal = sum(:a_amount), ccs = substring(sum(:a_cost_center + ' '),1,80) FROM /apps/kardia/data/Kardia_DB/a_transaction/rows WHERE :a_ledger_number = :parameters:ledger and :a_batch_number = :parameters:batch GROUP BY :a_journal_number";
+		sql = "SELECT :a_journal_number, bal = sum(:a_amount), ccs = substring(sum(:a_fund + ' '),1,80) FROM /apps/kardia/data/Kardia_DB/a_transaction/rows WHERE :a_ledger_number = :parameters:ledger and :a_batch_number = :parameters:batch GROUP BY :a_journal_number";
 		autoquery=oneachreveal;
 		replicasize=50;
 		readahead=25;
@@ -177,7 +177,7 @@ batch_post "widget/component-decl"
 		    mode=dynamicrow;
 
 		    t2_jnl "widget/table-column" { title="Jnl"; fieldname="a_journal_number"; width=40; }
-		    t2_cc "widget/table-column" { title="CostCtrs"; fieldname="ccs"; width=440; }
+		    t2_cc "widget/table-column" { title="Funds"; fieldname="ccs"; width=440; }
 		    t2_bal "widget/table-column" { title="Balance"; fieldname="bal"; width=100; align=right; }
 		    }
 		}
@@ -202,13 +202,13 @@ batch_post "widget/component-decl"
 	task_vfycc "widget/tabpage"
 	    {
 	    ttl3_lbl "widget/label" { x=8;y=8;width=100;height=20; text="Step Three:"; style=bold; }
-	    desc3_lbl "widget/label" { x=8;y=28;width=588;height=80; text="The self-balancing funds (cost centers) also must balance, in order to be able to generate a balance sheet for each of these funds.  The per-fund totals below should sum to $0."; }
+	    desc3_lbl "widget/label" { x=8;y=28;width=588;height=80; text="The self-balancing funds (funds) also must balance, in order to be able to generate a balance sheet for each of these funds.  The per-fund totals below should sum to $0."; }
 
 	    cc_bal_osrc "widget/osrc"
 		{
 		cc_bal_ledger "widget/parameter" { param_name="ledger"; type=string; default=runclient(:batch_osrc:a_ledger_number); }
 		cc_bal_batch "widget/parameter" { param_name="batch"; type=integer; default=runclient(:batch_osrc:a_batch_number); }
-		sql = "SELECT :c:a_bal_cost_center, bal = sum(:t:a_amount), accts = substring(sum(:t:a_account_code + ' '),1,80) FROM /apps/kardia/data/Kardia_DB/a_transaction/rows t, /apps/kardia/data/Kardia_DB/a_cost_center/rows c WHERE :t:a_cost_center = :c:a_cost_center and :t:a_ledger_number = :c:a_ledger_number and :t:a_ledger_number = :parameters:ledger and :t:a_batch_number = :parameters:batch GROUP BY :c:a_bal_cost_center ORDER BY :t:a_cost_center";
+		sql = "SELECT :c:a_bal_fund, bal = sum(:t:a_amount), accts = substring(sum(:t:a_account_code + ' '),1,80) FROM /apps/kardia/data/Kardia_DB/a_transaction/rows t, /apps/kardia/data/Kardia_DB/a_fund/rows c WHERE :t:a_fund = :c:a_fund and :t:a_ledger_number = :c:a_ledger_number and :t:a_ledger_number = :parameters:ledger and :t:a_batch_number = :parameters:batch GROUP BY :c:a_bal_fund ORDER BY :t:a_fund";
 		autoquery=oneachreveal;
 		replicasize=50;
 		readahead=25;
@@ -219,7 +219,7 @@ batch_post "widget/component-decl"
 		    rowheight = 18;
 		    mode=dynamicrow;
 
-		    t3_cc "widget/table-column" { title="Cost Ctr"; fieldname="a_bal_cost_center"; width=80; }
+		    t3_cc "widget/table-column" { title="Fund"; fieldname="a_bal_fund"; width=80; }
 		    t3_accts "widget/table-column" { title="Accounts"; fieldname="accts"; width=400; }
 		    t3_bal "widget/table-column" { title="Balance"; fieldname="bal"; width=100; align=right; }
 		    }

@@ -56,11 +56,11 @@ coa_edit "widget/component-decl"
 
 	cc_tab "widget/tabpage"
 	    {
-	    title = "Cost Centers";
+	    title = "Funds";
 
 	    ccs "widget/component"
 		{
-		path="/apps/kardia/modules/gl/costctrs_edit.cmp";
+		path="/apps/kardia/modules/gl/funds_edit.cmp";
 		ledger_osrc = ledger_osrc;
 		}
 	    }
@@ -103,7 +103,7 @@ coa_edit "widget/component-decl"
 	    master_lbl "widget/label"
 		{
 		x=10;y=10;width=706;height=40;
-		text = "Once you have set up the GL Accounts, Cost Centers, and Periods, you can set up the master list of valid cost center / account combinations for each accounting period; normally this master list is set up on a yearly basis, using year-long top-level accounting periods.";
+		text = "Once you have set up the GL Accounts, Funds, and Periods, you can set up the master list of valid fund / account combinations for each accounting period; normally this master list is set up on a yearly basis, using year-long top-level accounting periods.";
 		}
 
 	    master_btn "widget/textbutton"

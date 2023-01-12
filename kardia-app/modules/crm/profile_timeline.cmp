@@ -31,13 +31,13 @@ profile_timeline "widget/component-decl"
     //
     timeline_data_osrc "widget/osrc"
 	{
-	sql = "select :activity_group_id from '/apps/kardia/modules/crm/timeline.qy?partner_key=000000&my_cclist='";
-	baseobj = "/apps/kardia/modules/crm/timeline.qy?partner_key=000000&my_cclist=";
+	sql = "select :activity_group_id from '/apps/kardia/modules/crm/timeline.qy?partner_key=000000&my_fundlist='";
+	baseobj = "/apps/kardia/modules/crm/timeline.qy?partner_key=000000&my_fundlist=";
 	readahead=2;
 	replicasize=2;
 	autoquery=never;
 
-	refresh_data_on_partner_change "widget/connector" { source=partner_osrc; event=EndQuery; action=ChangeSource; Source=runclient("/apps/kardia/modules/crm/timeline.qy?partner_key=" + :partner_osrc:p_partner_key + "&my_cclist=" + :collaborator_osrc:cclist); }
+	refresh_data_on_partner_change "widget/connector" { source=partner_osrc; event=EndQuery; action=ChangeSource; Source=runclient("/apps/kardia/modules/crm/timeline.qy?partner_key=" + :partner_osrc:p_partner_key + "&my_fundlist=" + :collaborator_osrc:fundlist); }
 
 	refresh_timeline_on_data "widget/connector"
 	    {
@@ -100,7 +100,7 @@ profile_timeline "widget/component-decl"
 				    ))))))))
 			from
 			    collection tmp_collection e,
-			    --'/apps/kardia/modules/crm/timeline.qy?partner_key=000000&my_cclist=' e,
+			    --'/apps/kardia/modules/crm/timeline.qy?partner_key=000000&my_fundlist=' e,
 			    /apps/kardia/data/Kardia_DB/p_partner/rows p,
 			    object wildcard '/apps/kardia/modules/crm/plugin_crm_timeline_*.cmp' c
 			where
@@ -112,7 +112,7 @@ profile_timeline "widget/component-decl"
 			";
 		readahead=50;
 		replicasize=50;
-		//baseobj = "/apps/kardia/modules/crm/timeline.qy?partner_key=000000&my_cclist=";
+		//baseobj = "/apps/kardia/modules/crm/timeline.qy?partner_key=000000&my_fundlist=";
 
 		refresh_on_options_change "widget/connector" { source=iconbar; event=TypesChange; action=Refresh; }
 
@@ -245,7 +245,7 @@ profile_timeline "widget/component-decl"
 	    height=32;
 	    fl_width=10;
 	    source="/sys/images/trans_1.gif";
-	    //source=runclient("/apps/kardia/modules/crm/timeline_svg.rpt?partner=" + :partner_osrc:p_partner_key + "&cclist=" + :collaborator_osrc:cclist);
+	    //source=runclient("/apps/kardia/modules/crm/timeline_svg.rpt?partner=" + :partner_osrc:p_partner_key + "&fundlist=" + :collaborator_osrc:fundlist);
 	    }
 	}
     }

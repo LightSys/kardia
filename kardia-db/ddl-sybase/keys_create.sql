@@ -194,6 +194,24 @@ alter table p_search_stage_criteria
 	add constraint p_stage_criteria_pk primary key clustered (p_search_id,p_search_stage_id,p_criteria_name)
 go
 
+print "working on table p_nondup"
+
+alter table p_nondup
+	add constraint p_nondup_pk primary key clustered (p_partner_key, p_nondup_partner_key)
+go
+
+print "working on table p_dup"
+
+alter table p_dup
+	add constraint p_dup_pk primary key clustered (p_partner_key, p_dup_partner_key)
+go
+
+print "working on table p_merge"
+
+alter table p_merge
+	add constraint p_merge_pk primary key clustered (p_partner_key_a, p_partner_key_b, p_data_source, p_data_key)
+go
+
 print "working on table m_list"
 
 alter table m_list
@@ -1276,4 +1294,10 @@ print "working on table s_stats_cache"
 
 alter table s_stats_cache
 	add constraint s_stats_cache_pk primary key clustered (s_stat_type, s_stat_group, s_stat)
+go
+
+print "working on table s_document_scanner"
+
+alter table s_document_scanner
+	add constraint s_scanner_pk primary key clustered (s_scanner_id)
 go

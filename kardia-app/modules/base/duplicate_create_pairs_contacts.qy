@@ -1,0 +1,56 @@
+$Version=2$
+duplicate_create_pairs_contacts "system/query"
+    {
+    match_dist "query/parameter" { type=integer; default=3; }
+		//TODO: can we add a default match_dist=3? Can we add a minvalue=1?
+
+    sql = " select
+		p_partner_key_1 = condition(:c:p_partner_key > lag(:c:p_partner_key, :n:number * :parameters:match_dist), :c:p_partner_key, lag(:c:p_partner_key, :n:number * :parameters:match_dist)),
+		p_partner_key_2 = condition(:c:p_partner_key > lag(:c:p_partner_key, :n:number * :parameters:match_dist), lag(:c:p_partner_key, :n:number * :parameters:match_dist), :c:p_partner_key),
+		val = condition(:c:p_contact_type == 'P' or :c:p_contact_type == 'C' or :c:p_contact_type == 'F',
+			-- For phone #s we reverse the strings since the most significant
+			-- part is at the end, and the beginning can have or not have
+			-- country codes and so forth.
+			reverse(
+				lower(replace(replace(replace(replace(replace(replace(
+					isnull(:c:p_phone_country,'') + 
+					isnull(:c:p_phone_area_city,'') + 
+					isnull(:c:p_contact_data,''), 
+					'+', ''), '(', ''), ')', ''), '-', ''), '.', ''), ' ', ''))),
+			-- For everything else we sort by the normal string.
+			lower(replace(replace(replace(replace(replace(replace(
+				isnull(:c:p_phone_country,'') + 
+				isnull(:c:p_phone_area_city,'') + 
+				isnull(:c:p_contact_data,''), 
+				'+', ''), '(', ''), ')', ''), '-', ''), '.', ''), ' ', ''))
+			)
+	    from
+		identity /apps/kardia/data/Kardia_DB/p_contact_info/rows c,
+		/apps/kardia/modules/base/123.csv/rows n
+	    where
+		:n:number <= :parameters:match_dist and
+		(char_length(rtrim(:c:p_phone_country)) > 0 or char_length(rtrim(:c:p_phone_area_city)) > 1 or char_length(rtrim(:c:p_contact_data)) > 1)
+	    order by
+		condition(:c:p_contact_type == 'P' or :c:p_contact_type == 'C' or :c:p_contact_type == 'F',
+			-- For phone #s we reverse the strings since the most significant
+			-- part is at the end, and the beginning can have or not have
+			-- country codes and so forth.
+			reverse(
+				lower(replace(replace(replace(replace(replace(replace(
+					isnull(:c:p_phone_country,'') + 
+					isnull(:c:p_phone_area_city,'') + 
+					isnull(:c:p_contact_data,''), 
+					'+', ''), '(', ''), ')', ''), '-', ''), '.', ''), ' ', ''))),
+			-- For everything else we sort by the normal string.
+			lower(replace(replace(replace(replace(replace(replace(
+				isnull(:c:p_phone_country,'') + 
+				isnull(:c:p_phone_area_city,'') + 
+				isnull(:c:p_contact_data,''), 
+				'+', ''), '(', ''), ')', ''), '-', ''), '.', ''), ' ', ''))
+			)
+	    having
+		:p_partner_key_1 is not null and
+		:p_partner_key_2 is not null and
+		:p_partner_key_1 != :p_partner_key_2
+	    ";
+    }

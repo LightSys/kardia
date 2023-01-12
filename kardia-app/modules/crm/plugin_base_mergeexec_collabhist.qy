@@ -1,0 +1,228 @@
+$Version=2$
+plugin_base_mergeexec_collabhist "system/query"
+    {
+    partner_a "query/parameter" { type=string; style=strnull; }
+    partner_b "query/parameter" { type=string; style=strnull; }
+    partner_c "query/parameter" { type=string; style=strnull; }
+
+    sql = " -- Partner list
+	    declare object info;
+	    select :info:partners = ralign(:parameters:partner_a, 16) + ralign(:parameters:partner_b, 16) + ralign(isnull(:parameters:partner_c, ''), 16);
+
+	    -- Use the update algorithm here because collab history does not allow copying.
+	    -- Acks
+	    update
+		identity /apps/kardia/data/Kardia_DB/e_ack/rows a,
+		/apps/kardia/data/Kardia_DB/p_merge/rows m
+	    set
+		:a:e_object_id = replace(:a:e_object_id, rtrim(:a:e_whom) + '|', '#' + condition(ascii(substring(:m:p_disposition, 2, 1)) = 65, :parameters:partner_a, condition(ascii(substring(:m:p_disposition, 2, 1)) = 66, :parameters:partner_b, condition(ascii(substring(:m:p_disposition, 2, 1)) = 67, :parameters:partner_c, NULL))) + '|'),
+		:a:e_whom = '#' + condition(ascii(substring(:m:p_disposition, 2, 1)) = 65, :parameters:partner_a, condition(ascii(substring(:m:p_disposition, 2, 1)) = 66, :parameters:partner_b, condition(ascii(substring(:m:p_disposition, 2, 1)) = 67, :parameters:partner_c, NULL)))
+	    where
+		:a:e_whom = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, condition(ascii(:m:p_disposition) = 99, :parameters:partner_c, convert(string,NULL)))) and
+		:m:p_data_source = 'CRM CollabHist' and
+		:m:p_partner_key_a = :parameters:partner_a and
+		:m:p_partner_key_b = :parameters:partner_b
+	    ;
+
+	    -- Contact History
+	    update
+		identity /apps/kardia/data/Kardia_DB/e_contact_history/rows ch,
+		/apps/kardia/data/Kardia_DB/p_merge/rows m
+	    set
+		:ch:e_whom = '#' + condition(ascii(substring(:m:p_disposition, 2, 1)) = 65, :parameters:partner_a, condition(ascii(substring(:m:p_disposition, 2, 1)) = 66, :parameters:partner_b, condition(ascii(substring(:m:p_disposition, 2, 1)) = 67, :parameters:partner_c, NULL)))
+	    where
+		:ch:e_whom = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, condition(ascii(:m:p_disposition) = 99, :parameters:partner_c, convert(string,NULL)))) and
+		:m:p_data_source = 'CRM CollabHist' and
+		:m:p_partner_key_a = :parameters:partner_a and
+		:m:p_partner_key_b = :parameters:partner_b
+	    ;
+
+	    -- Completed Todos
+	    update
+		identity /apps/kardia/data/Kardia_DB/e_todo/rows t,
+		/apps/kardia/data/Kardia_DB/p_merge/rows m
+	    set
+		:t:e_todo_collaborator = '#' + condition(ascii(substring(:m:p_disposition, 2, 1)) = 65, :parameters:partner_a, condition(ascii(substring(:m:p_disposition, 2, 1)) = 66, :parameters:partner_b, condition(ascii(substring(:m:p_disposition, 2, 1)) = 67, :parameters:partner_c, NULL)))
+	    where
+		:t:e_todo_collaborator = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, condition(ascii(:m:p_disposition) = 99, :parameters:partner_c, convert(string,NULL)))) and
+		:t:e_todo_status = 'C' and
+		:m:p_data_source = 'CRM CollabHist' and
+		:m:p_partner_key_a = :parameters:partner_a and
+		:m:p_partner_key_b = :parameters:partner_b
+	    ;
+
+	    -- Document comments
+	    update
+		identity /apps/kardia/data/Kardia_DB/e_document_comment/rows dc,
+		/apps/kardia/data/Kardia_DB/p_merge/rows m
+	    set
+		:dc:e_collaborator = '#' + condition(ascii(substring(:m:p_disposition, 2, 1)) = 65, :parameters:partner_a, condition(ascii(substring(:m:p_disposition, 2, 1)) = 66, :parameters:partner_b, condition(ascii(substring(:m:p_disposition, 2, 1)) = 67, :parameters:partner_c, NULL)))
+	    where
+		:dc:e_collaborator = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, condition(ascii(:m:p_disposition) = 99, :parameters:partner_c, convert(string,NULL)))) and
+		:m:p_data_source = 'CRM CollabHist' and
+		:m:p_partner_key_a = :parameters:partner_a and
+		:m:p_partner_key_b = :parameters:partner_b
+	    ;
+
+	    -- Document comments - target
+	    update
+		identity /apps/kardia/data/Kardia_DB/e_document_comment/rows dc,
+		/apps/kardia/data/Kardia_DB/p_merge/rows m
+	    set
+		:dc:e_target_collaborator = '#' + condition(ascii(substring(:m:p_disposition, 2, 1)) = 65, :parameters:partner_a, condition(ascii(substring(:m:p_disposition, 2, 1)) = 66, :parameters:partner_b, condition(ascii(substring(:m:p_disposition, 2, 1)) = 67, :parameters:partner_c, NULL)))
+	    where
+		:dc:e_target_collaborator = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, condition(ascii(:m:p_disposition) = 99, :parameters:partner_c, convert(string,NULL)))) and
+		:m:p_data_source = 'CRM CollabHist' and
+		:m:p_partner_key_a = :parameters:partner_a and
+		:m:p_partner_key_b = :parameters:partner_b
+	    ;
+
+	    -- Contact autorecord settings
+	    update
+		identity /apps/kardia/data/Kardia_DB/e_contact_autorecord/rows ca,
+		/apps/kardia/data/Kardia_DB/p_merge/rows m
+	    set
+		:ca:e_collaborator_id = '#' + condition(ascii(substring(:m:p_disposition, 2, 1)) = 65, :parameters:partner_a, condition(ascii(substring(:m:p_disposition, 2, 1)) = 66, :parameters:partner_b, condition(ascii(substring(:m:p_disposition, 2, 1)) = 67, :parameters:partner_c, NULL)))
+	    where
+		:ca:e_collaborator_id = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, condition(ascii(:m:p_disposition) = 99, :parameters:partner_c, convert(string,NULL)))) and
+		:m:p_data_source = 'CRM CollabHist' and
+		:m:p_partner_key_a = :parameters:partner_a and
+		:m:p_partner_key_b = :parameters:partner_b
+	    ;
+
+	    -- Partner engagement - started by
+	    update
+		identity /apps/kardia/data/Kardia_DB/e_partner_engagement/rows pe,
+		/apps/kardia/data/Kardia_DB/p_merge/rows m
+	    set
+		:pe:e_started_by = '#' + condition(ascii(substring(:m:p_disposition, 2, 1)) = 65, :parameters:partner_a, condition(ascii(substring(:m:p_disposition, 2, 1)) = 66, :parameters:partner_b, condition(ascii(substring(:m:p_disposition, 2, 1)) = 67, :parameters:partner_c, NULL)))
+	    where
+		:pe:e_started_by = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, condition(ascii(:m:p_disposition) = 99, :parameters:partner_c, convert(string,NULL)))) and
+		:m:p_data_source = 'CRM CollabHist' and
+		:m:p_partner_key_a = :parameters:partner_a and
+		:m:p_partner_key_b = :parameters:partner_b
+	    ;
+
+	    -- Partner engagement - completed by
+	    update
+		identity /apps/kardia/data/Kardia_DB/e_partner_engagement/rows pe,
+		/apps/kardia/data/Kardia_DB/p_merge/rows m
+	    set
+		:pe:e_completed_by = '#' + condition(ascii(substring(:m:p_disposition, 2, 1)) = 65, :parameters:partner_a, condition(ascii(substring(:m:p_disposition, 2, 1)) = 66, :parameters:partner_b, condition(ascii(substring(:m:p_disposition, 2, 1)) = 67, :parameters:partner_c, NULL)))
+	    where
+		:pe:e_completed_by = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, condition(ascii(:m:p_disposition) = 99, :parameters:partner_c, convert(string,NULL)))) and
+		:m:p_data_source = 'CRM CollabHist' and
+		:m:p_partner_key_a = :parameters:partner_a and
+		:m:p_partner_key_b = :parameters:partner_b
+	    ;
+
+	    -- Partner engagement - exited by
+	    update
+		identity /apps/kardia/data/Kardia_DB/e_partner_engagement/rows pe,
+		/apps/kardia/data/Kardia_DB/p_merge/rows m
+	    set
+		:pe:e_exited_by = '#' + condition(ascii(substring(:m:p_disposition, 2, 1)) = 65, :parameters:partner_a, condition(ascii(substring(:m:p_disposition, 2, 1)) = 66, :parameters:partner_b, condition(ascii(substring(:m:p_disposition, 2, 1)) = 67, :parameters:partner_c, NULL)))
+	    where
+		:pe:e_exited_by = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, condition(ascii(:m:p_disposition) = 99, :parameters:partner_c, convert(string,NULL)))) and
+		:m:p_data_source = 'CRM CollabHist' and
+		:m:p_partner_key_a = :parameters:partner_a and
+		:m:p_partner_key_b = :parameters:partner_b
+	    ;
+
+	    -- Partner engagement req - completed by
+	    update
+		identity /apps/kardia/data/Kardia_DB/e_partner_engagement_req/rows per,
+		/apps/kardia/data/Kardia_DB/p_merge/rows m
+	    set
+		:per:e_completed_by = '#' + condition(ascii(substring(:m:p_disposition, 2, 1)) = 65, :parameters:partner_a, condition(ascii(substring(:m:p_disposition, 2, 1)) = 66, :parameters:partner_b, condition(ascii(substring(:m:p_disposition, 2, 1)) = 67, :parameters:partner_c, NULL)))
+	    where
+		:per:e_completed_by = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, condition(ascii(:m:p_disposition) = 99, :parameters:partner_c, convert(string,NULL)))) and
+		:m:p_data_source = 'CRM CollabHist' and
+		:m:p_partner_key_a = :parameters:partner_a and
+		:m:p_partner_key_b = :parameters:partner_b
+	    ;
+
+	    -- Partner engagement req - waived by
+	    update
+		identity /apps/kardia/data/Kardia_DB/e_partner_engagement_req/rows per,
+		/apps/kardia/data/Kardia_DB/p_merge/rows m
+	    set
+		:per:e_waived_by = '#' + condition(ascii(substring(:m:p_disposition, 2, 1)) = 65, :parameters:partner_a, condition(ascii(substring(:m:p_disposition, 2, 1)) = 66, :parameters:partner_b, condition(ascii(substring(:m:p_disposition, 2, 1)) = 67, :parameters:partner_c, NULL)))
+	    where
+		:per:e_waived_by = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, condition(ascii(:m:p_disposition) = 99, :parameters:partner_c, convert(string,NULL)))) and
+		:m:p_data_source = 'CRM CollabHist' and
+		:m:p_partner_key_a = :parameters:partner_a and
+		:m:p_partner_key_b = :parameters:partner_b
+	    ;
+
+	    -- Document - uploading collab
+	    update
+		identity /apps/kardia/data/Kardia_DB/e_document/rows doc,
+		/apps/kardia/data/Kardia_DB/p_merge/rows m
+	    set
+		:doc:e_uploading_collaborator = '#' + condition(ascii(substring(:m:p_disposition, 2, 1)) = 65, :parameters:partner_a, condition(ascii(substring(:m:p_disposition, 2, 1)) = 66, :parameters:partner_b, condition(ascii(substring(:m:p_disposition, 2, 1)) = 67, :parameters:partner_c, NULL)))
+	    where
+		:doc:e_uploading_collaborator = condition(ascii(:m:p_disposition) = 97, :parameters:partner_a, condition(ascii(:m:p_disposition) = 98, :parameters:partner_b, condition(ascii(:m:p_disposition) = 99, :parameters:partner_c, convert(string,NULL)))) and
+		:m:p_data_source = 'CRM CollabHist' and
+		:m:p_partner_key_a = :parameters:partner_a and
+		:m:p_partner_key_b = :parameters:partner_b
+	    ;
+
+	    -- Update our temp keys
+	    update
+		/apps/kardia/data/Kardia_DB/e_ack/rows
+	    set
+		:e_object_id = replace(:e_object_id, :e_whom, substring(:e_whom, 2, 16)),
+		:e_whom = substring(:e_whom, 2, 16)
+	    where
+		(:e_whom = '#' + :parameters:partner_a or :e_whom = '#' + :parameters:partner_b or :e_whom = '#' + :parameters:partner_c)
+	    ;
+	    update /apps/kardia/data/Kardia_DB/e_contact_history/rows
+		set :e_whom = substring(:e_whom, 2, 16)
+		where (:e_whom = '#' + :parameters:partner_a or :e_whom = '#' + :parameters:partner_b or :e_whom = '#' + :parameters:partner_c)
+	    ;
+	    update /apps/kardia/data/Kardia_DB/e_todo/rows
+		set :e_todo_collaborator = substring(:e_todo_collaborator, 2, 16)
+		where (:e_todo_collaborator = '#' + :parameters:partner_a or :e_todo_collaborator = '#' + :parameters:partner_b or :e_todo_collaborator = '#' + :parameters:partner_c)
+	    ;
+	    update /apps/kardia/data/Kardia_DB/e_document_comment/rows
+		set :e_collaborator = substring(:e_collaborator, 2, 16)
+		where (:e_collaborator = '#' + :parameters:partner_a or :e_collaborator = '#' + :parameters:partner_b or :e_collaborator = '#' + :parameters:partner_c)
+	    ;
+	    update /apps/kardia/data/Kardia_DB/e_document_comment/rows
+		set :e_target_collaborator = substring(:e_target_collaborator, 2, 16)
+		where (:e_target_collaborator = '#' + :parameters:partner_a or :e_target_collaborator = '#' + :parameters:partner_b or :e_target_collaborator = '#' + :parameters:partner_c)
+	    ;
+	    update /apps/kardia/data/Kardia_DB/e_contact_autorecord/rows
+		set :e_collaborator_id = substring(:e_collaborator_id, 2, 16)
+		where (:e_collaborator_id = '#' + :parameters:partner_a or :e_collaborator_id = '#' + :parameters:partner_b or :e_collaborator_id = '#' + :parameters:partner_c)
+	    ;
+	    update /apps/kardia/data/Kardia_DB/e_partner_engagement/rows
+		set :e_started_by = substring(:e_started_by, 2, 16)
+		where (:e_started_by = '#' + :parameters:partner_a or :e_started_by = '#' + :parameters:partner_b or :e_started_by = '#' + :parameters:partner_c)
+	    ;
+	    update /apps/kardia/data/Kardia_DB/e_partner_engagement/rows
+		set :e_completed_by = substring(:e_completed_by, 2, 16)
+		where (:e_completed_by = '#' + :parameters:partner_a or :e_completed_by = '#' + :parameters:partner_b or :e_completed_by = '#' + :parameters:partner_c)
+	    ;
+	    update /apps/kardia/data/Kardia_DB/e_partner_engagement/rows
+		set :e_exited_by = substring(:e_exited_by, 2, 16)
+		where (:e_exited_by = '#' + :parameters:partner_a or :e_exited_by = '#' + :parameters:partner_b or :e_exited_by = '#' + :parameters:partner_c)
+	    ;
+	    update /apps/kardia/data/Kardia_DB/e_partner_engagement_req/rows
+		set :e_completed_by = substring(:e_completed_by, 2, 16)
+		where (:e_completed_by = '#' + :parameters:partner_a or :e_completed_by = '#' + :parameters:partner_b or :e_completed_by = '#' + :parameters:partner_c)
+	    ;
+	    update /apps/kardia/data/Kardia_DB/e_partner_engagement_req/rows
+		set :e_waived_by = substring(:e_waived_by, 2, 16)
+		where (:e_waived_by = '#' + :parameters:partner_a or :e_waived_by = '#' + :parameters:partner_b or :e_waived_by = '#' + :parameters:partner_c)
+	    ;
+	    update /apps/kardia/data/Kardia_DB/e_document/rows
+		set :e_uploading_collaborator = substring(:e_uploading_collaborator, 2, 16)
+		where (:e_uploading_collaborator = '#' + :parameters:partner_a or :e_uploading_collaborator = '#' + :parameters:partner_b or :e_uploading_collaborator = '#' + :parameters:partner_c)
+	    ;
+
+	    -- Return
+	    select 1 where 1 = 0
+	    ";
+    }

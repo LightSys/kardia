@@ -14,8 +14,8 @@ salary "widget/component-decl"
 	staff_login "widget/parameter" { type=string; }
 	sql = "	select
 		    staff_key = :s:p_partner_key,
-		    :cs:a_cost_center,
-		    :cc:a_cc_desc,
+		    :cs:a_fund,
+		    :cc:a_fund_desc,
 		    :pg:a_payroll_group_name,
 		    :l:a_ledger_number,
 		    :l:a_ledger_desc,
@@ -32,14 +32,14 @@ salary "widget/component-decl"
 		    ded = $0 - (sum(condition(:pit:a_payroll_item_class_code == 'G', :pi:a_actual_amount, $0)) - sum(condition(:pit:a_payroll_item_class_code == 'N', :pi:a_actual_amount, $0))),
 		    target = isnull((select :sr:a_target_payroll from /apps/kardia/data/Kardia_DB/a_salary_review/rows sr where :sr:a_ledger_number = :pi:a_ledger_number and :sr:a_payroll_id = :pi:a_payroll_id and :sr:s_date_created <= :pp:a_pay_date order by :sr:s_date_created desc limit 1), '-'),
 		    adj = isnull('' + round(100.0*(select :sr:a_percentage from /apps/kardia/data/Kardia_DB/a_salary_review/rows sr where :sr:a_ledger_number = :pi:a_ledger_number and :sr:a_payroll_id = :pi:a_payroll_id and :sr:s_date_created <= :pp:a_pay_date order by :sr:s_date_created desc limit 1),1) + '%', '-'),
-		    suptarget = isnull((select :srt:a_target_amount from /apps/kardia/data/Kardia_DB/a_support_review_target/rows srt, /apps/kardia/data/Kardia_DB/a_support_review/rows sr where :sr:a_ledger_number = :pi:a_ledger_number and :sr:a_review_date <= :pp:a_pay_date and :srt:a_ledger_number = :sr:a_ledger_number and :srt:a_review = :sr:a_review and :srt:a_cost_center = :y:a_cost_center order by :sr:a_review_date desc limit 1),'-'),
-		    support = isnull((select :srt:a_amount from /apps/kardia/data/Kardia_DB/a_support_review_target/rows srt, /apps/kardia/data/Kardia_DB/a_support_review/rows sr where :sr:a_ledger_number = :pi:a_ledger_number and :sr:a_review_date <= :pp:a_pay_date and :srt:a_ledger_number = :sr:a_ledger_number and :srt:a_review = :sr:a_review and :srt:a_cost_center = :y:a_cost_center order by :sr:a_review_date desc limit 1),'-'),
-		    raised = isnull('' + round(100.0*(select convert(double, :srt:a_amount) / convert(double, :srt:a_target_amount) from /apps/kardia/data/Kardia_DB/a_support_review_target/rows srt, /apps/kardia/data/Kardia_DB/a_support_review/rows sr where :sr:a_ledger_number = :pi:a_ledger_number and :sr:a_review_date <= :pp:a_pay_date and :srt:a_ledger_number = :sr:a_ledger_number and :srt:a_review = :sr:a_review and :srt:a_cost_center = :y:a_cost_center order by :sr:a_review_date desc limit 1),1) + '%', '-')
+		    suptarget = isnull((select :srt:a_target_amount from /apps/kardia/data/Kardia_DB/a_support_review_target/rows srt, /apps/kardia/data/Kardia_DB/a_support_review/rows sr where :sr:a_ledger_number = :pi:a_ledger_number and :sr:a_review_date <= :pp:a_pay_date and :srt:a_ledger_number = :sr:a_ledger_number and :srt:a_review = :sr:a_review and :srt:a_fund = :y:a_fund order by :sr:a_review_date desc limit 1),'-'),
+		    support = isnull((select :srt:a_amount from /apps/kardia/data/Kardia_DB/a_support_review_target/rows srt, /apps/kardia/data/Kardia_DB/a_support_review/rows sr where :sr:a_ledger_number = :pi:a_ledger_number and :sr:a_review_date <= :pp:a_pay_date and :srt:a_ledger_number = :sr:a_ledger_number and :srt:a_review = :sr:a_review and :srt:a_fund = :y:a_fund order by :sr:a_review_date desc limit 1),'-'),
+		    raised = isnull('' + round(100.0*(select convert(double, :srt:a_amount) / convert(double, :srt:a_target_amount) from /apps/kardia/data/Kardia_DB/a_support_review_target/rows srt, /apps/kardia/data/Kardia_DB/a_support_review/rows sr where :sr:a_ledger_number = :pi:a_ledger_number and :sr:a_review_date <= :pp:a_pay_date and :srt:a_ledger_number = :sr:a_ledger_number and :srt:a_review = :sr:a_review and :srt:a_fund = :y:a_fund order by :sr:a_review_date desc limit 1),1) + '%', '-')
 		from
 		    /apps/kardia/data/Kardia_DB/p_staff/rows s,
-		    /apps/kardia/data/Kardia_DB/a_cc_staff/rows cs,
+		    /apps/kardia/data/Kardia_DB/a_fund_staff/rows cs,
 		    /apps/kardia/data/Kardia_DB/a_ledger/rows l,
-		    /apps/kardia/data/Kardia_DB/a_cost_center/rows cc,
+		    /apps/kardia/data/Kardia_DB/a_fund/rows cc,
 		    /apps/kardia/data/Kardia_DB/a_payroll/rows y,
 		    /apps/kardia/data/Kardia_DB/p_partner/rows p,
 		    /apps/kardia/data/Kardia_DB/a_payroll_group/rows pg,
@@ -50,10 +50,10 @@ salary "widget/component-decl"
 		    :s:p_kardia_login = :parameters:staff_login and
 		    :cs:p_staff_partner_key = :s:p_partner_key and
 		    :l:a_ledger_number = :cs:a_ledger_number and
-		    :cc:a_cost_center = :cs:a_cost_center and
+		    :cc:a_fund = :cs:a_fund and
 		    :cc:a_ledger_number = :cs:a_ledger_number and
 		    :y:a_ledger_number = :cs:a_ledger_number and
-		    :y:a_cost_center = :cs:a_cost_center and
+		    :y:a_fund = :cs:a_fund and
 		    :p:p_partner_key = :y:p_payee_partner_key and
 		    :pg:a_ledger_number = :y:a_ledger_number and
 		    :pg:a_payroll_group_id = :y:a_payroll_group_id and
@@ -119,7 +119,7 @@ salary "widget/component-decl"
 	    rowhighlight_bgcolor="#faf8ff";
 	    nodata_message = runclient(condition(:salary_osrc:cx__pending, "No payroll information found.", "Looking up your payroll for this year and last year..."));
 
-	    st_name "widget/table-column" { title = "Payee"; value=runclient(:salary_osrc:payee_name + ' (' + :salary_osrc:payee_key + ')'); width=290; style='bold'; font_size=16; caption_value=runclient('' + :salary_osrc:a_cost_center + ' - ' + :salary_osrc:a_cc_desc); }
+	    st_name "widget/table-column" { title = "Payee"; value=runclient(:salary_osrc:payee_name + ' (' + :salary_osrc:payee_key + ')'); width=290; style='bold'; font_size=16; caption_value=runclient('' + :salary_osrc:a_fund + ' - ' + :salary_osrc:a_fund_desc); }
 	    st_period "widget/table-column" { title = "Pay Date"; value=runclient(substring(:salary_osrc:a_pay_date,1,11)); width=160; style='bold'; font_size=16; caption_value=runclient('For: ' + substring(:salary_osrc:a_start_date,1,11) + ' - ' + substring(:salary_osrc:a_end_date,1,11)); }
 	    st_suptarget "widget/table-column" { title = "SupTarget"; value=runclient(:salary_osrc:suptarget); width=90; style='bold'; font_size=16; caption_value=runclient('monthly'); align=right; caption_align=right; }
 	    st_support "widget/table-column" { title = "Raised"; value=runclient(:salary_osrc:support); width=96; style='bold'; font_size=16; caption_value=runclient(''); align=right; }

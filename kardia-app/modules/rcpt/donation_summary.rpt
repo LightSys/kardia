@@ -37,28 +37,28 @@ donation_summary "system/report"
 		select
 			cnt = count(:a_amount),
 			total = isnull(sum(:a_amount), $0.00),
-			cname = :c:a_cc_desc,
+			cname = :c:a_fund_desc,
 			aname = :a:a_acct_desc,
-			code = :g:a_cost_center + '.' + :g:a_account_code,
-			txt = isnull(:c:a_cc_desc + ' / ' + :a:a_acct_desc, '**INVALID**'),
-			:g:a_cost_center,
+			code = :g:a_fund + '.' + :g:a_account_code,
+			txt = isnull(:c:a_fund_desc + ' / ' + :a:a_acct_desc, '**INVALID**'),
+			:g:a_fund,
 			:g:a_account_code,
 			:g:a_ledger_number,
 			:g:a_period
 		from
 			/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows g,
-			/apps/kardia/data/Kardia_DB/a_cost_center/rows c,
+			/apps/kardia/data/Kardia_DB/a_fund/rows c,
 			/apps/kardia/data/Kardia_DB/a_account/rows a
 		where
 			:g:a_ledger_number = :this:ledger and
 			:g:a_period = :this:period and
 			" + condition(:this:batch is not null, ":g:a_batch_number = :this:batch and", "") + "
-			:c:a_cost_center =* :g:a_cost_center and
+			:c:a_fund =* :g:a_fund and
 			:c:a_ledger_number =* :g:a_ledger_number and
 			:a:a_ledger_number =* :g:a_ledger_number and
 			:a:a_account_code =* :g:a_account_code
 		group by
-			:g:a_cost_center,
+			:g:a_fund,
 			:g:a_account_code
 		");
 
@@ -128,7 +128,7 @@ donation_summary "system/report"
 			" + condition(:this:batch is not null, ":t:a_batch_number = :this:batch and", "") + "
 			:t:a_origin = 'CR' and
 			:t:a_period = :this:period and
-			:t:a_cost_center = :gifts_qy:a_cost_center and
+			:t:a_fund = :gifts_qy:a_fund and
 			:t:a_account_code = :gifts_qy:a_account_code
 			" + condition(:this:unposted, "", "and :t:a_posted = 1") + "
 		");
@@ -161,7 +161,7 @@ donation_summary "system/report"
 	sql = runserver("
 		select
 			total = isnull(sum(:a_amount), $0.00)
-			:t:a_cost_center,
+			:t:a_fund,
 			:t:a_account_code,
 			:t:a_ledger_number,
 			:t:a_batch_number,
@@ -173,7 +173,7 @@ donation_summary "system/report"
 			" + condition(:this:batch is not null, ":t:a_batch_number = :this:batch and", "") + "
 			:t:a_origin = 'CR' and
 			:t:a_period = :this:period and
-			:t:a_cost_center = :gifts_qy:a_cost_center and
+			:t:a_fund = :gifts_qy:a_fund and
 			:t:a_account_code = :gifts_qy:a_account_code
 			" + condition(:this:unposted, "", "and :t:a_posted = 1") + "
 		group by
@@ -188,7 +188,7 @@ donation_summary "system/report"
 		select
 			cnt = count(:a_amount),
 			total = isnull(sum(:a_amount), $0.00),
-			:g:a_cost_center,
+			:g:a_fund,
 			:g:a_account_code,
 			:g:a_batch_number,
 			:g:a_gift_number,
@@ -198,7 +198,7 @@ donation_summary "system/report"
 		where
 			:g:a_ledger_number = :glccdetail_qy:a_ledger_number and
 			:g:a_period = :glccdetail_qy:a_period and
-			:g:a_cost_center = :glccdetail_qy:a_cost_center and
+			:g:a_fund = :glccdetail_qy:a_fund and
 			:g:a_account_code = :glccdetail_qy:a_account_code and
 			:g:a_batch_number = :glccdetail_qy:a_batch_number and
 			" + condition(:this:batch is not null, ":g:a_batch_number = :this:batch and", "") + "
@@ -214,25 +214,25 @@ donation_summary "system/report"
 //		select
 //			cnt = count(:a_amount),
 //			total = isnull(sum(:a_amount), $0.00),
-//			cname = :c:a_cc_desc,
+//			cname = :c:a_fund_desc,
 //			aname = :a:a_acct_desc,
-//			code = :g:a_cost_center + '.' + :g:a_account_code,
-//			txt = :c:a_cc_desc + ' / ' + :a:a_acct_desc,
-//			:g:a_cost_center,
+//			code = :g:a_fund + '.' + :g:a_account_code,
+//			txt = :c:a_fund_desc + ' / ' + :a:a_acct_desc,
+//			:g:a_fund,
 //			:g:a_account_code
 //		from
 //			/apps/kardia/data/Kardia_DB/a_subtrx_gift/rows g,
-//			/apps/kardia/data/Kardia_DB/a_cost_center/rows c,
+//			/apps/kardia/data/Kardia_DB/a_fund/rows c,
 //			/apps/kardia/data/Kardia_DB/a_account/rows a
 //		where
 //			:g:a_ledger_number = :this:ledger and
-//			:g:a_cost_center = :c:a_cost_center and
+//			:g:a_fund = :c:a_fund and
 //			:g:a_period = :this:period and
 //			:c:a_ledger_number = :this:ledger and
 //			:a:a_ledger_number = :this:ledger and
 //			:a:a_account_code = :g:a_account_code
 //		group by
-//			:g:a_cost_center,
+//			:g:a_fund,
 //			:g:a_account_code
 //		");
 //
@@ -251,7 +251,7 @@ donation_summary "system/report"
 //			:t:a_ledger_number = :this:ledger and
 //			:t:a_origin = 'CR' and
 //			:t:a_period = :this:period and
-//			:t:a_cost_center = :gifts2_qy:a_cost_center and
+//			:t:a_fund = :gifts2_qy:a_fund and
 //			:t:a_account_code = :gifts2_qy:a_account_code
 //			" + condition(:this:unposted, "", "and :t:a_posted = 1") + "
 //		");
@@ -385,7 +385,7 @@ donation_summary "system/report"
 		fontsize=8;
 		marginbottom=0.1;
 
-		d_acode "report/table-cell" { value=runserver(:gifts_qy:a_cost_center); align=left; }
+		d_acode "report/table-cell" { value=runserver(:gifts_qy:a_fund); align=left; }
 		d_ccode "report/table-cell" { value=runserver(:gifts_qy:a_account_code); align=left; }
 		d_desc "report/table-cell"
 		    {

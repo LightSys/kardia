@@ -22,20 +22,20 @@ plugin_gl_fundedit_autosub "widget/component-decl"
 	as_osrc "widget/osrc"
 	    {
 	    sql = " select
-			    :a:a_ledger_number, :a:a_cost_center, :a:m_list_code,
+			    :a:a_ledger_number, :a:a_fund, :a:m_list_code,
 			    :a:a_minimum_gift, :a:a_subscribe_months, :a:a_comments,
 			    :a:s_date_created, :a:s_created_by, :a:s_date_modified, :a:s_modified_by,
 			    :m:m_list_description, :m:m_list_status, stattext = :ls:text,
 			    monthtext = '' + :a:a_subscribe_months + ' months'
 		    from
-			    IDENTITY /apps/kardia/data/Kardia_DB/a_cc_auto_subscribe/rows a,
+			    IDENTITY /apps/kardia/data/Kardia_DB/a_fund_auto_subscribe/rows a,
 			    /apps/kardia/data/Kardia_DB/m_list/rows m,
 			    /apps/kardia/data/Kardia_DB/_m_list_status/rows ls
 		    where
 			    :m:m_list_code = :a:m_list_code and
 			    :m:m_list_status *= :ls:tag
 		    ";
-	    baseobj = "/apps/kardia/data/Kardia_DB/a_cc_auto_subscribe/rows";
+	    baseobj = "/apps/kardia/data/Kardia_DB/a_fund_auto_subscribe/rows";
 	    readahead = 10;
 	    replicasize = 10;
 	    autoquery = never;
@@ -45,9 +45,9 @@ plugin_gl_fundedit_autosub "widget/component-decl"
 		ruletype = osrc_relationship;
 		target = fund_osrc;
 		key_1 = a_ledger_number;
-		key_2 = a_cost_center;
+		key_2 = a_fund;
 		target_key_1 = a_ledger_number;
-		target_key_2 = a_cost_center;
+		target_key_2 = a_fund;
 		}
 
 	    as_form "widget/form"

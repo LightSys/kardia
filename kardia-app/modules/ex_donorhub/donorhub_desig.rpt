@@ -1,0 +1,79 @@
+$Version=2$
+donorhub_desig "system/report"
+    {
+    title = "Designations report for DonorHub";
+
+    document_format="text/csv";
+    resolution = 300;
+    pagewidth=110;
+    pageheight=2000;
+    marginleft=2.5;
+    marginright=2.5;
+    margintop=3;
+    marginbottom=3;
+
+    // Give it an intelligent filename
+    filename = runserver('donorhub_desig_' + isnull(:this:ledger, 'all') + '_' + isnull(:this:fund, 'all') + '.csv');
+
+    // Parameters for designations report
+    ledger "report/parameter" { type=string; default=null; }
+    fund "report/parameter" { type=string; default=null; }
+
+    // Out parameters
+    rowcount "report/parameter" { type=integer; direction=out; default=runserver(isnull(:desig_qy:all_cnt, 0)); }
+    is_empty "report/parameter" { type=integer; direction=out; default=runserver(condition(isnull(:desig_qy:all_cnt, 0) == 0, 1, 0)); }
+
+    // Designations
+    desig_qy "report/query"
+	{
+	sql = "	SELECT
+			'Designation ID' = :f:a_fund,
+			'Designation Name' = :f:a_fund_desc,
+			'Category' = :fc:a_fund_class_desc
+		FROM
+			/apps/kardia/data/Kardia_DB/a_fund/rows f,
+			/apps/kardia/data/Kardia_DB/a_fund_class/rows fc,
+			/apps/kardia/data/Kardia_DB/r_group_report_param/rows grp
+		WHERE
+			(:this:ledger is null or :f:a_ledger_number = :this:ledger) and
+			(:this:fund is null or :f:a_bal_fund = :this:fund or :f:a_fund = :this:fund) and
+			:grp:r_group_name = 'DonorHub' and
+			:grp:r_param_name = 'fund' and
+			:grp:r_param_value = :f:a_fund and
+			:fc:a_ledger_number = :f:a_ledger_number and
+			:fc:a_fund_class = :f:a_fund_class
+		";
+
+	all_cnt "report/aggregate" { compute="count(:'Designation ID')"; reset=0; }
+	}
+
+    // Table for file heading and designations list
+    desig_table "report/table"
+	{
+	x=0; width=110; height=0;
+	columns=3;
+	widths=35,35,35;
+	colsep=1;
+	nullformat="";
+	moneyformat = "-0.00";
+	dateformat = "yyyy-MM-dd";
+	source=desig_qy;
+
+	hdr_desig "report/table-row"
+	    {
+	    header = yes;
+
+	    t_id "report/table-cell" { value='Designation ID'; }
+	    t_name "report/table-cell" { value='Designation Name'; }
+	    t_type "report/table-cell" { value='Category'; }
+	    }
+
+	one_desig "report/table-row"
+	    {
+	    allowbreak=no;
+	    d_id "report/table-cell" { value=runserver(:desig_qy:'Designation ID'); }
+	    d_name "report/table-cell" { value=runserver(:desig_qy:'Designation Name'); }
+	    d_type "report/table-cell" { value=runserver(:desig_qy:'Category'); }
+	    }
+	}
+    }

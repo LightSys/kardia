@@ -1,0 +1,39 @@
+$Version=2$
+plugin_base_merge_disb "system/query"
+    {
+    partner_a "query/parameter" { type=string; style=strnull; }
+    partner_b "query/parameter" { type=string; style=strnull; }
+    partner_c "query/parameter" { type=string; style=strnull; }
+
+    sql = " select
+		p_partner_key = :d:a_payee_partner_key,
+		p_data_source = 'Payments',
+		p_data_key = :d:a_payee_partner_key,
+		p_data_desc = '' + count(1) + ' payment' + condition(
+			count(1) == 1,
+			' on ' + dateformat(min(:d:a_effective_date), 'dd-MMM-yyyy'),
+			's between ' + dateformat(min(:d:a_effective_date), 'dd-MMM-yyyy') + ' and ' + dateformat(max(:d:a_effective_date), 'dd-MMM-yyyy')
+			),
+		p_short_data_desc = 'Payments',
+		p_date_start = min(:d:a_effective_date),
+		p_date_end = max(:d:a_effective_date),
+		p_allow_copy = 0,
+		p_allow_multiple = 1,
+		p_allow_delete = 0,
+		p_default_copy = 0,
+		p_default_marriage_copy = 0,
+		p_default_marriage_move = 0,
+		p_default_multiple = 1,
+		p_allow_collate = 0,
+		p_comment = null
+	    from
+		identity /apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows d
+	    where
+		(:d:a_payee_partner_key = :parameters:partner_a or :d:a_payee_partner_key = :parameters:partner_b or :d:a_payee_partner_key = :parameters:partner_c) and
+		:d:a_posted = 1
+	    group by
+		:d:a_payee_partner_key
+	    having
+		:p_partner_key is not null
+	    ";
+    }

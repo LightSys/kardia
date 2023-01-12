@@ -1,5 +1,5 @@
 $Version=2$
-costctrs_edit "widget/component-decl"
+funds_edit "widget/component-decl"
     {
     width=756;height=449;
 
@@ -12,10 +12,10 @@ costctrs_edit "widget/component-decl"
     cmp "widget/component"
 	{
 	path = "/apps/kardia/modules/gl/tree_list_data.cmp";
-	object_name = "Cost Center";
-	tree_source = "/apps/kardia/modules/gl/costctrs.qyt/";
-	osrc_source = "/apps/kardia/modules/gl/costctrs.qyt/0US";
+	object_name = "Fund";
+	tree_source = "/apps/kardia/modules/gl/funds.qyt/";
+	osrc_source = "/apps/kardia/modules/gl/funds.qyt/0US";
 	ledger_osrc = ledger_osrc;
-	detail_cmp_path = "/apps/kardia/modules/gl/costctr_one_edit.cmp";
+	detail_cmp_path = "/apps/kardia/modules/gl/fund_one_edit.cmp";
 	}
     }

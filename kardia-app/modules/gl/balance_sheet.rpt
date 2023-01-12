@@ -14,7 +14,7 @@ balance_sheet "system/report"
 
     // Parameters for GL Balance Sheet
     ledger "report/parameter" { type=string; default=null; }
-    costctr "report/parameter" { type=string; default=null; }
+    fund "report/parameter" { type=string; default=null; }
     ref_period "report/parameter" { type=string; default=runserver( (select first(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_summary_only = 0 and datepart(year, :a_end_date) = datepart(year, getdate()) order by :a_start_date) ); }
     end_period "report/parameter" { type=string; default=runserver( (select last(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_summary_only = 0 and datepart(year, :a_end_date) = datepart(year, getdate()) order by :a_start_date) ); }
     unposted "report/parameter" { type=integer; default=0; }
@@ -53,7 +53,7 @@ balance_sheet "system/report"
 			:a:a_account_code >= '1000' and
 			:a:a_account_code <= '1999'
 			" + condition(:this:unposted, "", "and :t:a_posted = 1") + "
-			" + condition(:this:costctr is null, "", "and :t:a_cost_center = :this:costctr") + "
+			" + condition(:this:fund is null, "", "and :t:a_fund = :this:fund") + "
 		GROUP BY
 			:a:a_account_code
 		");
@@ -94,7 +94,7 @@ balance_sheet "system/report"
 			:a:a_account_code >= '2000' and
 			:a:a_account_code <= '2999'
 			" + condition(:this:unposted, "", "and :t:a_posted = 1") + "
-			" + condition(:this:costctr is null, "", "and :t:a_cost_center = :this:costctr") + "
+			" + condition(:this:fund is null, "", "and :t:a_fund = :this:fund") + "
 		GROUP BY
 			:a:a_account_code
 		");
@@ -121,27 +121,27 @@ balance_sheet "system/report"
 			total = isnull(sum(:t:a_amount), $0),
 			diff_total = isnull(sum(:t:a_amount), $0) - isnull(sum(condition(:t:a_period < :this:ref_period or :t:a_transaction_type = 'B', :t:a_amount, $0)), $0),
 			pre_total = isnull(sum(condition(:t:a_period < :this:ref_period or :t:a_transaction_type = 'B', :t:a_amount, $0)), $0),
-			:c:a_cost_center,
-			:c:a_cost_center_class,
-			:cl:a_acct_class_desc
+			:c:a_fund,
+			:c:a_fund_class,
+			:cl:a_fund_class_desc
 		FROM
-			/apps/kardia/data/Kardia_DB/a_cost_center/rows c,
-			/apps/kardia/data/Kardia_DB/a_cost_center_class/rows cl,
+			/apps/kardia/data/Kardia_DB/a_fund/rows c,
+			/apps/kardia/data/Kardia_DB/a_fund_class/rows cl,
 			/apps/kardia/data/Kardia_DB/a_transaction/rows t
 		WHERE
 			:c:a_ledger_number = :this:ledger and
 			:cl:a_ledger_number = :this:ledger and
-			:c:a_cost_center = :t:a_cost_center and
-			:cl:a_cost_center_class = :c:a_cost_center_class and
+			:c:a_fund = :t:a_fund and
+			:cl:a_fund_class = :c:a_fund_class and
 			:t:a_ledger_number = :this:ledger and
 			:t:a_period >= :period_qy:first_period and
 			:t:a_period <= :this:end_period and
 			:t:a_account_code >= '3000' and
 			:t:a_account_code <= '5999'
 			" + condition(:this:unposted, "", "and :t:a_posted = 1") + "
-			" + condition(:this:costctr is null, "", "and (:c:a_bal_cost_center = :this:costctr or :c:a_cost_center = :this:costctr)") + "
+			" + condition(:this:fund is null, "", "and (:c:a_bal_fund = :this:fund or :c:a_fund = :this:fund)") + "
 		GROUP BY
-			:c:a_cost_center_class
+			:c:a_fund_class
 		");
 
 	total_sum1 "report/aggregate" { compute="sum(:total)"; }
@@ -354,8 +354,8 @@ balance_sheet "system/report"
 		font=courier;
 		fontsize=8;
 		marginbottom=0.0;
-		d_acct "report/table-cell" { value=runserver(:fundbal_qy:a_cost_center_class); align=left; }
-		d_desc "report/table-cell" { font=helvetica; value=runserver(:fundbal_qy:a_acct_class_desc); align=left; }
+		d_acct "report/table-cell" { value=runserver(:fundbal_qy:a_fund_class); align=left; }
+		d_desc "report/table-cell" { font=helvetica; value=runserver(:fundbal_qy:a_fund_class_desc); align=left; }
 		d_bbal "report/table-cell" { value=runserver(condition(:fundbal_qy:pre_total == $0, '-0-   ', :fundbal_qy:pre_total)); align=right; }
 		d_chg "report/table-cell" { value=runserver(condition(:fundbal_qy:diff_total == $0, '-0-   ', :fundbal_qy:diff_total)); align=right; }
 		d_cur "report/table-cell" { value=runserver(condition(:fundbal_qy:total == $0, '-0-   ', :fundbal_qy:total)); align=right; }

@@ -1,0 +1,65 @@
+$Version=2$
+copy_cd_batch "system/query"
+    {
+    ledger "query/parameter" { type=string; }
+    oldbatch "query/parameter" { type=integer; }
+    newbatch "query/parameter" { type=integer; }
+    amounts "query/parameter" { type=string; default='C'; }
+
+    sql = " declare object info;
+
+	    -- determine starting check #
+	    select
+		:info:startck = isnull(max(convert(integer,:a_check_number)),0) + 1,
+		:info:startid = isnull(max(convert(integer,:a_disbursement_id)),0) + 1
+	    from
+		/apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows
+	    where
+		:a_ledger_number = :parameters:ledger and
+		:a_batch_number = :parameters:newbatch
+	    ;
+
+	    -- determine date and period
+	    select
+		:info:bdate = :a_default_effective_date,
+		:info:bperiod = :a_period
+	    from
+		/apps/kardia/data/Kardia_DB/a_batch/rows
+	    where
+		:a_ledger_number = :parameters:ledger and
+		:a_batch_number = :parameters:newbatch
+	    ;
+   
+	    -- do the copy
+	    insert
+		/apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows
+	    select
+		:a_ledger_number,
+		a_batch_number = :parameters:newbatch,
+		a_disbursement_id = :info:startid + dense_rank(:a_disbursement_id) - 1,
+		a_period = :info:bperiod,
+		a_effective_date = :info:bdate,
+		:a_cash_account_code,
+		a_amount = condition(:parameters:amounts = 'C', :a_amount, condition(:parameters:amounts = 'Z', $0, condition(:parameters:amounts = 'R', $0 - :a_amount, condition(:parameters:amounts = 'O', condition(:a_amount > $0, $0.01, condition(:a_amount < $0, $-0.01, $0)), $0)))),
+		:a_fund,
+		:a_account_code,
+		:a_payee_partner_key,
+		a_check_number = convert(string, :info:startck + dense_rank(:a_disbursement_id) - 1),
+		a_posted=0,
+		a_posted_to_gl=0,
+		a_voided=0,
+		a_reconciled=0,
+		:a_comment,
+		s_date_created = getdate(),
+		s_date_modified = getdate(),
+		s_created_by = user_name(),
+		s_modified_by = user_name()
+	    from
+		/apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows cd
+	    where
+		:cd:a_ledger_number = :parameters:ledger and
+		:cd:a_batch_number = :parameters:oldbatch
+	    order by
+		:cd:a_disbursement_id
+	    ";
+    }

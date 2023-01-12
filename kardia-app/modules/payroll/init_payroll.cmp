@@ -41,9 +41,9 @@ init_payroll "widget/component-decl"
 			:a:a_actual_amount,
 			:a:a_filing_status,
 			:a:a_allowances,
-			:a:a_ref_cost_center,
+			:a:a_ref_fund,
 			:a:a_ref_account_code,
-			:a:a_xfer_cost_center,
+			:a:a_xfer_fund,
 			:a:a_xfer_account_code,
 			s_date_created = getdate(),
 			s_created_by = user_name(),
@@ -90,7 +90,7 @@ init_payroll "widget/component-decl"
 			IDENTITY /apps/kardia/data/Kardia_DB/a_payroll_item/rows i,
 			/apps/kardia/data/Kardia_DB/a_payroll_item_type/rows t
 		SET
-			:i:a_actual_amount = (select isnull($0 - sum(:trx:a_amount),$0) FROM /apps/kardia/data/Kardia_DB/a_transaction/rows trx WHERE :trx:a_ledger_number = :y:a_ledger_number and :trx:a_period <= :parameters:payacctperiod and :trx:a_period >= :parameters:payrefperiod and :trx:a_cost_center = isnull(:i:a_ref_cost_center,:y:a_cost_center) and :trx:a_account_code >= '3000' and :trx:a_account_code <= '5999')
+			:i:a_actual_amount = (select isnull($0 - sum(:trx:a_amount),$0) FROM /apps/kardia/data/Kardia_DB/a_transaction/rows trx WHERE :trx:a_ledger_number = :y:a_ledger_number and :trx:a_period <= :parameters:payacctperiod and :trx:a_period >= :parameters:payrefperiod and :trx:a_fund = isnull(:i:a_ref_fund,:y:a_fund) and :trx:a_account_code >= '3000' and :trx:a_account_code <= '5999')
 		WHERE
 			:y:a_payroll_id = :i:a_payroll_id and
 			:y:a_ledger_number = :i:a_ledger_number and
@@ -107,7 +107,7 @@ init_payroll "widget/component-decl"
 			IDENTITY /apps/kardia/data/Kardia_DB/a_payroll_item/rows i,
 			/apps/kardia/data/Kardia_DB/a_payroll_item_type/rows t
 		SET
-			:i:a_actual_amount = (select isnull($0 - sum(:trx:a_amount),$0) FROM /apps/kardia/data/Kardia_DB/a_transaction/rows trx WHERE :trx:a_ledger_number = :y:a_ledger_number and :trx:a_period = :parameters:payacctperiod and :trx:a_cost_center = isnull(:i:a_ref_cost_center,:y:a_cost_center) and :trx:a_account_code >= '4000' and :trx:a_account_code <= '4999')
+			:i:a_actual_amount = (select isnull($0 - sum(:trx:a_amount),$0) FROM /apps/kardia/data/Kardia_DB/a_transaction/rows trx WHERE :trx:a_ledger_number = :y:a_ledger_number and :trx:a_period = :parameters:payacctperiod and :trx:a_fund = isnull(:i:a_ref_fund,:y:a_fund) and :trx:a_account_code >= '4000' and :trx:a_account_code <= '4999')
 		WHERE
 			:y:a_payroll_id = :i:a_payroll_id and
 			:y:a_ledger_number = :i:a_ledger_number and
@@ -125,7 +125,7 @@ init_payroll "widget/component-decl"
 			IDENTITY /apps/kardia/data/Kardia_DB/a_payroll_item/rows i,
 			/apps/kardia/data/Kardia_DB/a_payroll_item_type/rows t
 		SET
-			:i:a_actual_amount = (select isnull(sum(:trx:a_amount),$0) FROM /apps/kardia/data/Kardia_DB/a_transaction/rows trx WHERE :trx:a_ledger_number = :y:a_ledger_number and :trx:a_period = :parameters:payacctperiod and :trx:a_cost_center = isnull(:i:a_ref_cost_center,:y:a_cost_center) and :trx:a_account_code >= '5000' and :trx:a_account_code <= '5999')
+			:i:a_actual_amount = (select isnull(sum(:trx:a_amount),$0) FROM /apps/kardia/data/Kardia_DB/a_transaction/rows trx WHERE :trx:a_ledger_number = :y:a_ledger_number and :trx:a_period = :parameters:payacctperiod and :trx:a_fund = isnull(:i:a_ref_fund,:y:a_fund) and :trx:a_account_code >= '5000' and :trx:a_account_code <= '5999')
 		WHERE
 			:y:a_payroll_id = :i:a_payroll_id and
 			:y:a_ledger_number = :i:a_ledger_number and
@@ -143,7 +143,7 @@ init_payroll "widget/component-decl"
 			/apps/kardia/data/Kardia_DB/a_payroll_item_type/rows t,
 			/apps/kardia/data/Kardia_DB/a_payroll/rows y
 		SET
-			:i:a_actual_amount = (select isnull(sum(:trx:a_amount),$0) FROM /apps/kardia/data/Kardia_DB/a_transaction/rows trx WHERE :trx:a_ledger_number = :i:a_ledger_number and :trx:a_period <= :parameters:payacctperiod and :trx:a_period >= :parameters:payrefperiod and :trx:a_cost_center = isnull(:i:a_ref_cost_center,:y:a_cost_center) and :trx:a_account_code = isnull(:i:a_ref_account_code, :t:a_ref_account_code))
+			:i:a_actual_amount = (select isnull(sum(:trx:a_amount),$0) FROM /apps/kardia/data/Kardia_DB/a_transaction/rows trx WHERE :trx:a_ledger_number = :i:a_ledger_number and :trx:a_period <= :parameters:payacctperiod and :trx:a_period >= :parameters:payrefperiod and :trx:a_fund = isnull(:i:a_ref_fund,:y:a_fund) and :trx:a_account_code = isnull(:i:a_ref_account_code, :t:a_ref_account_code))
 		WHERE
 			:i:a_period = :parameters:payperiod and
 			:i:a_payroll_group_id = :parameters:a_payroll_group_id and
@@ -161,7 +161,7 @@ init_payroll "widget/component-decl"
 			/apps/kardia/data/Kardia_DB/a_payroll_item_type/rows t,
 			/apps/kardia/data/Kardia_DB/a_payroll/rows y
 		SET
-			:i:a_actual_amount = (select isnull($0 - sum(:trx:a_amount),$0) FROM /apps/kardia/data/Kardia_DB/a_transaction/rows trx WHERE :trx:a_ledger_number = :i:a_ledger_number and :trx:a_period <= :parameters:payacctperiod and :trx:a_period >= :parameters:payrefperiod and :trx:a_cost_center = isnull(:i:a_ref_cost_center,:y:a_cost_center) and :trx:a_account_code = isnull(:i:a_ref_account_code, :t:a_ref_account_code))
+			:i:a_actual_amount = (select isnull($0 - sum(:trx:a_amount),$0) FROM /apps/kardia/data/Kardia_DB/a_transaction/rows trx WHERE :trx:a_ledger_number = :i:a_ledger_number and :trx:a_period <= :parameters:payacctperiod and :trx:a_period >= :parameters:payrefperiod and :trx:a_fund = isnull(:i:a_ref_fund,:y:a_fund) and :trx:a_account_code = isnull(:i:a_ref_account_code, :t:a_ref_account_code))
 		WHERE
 			:i:a_period = :parameters:payperiod and
 			:i:a_payroll_group_id = :parameters:a_payroll_group_id and
@@ -204,7 +204,7 @@ init_payroll "widget/component-decl"
 			IDENTITY /apps/kardia/data/Kardia_DB/a_payroll_item/rows i,
 			/apps/kardia/data/Kardia_DB/a_payroll_item_type/rows t
 		SET
-			:i:a_actual_amount = (select isnull($0 - sum(:trx:a_amount),$0) FROM /apps/kardia/data/Kardia_DB/a_transaction/rows trx WHERE :trx:a_ledger_number = :y:a_ledger_number and :trx:a_period <= :parameters:payacctperiod and :trx:a_period >= :parameters:payrefperiod and :trx:a_cost_center = isnull(:i:a_ref_cost_center,:y:a_cost_center) and :trx:a_account_code >= '3000' and :trx:a_account_code <= '5999')
+			:i:a_actual_amount = (select isnull($0 - sum(:trx:a_amount),$0) FROM /apps/kardia/data/Kardia_DB/a_transaction/rows trx WHERE :trx:a_ledger_number = :y:a_ledger_number and :trx:a_period <= :parameters:payacctperiod and :trx:a_period >= :parameters:payrefperiod and :trx:a_fund = isnull(:i:a_ref_fund,:y:a_fund) and :trx:a_account_code >= '3000' and :trx:a_account_code <= '5999')
 		WHERE
 			:y:a_payroll_id = :i:a_payroll_id and
 			:y:a_ledger_number = :i:a_ledger_number and
@@ -221,7 +221,7 @@ init_payroll "widget/component-decl"
 			IDENTITY /apps/kardia/data/Kardia_DB/a_payroll_item/rows i,
 			/apps/kardia/data/Kardia_DB/a_payroll_item_type/rows t
 		SET
-			:i:a_actual_amount = (select isnull($0 - sum(:trx:a_amount),$0) FROM /apps/kardia/data/Kardia_DB/a_transaction/rows trx WHERE :trx:a_ledger_number = :y:a_ledger_number and :trx:a_period = :parameters:payacctperiod and :trx:a_cost_center = isnull(:i:a_ref_cost_center,:y:a_cost_center) and :trx:a_account_code >= '4000' and :trx:a_account_code <= '4999')
+			:i:a_actual_amount = (select isnull($0 - sum(:trx:a_amount),$0) FROM /apps/kardia/data/Kardia_DB/a_transaction/rows trx WHERE :trx:a_ledger_number = :y:a_ledger_number and :trx:a_period = :parameters:payacctperiod and :trx:a_fund = isnull(:i:a_ref_fund,:y:a_fund) and :trx:a_account_code >= '4000' and :trx:a_account_code <= '4999')
 		WHERE
 			:y:a_payroll_id = :i:a_payroll_id and
 			:y:a_ledger_number = :i:a_ledger_number and
@@ -239,7 +239,7 @@ init_payroll "widget/component-decl"
 			IDENTITY /apps/kardia/data/Kardia_DB/a_payroll_item/rows i,
 			/apps/kardia/data/Kardia_DB/a_payroll_item_type/rows t
 		SET
-			:i:a_actual_amount = (select isnull(sum(:trx:a_amount),$0) FROM /apps/kardia/data/Kardia_DB/a_transaction/rows trx WHERE :trx:a_ledger_number = :y:a_ledger_number and :trx:a_period = :parameters:payacctperiod and :trx:a_cost_center = isnull(:i:a_ref_cost_center,:y:a_cost_center) and :trx:a_account_code >= '5000' and :trx:a_account_code <= '5999')
+			:i:a_actual_amount = (select isnull(sum(:trx:a_amount),$0) FROM /apps/kardia/data/Kardia_DB/a_transaction/rows trx WHERE :trx:a_ledger_number = :y:a_ledger_number and :trx:a_period = :parameters:payacctperiod and :trx:a_fund = isnull(:i:a_ref_fund,:y:a_fund) and :trx:a_account_code >= '5000' and :trx:a_account_code <= '5999')
 		WHERE
 			:y:a_payroll_id = :i:a_payroll_id and
 			:y:a_ledger_number = :i:a_ledger_number and
@@ -257,7 +257,7 @@ init_payroll "widget/component-decl"
 			/apps/kardia/data/Kardia_DB/a_payroll_item_type/rows t,
 			/apps/kardia/data/Kardia_DB/a_payroll/rows y
 		SET
-			:i:a_actual_amount = (select isnull(sum(:trx:a_amount),$0) FROM /apps/kardia/data/Kardia_DB/a_transaction/rows trx WHERE :trx:a_ledger_number = :i:a_ledger_number and :trx:a_period <= :parameters:payacctperiod and :trx:a_period >= :parameters:payrefperiod and :trx:a_cost_center = isnull(:i:a_ref_cost_center,:y:a_cost_center) and :trx:a_account_code = isnull(:i:a_ref_account_code, :t:a_ref_account_code))
+			:i:a_actual_amount = (select isnull(sum(:trx:a_amount),$0) FROM /apps/kardia/data/Kardia_DB/a_transaction/rows trx WHERE :trx:a_ledger_number = :i:a_ledger_number and :trx:a_period <= :parameters:payacctperiod and :trx:a_period >= :parameters:payrefperiod and :trx:a_fund = isnull(:i:a_ref_fund,:y:a_fund) and :trx:a_account_code = isnull(:i:a_ref_account_code, :t:a_ref_account_code))
 		WHERE
 			:i:a_period = :parameters:payperiod and
 			:i:a_payroll_group_id = :parameters:a_payroll_group_id and
@@ -275,7 +275,7 @@ init_payroll "widget/component-decl"
 			/apps/kardia/data/Kardia_DB/a_payroll_item_type/rows t,
 			/apps/kardia/data/Kardia_DB/a_payroll/rows y
 		SET
-			:i:a_actual_amount = (select isnull($0 - sum(:trx:a_amount),$0) FROM /apps/kardia/data/Kardia_DB/a_transaction/rows trx WHERE :trx:a_ledger_number = :i:a_ledger_number and :trx:a_period <= :parameters:payacctperiod and :trx:a_period >= :parameters:payrefperiod and :trx:a_cost_center = isnull(:i:a_ref_cost_center,:y:a_cost_center) and :trx:a_account_code = isnull(:i:a_ref_account_code, :t:a_ref_account_code))
+			:i:a_actual_amount = (select isnull($0 - sum(:trx:a_amount),$0) FROM /apps/kardia/data/Kardia_DB/a_transaction/rows trx WHERE :trx:a_ledger_number = :i:a_ledger_number and :trx:a_period <= :parameters:payacctperiod and :trx:a_period >= :parameters:payrefperiod and :trx:a_fund = isnull(:i:a_ref_fund,:y:a_fund) and :trx:a_account_code = isnull(:i:a_ref_account_code, :t:a_ref_account_code))
 		WHERE
 			:i:a_period = :parameters:payperiod and
 			:i:a_payroll_group_id = :parameters:a_payroll_group_id and

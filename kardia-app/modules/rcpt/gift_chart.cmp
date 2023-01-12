@@ -23,7 +23,7 @@ gift_chart "widget/component-decl"
 	sql = "	declare object info;
 
 		select
-		    :info:cclist = isnull( (select sum(:cc:a_ledger_number + '|' + :cc:a_cost_center + ',') - ',' from /apps/kardia/data/Kardia_DB/a_cc_staff/rows cs, /apps/kardia/data/Kardia_DB/a_cost_center/rows cc, /apps/kardia/data/Kardia_DB/p_staff/rows s where :cs:p_staff_partner_key = :s:p_partner_key and (:cc:a_bal_cost_center = :cs:a_cost_center or :cc:a_cost_center = :cs:a_cost_center) and :cc:a_ledger_number = :cs:a_ledger_number and :s:p_kardia_login = user_name()), '')
+		    :info:fundlist = isnull( (select sum(:cc:a_ledger_number + '|' + :cc:a_fund + ',') - ',' from /apps/kardia/data/Kardia_DB/a_fund_staff/rows cs, /apps/kardia/data/Kardia_DB/a_fund/rows cc, /apps/kardia/data/Kardia_DB/p_staff/rows s where :cs:p_staff_partner_key = :s:p_partner_key and (:cc:a_bal_fund = :cs:a_fund or :cc:a_fund = :cs:a_fund) and :cc:a_ledger_number = :cs:a_ledger_number and :s:p_kardia_login = user_name()), '')
 		;
 
 		select
@@ -71,7 +71,7 @@ gift_chart "widget/component-decl"
 		    :g:a_posted = 1 and
 		    :p:a_period *= :g:a_period and
 		    :p:a_ledger_number *= :g:a_ledger_number and
-		    (:parameters:fund is null or :parameters:fund = :g:a_cost_center) and
+		    (:parameters:fund is null or :parameters:fund = :g:a_fund) and
 		    (:parameters:partner is null or :parameters:partner = :g:p_dn_donor_partner_id) and
 		    has_endorsement('kardia:gift_amt', 'kardia:ledger:' + :parameters:ledger)
 		group by
@@ -101,8 +101,8 @@ gift_chart "widget/component-decl"
 		    :p:a_summary_only = 0 and
 		    :p:a_period *= :g:a_period and
 		    :p:a_ledger_number *= :g:a_ledger_number and
-		    (:parameters:fund is null or :parameters:fund = :g:a_cost_center) and
-		    charindex(',' + :parameters:ledger + '|' + :g:a_cost_center + ',', ',' + :info:cclist + ',') > 0 and
+		    (:parameters:fund is null or :parameters:fund = :g:a_fund) and
+		    charindex(',' + :parameters:ledger + '|' + :g:a_fund + ',', ',' + :info:fundlist + ',') > 0 and
 		    (:parameters:partner is null or :parameters:partner = :g:p_dn_donor_partner_id) and
 		    not has_endorsement('kardia:gift_amt', 'kardia:ledger:' + :parameters:ledger)
 		group by

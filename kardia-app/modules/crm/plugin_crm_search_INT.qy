@@ -55,7 +55,7 @@ plugin_crm_search_INT "system/query"
 		(:stage:maxamt is null or :p:a_amount <= convert(money, :stage:maxamt)) and
                 (:stage:minfreq is null or :p:a_giving_interval <= :stage:minfreq) and
 		(:stage:maxfreq is null or :p:a_giving_interval >= :stage:maxfreq) and
-		(:stage:funds is null or charindex(',' + rtrim(:p:a_cost_center) + ',', ',' + :stage:funds + ',') > 0) and
+		(:stage:funds is null or charindex(',' + rtrim(:p:a_fund) + ',', ',' + :stage:funds + ',') > 0) and
 		(:stage:active is null or :stage:active = :p:a_is_active) and
 		(:stage:intenttype is null or :stage:intenttype = :p:a_intent_type) and
                 (:parameters:prev_keys is null or charindex(',' + rtrim(:p:p_donor_partner_id) + ',', ',' + :parameters:prev_keys + ',') > 0)

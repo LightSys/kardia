@@ -1,0 +1,115 @@
+$Version=2$
+generic_copy_batch "widget/component-decl"
+    {
+    width=480;
+    height=240;
+
+    copy_batch_window "widget/parameter" { type=object; find_container="widget/childwindow"; }
+    batch_osrc "widget/parameter" { type=object; }
+    batch_type "widget/parameter" { type=string; deploy_to_client=yes; }
+    desc_sql "widget/parameter" { type=string; deploy_to_client=yes; }
+    copy_query "widget/parameter" { type=string; }
+    ledger "widget/parameter" { type=string; deploy_to_client=yes; }
+    Copied "widget/component-decl-event" { }
+
+    do_copy_osrc "widget/osrc"
+	{
+	dc_ledger "widget/parameter" { type=string; param_name=ledger; }
+	dc_oldbatch "widget/parameter" { type=integer; param_name=oldbatch; }
+	dc_newbatch "widget/parameter" { type=integer; param_name=newbatch; }
+	dc_amounts "widget/parameter" { type=string; param_name=amounts; }
+	autoquery=never;
+	sql = runserver("
+		exec " + :this:copy_query + "
+		    ledger = :parameters:ledger,
+		    oldbatch = :parameters:oldbatch,
+		    newbatch = :parameters:newbatch,
+		    amounts = :parameters:amounts
+		");
+
+	do_copy_done1 "widget/connector" { event=EndQuery; target=copy_batch_form; action=Discard; }
+	do_copy_done2 "widget/connector" { event=EndQuery; target=generic_copy_batch; action=Copied; }
+	}
+
+    copy_batch_form "widget/parameter"
+	{
+	type=object;
+	find_container="widget/form";
+
+	hide_on_nodata "widget/connector" { event=NoData; target=copy_batch_window; action=Close; }
+
+	on_new_set_binfo "widget/connector" { event=New; target=copy_batchno; action=SetValue; Value=runclient(:batch_osrc:batch_txt); }
+
+	before_copy_save "widget/connector"
+	    {
+	    event=BeforeSave;
+	    event_cancel=runclient(1); // this event fires, but no others, including default action (Save).
+	    target=do_copy_osrc;
+	    action=QueryParam;
+	    ledger=runclient(:ledger:value);
+	    oldbatch=runclient(:copy_frombatch:value);
+	    newbatch=runclient(:batch_osrc:a_batch_number);
+	    amounts=runclient(:copy_amounts:value);
+	    }
+
+	copy_batch_vbox "widget/vbox"
+	    {
+	    x=10; y=10; width=458; height=218;
+	    spacing=8;
+
+	    copy_hdr "widget/label" { height=16; font_size=16; style=bold; align=center; text="Copy Transactions"; }
+	    copy_sep "widget/pane" { height=2; style=lowered; }
+	    copy_sep2 "widget/autolayoutspacer" { height=2; }
+	    copy_batchno "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; ctl_type=label; field=batch_txt; text="To Batch:"; cp_bn_hints "widget/hints" { style=readonly; } }
+	    copy_fromtype "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; ctl_type=dropdown; field=from_type; text="From:"; sql = runserver("select 'Other " + :this:batch_type + " Batch', 'B'"); cp_ft_hints "widget/hints" { default=runclient('B'); style=notnull; } }
+	    copy_fromperiod "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; ctl_type=dropdown; field=from_period; text="From Period:"; sql = runserver("select :p:a_period + ' - ' + :p:a_period_desc, :p:a_period from /apps/kardia/data/Kardia_DB/a_period/rows p where :p:a_summary_only = 0 and :p:a_status != 'N' and :p:a_ledger_number = " + quote(:this:ledger) + " order by :a_period desc"); cp_st_hints "widget/hints" { style=notnull; } }
+	    copy_frombatch "widget/component"
+		{
+		height=20;
+		path="/sys/cmp/smart_field.cmp";
+		ctl_type=dropdown;
+		field=from_batch;
+		text="From Batch:";
+		numdisplay=8;
+		sql = "select '','' where 0 = 1";
+		cp_fb_hints "widget/hints" { style=notnull; }
+
+		load_from_on_period "widget/connector"
+		    {
+		    source=copy_fromperiod;
+		    event=DataChange;
+		    event_condition=runclient(char_length(:Value) > 0);
+		    action=SetItems;
+		    SQL = runclient("select label = '' + :a_batch_number + ' - ' + :a_batch_desc + ' (' + (" + :desc_sql:value + ") + ')', value = :a_batch_number from /apps/kardia/data/Kardia_DB/a_batch/rows b where :b:a_period = " + quote(:Value) + " and :a_ledger_number = " + quote(:ledger:value) + " and :a_origin = '" + :batch_type:value + "' order by :a_batch_number desc");
+		    }
+		}
+	    copy_amounts "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; ctl_type=dropdown; field=amounts; text="Amounts:"; sql = "select 'Copy Amounts', 'C'; select 'Reverse Debits/Credits', 'R'; select 'Zero Amounts', 'Z'; select 'One Cent Amounts', 'O'"; cp_am_hints "widget/hints" { default=runclient('C'); style=notnull; } }
+	    copy_sep3 "widget/autolayoutspacer" { height=2; }
+
+	    copy_ctls "widget/hbox"
+		{
+		height=24;
+		spacing=8;
+		align=center;
+
+		copy_btn "widget/textbutton"
+		    {
+		    width=100; height=24;
+		    text = "Copy";
+		    enabled = runclient(char_length(:copy_fromtype:value) > 0 and char_length(:copy_fromperiod:value) > 0 and char_length(:copy_frombatch:value) > 0 and char_length(:copy_amounts:value) > 0);
+
+		    // The save is trapped to trigger the copy operation instead.
+		    copy_btn_cn "widget/connector" { event=Click; target=copy_batch_form; action=Save; }
+		    }
+
+		ccancel_btn "widget/textbutton"
+		    {
+		    width=100; height=24;
+		    text = "Cancel";
+
+		    ccancel_cn "widget/connector" { event=Click; target=copy_batch_form; action=Discard; }
+		    }
+		}
+	    }
+	}
+    }

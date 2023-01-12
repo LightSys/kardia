@@ -21,8 +21,8 @@ plugin_gl_fundedit_receipting "widget/component-decl"
 
 	receipting_osrc "widget/osrc"
 	    {
-	    sql = "select * from /apps/kardia/data/Kardia_DB/a_cc_receipting/rows limit 1";
-	    baseobj = "/apps/kardia/data/Kardia_DB/a_cc_receipting/rows";
+	    sql = "select * from /apps/kardia/data/Kardia_DB/a_fund_receipting/rows limit 1";
+	    baseobj = "/apps/kardia/data/Kardia_DB/a_fund_receipting/rows";
 	    readahead = 2;
 	    replicasize = 2;
 	    autoquery = never;
@@ -32,9 +32,9 @@ plugin_gl_fundedit_receipting "widget/component-decl"
 		ruletype = osrc_relationship;
 		target = fund_osrc;
 		key_1 = a_ledger_number;
-		key_2 = a_cost_center;
+		key_2 = a_fund;
 		target_key_1 = a_ledger_number;
-		target_key_2 = a_cost_center;
+		target_key_2 = a_fund;
 		}
 
 	    receipting_form "widget/form"
@@ -60,7 +60,7 @@ plugin_gl_fundedit_receipting "widget/component-decl"
 	    recpt_accts_osrc "widget/osrc"
 		{
 		sql = "	select
-			    :ra:a_cost_center,
+			    :ra:a_fund,
 			    :ra:a_ledger_number,
 			    :ra:a_account_code,
 			    :ra:a_non_tax_deductible,
@@ -72,13 +72,13 @@ plugin_gl_fundedit_receipting "widget/component-decl"
 			    :ra:s_modified_by,
 			    a_acct_desc = isnull(:a:a_acct_desc, '**INVALID**')
 			from
-			    IDENTITY /apps/kardia/data/Kardia_DB/a_cc_receipting_accts/rows ra,
+			    IDENTITY /apps/kardia/data/Kardia_DB/a_fund_receipting_accts/rows ra,
 			    /apps/kardia/data/Kardia_DB/a_account/rows a
 			where
 			    :ra:a_ledger_number *= :a:a_ledger_number and
 			    :ra:a_account_code *= :a:a_account_code
 			";
-		baseobj = "/apps/kardia/data/Kardia_DB/a_cc_receipting_accts/rows";
+		baseobj = "/apps/kardia/data/Kardia_DB/a_fund_receipting_accts/rows";
 		readahead = 20;
 		replicasize = 20;
 
@@ -87,9 +87,9 @@ plugin_gl_fundedit_receipting "widget/component-decl"
 		    ruletype = osrc_relationship;
 		    target = fund_osrc;
 		    key_1 = a_ledger_number;
-		    key_2 = a_cost_center;
+		    key_2 = a_fund;
 		    target_key_1 = a_ledger_number;
-		    target_key_2 = a_cost_center;
+		    target_key_2 = a_fund;
 		    }
 
 		ra_form "widget/form"

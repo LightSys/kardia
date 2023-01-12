@@ -1,0 +1,17 @@
+$Version=2$
+api_config "system/querytree"
+	{
+	Config "system/querytree"
+		{
+		text = "Config";
+		config_list "system/querytree"
+			{
+			sql = " select
+				s_config_name = :s_config:s_config_name,
+				s_config_value = :s_config:s_config_value
+				from
+				identity /apps/kardia/data/Kardia_DB/s_config/rows s_config
+				";
+			}
+		}
+	}

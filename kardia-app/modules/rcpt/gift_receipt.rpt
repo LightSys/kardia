@@ -190,23 +190,23 @@ gift_receipt "system/report"
 			:i:a_non_tax_deductible,
 			:i:a_comment,
 			:i:a_motivational_code,
-			:i:a_cost_center,
+			:i:a_fund,
 			:i:a_recv_document_id,
-			:cc:a_cc_desc,
+			:cc:a_fund_desc,
 			:ra:a_receipt_comment,
-			rcptcomm = condition(char_length(rtrim(isnull(:ra:a_receipt_comment,''))) > 0, :ra:a_receipt_comment, :cc:a_cc_desc)
+			rcptcomm = condition(char_length(rtrim(isnull(:ra:a_receipt_comment,''))) > 0, :ra:a_receipt_comment, :cc:a_fund_desc)
 		FROM
 			/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i,
-			/apps/kardia/data/Kardia_DB/a_cost_center/rows cc,
-			/apps/kardia/data/Kardia_DB/a_cc_receipting_accts/rows ra
+			/apps/kardia/data/Kardia_DB/a_fund/rows cc,
+			/apps/kardia/data/Kardia_DB/a_fund_receipting_accts/rows ra
 		WHERE
 			:i:a_ledger_number = :gifts:a_ledger_number and
 			:i:a_batch_number = :gifts:a_batch_number and
 			:i:a_gift_number = :gifts:a_gift_number and
 			:cc:a_ledger_number = :i:a_ledger_number and
-			:cc:a_cost_center = :i:a_cost_center and
+			:cc:a_fund = :i:a_fund and
 			:ra:a_ledger_number =* :i:a_ledger_number and
-			:ra:a_cost_center =* :i:a_cost_center and
+			:ra:a_fund =* :i:a_fund and
 			:ra:a_account_code =* :i:a_account_code
 		ORDER BY
 			:i:a_split_number
@@ -311,7 +311,7 @@ gift_receipt "system/report"
 		rdr2 "report/table-cell" { value=runserver(isnull(:gifts:a_gift_postmark_date,:gifts:a_gift_received_date)); dateformat="dd-MMM-yyyy"; align=left; }
 		rdr3 "report/table-cell" { value=runserver(:gift_items:a_amount); align=right; }
 		rdr4 "report/table-cell" { value=runserver(condition(:a_non_tax_deductible == 1, $0, :gift_items:a_amount)); align=right; }
-		rdr5 "report/table-cell" { value=runserver(:gift_items:a_cost_center + ' ' + :gift_items:rcptcomm + condition(:gift_items:a_confidential == 1, " (ANON)", "")); align=left; }
+		rdr5 "report/table-cell" { value=runserver(:gift_items:a_fund + ' ' + :gift_items:rcptcomm + condition(:gift_items:a_confidential == 1, " (ANON)", "")); align=left; }
 		//rdr5 "report/table-cell" { value=runserver(condition(char_length(isnull(convert(string,:gift_items:desig_code),'')) > 0, isnull('' + condition(:gift_items:anon_gift == 'Y', 'ANON', condition(:gift_items:gl_acct >= 4000, :gift_items:desig_code, 'PERSONAL')) + ' - ' + :gift_items:given_name + ' ' + :gift_items:surname, '(where most needed)'), :gift_items:desig)); align=left; }
 		}
 	    }

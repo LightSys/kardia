@@ -34,19 +34,19 @@ support_review "widget/component-decl"
 		    :s:p_kardia_login = :parameters:staff_login
 		;
 		select
-		    :info:fund = :c:a_cost_center,
+		    :info:fund = :c:a_fund,
 		    :info:ledger = :c:a_ledger_number
 		from
-		    /apps/kardia/data/Kardia_DB/a_cc_staff/rows cs,
-		    /apps/kardia/data/Kardia_DB/a_cost_center/rows c
+		    /apps/kardia/data/Kardia_DB/a_fund_staff/rows cs,
+		    /apps/kardia/data/Kardia_DB/a_fund/rows c
 		where
 		    :cs:p_staff_partner_key = :info:staff_key and
 		    :c:a_ledger_number = :cs:a_ledger_number and
-		    :c:a_cost_center = :cs:a_cost_center and
-		    :c:a_bal_cost_center = :c:a_cost_center and
-		    (:c:a_cost_center_class = 'MIS' or :c:a_cost_center_class = 'MIP')
+		    :c:a_fund = :cs:a_fund and
+		    :c:a_bal_fund = :c:a_fund and
+		    (:c:a_fund_class = 'MIS' or :c:a_fund_class = 'MIP')
 		order by
-		    charindex(:c:a_cost_center_class, 'MISMIP')
+		    charindex(:c:a_fund_class, 'MISMIP')
 		limit
 		    1
 		;
@@ -64,10 +64,10 @@ support_review "widget/component-decl"
 		select
 		    a_ledger_number = :info:ledger,
 		    p_donor_partner_key = :i:p_dn_donor_partner_id,
-		    a_cost_center = :info:fund,
-		    --a_amount = condition(:i:a_cost_center = :gp:a_cost_center, :i:a_amount, :i:a_amount * isnull(:gp:a_percent, 1.0)),
+		    a_fund = :info:fund,
+		    --a_amount = condition(:i:a_fund = :gp:a_fund, :i:a_amount, :i:a_amount * isnull(:gp:a_percent, 1.0)),
 		    a_amount = :i:a_amount * isnull(:gp:a_percent, 1.0),
-		    a_interval = (select condition(:eg:i_eg_gift_interval = 'MONTHLY', 1, condition(:eg:i_eg_gift_interval = 'QUARTERLY', 3, null)) from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows eg where :eg:a_ledger_number = :i:a_ledger_number and :eg:a_cost_center = :i:a_cost_center and :eg:p_donor_partner_key = :i:p_dn_donor_partner_id and :eg:i_eg_gift_amount = :i:a_amount and :eg:i_eg_gift_trx_date > :gp:s_date_modified order by :eg:i_eg_gift_trx_date desc limit 1),
+		    a_interval = (select condition(:eg:i_eg_gift_interval = 'MONTHLY', 1, condition(:eg:i_eg_gift_interval = 'QUARTERLY', 3, null)) from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows eg where :eg:a_ledger_number = :i:a_ledger_number and :eg:a_fund = :i:a_fund and :eg:p_donor_partner_key = :i:p_dn_donor_partner_id and :eg:i_eg_gift_amount = :i:a_amount and :eg:i_eg_gift_trx_date > :gp:s_date_modified order by :eg:i_eg_gift_trx_date desc limit 1),
 		    a_is_active = 1,
 		    a_start_date = getdate(),
 		    a_evaluation_date = getdate(),
@@ -80,22 +80,23 @@ support_review "widget/component-decl"
 		    /apps/kardia/data/Kardia_DB/a_giving_pattern/rows gp,
 		    /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i
 		where
-		    :gp:a_cost_center = :info:fund and
+		    :gp:a_fund = :info:fund and
 		    :gp:a_ledger_number = :info:ledger and
 		    :gp:a_amount = $0 and
 		    :gp:a_is_active = 1 and
 		    :gp:a_interval != 0 and
 		    isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) > :gp:s_date_modified and
-		    (:i:a_cost_center = :gp:a_cost_center or :i:a_cost_center = :gp:a_actual_cost_center) and
+		    (:i:a_fund = :gp:a_fund or :i:a_fund = :gp:a_actual_fund) and
 		    :i:a_ledger_number = :gp:a_ledger_number and
+		    :i:a_posted = 1 and
 		    :i:p_dn_donor_partner_id = :gp:p_donor_partner_key and
 		    (:parameters:name is null or :gp:name = :parameters:name)
 		order by
 		    :gp:p_donor_partner_key,
 		    isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) desc
 		having
-		    (select count(1) from /apps/kardia/data/Kardia_DB/a_giving_pattern/rows gp2 where :gp2:a_ledger_number = :gp:a_ledger_number and :gp2:p_donor_partner_key = :gp:p_donor_partner_key and :gp2:a_cost_center = :gp:a_cost_center and :gp2:a_amount > $0 and :gp2:a_is_active = 1) = 0 and
-		    (select count(1) from /apps/kardia/data/Kardia_DB/a_giving_pattern/rows gp3 where :gp3:a_ledger_number = :gp:a_ledger_number and :gp3:p_donor_partner_key = :gp:p_donor_partner_key and :gp3:a_cost_center = :gp:a_cost_center and :gp3:s_date_modified > :gp:s_date_modified) = 0
+		    (select count(1) from /apps/kardia/data/Kardia_DB/a_giving_pattern/rows gp2 where :gp2:a_ledger_number = :gp:a_ledger_number and :gp2:p_donor_partner_key = :gp:p_donor_partner_key and :gp2:a_fund = :gp:a_fund and :gp2:a_amount > $0 and :gp2:a_is_active = 1) = 0 and
+		    (select count(1) from /apps/kardia/data/Kardia_DB/a_giving_pattern/rows gp3 where :gp3:a_ledger_number = :gp:a_ledger_number and :gp3:p_donor_partner_key = :gp:p_donor_partner_key and :gp3:a_fund = :gp:a_fund and :gp3:s_date_modified > :gp:s_date_modified) = 0
 		;
 
 		-- Pledges?
@@ -104,7 +105,7 @@ support_review "widget/component-decl"
 		select
 		    a_ledger_number = :info:ledger,
 		    p_donor_partner_key = :pl:p_donor_partner_id,
-		    a_cost_center = :info:fund,
+		    a_fund = :info:fund,
 		    a_amount = :pl:a_amount,
 		    a_interval = :pl:a_giving_interval,
 		    a_is_active = 1,
@@ -119,13 +120,13 @@ support_review "widget/component-decl"
 		    /apps/kardia/data/Kardia_DB/a_pledge/rows pl
 		where
 		    :pl:a_ledger_number = :info:ledger and
-		    :pl:a_cost_center = :info:fund and
+		    :pl:a_fund = :info:fund and
 		    :pl:a_is_active = 1 and
 		    (:pl:a_end_date <= getdate() or :pl:a_end_date is null)
 		on duplicate
 		    :a_ledger_number,
 		    :p_donor_partner_key,
-		    :a_cost_center,
+		    :a_fund,
 		    :a_is_active
 		update set
 		    0 = 0
@@ -138,7 +139,7 @@ support_review "widget/component-decl"
 		select
 		    a_ledger_number = :info:ledger,
 		    p_donor_partner_key = :i:p_dn_donor_partner_id,
-		    a_cost_center = :info:fund,
+		    a_fund = :info:fund,
 		    a_amount = :i:a_amount,
 		    a_interval = condition(first(:eg:i_eg_gift_interval) = 'MONTHLY', 1, condition(first(:eg:i_eg_gift_interval) = 'QUARTERLY', 3, null)),
 		    a_is_active = 1,
@@ -154,10 +155,11 @@ support_review "widget/component-decl"
 		    /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows eg
 		where
 		    datepart(year, isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date)) >= (:info:year - 1) and
-		    :i:a_cost_center = :info:fund and
+		    :i:a_fund = :info:fund and
 		    :i:a_ledger_number = :info:ledger and
+		    :i:a_posted = 1 and
 		    :eg:a_ledger_number =* :i:a_ledger_number and
-		    :eg:a_cost_center =* :i:a_cost_center and
+		    :eg:a_fund =* :i:a_fund and
 		    :eg:p_donor_partner_key =* :i:p_dn_donor_partner_id and
 		    :eg:i_eg_gift_amount =* :i:a_amount and
 		    (:parameters:name is null or :i:name = :parameters:name)
@@ -169,7 +171,7 @@ support_review "widget/component-decl"
 		on duplicate
 		    :a_ledger_number,
 		    :p_donor_partner_key,
-		    :a_cost_center,
+		    :a_fund,
 		    :a_is_active
 		    --(:a_amount - $0.03) / abs(:a_amount - $0.03) -- cause insert of new if old amount was $0
 		update set
@@ -180,10 +182,10 @@ support_review "widget/component-decl"
 		delete
 		    /apps/kardia/data/Kardia_DB/a_giving_pattern_flag/rows gpf
 		where
-		    :gpf:a_cost_center = :info:fund and
+		    :gpf:a_fund = :info:fund and
 		    :gpf:a_ledger_number = :info:ledger and
 		    :gpf:a_flag_resolution is null and
-		    (:parameters:name is null or substring(:parameters:name, 1, char_length(:gpf:a_ledger_number + '|' + :gpf:p_donor_partner_key + '|' + :gpf:a_cost_center + '|')) = :gpf:a_ledger_number + '|' + :gpf:p_donor_partner_key + '|' + :gpf:a_cost_center + '|')
+		    (:parameters:name is null or substring(:parameters:name, 1, char_length(:gpf:a_ledger_number + '|' + :gpf:p_donor_partner_key + '|' + :gpf:a_fund + '|')) = :gpf:a_ledger_number + '|' + :gpf:p_donor_partner_key + '|' + :gpf:a_fund + '|')
 		;
 
 		-- Clear out any old descriptives
@@ -191,7 +193,7 @@ support_review "widget/component-decl"
 		    /apps/kardia/data/Kardia_DB/a_descriptives/rows d
 		where
 		    :d:a_ledger_number = :info:ledger and
-		    :d:a_cost_center = :info:fund and
+		    :d:a_fund = :info:fund and
 		    (:parameters:name is null or substring(:parameters:name, 1, char_length(:d:name) + 1) = :d:name + '|')
 		;
 
@@ -202,16 +204,16 @@ support_review "widget/component-decl"
 		    /apps/kardia/data/Kardia_DB/a_descriptives/rows d
 		select
 		    :gp:a_ledger_number,
-		    :gp:a_cost_center,
+		    :gp:a_fund,
 		    :gp:p_donor_partner_key,
 		    a_first_gift = last(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date)),
-		    --a_first_gift_amount = last(condition(:i:a_cost_center = :gp:a_cost_center, :i:a_amount, :i:a_amount * isnull(:gp:a_percent, 1.0))),
+		    --a_first_gift_amount = last(condition(:i:a_fund = :gp:a_fund, :i:a_amount, :i:a_amount * isnull(:gp:a_percent, 1.0))),
 		    a_first_gift_amount = last(:i:a_amount * isnull(:gp:a_percent, 1.0)),
 		    a_last_gift = first(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date)),
-		    --a_last_gift_amount = first(condition(:i:a_cost_center = :gp:a_cost_center, :i:a_amount, :i:a_amount * isnull(:gp:a_percent, 1.0))),
+		    --a_last_gift_amount = first(condition(:i:a_fund = :gp:a_fund, :i:a_amount, :i:a_amount * isnull(:gp:a_percent, 1.0))),
 		    a_last_gift_amount = first(:i:a_amount * isnull(:gp:a_percent, 1.0)),
 		    a_ntl_gift = nth(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date), 2),
-		    --a_ntl_gift_amount = nth(condition(:i:a_cost_center = :gp:a_cost_center, :i:a_amount, :i:a_amount * isnull(:gp:a_percent, 1.0)), 2),
+		    --a_ntl_gift_amount = nth(condition(:i:a_fund = :gp:a_fund, :i:a_amount, :i:a_amount * isnull(:gp:a_percent, 1.0)), 2),
 		    a_ntl_gift_amount = nth(:i:a_amount * isnull(:gp:a_percent, 1.0), 2),
 		    -- Logic here:
 		    --     No gifts in the range: use today as the lookahead date.
@@ -247,12 +249,13 @@ support_review "widget/component-decl"
 		where
 		    (:parameters:name is null or :gp:name = :parameters:name) and
 		    :gp:a_ledger_number = :info:ledger and
-		    :gp:a_cost_center = :info:fund and
+		    :gp:a_fund = :info:fund and
 		    :gp:a_is_active = 1 and
 		    (:gp:a_amount > $0 or :gp:s_date_modified > dateadd(day, -14, getdate()) or :gp:a_interval = 0) and
 		    isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) > dateadd(month, -37, getdate()) and
-		    (:i:a_cost_center =* :gp:a_cost_center or :i:a_cost_center =* :gp:a_actual_cost_center) and
+		    (:i:a_fund =* :gp:a_fund or :i:a_fund =* :gp:a_actual_fund) and
 		    :i:a_ledger_number =* :gp:a_ledger_number and
+		    :i:a_posted = 1 and
 		    :i:p_dn_donor_partner_id =* :gp:p_donor_partner_key
 		group by
 		    :gp:p_donor_partner_key,
@@ -273,10 +276,10 @@ support_review "widget/component-decl"
 		    /apps/kardia/data/Kardia_DB/a_giving_pattern/rows gp
 		where
 		    :d:a_ledger_number = :info:ledger and
-		    :d:a_cost_center = :info:fund and
+		    :d:a_fund = :info:fund and
 		    (:parameters:name is null or substring(:parameters:name, 1, char_length(:d:name) + 1) = :d:name + '|') and
 		    :gp:a_ledger_number = :d:a_ledger_number and
-		    :gp:a_cost_center = :d:a_cost_center and
+		    :gp:a_fund = :d:a_fund and
 		    :gp:p_donor_partner_key = :d:p_donor_partner_key and
 		    :gp:a_is_active = 1 and
 		    (:gp:a_amount > $0 or :gp:s_date_modified > dateadd(day, -14, getdate()))
@@ -297,7 +300,7 @@ support_review "widget/component-decl"
 --					    :d:a_act_lookahead_date,
 --				    ) / 30.5)) -- 30.5 is avg days per month, 366/12
 --			    )
---		    ) from /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i where isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) > dateadd(month, -13, getdate()) and :i:a_cost_center = :d:a_cost_center and :i:a_ledger_number = :d:a_ledger_number and :i:p_dn_donor_partner_id = :d:p_donor_partner_key), :d:a_act_lookahead_date)
+--		    ) from /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i where isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) > dateadd(month, -13, getdate()) and :i:a_posted = 1 and :i:a_fund = :d:a_fund and :i:a_ledger_number = :d:a_ledger_number and :i:p_dn_donor_partner_id = :d:p_donor_partner_key), :d:a_act_lookahead_date)
 		;
 		    
 		update
@@ -305,10 +308,10 @@ support_review "widget/component-decl"
 		    /apps/kardia/data/Kardia_DB/a_giving_pattern/rows gp
 		where
 		    :d:a_ledger_number = :info:ledger and
-		    :d:a_cost_center = :info:fund and
+		    :d:a_fund = :info:fund and
 		    (:parameters:name is null or substring(:parameters:name, 1, char_length(:d:name) + 1) = :d:name + '|') and
 		    :gp:a_ledger_number = :d:a_ledger_number and
-		    :gp:a_cost_center = :d:a_cost_center and
+		    :gp:a_fund = :d:a_fund and
 		    :gp:p_donor_partner_key = :d:p_donor_partner_key and
 		    :gp:a_is_active = 1 and
 		    (:gp:a_amount > $0 or :gp:s_date_modified > dateadd(day, -14, getdate()))
@@ -327,19 +330,19 @@ support_review "widget/component-decl"
 		    :a_act_average_amount = isnull((select condition(
 			    count(1) = 0 or datediff(month, :d:a_act_lookback_date, :d:a_act_lookahead_date) = 0,
 			    null,
-			    --sum(condition(:i:a_cost_center = :gp:a_cost_center, :i:a_amount, :i:a_amount * isnull(:gp:a_percent, 1.0))) / datediff(month, :d:a_act_lookback_date, :d:a_act_lookahead_date)
+			    --sum(condition(:i:a_fund = :gp:a_fund, :i:a_amount, :i:a_amount * isnull(:gp:a_percent, 1.0))) / datediff(month, :d:a_act_lookback_date, :d:a_act_lookahead_date)
 			    sum(:i:a_amount * isnull(:gp:a_percent, 1.0)) / datediff(month, :d:a_act_lookback_date, :d:a_act_lookahead_date)
-		    ) from /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i where isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) > dateadd(month, -13, getdate()) and (:i:a_cost_center = :gp:a_cost_center or :i:a_cost_center = :gp:a_actual_cost_center) and :i:a_ledger_number = :d:a_ledger_number and :i:p_dn_donor_partner_id = :d:p_donor_partner_key), $0),
+		    ) from /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i where :i:a_posted = 1 and isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) > dateadd(month, -13, getdate()) and (:i:a_fund = :gp:a_fund or :i:a_fund = :gp:a_actual_fund) and :i:a_ledger_number = :d:a_ledger_number and :i:p_dn_donor_partner_id = :d:p_donor_partner_key), $0),
 		    :a_act_average_interval = (select condition(
 			    count(1) = 0 or datediff(day, :d:a_act_lookback_date, :d:a_act_lookahead_date) = 0,
 			    null,
 			    (datediff(day, :d:a_act_lookback_date, :d:a_act_lookahead_date) / 30.5) / convert(double, count(1))
-		    ) from /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i where isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) > dateadd(month, -13, getdate()) and :i:a_cost_center = :d:a_cost_center and :i:a_ledger_number = :d:a_ledger_number and :i:p_dn_donor_partner_id = :d:p_donor_partner_key)
+		    ) from /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i where :i:a_posted = 1 and isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) > dateadd(month, -13, getdate()) and :i:a_fund = :d:a_fund and :i:a_ledger_number = :d:a_ledger_number and :i:p_dn_donor_partner_id = :d:p_donor_partner_key)
 
 --		    :a_act_average_amount = isnull((select condition(
 --			    count(1) = 0,
 --			    null,
---			    sum(condition(:i:a_cost_center = :gp:a_cost_center, :i:a_amount, :i:a_amount * isnull(:gp:a_percent, 1.0))) /
+--			    sum(condition(:i:a_fund = :gp:a_fund, :i:a_amount, :i:a_amount * isnull(:gp:a_percent, 1.0))) /
 --			    condition(
 --				    datediff(day, min(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date)), :d:a_act_lookahead_date) = 0,
 --				    condition(convert(integer,round(datediff(day, min(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date)), getdate()) / 30.5)) = 0,
@@ -352,7 +355,7 @@ support_review "widget/component-decl"
 --					    :d:a_act_lookahead_date,
 --				    ) / 30.5)) -- 30.5 is avg days per month, 366/12
 --			    )
---		    ) from /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i where isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) > dateadd(month, -13, getdate()) and (:i:a_cost_center = :gp:a_cost_center or :i:a_cost_center = :gp:a_actual_cost_center) and :i:a_ledger_number = :d:a_ledger_number and :i:p_dn_donor_partner_id = :d:p_donor_partner_key), $0),
+--		    ) from /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i where :i:a_posted = 1 and isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) > dateadd(month, -13, getdate()) and (:i:a_fund = :gp:a_fund or :i:a_fund = :gp:a_actual_fund) and :i:a_ledger_number = :d:a_ledger_number and :i:p_dn_donor_partner_id = :d:p_donor_partner_key), $0),
 --
 --		    :a_act_average_months = (select condition(
 --			    count(1) = 0,
@@ -369,7 +372,7 @@ support_review "widget/component-decl"
 --					    :d:a_act_lookahead_date,
 --				    ) / 30.5)) -- 30.5 is avg days per month, 366/12
 --			    )
---		    ) from /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i where isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) > dateadd(month, -13, getdate()) and :i:a_cost_center = :d:a_cost_center and :i:a_ledger_number = :d:a_ledger_number and :i:p_dn_donor_partner_id = :d:p_donor_partner_key),
+--		    ) from /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i where :i:a_posted = 1 and isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) > dateadd(month, -13, getdate()) and :i:a_fund = :d:a_fund and :i:a_ledger_number = :d:a_ledger_number and :i:p_dn_donor_partner_id = :d:p_donor_partner_key),
 --
 --		    :a_act_average_interval = (select condition(
 --			    count(1) = 0 or datediff(day, min(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date)), :d:a_act_lookahead_date) = 0,
@@ -381,7 +384,7 @@ support_review "widget/component-decl"
 --					    :d:a_act_lookahead_date,
 --				    ) / 30.5 -- 30.5 is avg days per month, 366/12
 --			    ) / convert(double, count(1))
---		    ) from /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i where isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) > dateadd(month, -13, getdate()) and :i:a_cost_center = :d:a_cost_center and :i:a_ledger_number = :d:a_ledger_number and :i:p_dn_donor_partner_id = :d:p_donor_partner_key)
+--		    ) from /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i where :i:a_posted = 1 and isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) > dateadd(month, -13, getdate()) and :i:a_fund = :d:a_fund and :i:a_ledger_number = :d:a_ledger_number and :i:p_dn_donor_partner_id = :d:p_donor_partner_key)
 		;
 
 		-- For donors giving as-able, update their support amounts based on the average over the past 366 days.
@@ -389,16 +392,16 @@ support_review "widget/component-decl"
 		    /apps/kardia/data/Kardia_DB/a_giving_pattern/rows gp
 		where
 		    :gp:a_ledger_number = :info:ledger and
-		    :gp:a_cost_center = :info:fund and
+		    :gp:a_fund = :info:fund and
 		    :gp:a_is_active = 1 and
 		    :gp:a_interval = 0 and
 		    (:parameters:name is null or :parameters:name = :gp:name)
 		set
 		    :gp:a_amount = (
-			    --select sum(condition(:i:a_cost_center = :gp:a_cost_center, :i:a_amount, :i:a_amount * isnull(:gp:a_percent, 1.0)))
+			    --select sum(condition(:i:a_fund = :gp:a_fund, :i:a_amount, :i:a_amount * isnull(:gp:a_percent, 1.0)))
 			    select sum(:i:a_amount * isnull(:gp:a_percent, 1.0))
 			    from /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i
-			    where :i:a_ledger_number = :gp:a_ledger_number and (:i:a_cost_center = :gp:a_cost_center or :i:a_cost_center = :gp:a_actual_cost_center) and :i:p_dn_donor_partner_id = :gp:p_donor_partner_key and :i:a_posted = 1 and isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) <= getdate() and isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) >= dateadd(day, -366, getdate())
+			    where :i:a_ledger_number = :gp:a_ledger_number and (:i:a_fund = :gp:a_fund or :i:a_fund = :gp:a_actual_fund) and :i:p_dn_donor_partner_id = :gp:p_donor_partner_key and :i:a_posted = 1 and isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) <= getdate() and isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) >= dateadd(day, -366, getdate())
 		    ),
 		    :gp:s_date_modified = getdate(),
 		    :gp:s_modified_by = user_name()
@@ -408,18 +411,18 @@ support_review "widget/component-decl"
 
 		-- Grab the supporter list
 		select
-		    :c:a_cc_desc,
+		    :c:a_fund_desc,
 		    :l:a_ledger_desc,
 		    a_ledger_number = :info:ledger,
 		    :gp:p_donor_partner_key,
-		    a_cost_center = :info:fund,
+		    a_fund = :info:fund,
 		    :gp:a_pattern_id,
 		    :gp:a_amount,
 		    :gp:a_interval,
 		    :gp:a_percent,
 		    is_subpercent = condition(isnull(:gp:a_percent, 1.0) < 0.999, 1, 0),
 		    percent = convert(integer, round(:gp:a_percent * 100)),
-		    alt_costctr = :gp:a_actual_cost_center,
+		    alt_fund = :gp:a_actual_fund,
 		    :gp:a_is_active,
 		    :gp:a_start_date,
 		    :gp:a_end_date,
@@ -462,7 +465,7 @@ support_review "widget/component-decl"
 		    month_equiv = condition(isnull(:gp:a_interval,0) = 0, :gp:a_amount / 12, :gp:a_amount / :gp:a_interval),
 
 		    last_gift = max(isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date)),
-		    --last_amt = last(condition(:g:a_cost_center = :gp:a_cost_center, :g:a_amount, :g:a_amount * isnull(:gp:a_percent, 1.0))),
+		    --last_amt = last(condition(:g:a_fund = :gp:a_fund, :g:a_amount, :g:a_amount * isnull(:gp:a_percent, 1.0))),
 		    last_amt = last(:g:a_amount * isnull(:gp:a_percent, 1.0)),
 		    last_actual_amt = last(:g:a_amount),
 		    --actavg = sum(condition(isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date) > dateadd(month, -12, getdate()), :g:a_amount, $0)) / condition(datediff(day, isnull(min(isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date)),getdate()), getdate()) >= 365, 12, condition(isnull(datediff(day, isnull(min(isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date)),getdate()), getdate()),0) < 30*:gp:a_interval, :gp:a_interval, (datediff(day, isnull(min(isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date)),getdate()), getdate()) + 26) / 30)),
@@ -501,7 +504,7 @@ support_review "widget/component-decl"
 		        isnull(max(condition(datepart(year, isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date)) == :info:year and datepart(month, isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date)) == 11, 'N', ' ')),' ') +
 		        isnull(max(condition(datepart(year, isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date)) == :info:year and datepart(month, isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date)) == 12, 'D', ' ')),' ')
 		from
-		    /apps/kardia/data/Kardia_DB/a_cost_center/rows c,
+		    /apps/kardia/data/Kardia_DB/a_fund/rows c,
 		    /apps/kardia/data/Kardia_DB/a_ledger/rows l,
 		    IDENTITY /apps/kardia/data/Kardia_DB/a_giving_pattern/rows gp,
 		    /apps/kardia/data/Kardia_DB/a_descriptives/rows d,
@@ -513,21 +516,21 @@ support_review "widget/component-decl"
 		    /apps/kardia/data/Kardia_DB/a_giving_pattern_flag/rows gpf,
 		    object wildcard '/apps/kardia/modules/*/plugin_mportal_sreview_*.cmp' ft
 		where
-		    :c:a_cost_center = :info:fund and
+		    :c:a_fund = :info:fund and
 		    :c:a_ledger_number = :info:ledger and
 		    :l:a_ledger_number = :c:a_ledger_number and
 		    (:parameters:name is null or :gp:name = :parameters:name) and
-		    :gp:a_cost_center = :c:a_cost_center and
+		    :gp:a_fund = :c:a_fund and
 		    :gp:a_ledger_number = :c:a_ledger_number and
 		    (:gp:a_amount > $0 or :gp:s_date_modified > dateadd(day, -14, getdate())) and
 		    :gpf:a_ledger_number =* :gp:a_ledger_number and
-		    :gpf:a_cost_center =* :gp:a_cost_center and
+		    :gpf:a_fund =* :gp:a_fund and
 		    :gpf:p_donor_partner_key =* :gp:p_donor_partner_key and
 		    :gpf:a_pattern_id =* :gp:a_pattern_id and
 		    :gpf:a_flag_resolution is null and
 		    :ft:flag_code =* :gpf:a_flag_type and
 		    :d:a_ledger_number = :gp:a_ledger_number and
-		    :d:a_cost_center = :gp:a_cost_center and
+		    :d:a_fund = :gp:a_fund and
 		    :d:p_donor_partner_key = :gp:p_donor_partner_key and
 		    :p:p_partner_key = :gp:p_donor_partner_key and
 		    :pl:p_partner_key =* :p:p_partner_key and
@@ -536,11 +539,12 @@ support_review "widget/component-decl"
 		    :af:p_country_code =* :cty:p_country_code and
 		    :af:p_address_set = 'STANDARD' and
 		    :g:a_ledger_number =* :gp:a_ledger_number and
-		    (:g:a_cost_center =* :gp:a_cost_center or :g:a_cost_center = :gp:a_actual_cost_center) and
+		    :g:a_posted = 1 and
+		    (:g:a_fund =* :gp:a_fund or :g:a_fund = :gp:a_actual_fund) and
 		    :g:p_dn_donor_partner_id =* :gp:p_donor_partner_key and
 		    isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date) > dateadd(year, -3, getdate())
 		group by
-		    :c:a_cost_center,
+		    :c:a_fund,
 		    :c:a_ledger_number,
 		    :gp:p_donor_partner_key,
 		    :gp:a_pattern_id
@@ -566,7 +570,7 @@ support_review "widget/component-decl"
 	    target=summary_data;
 	    action=QueryParam;
 	    ledger=runclient(:support_osrc:a_ledger_number);
-	    fund=runclient(:support_osrc:a_cost_center);
+	    fund=runclient(:support_osrc:a_fund);
 	    }
 
 	on_modify_refresh_stats "widget/connector"
@@ -575,7 +579,7 @@ support_review "widget/component-decl"
 	    target=summary_data;
 	    action=QueryParam;
 	    ledger=runclient(:support_osrc:a_ledger_number);
-	    fund=runclient(:support_osrc:a_cost_center);
+	    fund=runclient(:support_osrc:a_fund);
 	    }
 
 	support_vbox "widget/vbox"
@@ -672,7 +676,7 @@ support_review "widget/component-decl"
 			    target=summary_data;
 			    action=QueryParam;
 			    ledger=runclient(:support_osrc:a_ledger_number);
-			    fund=runclient(:support_osrc:a_cost_center);
+			    fund=runclient(:support_osrc:a_fund);
 			    }
 
 			gp_hbox "widget/hbox"
@@ -765,7 +769,7 @@ support_review "widget/component-decl"
 				target=summary_data;
 				action=QueryParam;
 				ledger=runclient(:support_osrc:a_ledger_number);
-				fund=runclient(:support_osrc:a_cost_center);
+				fund=runclient(:support_osrc:a_fund);
 				}
 			    }
 			}
@@ -790,14 +794,14 @@ support_review "widget/component-decl"
 					    from
 						/apps/kardia/data/Kardia_DB/a_giving_pattern/rows gp
 					    where
-						:gp:a_cost_center = :parameters:fund and
+						:gp:a_fund = :parameters:fund and
 						:gp:a_ledger_number = :parameters:ledger),
 			    unanswered =    (select
 						count(1)
 					    from
 						/apps/kardia/data/Kardia_DB/a_giving_pattern_flag/rows gpf
 					    where
-						:gpf:a_cost_center = :parameters:fund and
+						:gpf:a_fund = :parameters:fund and
 						:gpf:a_ledger_number = :parameters:ledger and
 						:a_flag_resolution is null),
 			    target_amt =    :a_target_amount,
@@ -806,7 +810,7 @@ support_review "widget/component-decl"
 					    from
 						/apps/kardia/data/Kardia_DB/a_giving_pattern/rows gp
 					    where
-						:gp:a_cost_center = :parameters:fund and
+						:gp:a_fund = :parameters:fund and
 						:gp:a_ledger_number = :parameters:ledger))
 					    / convert(double, :a_target_amount), 1),
 			    :s_modified_by,
@@ -814,7 +818,7 @@ support_review "widget/component-decl"
 			from 
 			    /apps/kardia/data/Kardia_DB/a_support_review_target/rows srt
 			where
-			    :srt:a_cost_center = :parameters:fund and
+			    :srt:a_fund = :parameters:fund and
 			    :srt:a_ledger_number = :parameters:ledger
 			order by
 			    :srt:a_review desc

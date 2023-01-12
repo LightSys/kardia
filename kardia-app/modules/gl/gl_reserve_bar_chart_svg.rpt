@@ -144,7 +144,7 @@ gl_reserve_bar_chart_svg "system/report"
 		    :p:a_summary_only = 0 and
 		    :t:a_ledger_number =* :p:a_ledger_number and
 		    :t:a_period =* :p:a_period and
-		    (:this:fund is null or :t:a_cost_center = :this:fund)
+		    (:this:fund is null or :t:a_fund = :this:fund)
 		group by
 		    :p:a_period
 		order by

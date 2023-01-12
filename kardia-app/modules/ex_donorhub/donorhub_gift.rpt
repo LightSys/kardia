@@ -1,0 +1,146 @@
+$Version=2$
+donorhub_gift "system/report"
+    {
+    title = "Gift report for DonorHub";
+
+    document_format="text/csv";
+    resolution = 300;
+    pagewidth=110;
+    pageheight=2000;
+    marginleft=2.5;
+    marginright=2.5;
+    margintop=3;
+    marginbottom=3;
+
+    // Give it an intelligent filename
+    filename = runserver('donorhub_gift_' + isnull(:this:ledger, 'all') + '_' + isnull(:this:fund, 'all') + '_' + isnull(:this:from_date, 'nostart') + '_' + isnull(:this:to_date, 'noend') + '.csv');
+
+    // Parameters for gift report
+    ledger "report/parameter" { type=string; default=null; }
+    fund "report/parameter" { type=string; default=null; }
+    from_date "report/parameter" { type=string; default=null; allowchars='0123456789-/ :apmAPM'; }
+    to_date "report/parameter" { type=string; default=null; allowchars='0123456789-/ :apmAPM'; }
+
+    // Out parameters
+    rowcount "report/parameter" { type=integer; direction=out; default=runserver(isnull(:gifts_qy:all_cnt, 0)); }
+    is_empty "report/parameter" { type=integer; direction=out; default=runserver(condition(isnull(:gifts_qy:all_cnt, 0) == 0, 1, 0)); }
+
+    // Parse dates
+    dates_qy "report/query"
+	{
+	sql = "	select
+		    from_date = convert(datetime, condition(charindex(':', :this:from_date) > 0, :this:from_date, :this:from_date + ' 00:00:00')),
+		    to_date = convert(datetime, condition(charindex(':', :this:to_date) > 0, :this:to_date, :this:to_date + ' 23:59:59'))
+		";
+	}
+
+    // Gifts, based on last modified date (note - modified, not gift date, not trx date, etc.)
+    gifts_qy "report/query"
+	{
+	sql = "	select
+		    gift_id = :i:name,
+		    donor_id = condition(char_length(isnull(:i:p_dn_ack_partner_id,'')) > 1, :i:p_dn_ack_partner_id, :i:p_dn_donor_partner_id),
+		    desig_id = :i:a_fund,
+		    gift_date = isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date),
+		    amount = :i:a_amount,
+		    payment_method = isnull(:pt:a_gift_payment_type_desc, :i:a_dn_gift_type),
+		    staff_memo = 
+			    condition(char_length(:i:a_comment) > 1, :i:a_comment + ', ', '')
+			    + condition(char_length(isnull(:i:p_dn_ack_partner_id,'')) <= 1, '', 'via ' + condition(char_length(rtrim(:p:p_org_name)) > 1, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname + ', '))
+			    + condition(:it:text is null or (:i:a_item_intent_code = 'M' and isnull(:pl:a_giving_interval, 0) = 1) or (:i:a_item_intent_code = 'A' and isnull(:pl:a_giving_interval, 0) = 12) or (:i:a_item_intent_code = 'Q' and isnull(:pl:a_giving_interval, 0) = 3), '', :it:text + ', ')
+			    + condition(:pl:a_pledge_id is null, '', :plt:text + ' ' + isnull('' + :pl:a_amount + ' gift(s) ', '') + isnull('' + :pl:a_total_amount + ' in total ', '') + isnull(:gi:text + ' ', '') + isnull('for ' + :pl:a_gift_count + ' gifts ', '') + isnull('from ' + dateformat(:pl:a_start_date, 'yyyy-MM-dd') + ' ', '') + isnull('through ' + dateformat(:pl:a_end_date, 'yyyy-MM-dd') + ' ', '') - ' ' + ', ')
+			    - ', ',
+		    donor_memo = condition(char_length(isnull(:i:p_dn_ack_partner_id, '')) <= 1, '', 'Recommended via ' + condition(char_length(rtrim(:p:p_org_name)) > 1, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname + ', ')),
+		    loc_amount = :i:a_foreign_amount,
+		    loc_currency = :i:a_foreign_currency,
+		    motivation_code = :i:a_motivational_code,
+		    mod_date = dateformat(:i:s_date_modified, 'yyyy-MM-dd')
+		from
+		    /apps/kardia/data/Kardia_DB/r_group_report_param/rows grp,
+		    /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i,
+		    /apps/kardia/data/Kardia_DB/a_gift_payment_type/rows pt,
+		    /apps/kardia/data/Kardia_DB/p_partner/rows p,
+		    /apps/kardia/data/Kardia_DB/_a_item_intent_code/rows it,
+		    /apps/kardia/data/Kardia_DB/a_subtrx_gift_intent/rows in,
+		    /apps/kardia/data/Kardia_DB/a_pledge/rows pl,
+		    /apps/kardia/data/Kardia_DB/_a_pledge_type/rows plt,
+		    /apps/kardia/data/Kardia_DB/_a_giving_interval/rows gi
+		where
+		    :grp:r_group_name = 'DonorHub' and
+		    :grp:r_param_name = 'fund' and
+		    :grp:r_param_value = :i:a_fund and
+		    :i:a_posted = 1 and
+		    (:this:ledger is null or :i:a_ledger_number = :this:ledger) and
+		    (:this:fund is null or :grp:r_param_value = :this:fund) and
+		    (:dates_qy:from_date is null or :i:s_date_modified >= :dates_qy:from_date) and
+		    (:dates_qy:to_date is null or :i:s_date_modified <= :dates_qy:to_date) and
+		    :pt:a_ledger_number =* :i:a_ledger_number and
+		    :pt:a_gift_payment_type =* :i:a_dn_gift_type and
+		    :p:p_partner_key =* :i:p_dn_donor_partner_id and
+		    :it:tag =* :i:a_item_intent_code and
+		    :in:a_ledger_number =* :i:a_ledger_number and
+		    :in:a_batch_number =* :i:a_batch_number and
+		    :in:a_gift_number =* :i:a_gift_number and
+		    (:in:a_split_number is null or :in:a_split_number =* :i:a_split_number) and
+		    :pl:a_ledger_number =* :in:a_ledger_number and
+		    :pl:a_pledge_id =* :in:a_pledge_id and
+		    :plt:tag = :pl:a_intent_type and
+		    :gi:tag = convert(string, :pl:a_giving_interval)
+		group by
+		    :i:a_ledger_number,
+		    :i:a_batch_number,
+		    :i:a_gift_number,
+		    :i:a_split_number
+		";
+
+	all_cnt "report/aggregate" { compute="count(:gift_id)"; reset=0; }
+	}
+
+    // Table for file heading and gifts list
+    gift_table "report/table"
+	{
+	x=0; width=110; height=0;
+	columns=12;
+	widths=7,7,7,8,8,8,12,12,8,6,8,8;
+	colsep=1;
+	nullformat="";
+	moneyformat = "-0.00";
+	dateformat = "yyyy-MM-dd";
+	source=dates_qy,gifts_qy;
+
+	hdr_desig "report/table-row"
+	    {
+	    header = yes;
+
+	    t_gid "report/table-cell" { value='Gift ID'; }
+	    t_don "report/table-cell" { value='Donor ID'; }
+	    t_des "report/table-cell" { value='Designation ID'; }
+	    t_date "report/table-cell" { value='Gift Date'; }
+	    t_amt "report/table-cell" { value='Amount'; }
+	    t_pmt "report/table-cell" { value='Payment Method'; }
+	    t_smm "report/table-cell" { value='Staff Memo'; }
+	    t_dmm "report/table-cell" { value='Donor Memo'; }
+	    t_fam "report/table-cell" { value='Tendered Amount'; }
+	    t_fcur "report/table-cell" { value='Tendered Currency'; }
+	    t_mot "report/table-cell" { value='Motivation Code'; }
+	    t_mod "report/table-cell" { value='Last Modified Date'; }
+	    }
+
+	one_desig "report/table-row"
+	    {
+	    allowbreak=no;
+	    d_gid "report/table-cell" { value=runserver(:gifts_qy:gift_id); }
+	    d_don "report/table-cell" { value=runserver(:gifts_qy:donor_id); }
+	    d_des "report/table-cell" { value=runserver(:gifts_qy:desig_id); }
+	    d_date "report/table-cell" { value=runserver(:gifts_qy:gift_date); }
+	    d_amt "report/table-cell" { value=runserver(:gifts_qy:amount); }
+	    d_pmt "report/table-cell" { value=runserver(:gifts_qy:payment_method); }
+	    d_smm "report/table-cell" { value=runserver(:gifts_qy:staff_memo); }
+	    d_dmm "report/table-cell" { value=runserver(:gifts_qy:donor_memo); }
+	    d_fam "report/table-cell" { value=runserver(:gifts_qy:loc_amount); }
+	    d_fcur "report/table-cell" { value=runserver(:gifts_qy:loc_currency); }
+	    d_mot "report/table-cell" { value=runserver(:gifts_qy:motivation_code); }
+	    d_mod "report/table-cell" { value=runserver(:gifts_qy:mod_date); }
+	    }
+	}
+    }

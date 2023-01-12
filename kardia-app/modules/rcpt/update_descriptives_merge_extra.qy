@@ -20,9 +20,9 @@ update_descriptives_merge_extra "system/query"
                         :dh:a_count == 1 and :d:a_act_average_interval < 7.0 and (select 
                                 count(1)
                                 from collection a_descriptives_hist dh2
-                                where   :dh2:a_ledger_number = :dh:a_ledger_number and :dh2:a_cost_center = :dh:a_cost_center and :dh2:p_donor_partner_key = :dh:p_donor_partner_key and 
+                                where   :dh2:a_ledger_number = :dh:a_ledger_number and :dh2:a_fund = :dh:a_fund and :dh2:p_donor_partner_key = :dh:p_donor_partner_key and 
                                         -- either the extra gift is a larger gift, or there are other gifts within +/- half an interval of the gift
-                                        (:dh:a_amount > :dh2:a_amount or (select count(1) from collection tmp_gift_items where :donor = :dh:p_donor_partner_key and :ledger = :dh:a_ledger_number and :fund = :dh:a_cost_center and :giftdate > dateadd(day, convert(integer, round(-0.5 * 30.5 * :dh2:a_act_average_interval)), :dh:a_first_gift) and :giftdate < dateadd(day, convert(integer, round(.5 * 30.5 * :dh2:a_act_average_interval)), :dh:a_first_gift)) > 1) and
+                                        (:dh:a_amount > :dh2:a_amount or (select count(1) from collection tmp_gift_items where :donor = :dh:p_donor_partner_key and :ledger = :dh:a_ledger_number and :fund = :dh:a_fund and :giftdate > dateadd(day, convert(integer, round(-0.5 * 30.5 * :dh2:a_act_average_interval)), :dh:a_first_gift) and :giftdate < dateadd(day, convert(integer, round(.5 * 30.5 * :dh2:a_act_average_interval)), :dh:a_first_gift)) > 1) and
                                         :dh2:a_count > 1 and
                                         -- either the extra gift falls within the regular giving or it is the most recent gift
                                         ((:dh2:a_first_gift <= :dh:a_first_gift and :dh2:a_last_gift >= :dh:a_last_gift) or :dh:a_hist_id = 1)
@@ -32,9 +32,9 @@ update_descriptives_merge_extra "system/query"
                         )
 	    where
 		:d:a_ledger_number = :dh:a_ledger_number and
-		:d:a_cost_center = :dh:a_cost_center and
+		:d:a_fund = :dh:a_fund and
 		:d:p_donor_partner_key = :dh:p_donor_partner_key and
-		(:parameters:fund is null or :parameters:fund = :dh:a_cost_center) and
+		(:parameters:fund is null or :parameters:fund = :dh:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :dh:p_donor_partner_key) and
                 :dh:a_is_extra is null
 	    ;
@@ -46,10 +46,10 @@ update_descriptives_merge_extra "system/query"
 	    set
 		:a_merged_id = isnull(:dh2:a_merged_id, :dh2:a_hist_id)
 	    where
-		(:parameters:fund is null or :parameters:fund = :dh2:a_cost_center) and
+		(:parameters:fund is null or :parameters:fund = :dh2:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :dh2:p_donor_partner_key) and
 		:dh2:a_ledger_number = :dh1:a_ledger_number and
-		:dh2:a_cost_center = :dh1:a_cost_center and
+		:dh2:a_fund = :dh1:a_fund and
 		:dh2:p_donor_partner_key = :dh1:p_donor_partner_key and
                 :dh1:a_is_extra = 2 and
                 :dh1:a_hist_id != 1 and
@@ -65,10 +65,10 @@ update_descriptives_merge_extra "system/query"
 	    set
 		:a_merged_id = isnull(:dh2:a_merged_id, :dh2:a_hist_id)
 	    where
-		(:parameters:fund is null or :parameters:fund = :dh2:a_cost_center) and
+		(:parameters:fund is null or :parameters:fund = :dh2:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :dh2:p_donor_partner_key) and
 		:dh2:a_ledger_number = :dh1:a_ledger_number and
-		:dh2:a_cost_center = :dh1:a_cost_center and
+		:dh2:a_fund = :dh1:a_fund and
 		:dh2:p_donor_partner_key = :dh1:p_donor_partner_key and
                 :dh1:a_is_extra = 2 and
                 :dh1:a_hist_id = 1 and
@@ -81,7 +81,7 @@ update_descriptives_merge_extra "system/query"
                 collection tmp_intermediate_vals
             select
                 ledger = :dh1:a_ledger_number,
-                fund = :dh1:a_cost_center,
+                fund = :dh1:a_fund,
                 donor = :dh1:p_donor_partner_key,
                 merged_id = :dh1:a_hist_id,
                 regular_id = :dh2:a_hist_id,
@@ -89,15 +89,15 @@ update_descriptives_merge_extra "system/query"
                 -- The fuzziness here can be tweaked. If there are no other gifts
                 -- within +/- half an interval of the extra gift, the gift is assumed
                 -- to contain the regular giving amount lumped with the gift amount.
-                includes_regular_giving = ((select count(1) from collection tmp_gift_items where :donor = :dh1:p_donor_partner_key and :ledger = :dh1:a_ledger_number and :fund = :dh1:a_cost_center and :giftdate > dateadd(day, convert(integer, round(-0.5 * 30.5 * :dh2:a_act_average_interval)), :dh1:a_first_gift) and :giftdate < dateadd(day, convert(integer, round(.5 * 30.5 * :dh2:a_act_average_interval)), :dh1:a_first_gift) and :dh1:a_amount > :dh2:a_amount) = 1)
+                includes_regular_giving = ((select count(1) from collection tmp_gift_items where :donor = :dh1:p_donor_partner_key and :ledger = :dh1:a_ledger_number and :fund = :dh1:a_fund and :giftdate > dateadd(day, convert(integer, round(-0.5 * 30.5 * :dh2:a_act_average_interval)), :dh1:a_first_gift) and :giftdate < dateadd(day, convert(integer, round(.5 * 30.5 * :dh2:a_act_average_interval)), :dh1:a_first_gift) and :dh1:a_amount > :dh2:a_amount) = 1)
             from
                 collection a_descriptives_hist dh1,
                 collection a_descriptives_hist dh2
             where
-                (:parameters:fund is null or :parameters:fund = :dh2:a_cost_center) and
+                (:parameters:fund is null or :parameters:fund = :dh2:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :dh2:p_donor_partner_key) and
 		:dh2:a_ledger_number = :dh1:a_ledger_number and
-		:dh2:a_cost_center = :dh1:a_cost_center and
+		:dh2:a_fund = :dh1:a_fund and
 		:dh2:p_donor_partner_key = :dh1:p_donor_partner_key and
 		:dh1:a_merged_id = :dh2:a_hist_id
             ;
@@ -162,14 +162,14 @@ update_descriptives_merge_extra "system/query"
                                 (datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) / 30.5) / (:dh2:a_total / :dh2:a_amount - 1)
                                 )
 	    where
-		(:parameters:fund is null or :parameters:fund = :dh2:a_cost_center) and
+		(:parameters:fund is null or :parameters:fund = :dh2:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :dh2:p_donor_partner_key) and
 		:dh2:a_ledger_number = :dh1:a_ledger_number and
-		:dh2:a_cost_center = :dh1:a_cost_center and
+		:dh2:a_fund = :dh1:a_fund and
 		:dh2:p_donor_partner_key = :dh1:p_donor_partner_key and
 		:dh1:a_merged_id = :dh2:a_hist_id and 
                 :t:ledger = :dh1:a_ledger_number and
-                :t:fund = :dh1:a_cost_center and
+                :t:fund = :dh1:a_fund and
                 :t:donor = :dh1:p_donor_partner_key and
                 :t:merged_id = :dh1:a_hist_id and
                 :t:regular_id = :dh2:a_hist_id
@@ -194,14 +194,14 @@ update_descriptives_merge_extra "system/query"
                 :dh1:a_merged_id = null,
                 :dh1:a_is_extra = 1
             where
-		(:parameters:fund is null or :parameters:fund = :dh2:a_cost_center) and
+		(:parameters:fund is null or :parameters:fund = :dh2:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :dh2:p_donor_partner_key) and
 		:dh2:a_ledger_number = :dh1:a_ledger_number and
-		:dh2:a_cost_center = :dh1:a_cost_center and
+		:dh2:a_fund = :dh1:a_fund and
 		:dh2:p_donor_partner_key = :dh1:p_donor_partner_key and
 		:dh1:a_merged_id = :dh2:a_hist_id and 
                 :t:ledger = :dh1:a_ledger_number and
-                :t:fund = :dh1:a_cost_center and
+                :t:fund = :dh1:a_fund and
                 :t:donor = :dh1:p_donor_partner_key and
                 :t:merged_id = :dh1:a_hist_id and
                 :t:regular_id = :dh2:a_hist_id
@@ -213,7 +213,7 @@ update_descriptives_merge_extra "system/query"
             set
                 :a_is_extra = 0
             where
-                (:parameters:fund is null or :parameters:fund = :a_cost_center) and
+                (:parameters:fund is null or :parameters:fund = :a_fund) and
 		(:parameters:donor is null or :parameters:donor = :p_donor_partner_key) and
                 :a_is_extra = 2
 	    ";

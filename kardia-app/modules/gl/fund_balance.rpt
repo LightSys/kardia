@@ -31,7 +31,7 @@ fund_balance "system/report"
     class_qy "report/query"
 	{
 	// uses first() to force query to return null row if no match.
-	sql = "select descrip = first(:c:a_acct_class_desc) from /apps/kardia/data/Kardia_DB/a_cost_center_class/rows c where :c:a_ledger_number = :this:ledger and :c:a_cost_center_class = :this:cc_class";
+	sql = "select descrip = first(:c:a_fund_class_desc) from /apps/kardia/data/Kardia_DB/a_fund_class/rows c where :c:a_ledger_number = :this:ledger and :c:a_fund_class = :this:cc_class";
 	}
 
     period_qy "report/query"
@@ -43,9 +43,9 @@ fund_balance "system/report"
 	{
 	sql = runserver("
 		select
-			cc_code = max(condition(:c:a_cost_center == :c:a_bal_cost_center or :this:showsubsid, :c:a_cost_center, '')),
-			cc_desc = max(condition(:c:a_cost_center == :c:a_bal_cost_center or :this:showsubsid, :c:a_cc_desc, '')),
-			:c:a_bal_cost_center,
+			cc_code = max(condition(:c:a_fund == :c:a_bal_fund or :this:showsubsid, :c:a_fund, '')),
+			cc_desc = max(condition(:c:a_fund == :c:a_bal_fund or :this:showsubsid, :c:a_fund_desc, '')),
+			:c:a_bal_fund,
 			:c:a_restricted_type,
 			:c:a_is_posting,
 			abssum = sum(abs(:tt:a_amount)),
@@ -54,20 +54,20 @@ fund_balance "system/report"
 			oldbbal = isnull(sum(condition(:tt:a_transaction_type = 'B' and (:a:a_acct_type == 'E' or :a:a_acct_type == 'R' or :a:a_acct_type == 'Q'), condition(:this:invert, $0 - :tt:a_amount, :tt:a_amount), $0.00)), $0.00) +
 			       isnull(sum(condition(:tt:a_period < :this:ref_period and (:a:a_acct_type == 'E' or :a:a_acct_type == 'R' or :a:a_acct_type == 'Q'), :tt:a_amount, $0.00)), $0.00)
 		from
-			/apps/kardia/data/Kardia_DB/a_cost_center/rows c,
+			/apps/kardia/data/Kardia_DB/a_fund/rows c,
 			/apps/kardia/data/Kardia_DB/a_transaction/rows tt,
 			/apps/kardia/data/Kardia_DB/a_account/rows a
 		where
 			:tt:a_ledger_number = :this:ledger and
-			:tt:a_cost_center = :c:a_cost_center and
+			:tt:a_fund = :c:a_fund and
 			(:tt:a_period <= :this:end_period and :tt:a_period >= :period_qy:first_period) and
 			:c:a_ledger_number = :this:ledger and
 			:a:a_ledger_number = :this:ledger and
 			:a:a_account_code = :tt:a_account_code
 			" + condition(:this:unposted, "", "and :tt:a_posted = 1") + "
-			" + condition(:this:cc_class is null, "", "and :c:a_cost_center_class = :this:cc_class") + "
+			" + condition(:this:cc_class is null, "", "and :c:a_fund_class = :this:cc_class") + "
 		group by
-			" + condition(:this:showsubsid, ":c:a_cost_center", ":c:a_bal_cost_center") + "
+			" + condition(:this:showsubsid, ":c:a_fund", ":c:a_bal_fund") + "
 		having
 			:a_is_posting = 1 or
 			:cbal != $0 or
@@ -142,7 +142,7 @@ fund_balance "system/report"
 		fontsize=8;
 		header=yes;
 		bottomborder=0.05;
-		h_cc "report/table-cell" { value='Cost Ctr'; align=center; style=bold; }
+		h_cc "report/table-cell" { value='Fund'; align=center; style=bold; }
 		h_typ "report/table-cell" { value='Restr'; align=center; style=bold; }
 		h_desc "report/table-cell" { value='Description'; align=center; style=bold; }
 		h_bbal "report/table-cell" { value=runserver('Begin'); align=center; style=bold; }

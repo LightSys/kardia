@@ -1,0 +1,39 @@
+$Version=2$
+plugin_base_merge_crm "system/query"
+    {
+    partner_a "query/parameter" { type=string; style=strnull; }
+    partner_b "query/parameter" { type=string; style=strnull; }
+    partner_c "query/parameter" { type=string; style=strnull; }
+
+    sql = " select
+		p_partner_key = :p:p_partner_key,
+		p_data_source = 'CRM Data',
+		p_data_key = :p:p_partner_key,
+		p_data_desc = 
+		    (select condition(count(1) > 0, 'Collaboratee, ', '') from /apps/kardia/data/Kardia_DB/e_collaborator/rows c where :c:p_partner_key = :p:p_partner_key)
+		    + (select condition(count(count(1)) > 0, '' + count(count(1)) + ' CRM engagement tracks, ', '') from /apps/kardia/data/Kardia_DB/e_partner_engagement/rows pe where :pe:p_partner_key = :p:p_partner_key group by :e_engagement_id)
+		    + (select condition(count(1) > 0, '' + count(1) + ' CRM notes/contacts, ', '') from /apps/kardia/data/Kardia_DB/e_contact_history/rows ch where :ch:p_partner_key = :p:p_partner_key)
+		    + (select condition(count(1) > 0, '' + count(1) + ' CRM tags, ', '') from /apps/kardia/data/Kardia_DB/e_tag/rows t where :t:p_partner_key = :p:p_partner_key)
+		    + (select condition(count(1) > 0, '' + count(1) + ' CRM documents, ', '') from /apps/kardia/data/Kardia_DB/e_partner_document/rows pd where :pd:p_partner_key = :p:p_partner_key)
+		    - ', '
+		    ,
+		p_short_data_desc = 'CRM Data',
+		p_date_start = null,
+		p_date_end = null,
+		p_allow_copy = 0,
+		p_allow_multiple = 1,
+		p_allow_delete = 0,
+		p_default_copy = 0,
+		p_default_marriage_copy = 0,
+		p_default_marriage_move = 0,
+		p_default_multiple = 1,
+		p_allow_collate = 0,
+		p_comment = null
+	    from
+		identity /apps/kardia/data/Kardia_DB/p_partner/rows p
+	    where
+		(:p:p_partner_key = :parameters:partner_a or :p:p_partner_key = :parameters:partner_b or :p:p_partner_key = :parameters:partner_c)
+	    having
+		char_length(:p_data_desc) > 1
+	    ";
+    }

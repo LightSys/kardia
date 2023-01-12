@@ -31,7 +31,7 @@ alter table p_partner
 
 
 alter table p_partner
-	drop index p_cost_ctr_idx;
+	drop index p_fund_idx;
 
 
 alter table p_partner
@@ -207,6 +207,14 @@ alter table p_search_stage_criteria
 
 
 alter table p_nondup
+	drop primary key;
+
+
+alter table p_dup
+	drop primary key;
+
+
+alter table p_merge
 	drop primary key;
 
 
@@ -666,7 +674,7 @@ alter table a_analysis_attr_value
 	drop primary key;
 
 
-alter table a_cc_analysis_attr
+alter table a_fund_analysis_attr
 	drop primary key;
 
 
@@ -674,20 +682,20 @@ alter table a_acct_analysis_attr
 	drop primary key;
 
 
-alter table a_cost_center
+alter table a_fund
 	drop primary key;
 
 
-alter table a_cost_center
-	drop index a_cc_parent_idx;
+alter table a_fund
+	drop index a_fund_parent_idx;
 
 
-alter table a_cost_center
-	drop index a_cc_legacy_idx;
+alter table a_fund
+	drop index a_fund_legacy_idx;
 
 
-alter table a_cost_center
-	drop index a_cc_bal_idx;
+alter table a_fund
+	drop index a_fund_bal_idx;
 
 
 alter table a_account
@@ -714,7 +722,7 @@ alter table a_account_category
 	drop primary key;
 
 
-alter table a_cc_acct
+alter table a_fund_acct
 	drop primary key;
 
 
@@ -743,7 +751,7 @@ alter table a_transaction
 
 
 alter table a_transaction
-	drop index a_trx_cc_clustered_idx;
+	drop index a_trx_fund_clustered_idx;
 
 
 alter table a_transaction
@@ -759,7 +767,7 @@ alter table a_transaction_tmp
 
 
 alter table a_transaction_tmp
-	drop index a_trxt_cc_clustered_idx;
+	drop index a_trxt_fund_clustered_idx;
 
 
 alter table a_transaction_tmp
@@ -774,7 +782,7 @@ alter table a_account_class
 	drop primary key;
 
 
-alter table a_cost_center_class
+alter table a_fund_class
 	drop primary key;
 
 
@@ -782,11 +790,11 @@ alter table a_reporting_level
 	drop primary key;
 
 
-alter table a_cost_center_prefix
+alter table a_fund_prefix
 	drop primary key;
 
 
-alter table a_cc_staff
+alter table a_fund_staff
 	drop primary key;
 
 
@@ -831,7 +839,7 @@ alter table a_payroll_import
 
 
 alter table a_payroll_import
-	drop index a_payrolli_cc_idx;
+	drop index a_payrolli_fund_idx;
 
 
 alter table a_payroll_item
@@ -874,7 +882,7 @@ alter table a_salary_review
 	drop primary key;
 
 
-alter table a_cc_admin_fee
+alter table a_fund_admin_fee
 	drop primary key;
 
 
@@ -894,11 +902,11 @@ alter table a_admin_fee_type_item_tmp
 	drop primary key;
 
 
-alter table a_cc_receipting
+alter table a_fund_receipting
 	drop primary key;
 
 
-alter table a_cc_receipting_accts
+alter table a_fund_receipting_accts
 	drop primary key;
 
 
@@ -919,7 +927,7 @@ alter table a_subtrx_gift
 
 
 alter table a_subtrx_gift
-	drop index a_gifttrx_cc_clustered_idx;
+	drop index a_gifttrx_fund_clustered_idx;
 
 
 alter table a_subtrx_gift
@@ -951,7 +959,7 @@ alter table a_subtrx_gift_item
 
 
 alter table a_subtrx_gift_item
-	drop index a_gifttrxi_cc_clustered_idx;
+	drop index a_gifttrxi_fund_clustered_idx;
 
 
 alter table a_subtrx_gift_item
@@ -994,7 +1002,7 @@ alter table a_subtrx_gift_rcptcnt
 	drop primary key;
 
 
-alter table a_cc_auto_subscribe
+alter table a_fund_auto_subscribe
 	drop primary key;
 
 
@@ -1096,6 +1104,10 @@ alter table a_subtrx_deposit
 
 alter table a_subtrx_cashxfer
 	drop primary key;
+
+
+alter table a_subtrx_cashxfer
+	drop index a_subtrx_cxf_fund_clustered_idx;
 
 
 alter table i_eg_gift_import

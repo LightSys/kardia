@@ -1,0 +1,77 @@
+$Version=2$
+copy_gl_batch "system/query"
+    {
+    ledger "query/parameter" { type=string; }
+    oldbatch "query/parameter" { type=integer; }
+    newbatch "query/parameter" { type=integer; }
+    amounts "query/parameter" { type=string; default='C'; }
+
+    sql = " declare object info;
+
+	    -- determine starting journal #
+	    select
+		:info:startjnl = isnull(max(:a_journal_number),0) + 1
+	    from
+		/apps/kardia/data/Kardia_DB/a_transaction/rows
+	    where
+		:a_ledger_number = :parameters:ledger and
+		:a_batch_number = :parameters:newbatch
+	    ;
+
+	    -- determine date and period
+	    select
+		:info:bdate = :a_default_effective_date,
+		:info:bperiod = :a_period
+	    from
+		/apps/kardia/data/Kardia_DB/a_batch/rows
+	    where
+		:a_ledger_number = :parameters:ledger and
+		:a_batch_number = :parameters:newbatch
+	    ;
+   
+	    -- do the copy
+	    insert
+		/apps/kardia/data/Kardia_DB/a_transaction/rows
+	    select
+		:a_ledger_number,
+		a_batch_number = :parameters:newbatch,
+		a_journal_number = dense_rank(:a_journal_number) - 1 + :info:startjnl,
+		a_period = :info:bperiod,
+		a_effective_date = :info:bdate,
+		:a_transaction_type,
+		:a_fund,
+		:a_account_category,
+		:a_account_code,
+		a_amount = condition(:parameters:amounts = 'C', :a_amount, condition(:parameters:amounts = 'Z', $0, condition(:parameters:amounts = 'R', $0 - :a_amount, condition(:parameters:amounts = 'O', condition(:a_amount > $0, $0.01, condition(:a_amount < $0, $-0.01, $0)), $0)))),
+		a_posted=0,
+		a_modified=0,
+		a_corrected=0,
+		a_correcting=0,
+		a_reconciled=0,
+		a_postprocessed=0,
+		a_postprocess_type = 'XX',
+		:a_origin,
+		:a_recv_document_id,
+		:a_sent_document_id,
+		:p_ext_partner_id,
+		:p_int_partner_id,
+		:a_legacy_code,
+		a_receipt_sent = 0,
+		a_receipt_desired = 0,
+		a_first_gift = 0,
+		:a_gift_type,
+		a_goods_provided = $0,
+		:a_comment,
+		s_date_created = getdate(),
+		s_date_modified = getdate(),
+		s_created_by = user_name(),
+		s_modified_by = user_name()
+	    from
+		/apps/kardia/data/Kardia_DB/a_transaction/rows t
+	    where
+		:t:a_ledger_number = :parameters:ledger and
+		:t:a_batch_number = :parameters:oldbatch
+	    order by
+		:t:a_journal_number
+	    ";
+    }

@@ -49,7 +49,7 @@ profile_highlights "widget/component-decl"
 			    :h:e_highlight_strength,
 			    :h:e_highlight_certainty
 			from
-			    '/apps/kardia/modules/crm/highlights.qy?partner_key=000000&my_cclist=&my_role=&my_id=' h,
+			    '/apps/kardia/modules/crm/highlights.qy?partner_key=000000&my_fundlist=&my_role=&my_id=' h,
 			    object wildcard '/apps/kardia/modules/crm/plugin_crm_highlights_*.cmp' c
 			where
 			    charindex(rtrim(:h:e_highlight_type), :parameters:enabled_types) > 0 and
@@ -59,9 +59,9 @@ profile_highlights "widget/component-decl"
 		readahead=50;
 		replicasize=50;
 		autoquery=never;
-		baseobj = "/apps/kardia/modules/crm/highlights.qy?partner_key=000000&my_cclist=&my_role=&my_id=";
+		baseobj = "/apps/kardia/modules/crm/highlights.qy?partner_key=000000&my_fundlist=&my_role=&my_id=";
 
-		refresh_on_partner_change "widget/connector" { source=partner_osrc; event=EndQuery; action=ChangeSource; Source=runclient("/apps/kardia/modules/crm/highlights.qy?partner_key=" + :partner_osrc:p_partner_key + "&my_cclist=" + :collaborator_osrc:cclist + "&my_role=" + isnull(:partner_osrc:collab_role,'None') + "&my_id=" + isnull(:collaborator_osrc:p_partner_key, '')); }
+		refresh_on_partner_change "widget/connector" { source=partner_osrc; event=EndQuery; action=ChangeSource; Source=runclient("/apps/kardia/modules/crm/highlights.qy?partner_key=" + :partner_osrc:p_partner_key + "&my_fundlist=" + :collaborator_osrc:fundlist + "&my_role=" + isnull(:partner_osrc:collab_role,'None') + "&my_id=" + isnull(:collaborator_osrc:p_partner_key, '')); }
 
 		refresh_on_options_change "widget/connector" { source=iconbar; event=TypesChange; action=Refresh; }
 

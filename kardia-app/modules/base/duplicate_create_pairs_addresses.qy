@@ -1,0 +1,24 @@
+$Version=2$
+duplicate_create_pairs_addresses "system/query"
+    {
+    match_dist "query/parameter" { type=integer; default=3; }
+		//TODO: can we add a default match_dist=3? Can we add a minvalue=1?
+
+    sql = " select
+		p_partner_key_1 = condition(:l:p_partner_key > lag(:l:p_partner_key, :n:number * :parameters:match_dist), :l:p_partner_key, lag(:l:p_partner_key, :n:number * :parameters:match_dist)),
+		p_partner_key_2 = condition(:l:p_partner_key > lag(:l:p_partner_key, :n:number * :parameters:match_dist), lag(:l:p_partner_key, :n:number * :parameters:match_dist), :l:p_partner_key),
+		val = ltrim(isnull(:l:p_state_province,'') + isnull(:l:p_address_1,'') + isnull(:l:p_city,''))
+	    from
+		identity /apps/kardia/data/Kardia_DB/p_location/rows l,
+		/apps/kardia/modules/base/123.csv/rows n
+	    where
+		:n:number <= :parameters:match_dist and
+		(char_length(rtrim(:l:p_state_province)) > 1 or char_length(rtrim(:l:p_address_1)) > 1 or char_length(rtrim(:l:p_city)) > 1)
+	    order by
+		ltrim(isnull(:l:p_state_province,'') + isnull(:l:p_address_1,'') + isnull(:l:p_city,''))
+	    having
+		:p_partner_key_1 is not null and
+		:p_partner_key_2 is not null and
+		:p_partner_key_1 != :p_partner_key_2
+	    ";
+    }

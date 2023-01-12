@@ -1,7 +1,7 @@
 $Version=2$
 cc_admin_fee "widget/component-decl"
     {
-    // Component for setting up admin fees on a per-cost-center basis.  This can also
+    // Component for setting up admin fees on a per-fund basis.  This can also
     // largely be done from modules/gl/coamaint.cmp.
     width=780; height=580;
     ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
@@ -43,7 +43,7 @@ cc_admin_fee "widget/component-decl"
 		    //event_condition=runclient(not (char_length(:searcheb:content) == 2));
 		    target=searchlistosrc;
 		    action=QueryText;
-		    field_list="a_cost_center*,*a_cc_desc*,a_cost_center_class";
+		    field_list="a_fund*,*a_fund_desc*,a_fund_class";
 		    query=runclient(:searcheb:content);
 		    cx__case_insensitive = 1;
 		    }
@@ -58,10 +58,10 @@ cc_admin_fee "widget/component-decl"
 		    {
 		    sql = runserver("
 			select
-				:c:a_cost_center,
-				:c:a_cc_desc,
-				cc_text = :c:a_cost_center + ' (' + :c:a_cc_desc + ')',
-				:c:a_cost_center_class,
+				:c:a_fund,
+				:c:a_fund_desc,
+				cc_text = :c:a_fund + ' (' + :c:a_fund_desc + ')',
+				:c:a_fund_class,
 				:c:a_ledger_number,
 				:ad:a_admin_fee_type,
 				:ad:a_default_subtype,
@@ -73,21 +73,21 @@ cc_admin_fee "widget/component-decl"
 				pct = round(isnull(:ad:a_percentage, :at:a_default_percentage) * 100.0 + 0.01, 1),
 				:at:a_admin_fee_type_desc
 			from
-				IDENTITY /apps/kardia/data/Kardia_DB/a_cost_center/rows c,
-				/apps/kardia/data/Kardia_DB/a_cc_admin_fee/rows ad,
+				IDENTITY /apps/kardia/data/Kardia_DB/a_fund/rows c,
+				/apps/kardia/data/Kardia_DB/a_fund_admin_fee/rows ad,
 				/apps/kardia/data/Kardia_DB/a_admin_fee_type/rows at
 			where 
 				:c:a_ledger_number = " + quote(:this:ledger) + " and
 				:ad:a_ledger_number =* :c:a_ledger_number and
-				:ad:a_cost_center =* :c:a_cost_center and
+				:ad:a_fund =* :c:a_fund and
 				:at:a_ledger_number = :ad:a_ledger_number and
 				:at:a_admin_fee_type = :ad:a_admin_fee_type and
 				:at:a_admin_fee_subtype = :ad:a_default_subtype
 			order by
-				:c:a_cost_center
+				:c:a_fund
 			");
 
-		    baseobj = "/apps/kardia/data/Kardia_DB/a_cost_center/rows";
+		    baseobj = "/apps/kardia/data/Kardia_DB/a_fund/rows";
 		    replicasize=100;
 		    readahead=100;
 		    autoquery=onfirstreveal;
@@ -96,8 +96,8 @@ cc_admin_fee "widget/component-decl"
 			{
 			height=518; width=248; x=0; y=0;
 
-			t_cc "widget/table-column" { title="Cost Ctr"; fieldname="a_cost_center"; width=75; }
-			t_desc "widget/table-column" { title="Description"; fieldname="a_cc_desc"; width=130; }
+			t_cc "widget/table-column" { title="Fund"; fieldname="a_fund"; width=75; }
+			t_desc "widget/table-column" { title="Description"; fieldname="a_fund_desc"; width=130; }
 			t_fee "widget/table-column" { title="Type"; fieldname="type_txt"; width=45; }
 			t_pct "widget/table-column" { title="%"; fieldname="pct"; width=40; align=right; }
 			}
@@ -113,7 +113,7 @@ cc_admin_fee "widget/component-decl"
 		{
 		path = "/apps/kardia/modules/base/section_label.cmp";
 		height = 20;
-		text = runclient("Admin Fee Settings" + condition(:searchlistosrc:a_cost_center is null, "", " for " + :searchlistosrc:a_cost_center + " - " + :searchlistosrc:a_cc_desc) + ":");
+		text = runclient("Admin Fee Settings" + condition(:searchlistosrc:a_fund is null, "", " for " + :searchlistosrc:a_fund + " - " + :searchlistosrc:a_fund_desc) + ":");
 		}
 
 	    view_form "widget/form"
@@ -121,9 +121,9 @@ cc_admin_fee "widget/component-decl"
 		objectsource = searchlistosrc;
 		
 		f_ledger "widget/component" { width=500; height=16; path="/sys/cmp/smart_field.cmp"; field='a_ledger_number'; ctl_type=label; text='Ledger:'; label_width=120; }
-		f_costctr "widget/component" { width=500; height=16; path="/sys/cmp/smart_field.cmp"; field='cc_text'; ctl_type=label; text='Cost Center:'; label_width=120; }
-		//f_costctr "widget/component" { width=500; height=16; path="/sys/cmp/smart_field.cmp"; field='a_cost_center'; ctl_type=label; text='Cost Center:'; label_width=120; }
-		//f_desc "widget/component" { width=500; height=16; path="/sys/cmp/smart_field.cmp"; field='a_cc_desc'; ctl_type=label; text='Description:'; label_width=120; }
+		f_fund "widget/component" { width=500; height=16; path="/sys/cmp/smart_field.cmp"; field='cc_text'; ctl_type=label; text='Fund:'; label_width=120; }
+		//f_fund "widget/component" { width=500; height=16; path="/sys/cmp/smart_field.cmp"; field='a_fund'; ctl_type=label; text='Fund:'; label_width=120; }
+		//f_desc "widget/component" { width=500; height=16; path="/sys/cmp/smart_field.cmp"; field='a_fund_desc'; ctl_type=label; text='Description:'; label_width=120; }
 		f_type "widget/component" { width=500; height=16; path="/sys/cmp/smart_field.cmp"; field='admin_txt'; ctl_type=label; text='Admin Type:'; label_width=120; }
 		//f_type "widget/component" { width=500; height=16; path="/sys/cmp/smart_field.cmp"; field='type_txt'; ctl_type=label; text='Admin Type:'; label_width=120; }
 		//f_admindesc "widget/component" { width=500; height=16; path="/sys/cmp/smart_field.cmp"; field='a_admin_fee_type_desc'; ctl_type=label; text='Description:'; label_width=120; }
@@ -137,7 +137,7 @@ cc_admin_fee "widget/component-decl"
 		{
 		path = "/apps/kardia/modules/base/section_label.cmp";
 		height = 20;
-		text = runclient("Edit Admin Fee Settings" + condition(:searchlistosrc:a_cost_center is null, "", " for " + :searchlistosrc:a_cost_center + " - " + :searchlistosrc:a_cc_desc) + ":");
+		text = runclient("Edit Admin Fee Settings" + condition(:searchlistosrc:a_fund is null, "", " for " + :searchlistosrc:a_fund + " - " + :searchlistosrc:a_fund_desc) + ":");
 		}
 
 	    editcmp "widget/component"

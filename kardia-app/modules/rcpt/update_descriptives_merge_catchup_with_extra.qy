@@ -20,10 +20,10 @@ update_descriptives_merge_catchup_with_extra "system/query"
 		:a_merged_id = isnull(:dh2:a_merged_id, :dh2:a_hist_id),
                 :a_is_extra = 2
 	    where
-		(:parameters:fund is null or :parameters:fund = :dh2:a_cost_center) and
+		(:parameters:fund is null or :parameters:fund = :dh2:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :dh2:p_donor_partner_key) and
 		:dh2:a_ledger_number = :dh1:a_ledger_number and
-		:dh2:a_cost_center = :dh1:a_cost_center and
+		:dh2:a_fund = :dh1:a_fund and
 		:dh2:p_donor_partner_key = :dh1:p_donor_partner_key and
 		:dh2:a_amount < :dh1:a_amount and -- catchup more than regular
 		:dh2:a_act_average_interval < isnull(:dh1:a_act_average_interval, 100) and -- regular is more often than catchup
@@ -40,7 +40,7 @@ update_descriptives_merge_catchup_with_extra "system/query"
                 --      how much is a part of regular giving
                 (:dh1:a_total + :dh2:a_total - :dh2:a_amount) / round(datediff(day, condition(:dh1:a_first_gift < :dh2:a_first_gift, :dh1:a_first_gift, :dh2:a_first_gift), condition(:dh1:a_last_gift > :dh2:a_last_gift, :dh1:a_last_gift, :dh2:a_last_gift)) / 30.5) > 0.85 * (condition(:dh1:a_count > :dh2:a_count, isnull(:dh1:a_act_average_amount, :dh1:a_amount), isnull(:dh2:a_act_average_amount, :dh2:a_amount))) and
                 (:dh1:a_total + :dh2:a_total - :dh2:a_amount) / round(datediff(day, condition(:dh1:a_first_gift < :dh2:a_first_gift, :dh1:a_first_gift, :dh2:a_first_gift), condition(:dh1:a_last_gift > :dh2:a_last_gift, :dh1:a_last_gift, :dh2:a_last_gift)) / 30.5) < 3.00 * (condition(:dh1:a_count > :dh2:a_count, isnull(:dh1:a_act_average_amount, :dh1:a_amount), isnull(:dh2:a_act_average_amount, :dh2:a_amount))) and
-                (select count(1) from collection tmp_gift_items where :donor = :dh1:p_donor_partner_key and :ledger = :dh1:a_ledger_number and :fund = :dh1:a_cost_center and :giftdate > dateadd(day, convert(integer, round(-0.5 * 30.5 * :dh2:a_act_average_interval)), :dh1:a_first_gift) and :giftdate < dateadd(day, convert(integer, round(.5 * 30.5 * :dh2:a_act_average_interval)), :dh1:a_first_gift)) = 1 --and -- only 1 gift within +/- half an interval
+                (select count(1) from collection tmp_gift_items where :donor = :dh1:p_donor_partner_key and :ledger = :dh1:a_ledger_number and :fund = :dh1:a_fund and :giftdate > dateadd(day, convert(integer, round(-0.5 * 30.5 * :dh2:a_act_average_interval)), :dh1:a_first_gift) and :giftdate < dateadd(day, convert(integer, round(.5 * 30.5 * :dh2:a_act_average_interval)), :dh1:a_first_gift)) = 1 --and -- only 1 gift within +/- half an interval
 		--((:dh1:a_amount / :dh2:a_amount) != round(:dh1:a_amount / :dh2:a_amount, 0) or :dh1:a_hist_id != 1) -- first history value could be a pay-in-advance gift
 	    ;
 
@@ -49,7 +49,7 @@ update_descriptives_merge_catchup_with_extra "system/query"
                 collection tmp_intermediate_vals
             select
                 ledger = :dh1:a_ledger_number,
-                fund = :dh1:a_cost_center,
+                fund = :dh1:a_fund,
                 donor = :dh1:p_donor_partner_key,
                 merged_id = :dh1:a_hist_id,
                 regular_id = :dh2:a_hist_id,
@@ -68,10 +68,10 @@ update_descriptives_merge_catchup_with_extra "system/query"
                 collection a_descriptives_hist dh1,
                 collection a_descriptives_hist dh2
             where
-                (:parameters:fund is null or :parameters:fund = :dh2:a_cost_center) and
+                (:parameters:fund is null or :parameters:fund = :dh2:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :dh2:p_donor_partner_key) and
 		:dh2:a_ledger_number = :dh1:a_ledger_number and
-		:dh2:a_cost_center = :dh1:a_cost_center and
+		:dh2:a_fund = :dh1:a_fund and
 		:dh2:p_donor_partner_key = :dh1:p_donor_partner_key and
 		:dh1:a_merged_id = :dh2:a_hist_id
             ;
@@ -113,14 +113,14 @@ update_descriptives_merge_catchup_with_extra "system/query"
                                 (datediff(day, :dh2:a_first_gift, :dh2:a_last_gift) / 30.5) / (:dh2:a_total / :dh2:a_amount - 1)
                                 )
 	    where
-		(:parameters:fund is null or :parameters:fund = :dh2:a_cost_center) and
+		(:parameters:fund is null or :parameters:fund = :dh2:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :dh2:p_donor_partner_key) and
 		:dh2:a_ledger_number = :dh1:a_ledger_number and
-		:dh2:a_cost_center = :dh1:a_cost_center and
+		:dh2:a_fund = :dh1:a_fund and
 		:dh2:p_donor_partner_key = :dh1:p_donor_partner_key and
 		:dh1:a_merged_id = :dh2:a_hist_id and 
                 :t:ledger = :dh1:a_ledger_number and
-                :t:fund = :dh1:a_cost_center and
+                :t:fund = :dh1:a_fund and
                 :t:donor = :dh1:p_donor_partner_key and
                 :t:merged_id = :dh1:a_hist_id and
                 :t:regular_id = :dh2:a_hist_id
@@ -136,10 +136,10 @@ update_descriptives_merge_catchup_with_extra "system/query"
                 :dh1:a_merged_id = null,
                 :dh1:a_is_extra = 1
 	    where
-		(:parameters:fund is null or :parameters:fund = :dh1:a_cost_center) and
+		(:parameters:fund is null or :parameters:fund = :dh1:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :dh1:p_donor_partner_key) and
                 :t:ledger = :dh1:a_ledger_number and
-                :t:fund = :dh1:a_cost_center and
+                :t:fund = :dh1:a_fund and
                 :t:donor = :dh1:p_donor_partner_key and
                 :t:merged_id = :dh1:a_hist_id
 	    ;
@@ -149,7 +149,7 @@ update_descriptives_merge_catchup_with_extra "system/query"
 	    delete
 		collection a_descriptives_hist dh1
 	    where
-		(:parameters:fund is null or :parameters:fund = :dh1:a_cost_center) and
+		(:parameters:fund is null or :parameters:fund = :dh1:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :dh1:p_donor_partner_key) and
 		:dh1:a_is_extra and
                 :dh1:a_amount = 0
