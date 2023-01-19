@@ -5,9 +5,13 @@ csapi "application/http"
     Authorization "http/parameter" { type=string; source=none; usage=header; default=runserver("Bearer " + (select :s_scanner_auth_token from /apps/kardia/data/Kardia_DB/s_document_scanner/rows where :s_scanner_id = :parameters:scannerid) ); }
     Accept "http/parameter" { type=string; source=none; usage=header; default=runserver("application/json"); }
 
-    // Other parameters
+    // Path parameters
     scannerid "http/parameter" { type=integer; source=path; usage=none; pathpart=1; }
     command "http/parameter" { type=string; source=path; usage=none; pathpart=2; }
+    connection "http/parameter" { type=integer; source=path; usage=none; pathpart=3; }
+
+    // Profile: only sent in a POST request body (connect command).
+    profile "http/parameter" { type=string; source=none; usage=post; default=runserver( (select :s_scanner_id_on_server from /apps/kardia/data/Kardia_DB/s_document_scanner/rows where :s_scanner_id = :parameters:scannerid) ); }
 
     // Connection information
     server = runserver( (select :s_scanner_host from /apps/kardia/data/Kardia_DB/s_document_scanner/rows where :s_scanner_id = :parameters:scannerid) );
@@ -15,20 +19,33 @@ csapi "application/http"
     path = runserver(
 		    condition(:parameters:command == 'connect',
 			    // Connect: GET /connect/{profilename}
-			    "/connect/" + (select :s_scanner_id_on_server from /apps/kardia/data/Kardia_DB/s_document_scanner/rows where :s_scanner_id = :parameters:scannerid),
+			    "/connections",
 			    condition(:parameters:command == 'disconnect',
 				    // Disconnect: GET /disconnect
-				    "/disconnect",
+				    "/connections/" + :parameters:connection,
 				    condition(:parameters:command == 'scan',
 					    // Scan: GET /check_data
-					    "/check_data",
-					    "/disconnect" // default action
+					    "/connections/" + :parameters:connection + "/check",
+					    // Default action is to disconnect
+					    "/connections/" + :parameters:connection 
 				    )
 			    )
 		    )
 	    );
     protocol = "http";
-    method = GET;
+    request_content_type="application/json";
+    method = runserver(
+		condition(:parameters:command == 'connect',
+			'POST',
+			condition(:parameters:command == 'disconnect',
+				'DELETE',
+				condition(:parameters:command == 'scan',
+					'GET',
+					'DELETE'
+				)
+			)
+		)
+	    );
     allowsubdirs = 0;
     cache_max_ttl = 86400000;
     cache_min_ttl = 3600000;

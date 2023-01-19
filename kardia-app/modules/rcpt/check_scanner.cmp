@@ -255,7 +255,7 @@ check_scanner "widget/component-decl"
 		select
 		    :scaninfo:connected = :connected
 		from
-		    object expression ('/apps/kardia/modules/' + :scaninfo:module + '/' + :scaninfo:api + '/' + :scaninfo:got_scanner + '/disconnect')
+		    object expression ('/apps/kardia/modules/' + :scaninfo:module + '/' + :scaninfo:api + '/' + :scaninfo:got_scanner + '/disconnect/' + :scaninfo:conn_id)
 		where
 		    :scaninfo:got_scanner is not null
 		;
@@ -374,7 +374,8 @@ check_scanner "widget/component-decl"
 
 		-- Call the connect operation on the scanner
 		select
-		    :scaninfo:connected = isnull(:connected, 0)
+		    :scaninfo:connected = isnull(:connected, 0),
+		    :scaninfo:conn_id = isnull(:id, 0)
 		from
 		    object expression ('/apps/kardia/modules/' + :scaninfo:module + '/' + :scaninfo:api + '/' + :scaninfo:got_scanner + '/connect')
 		where
@@ -459,7 +460,7 @@ check_scanner "widget/component-decl"
 		    :scaninfo:image = :image,
 		    :scaninfo:image_content_type = :image_content_type
 		from
-		    object expression ('/apps/kardia/modules/' + :scaninfo:module + '/' + :scaninfo:api + '/' + :scaninfo:got_scanner + '/scan')
+		    object expression ('/apps/kardia/modules/' + :scaninfo:module + '/' + :scaninfo:api + '/' + :scaninfo:got_scanner + '/scan/' + :scaninfo:conn_id)
 		;
 		select
 		    :scaninfo:hash = hmac('sha256', '' + lztrim(:scaninfo:account_number) + '|' + :scaninfo:routing_number, :scaninfo:hashkey)
