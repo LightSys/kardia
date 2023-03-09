@@ -512,6 +512,82 @@ api_designation "system/querytree"
 			}
 		    }
 		}
+
+        FundFundingTargets "system/querytree"
+            {
+            text = "FundingTargets";
+
+            fundfundingtarget_list "system/querytree"
+                {
+                sql = " select
+                            *
+                        from
+                            identity /apps/kardia/data/Kardia_DB/a_funding_target/rows ft
+                        where
+                            :ft:a_fund = :fundlist:fund and
+                            :ft:a_ledger_number = :fundlist:ledger
+                        order by
+                            :ft:a_start_date asc
+                        ";
+                }
+            }
+
+        FundAdminFees "system/querytree"
+            {
+            text = "AdminFees";
+
+            adminfees_list "system/querytree"
+                {
+                sql = " select
+                            *
+                        from
+                            identity /apps/kardia/data/Kardia_DB/a_fund_admin_fee/rows faf
+                        where
+                            :faf:a_fund = :fundlist:fund and
+                            :faf:a_ledger_number = :fundlist:ledger
+                        ";
+                }
+            }
+
+        FundReceipting "system/querytree"
+            {
+            text = "Receipting";
+
+            receiptinglist "system/querytree"
+                {
+                sql = " select
+                            *
+                        from
+                            identity /apps/kardia/data/Kardia_DB/a_fund_receipting/rows fr
+                        order by
+                            :fr:a_fund asc
+                        where
+                            :fr:a_fund = :fundlist:fund and
+                            :fr:a_ledger_number = :fundlist:ledger
+                        ";
+                }
+            }
+
+        FundReceiptingAccounts "system/querytree"
+            {
+            text = "ReceiptingAccounts";
+
+            receiptingaccounts_list "system/querytree"
+                {
+                sql = " select
+                            *
+                        from
+                            identity /apps/kardia/data/Kardia_DB/a_fund_receipting_accts/rows fra
+                        where
+                            :fra:a_fund = :fundlist:fund and
+                            :fra:a_ledger_number = :fundlist:ledger
+                        order by
+                            :fra:a_account_code asc
+                        ";
+                }
+            }
+
+
 	    }
 	}
 
@@ -534,4 +610,68 @@ api_designation "system/querytree"
 		    ";
 	    }
 	}
+
+    FundingTargets "system/querytree"
+        {
+        text = "FundingTargets";
+
+        fundingtargets_list "system/querytree"
+            {
+            sql = " select
+                        *
+                    from
+                        identity /apps/kardia/data/Kardia_DB/a_funding_target/rows ft
+                    order by
+                        :ft:a_fund, :ft:a_start_date asc
+                    ";
+            }
+        }
+
+    AdminFees "system/querytree"
+        {
+        text = "AdminFees";
+
+        adminfees_list "system/querytree"
+            {
+            sql = " select
+                        *
+                    from
+                        identity /apps/kardia/data/Kardia_DB/a_fund_admin_fee/rows faf
+                    order by
+                        :faf:a_fund asc
+                    ";
+            }
+        }
+
+    Receiptings "system/querytree"
+        {
+        text = "Receiptings";
+
+        receiptinglist "system/querytree"
+            {
+            sql = " select
+                        *
+                    from
+                        identity /apps/kardia/data/Kardia_DB/a_fund_receipting/rows fr
+                    order by
+                        :fr:a_fund asc
+                    ";
+            }
+        }
+
+    ReceiptingAccounts "system/querytree"
+        {
+        text = "ReceiptingAccounts";
+
+        receiptingaccounts_list "system/querytree"
+            {
+            sql = " select
+                        *
+                    from
+                        identity /apps/kardia/data/Kardia_DB/a_fund_receipting_accts/rows fra
+                    order by
+                        :fra:a_fund, :fra:a_account_code asc
+                    ";
+            }
+        }
     }
