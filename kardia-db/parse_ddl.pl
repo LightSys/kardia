@@ -1398,8 +1398,8 @@ sub print_table() {
 		$cols =~ s/[^,]* as ([a-zA-Z_][a-zA-Z0-9_]*)/$1/g;
 		$cols .= ",s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control";
 		print SQL_C "insert into $table ($cols) select $glob_data{$table}{$dataindex}";
-		print SQL_C ", '3-14-08' as s_date_created, 'IMPORT' as s_created_by,";
-		print SQL_C "'3-14-08' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control$cmd_terminator";
+		print SQL_C ", '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,";
+		print SQL_C "'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control$cmd_terminator";
 	    }
 	}
     }
