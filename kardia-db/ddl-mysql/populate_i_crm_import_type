@@ -1,2 +1,37 @@
+$Version=2$
+myquery "system/query"
+    {
+    id "query/parameter" { type=integer; }
+
+    sql = " INSERT INTO `Kardia_DB`.`i_crm_import_type`
+            select
+                 `i_crm_import_type_id`="2",
+                 `i_crm_import_type_desc`="email", 
+                 `i_crm_import_type_subsys`="LSAP", 
+                 `i_crm_import_type_path`='c:\\', 
+                 `i_crm_field_pk`="", 
+                 `i_crm_field_surname`='Rinehart', 
+                 `i_crm_field_given_name`='Randall", 
+                 `i_crm_field_middle_name`='Stoddard', 
+                 `i_crm_field_date`, 
+                 `i_crm_field_org_name`='LeTourneau University', 
+                 `i_crm_field_phone`='903-503-1531', 
+                 `i_crm_field_email`='randallrinehart@letu.edu', 
+                 `i_crm_field_addr1`='2100 S. Mobberly Ave', 
+                 `i_crm_field_city`='Longview', 
+                 `i_crm_field_stateprov`='TX',
+                 `i_crm_field_postal_code`='75602', 
+                 `i_crm_field_country`='USA', 
+                 `s_date_created`='2023-03-14 10:48:00', 
+                 `s_created_by`='rrinehart', 
+                 `s_date_modified`='2023-03-14 10:48:00', 
+                 `s_modified_by`= 'rrinehart'
+            ";
+    }
+/* INSERT INTO /data/table.csv/rows
+    SELECT first_name="John", last_name="Doe", phone_number="555-1212"
+/*
+/*
 use Kardia_DB;
 INSERT INTO `Kardia_DB`.`i_crm_import_type` (`i_crm_import_type_id`, `i_crm_import_type_desc`, `i_crm_import_type_subsys`, `i_crm_import_type_path`, `i_crm_field_pk`, `i_crm_field_surname`, `i_crm_field_given_name`, `i_crm_field_middle_name`, `i_crm_field_date`, `i_crm_field_org_name`, `i_crm_field_phone`, `i_crm_field_email`, `i_crm_field_addr1`, `i_crm_field_city`, `i_crm_field_stateprov`, `i_crm_field_postal_code`, `i_crm_field_country`, `s_date_created`, `s_created_by`, `s_date_modified`, `s_modified_by`) VALUES ('1', 'email', 'LSAP', 'c:\\', '', 'Rinehart', 'Randall', 'Stoddard', '', 'LeTourneau University', '903-503-1531', 'randallrinehart@letu.edu', '2100 S. Mobberly Ave', 'Longview', 'TX', '75602', 'USA', '2023-03-14 10:48:00', 'rrinehart', '2023-03-14 10:48:00', 'rrinehart');
+*/
