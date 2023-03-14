@@ -139,27 +139,27 @@ task_cell_svg "system/report"
 		    :t1:t_task_desc,
 		    :t1:t_task_hours,
 		    :p:t_project_color,
-		    seq = count(:t2:t_task_id)
+		    seq = dense_rank(:t1:t_task_id) - 1
+		    --seq = count(:t2:t_task_id)
 		from
 		    /apps/kardia/data/Kardia_DB/t_task/rows t1,
-		    /apps/kardia/data/Kardia_DB/t_project/rows p,
-		    /apps/kardia/data/Kardia_DB/t_task/rows t2
+		    /apps/kardia/data/Kardia_DB/t_project/rows p --,
+		    --/apps/kardia/data/Kardia_DB/t_task/rows t2
 		where
 		    :p:t_project_id = :t1:t_project_id and
 		    (:t1:t_project_id = :this:project or :this:project = 0) and
-		    (:t2:t_project_id = :this:project or :this:project = 0) and
+		    --(:t2:t_project_id = :this:project or :this:project = 0) and
 		    :t1:t_sprint_id = :block_qy:sprint and
-		    :t1:t_task_state = :this:state and
-		    --:t2:t_project_id =* :t1:t_project_id and
-		    :t2:t_sprint_id =* :t1:t_sprint_id and
-		    :t2:t_task_state =* :t1:t_task_state and
-		    :t2:t_task_id <* :t1:t_task_id
+		    :t1:t_task_state = :this:state --and
+		    --:t2:t_sprint_id =* :t1:t_sprint_id and
+		    --:t2:t_task_state =* :t1:t_task_state and
+		    --:t2:t_task_id <* :t1:t_task_id
 		order by
 		    :t1:t_task_id asc
-		group by
-		    :t1:t_task_id
-		having
-		    :t_task_id is not null
+		--group by
+		--    :t1:t_task_id
+		--having
+		--    :t_task_id is not null
 		";
 	}
 
