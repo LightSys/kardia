@@ -4,7 +4,7 @@ myquery "system/query"
 	sql = " SELECT
 		*
 		FROM
-		/apps/kardia/data/Kardia_DB/i_crm_import_type/rows
+		/apps/kardia/modules/ex_limesurvey/Kardia_DB_test/i_crm_import_type/rows
 		;
 	";
 }
