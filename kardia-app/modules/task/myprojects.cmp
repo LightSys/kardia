@@ -27,6 +27,24 @@ myprojects "widget/component-decl"
 	Value=runclient(:imgcnt:value + 1);
 	}
 
+    // Menu
+    menu_overlay "widget/component"
+	{
+	x=800; y=0; width=200; height=98;
+	path="menu.cmp";
+
+	onItemSelect_1 "widget/connector" { event=ItemSelected; target=menu_overlay; action=Close; }
+	onItemSelect_Logout "widget/connector"
+	    {
+	    event=ItemSelected;
+	    event_condition=runclient(:Item == 'Logout');
+	    target=page;
+	    action=LoadPage;
+	    Source="/apps/kardia/modules/task/logout.app";
+	    LinkApp=1;
+	    }
+	}
+
     // Handles sprint-project connections
     new_sp_osrc "widget/osrc"
 	{
@@ -242,7 +260,7 @@ myprojects "widget/component-decl"
 
 		chart_vbox "widget/vbox"
 		    {
-		    width=150;
+		    width=144;
 		    height=60;
 		    spacing=0;
 		    y=8;
@@ -265,7 +283,7 @@ myprojects "widget/component-decl"
 			sprint_chart "widget/image"
 			    {
 			    x=0; y=0;
-			    width=150;
+			    width=144;
 			    height=60;
 			    fl_width=100;
 			    fl_height=10;
@@ -293,7 +311,7 @@ myprojects "widget/component-decl"
 
 		proj_pane "widget/pane"
 		    {
-		    width=180;
+		    width=160;
 		    height=60;
 		    y=8;
 		    fl_width=100;
@@ -314,12 +332,12 @@ myprojects "widget/component-decl"
 			    one_state "widget/image"
 				{
 				fl_width=100;
-				width=runserver(180 / :cnt_repeat:cnt);
+				width=runserver(160 / :cnt_repeat:cnt);
 				//height=runserver((180 / :cnt_repeat:cnt) * 5 / 8);
 				height=40;
 				//y=runserver((60 - ((180 / :cnt_repeat:cnt) * 5 / 8)) / 2);
 				y=10;
-				x=runserver(:proj_repeat:cx__rowid * (180 / :cnt_repeat:cnt));
+				x=runserver(:proj_repeat:cx__rowid * (160 / :cnt_repeat:cnt));
 				source=runclient(isnull("/apps/kardia/modules/task/task_cell_svg.rpt?now=" + :project_osrc:rev + "&c=" + :project_osrc:color + "&h=" + :project_osrc:hours + "&project=" + condition(:dashboard:value = 0, :project_osrc:t_project_id, 0) + "&sprint=" + :sprints_osrc:t_sprint_id + "&state=" + runserver(:proj_repeat:t_task_state_id) + "&image_width=" + :one_state:width + "&image_height=" + :one_state:height, "/sys/images/trans_1.gif"));
 				}
 			    }
@@ -330,9 +348,9 @@ myprojects "widget/component-decl"
 	    action_bar_tab_hbox "widget/hbox"
 		{
 		condition=runserver(:this:dashboard = 0);
-		x=580; y=0;
-		width=410; height=76;
-		spacing=6;
+		x=556; y=0;
+		width=436; height=76;
+		spacing=2;
 		align=right;
 
 		action_bar_buttons "widget/repeat"
@@ -349,7 +367,7 @@ myprojects "widget/component-decl"
 			{
 			fl_width=0;
 			fl_height=0;
-			width=64;
+			width=60;
 			active=runclient(condition(:projects_tab:selected_index == runserver(:action_bar_buttons:cx__rowid + 1), 1, 0));
 			path="/apps/kardia/lib/button_tab.cmp";
 			text=runserver(:action_bar_buttons:entry);
@@ -368,7 +386,7 @@ myprojects "widget/component-decl"
 		save_pane "widget/pane"
 		    {
 		    style=flat;
-		    width=64;
+		    width=60;
 		    height=76;
 		    background=runclient(condition(:project_osrc:is_client_savable, "/apps/kardia/images/bg/lsblue_gradient.png", null));
 		    border_radius=0;
@@ -380,7 +398,7 @@ myprojects "widget/component-decl"
 			image_width=24;
 			image_height=24;
 			x=0; y=0;
-			width=64;
+			width=60;
 			height=70;
 			disable_color="#707070";
 			//background="/apps/kardia/images/bg/lsblue_gradient.png";
@@ -398,7 +416,7 @@ myprojects "widget/component-decl"
 		cancel_pane "widget/pane"
 		    {
 		    style=flat;
-		    width=64;
+		    width=60;
 		    height=76;
 		    background=runclient(condition(:project_osrc:is_client_discardable, "/apps/kardia/images/bg/lsblue_gradient.png", null));
 		    border_radius=0;
@@ -410,7 +428,7 @@ myprojects "widget/component-decl"
 			image_width=24;
 			image_height=24;
 			x=0; y=0;
-			width=64;
+			width=60;
 			height=70;
 			disable_color="#707070";
 			//background="/apps/kardia/images/bg/lsblue_gradient.png";
@@ -422,6 +440,44 @@ myprojects "widget/component-decl"
 			enabled = runclient(:project_osrc:is_client_discardable);
 
 			on_cancel "widget/connector" { event=Click; target=project_osrc; action=DiscardClients; }
+			}
+		    }
+
+		menu_pane "widget/pane"
+		    {
+		    style=flat;
+		    width=60;
+		    height=76;
+		    //background=runclient(condition(:project_osrc:is_client_discardable, "/apps/kardia/images/bg/lsblue_gradient.png", null));
+		    background=null;
+		    border_radius=0;
+
+		    menu_btn "widget/textbutton"
+			{
+			fl_width=0;
+			fl_height=0;
+			image_width=24;
+			image_height=24;
+			x=0; y=0;
+			width=60;
+			height=70;
+			disable_color="#707070";
+			//background="/apps/kardia/images/bg/lsblue_gradient.png";
+			background=runclient(condition(:project_osrc:is_client_discardable, "/apps/kardia/images/bg/lsblue_gradient.png", null));
+			border_style=none;
+			image = "/apps/kardia/images/icons/ionicons-hamburger-w.svg";
+			image_position=top;
+			text = "Menu";
+			//enabled = runclient(:project_osrc:is_client_discardable);
+
+			on_menu "widget/connector"
+			    {
+			    event=Click; 
+			    target=menu_overlay;
+			    action=Open;
+			    open_x=runclient(:main_vbox:width - 198);
+			    open_y=76;
+			    }
 			}
 		    }
 		}

@@ -1,0 +1,72 @@
+$Version=2$
+menu "widget/component-decl"
+    {
+    width=200;
+    height=98;
+    widget_template = "/apps/kardia/modules/task/tasks.tpl";
+
+    // Triggered when a menu item is selected
+    ItemSelected "widget/component-decl-event" { }
+
+    // Opens / displays the menu
+    Open "widget/component-decl-action" { }
+    onOpen "widget/connector"
+	{
+	event=Open;
+	target=menu_window;
+	action=Popup;
+	X=runclient(:open_x);
+	Y=runclient(:open_y);
+	}
+
+    // Closes / hides the menu
+    Close "widget/component-decl-action" { }
+    onClose "widget/connector"
+	{
+	event=Close;
+	target=menu_window;
+	action=Close;
+	}
+
+    menu_window "widget/childwindow"
+	{
+	x=0; y=0; width=200; height=98;
+	style=dialog;
+	titlebar=no;
+	bgcolor="#181818";
+	visible=no;
+	toplevel=yes;
+	border_style=none;
+	background=null;
+	shadow_radius=12;
+	shadow_color="#496293";
+	shadow_offset=12;
+	shadow_angle=180;
+
+	menu_vbox "widget/vbox"
+	    {
+	    x=10; y=10; width=180; height=78;
+	    spacing=8;
+	    
+	    title "widget/label" { height=16; text="Projects Menu:"; style=bold; fgcolor=white; align=center; }
+
+	    sep "widget/image" { height=1; width=180; source="/apps/kardia/images/bg/lsblue_horizsep.png"; }
+	    logout "widget/textbutton"
+		{
+		height=32; width=180;
+		widget_class=iconbutton;
+		image="/apps/kardia/images/icons/ionicons-arrow-left-c.svg";
+		image_position=left;
+		image_margin=10;
+		text = "Logout";
+		fgcolor1=white;
+		fgcolor2="#404040";
+		disable_color="#334466";
+		background=null;
+		align=left;
+
+		on_logout "widget/connector" { event=Click; target=menu; action=ItemSelected; Item=runclient("Logout"); }
+		}
+	    }
+	}
+    }
