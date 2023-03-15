@@ -5,6 +5,5 @@ myquery "system/query"
 		*
 		FROM
 		/apps/kardia/modules/ex_limesurvey/Kardia_DB_test/i_crm_import_type/rows
-		;
 	";
 }
