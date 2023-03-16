@@ -1,0 +1,52 @@
+// Get the API key to make limesurevy API calls
+$Version=2$
+
+// Intial stuff that is requrided by Kardia
+// Set up to do the API call
+get_key "application/http"
+    {
+    server = "10.5.128.100"; // server address
+    path = "lsv3/index.php/admin/remotecontrol"; // direcory
+    protocol = "https";
+    method = "GET";
+    allowsubdirs = 0;
+    cache_min_ttl = 3600000; // one hour
+    cache_max_ttl = 86400000; // one day
+    }
+
+// Sefisfie the method name to use in the API call
+method "http/parameter" {
+    type=string;
+    usage=post;
+    source=none;
+    default="get_session_key"; // method name
+}
+
+// List of peramters
+// The syntaxt is params.PRAMTER_VALUE
+// parmerter 1
+// This is the user name
+"params.devel" "http/parameter" {
+    type=string;
+    usage=post;
+    source=none;
+    default="value 0";
+}
+//peramter 2
+// This is the password
+"params.fuel-pull-lieu" "http/parameter" {
+    type=string;
+    usage=post;
+    source=none;
+    default="value 1";
+}
+//pamerter 3
+// default that exists
+id "http/parameter" {
+    type=integer;
+    usage=post;
+    source=none;
+    default=1;
+}
+
+// Should output { "method":"get_session_key", "params":["USERNAME", "PASSWORD"], "id":1 }
