@@ -3787,7 +3787,22 @@ create table i_crm_partner_import (
         i_crm_create_partner                  bit  not null,           /* whether to create a new partner (and possibly address/location) record (0=no, 1=yes) --  */
         i_crm_create_email                    bit  not null,           /* whether to create a new email address record for the partner --  */
         i_crm_create_phone                    bit  not null,           /* whether to create a new phone# record for partner --  */
-        i_crm_comment                         varchar(255)  null,      /* Comment for newly created record --  */
+        i_crm_surname                         varchar(64)  null,       /* surname (last name / family name) --  */
+        i_crm_given_name                      varchar(64)  null,       /* given name / first name. If the source has a middle name, it is combined into this field. --  */
+        i_crm_date                            datetime  null,          /* date the data was created on the data source --  */
+        i_crm_org_name                        varchar(64)  null,       /* name of organization --  */
+        i_crm_phone                           varchar(80)  null,       /* phone number --  */
+        i_crm_email                           varchar(80)  null,       /* email address --  */
+        i_crm_address1                        varchar(80)  null,       /* Address Line 1 --  */
+        i_crm_address2                        varchar(80)  null,       /* Address Line 2 --  */
+        i_crm_address3                        varchar(80)  null,       /* Address Line 3 --  */
+        i_crm_in_care_of                      varchar(80)  null,       /* in-care-of --  */
+        i_crm_city                            varchar(80)  null,       /* City --  */
+        i_crm_state_province                  varchar(64)  null,       /* State/Province code --  */
+        i_crm_postal_code                     char(12)  null,          /* Postal (zip) code --  */
+        i_crm_country_code                    char(2)  null,           /* Country code - ISO-3166-2 with the UK exception. If the import data has a different country code system, it is converted before this value is set. --  */
+        i_crm_comment                         varchar(255)  null,      /* Comment for the new partner record --  */
+        i_crm_addr_comment                    varchar(255)  null,      /* Comment for the new address record --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
