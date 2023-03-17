@@ -1,0 +1,94 @@
+// Make the responce request
+// '{\"method\":\"export_responses\",\"params\":[\"'+skey+'\",\"'+sid+'\",\"json\",\"en\",\"full\"],\"id\": 1}'
+
+$Version=2$
+
+// Intial stuff that is requrided by Kardia
+// Set up to do the API call
+get_survey_responses "application/http"
+{
+    server = "10.5.128.100"; // server address
+    path = "lsv3/index.php/admin/remotecontrol/"; // direcory
+    protocol = "https";
+    method = "POST";
+    allowsubdirs = 1;
+    cache_min_ttl = 3600000; // one hour
+    cache_max_ttl = 86400000; // one day
+    request_content_type="application/json";
+
+
+    // Sefisfie the method name to use in the API call
+    method "http/parameter" {
+	type=string;
+	usage=post;
+	source=none;
+	default="export_responses"; // method name
+    }
+
+    // List of peramters
+    // The syntaxt is params
+    // parmerter 1
+    // This is the API key
+        "KEY" "http/parameter" {
+	type=string;
+	usage=none;
+	source="param";
+	default="";
+	}
+    
+    "params.0" "http/parameter" {
+	type=string;
+	usage=post;
+	source=none;
+	default=runserver(:parameters:KEY);
+    }
+    //peramter 2
+    // This is the survey ID number
+    // User will supply this
+
+    "SURVEY_ID" "http/parameter" {
+	type=string;
+	usage=none;
+	source="param";
+	default="";
+    }
+    
+    "params.1" "http/parameter" {
+	type=string;
+	usage=post;
+	source=none;
+	default="422914";
+	//default=runserver(:parameters:SURVEY_ID);
+    }
+    //pamerter 3
+    "params.2" "http/parameter" {
+	type=string;
+	usage=post;
+	source=none;
+	default="json";
+    }
+    //parmenter 4
+        "params.3" "http/parameter" {
+	type=string;
+	usage=post;
+	source=none;
+	default="en";
+	}
+    //parmters 5
+        "params.4" "http/parameter" {
+	type=string;
+	usage=post;
+	source=none;
+	default="full";
+    }
+    // default that exists
+    id "http/parameter" {
+	type=integer;
+	usage=post;
+	source=none;
+	default=1;
+    }
+}
+
+// Should output { "method":"get_session_key", "params":["USERNAME", "PASSWORD"], "id":1 }
+// data='{\"method\":\"get_session_key\",\"params\":[\"admin\",\"fuel-pull-lieu\"],\"id\":1}')

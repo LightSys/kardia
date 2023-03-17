@@ -17,7 +17,8 @@ activity "system/query"
           select
                  content_type = 'application/json',
                  inner_type = 'application/json',
-                 objcontent = convert(string,from_base64(:result))
+                 objcontent = convert(string,from_base64(:result)),
+		 name = 'file.json'
           from
                  object expression('/apps/kardia/modules/ex_limesurvey/get_survey_responses.http?KEY='+:KEY:API_KEY)
 

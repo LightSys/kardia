@@ -6,6 +6,6 @@ myquery "system/query"
     sql = " select 
 		* 
 	    from 
-		identity /apps/kardia/data/Kardia_DB.i_crm_import_type/rows
+		 /apps/kardia/data/Kardia_DB/i_crm_import_type/rows
             ";
     }
