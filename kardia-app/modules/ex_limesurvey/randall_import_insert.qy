@@ -12,9 +12,9 @@ myquery "system/query"
             i_crm_phone = eval(\":j:'\" + :cit:i_crm_field_phone + \"'\", \"O\"),
 
             i_crm_import_status = 'Y',
-            i_crm_create_partner = 1,
-            i_crm_create_email = 1,
-            i_crm_create_phone = 1,
+            i_crm_create_partner = 0,
+            i_crm_create_email = 0,
+            i_crm_create_phone = 0,
             
             s_date_created = getdate(),
             s_created_by = 'Dummy User',

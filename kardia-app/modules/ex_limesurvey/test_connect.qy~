@@ -6,6 +6,8 @@ activity "system/query"
 {
     
     //    sql = "select :\"Set-Cookie\" from object /apps/kardia/modules/ex_limesurvey/get_key.http";
+
+    //SURVEY_ID "query/parameter" { type=integer; }
     sql = "declare object KEY;
 
           select
@@ -15,12 +17,12 @@ activity "system/query"
           ;
 
           select
-		 name = 'response.json',
+                 name = 'response.json',
                  content_type = 'application/json',
                  inner_type = 'application/json',
                  objcontent = convert(string,from_base64(:result))
           from
-                 object expression('/apps/kardia/modules/ex_limesurvey/get_survey_responses.http?KEY='+:KEY:API_KEY)
+                 object expression('/apps/kardia/modules/ex_limesurvey/get_survey_responses.http?KEY='+:KEY:API_KEY+'&SURVEY_ID=422914)
 
           ";
     name_expression = "'response.json'";
