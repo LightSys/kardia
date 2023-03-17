@@ -12,8 +12,8 @@ get_survey_responses "application/http"
     protocol = "https";
     method = "POST";
     allowsubdirs = 1;
-    cache_min_ttl = 3600000; // one hour
-    cache_max_ttl = 86400000; // one day
+    cache_min_ttl = 10000; // 10 sec
+    cache_max_ttl = 10000; // 10 sec
     request_content_type="application/json";
 
 
@@ -57,8 +57,8 @@ get_survey_responses "application/http"
 	type=string;
 	usage=post;
 	source=none;
-	default="422914";
-	//default=runserver(:parameters:SURVEY_ID);
+	//default="422914";
+	default=runserver(:parameters:SURVEY_ID);
     }
     //pamerter 3
     "params.2" "http/parameter" {
