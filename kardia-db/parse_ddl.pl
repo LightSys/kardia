@@ -42,7 +42,7 @@ $glob_backend="sybase";
 
 #################################
 # The default users we will add to the sql
-$userlist=read_file("ddl-${glob_backend}/kardia_users.txt");
+$userlist=read_file("ddl-${glob_backend}/kardia_users.txt"); #FIXME: seems like this will always be sybase...?
 
 #################################
 # Where we look for the html files to pull from
@@ -552,7 +552,7 @@ sub process_file()
 
 sub make_sql_header()
 {
-#This will simply print out the SQL header for the file
+#This will simply print out the SQL header for the file 		#TODO: add this in the liquibase?
 print SQL_N '
 /* Create the ' . $glob_table . ' database */
 
@@ -612,6 +612,48 @@ create table ra(
 	);
 ';
 }
+
+print JSON '
+    {
+    "changeSet": {
+        "id": "' . $jsonRun . '-' . $jsonID . '",
+        "author": "parse_ddl.pl (generated)",
+        "changes": [
+        {
+          "createTable": {
+              "columns": [
+                {
+                  "column": {
+                    "constraints": {
+                      "nullable": false,
+                      "primaryKey": true
+                    },
+                    "name": "a",
+                  "type": "varchar(32)"
+                }
+              },
+                {
+                  "column": {
+                    "name": "b",
+                    "type": "text"
+                  }
+                },
+                {
+                  "column": {
+                    "name": "c",
+                    "type": "text"
+                  }
+                }
+              ],
+              "tableName": "ra"
+            }
+          }
+        ]
+      }
+    },
+';
+$jsonID++;
+
 print SQL_C "
 insert ra values('a_account','GL Accounts',':a_acct_desc')$cmd_terminator
 insert ra values('a_account_category','Control Categories',':a_acct_cat_desc')$cmd_terminator
@@ -622,6 +664,61 @@ insert ra values('a_period','Periods',':a_period_desc')$cmd_terminator
 insert ra values('m_list','Mailing Lists',':m_list_description')$cmd_terminator
 insert ra values('p_partner','Partners',':p_surname + \", \" + :p_given_name')$cmd_terminator
 ";
+# add the values in the json as well:
+# to avoid taking up too much space, insert values into arrays:
+my @aVals = ('a_account', 'a_account_category', 'a_batch', 'a_fund', 'a_fund_prefix', 'a_period', 'm_list', 'p_partner');
+my @bVals = ('GL Accounts', 'Control Categories', 'Batches', 'Funds', 'Fund Prefixes', 'Periods', 'Mailing Lists', 'Partners',);
+my @cVals = (':a_acct_desc', ':a_acct_cat_desc', ':a_batch_desc', ':a_fund_desc', ':a_fund_prefix_desc', ':a_period_desc', ':m_list_description', ':p_surname + ", " + :p_given_name');
+
+for(my $i = 0 ; $i < scalar @aVals ; $i++) { 		
+    print JSON '
+      {
+        "changeSet": {
+            "id": "' . $jsonRun . '-' . $jsonID . '",
+            "author": "parse_ddl.pl (generated)",
+            "changes": [
+            {
+              "insert": {
+                  "columns": [
+                    {
+                      "column": {
+                        "name": "a",
+                        "value": "'.$aVals[i].'"
+                      }
+                    },
+                    {
+                      "column": {
+                        "name": "b",
+                        "value": "'.$bVals[i].'"
+                      }
+                    },
+                    {
+                      "column": {
+                        "name": "c",
+                        "type": "'.$cVals[i].'"
+                      }
+                    }
+                  ],
+                  "tableName": "ra"
+                }
+              }
+            ]
+          }
+        },
+    ';
+#            "rollback": [
+#              {
+#                "delete": {
+#                  "tableName": "ra",
+#                  "where": "a=\'a_account\'"
+#                }
+#              }
+#            ]
+
+$jsonID++;
+}
+
+
 }
 
 sub make_sql_footer() {
@@ -1187,8 +1284,8 @@ sub print_table() {
                 my $charDefault = @defaultArray[1];
                 print JSON "                \"defaultValue\": \"${charDefault}\",\n";
             } else {
-                print "Default value found to be added to JSON, but not numeric, boolean or char array!";
-                print "Default value: ${default}";
+                print "Default value found to be added to JSON, but not numeric, boolean or char array!\n";
+                print "Default value: ${default}, Default type: ${jsonType}\n";
             }
         }
 	    print JSON "                \"name\": \"$jsonName\",\n";
@@ -1333,8 +1430,12 @@ sub print_table() {
     }
     print SQL_C "\n)$cmd_terminator";
     print WIKI "==Indexes==\n";
+
     my $count=0;
     foreach $index (sort (keys(%{$glob_indexes{$table}}))) {
+
+# TODO: add the json indexes here? needs to run under same conditions as sql (move from below; header should start here)
+
         print INX_C "\n\n/* $table */\n" if ($count ==0);
         print INX_D "\n\n/* $table */\n" if ($count ==0);
         #print "$table index $index equals $glob_indexes{$table}{$index}\n";
@@ -1359,6 +1460,8 @@ sub print_table() {
             print WIKI "* $index ";
             print WIKI "($idx_type) " if ($idx_type ne "");
             print WIKI "on $table $glob_indexes{$table}{$index}\n";
+	    
+	    #TODO: JSON PRINTS SHOULD GO HERE
         }
         $count++;
     }
@@ -1472,7 +1575,7 @@ sub printIndices(){
     my @indexes = keys(%{$glob_indexes{$table}});
 
     foreach $index (keys(%{$glob_indexes{$table}})) {
-        if(!($index =~ /_pk/)) { 
+        if(!($index =~ /_pk/ or $index =~ /_uk$/ or $glob_clustered{$table} eq $index)) {  #TODO: is it okay that I made this match the way indexes are printed to .sql files...?
 
             #################################
             # JSON header for this index
@@ -1522,7 +1625,7 @@ sub printIndices(){
                         $string = "$string  default $default";
                     }
                 }
-                if ($default ne "") {
+                if ($default ne "") { #FIXME:  why would an index ever have a default value...? seems like was copied from create table...?
                     if ($jsonType eq "integer" or $jsonType eq "int" or index($jsonType, "decimal") != -1) {
                         # default value is float or int
                         print JSON ",\n                \"defaultValueNumeric\": $default\n";
@@ -1537,7 +1640,7 @@ sub printIndices(){
                         print JSON ",\n                \"defaultValue\": \"${charDefault}\"\n";
                     } else {
                         print "Default value found to be added to JSON, but not numeric, boolean or char array!\n";
-                        print "Default value: ${default}\n";
+                        print "Default value: ${default}, Default type: ${jsonType}\n";
                     }
                 } else {
                     print JSON "\n"
@@ -1790,6 +1893,9 @@ foreach $a (split /[,\s]+/,$userlist) {
 print SEC_C "grant select on ra to public$cmd_terminator";
 print SEC_D "revoke select on ra to public$cmd_terminator";
 
+#Start the JSON file
+print JSON "{ \"databaseChangeLog\": [\n";
+
 #print the "create database" stuff
 make_sql_header();
 #print notices to ignore page zise warnings
@@ -1799,8 +1905,7 @@ if ($glob_backend eq "sybase") {
     print REF_C "print \"Ignore any 'Warning: Row size (X bytes) could exceed row size limit...' errors\"\n";
 }
 
-#Start the JSON file
-print JSON "{ \"databaseChangeLog\": [\n";
+
 
 
 #SQL_C "use kardia" is in make_SQL_header
