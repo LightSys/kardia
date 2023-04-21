@@ -1324,10 +1324,6 @@ sub print_table() {
     print JSON "    }\n";
     print JSON "    }\n";
 
-
-    printIndices($table);
-
-
     #end the wiki table
     print WIKI "|}\n";
 
@@ -1432,39 +1428,38 @@ sub print_table() {
     print WIKI "==Indexes==\n";
 
     my $count=0;
-    foreach $index (sort (keys(%{$glob_indexes{$table}}))) {
-
-# TODO: add the json indexes here? needs to run under same conditions as sql (move from below; header should start here)
-
-        print INX_C "\n\n/* $table */\n" if ($count ==0);
-        print INX_D "\n\n/* $table */\n" if ($count ==0);
+#    foreach $index (sort (keys(%{$glob_indexes{$table}}))) {
+#        print INX_C "\n\n/* $table */\n" if ($count ==0);
+#        print INX_D "\n\n/* $table */\n" if ($count ==0);
         #print "$table index $index equals $glob_indexes{$table}{$index}\n";
-        my $idx_type="";
+#        my $idx_type="";
         #$idx_type="foreign key" if ($index=~ /_fk/); 
-        $idx_type="unique" if ($index=~ /_uk/); 
+#        $idx_type="unique" if ($index=~ /_uk/); 
         #$idx_type="primary key" if ($index=~ /_pk/); 
-        if ($glob_clustered{$table} eq $index and $glob_backend eq "sybase") {
-            $idx_type = "$idx_type clustered";
-        }
-        if ($index =~ /_pk$/ or $index =~ /_uk$/ or $glob_clustered{$table} eq $index) {
-            print INX_C "/* create $idx_type index $index on $table $glob_indexes{$table}{$index}";
-            print INX_C "*/ \n/* go */\n";
-            print INX_D "/* drop index $table.$index */ \n/* go */\n";
-        } else {
-            print INX_C "create $idx_type index $index on $table $glob_indexes{$table}{$index}$cmd_terminator";
-	    if ($glob_backend eq "sybase") {
-		print INX_D "drop index $table.$index$cmd_terminator";
-	    } else {
-		print INX_D "alter table $table drop index $index$cmd_terminator";
-	    }
-            print WIKI "* $index ";
-            print WIKI "($idx_type) " if ($idx_type ne "");
-            print WIKI "on $table $glob_indexes{$table}{$index}\n";
-	    
-	    #TODO: JSON PRINTS SHOULD GO HERE
-        }
-        $count++;
-    }
+#        if ($glob_clustered{$table} eq $index and $glob_backend eq "sybase") {
+#            $idx_type = "$idx_type clustered";
+#        }
+#FIXME: should leave ($glob_clustered{$table} qe $index_ out of this; need the indexes to still show up. Do after get sql to line up
+#        if ($index =~ /_pk$/ or $index =~ /_uk$/ or $glob_clustered{$table} eq $index) {
+#            print INX_C "/* create $idx_type index $index on $table $glob_indexes{$table}{$index}";
+#            print INX_C "*/ \n/* go */\n";
+#            print INX_D "/* drop index $table.$index */ \n/* go */\n";
+#        } else {
+#            print INX_C "create $idx_type index $index on $table $glob_indexes{$table}{$index}$cmd_terminator";
+#	    if ($glob_backend eq "sybase") {
+#		print INX_D "drop index $table.$index$cmd_terminator";
+#	    } else {
+#		print INX_D "alter table $table drop index $index$cmd_terminator";
+#	    }
+#            print WIKI "* $index ";
+#            print WIKI "($idx_type) " if ($idx_type ne "");
+#            print WIKI "on $table $glob_indexes{$table}{$index}\n";
+#	    
+#        }
+#        $count++;
+#    }
+    printIndices($table); # print the json version too
+    
     $count=0;
     print WIKI "==References==\n";
     foreach $key_name (sort (keys(%{$glob_keys{$table}}))){
@@ -1571,11 +1566,37 @@ sub printIndices(){
     my ($table) = (@_);
     my $jsonType = "";
     my $default = "";
-
+    my $count = 0;
+    my $isClustered = "false";
+    
     my @indexes = keys(%{$glob_indexes{$table}});
 
-    foreach $index (keys(%{$glob_indexes{$table}})) {
-        if(!($index =~ /_pk/ or $index =~ /_uk$/ or $glob_clustered{$table} eq $index)) {  #TODO: is it okay that I made this match the way indexes are printed to .sql files...?
+    foreach $index (sort (keys(%{$glob_indexes{$table}}))) {
+	print INX_C "\n\n/* $table */\n" if ($count ==0);
+        print INX_D "\n\n/* $table */\n" if ($count ==0);
+	my $idx_type="";
+	$idx_type="unique" if ($index=~ /_uk/);
+	if ($glob_clustered{$table} eq $index and $glob_backend eq "sybase") {
+            $idx_type = "$idx_type clustered";
+	    $isClustered = "true";
+        }
+
+        if($index =~ /_pk$/ or $index =~ /_uk$/) {
+	    print INX_C "/* create $idx_type index $index on $table $glob_indexes{$table}{$index}";
+	    print INX_C "*/ \n/* go */\n";
+	    print INX_D "/* drop index $table.$index */ \n/* go */\n";
+	    # leave out json; it does not support comments
+	} else {
+	    # print sql 
+	    print INX_C "create $idx_type index $index on $table $glob_indexes{$table}{$index}$cmd_terminator";
+	    if ($glob_backend eq "sybase") {
+		print INX_D "drop index $table.$index$cmd_terminator";
+	    } else {
+		print INX_D "alter table $table drop index $index$cmd_terminator";
+	    }
+            print WIKI "* $index ";
+            print WIKI "($idx_type) " if ($idx_type ne "");
+            print WIKI "on $table $glob_indexes{$table}{$index}\n";
 
             #################################
             # JSON header for this index
@@ -1591,6 +1612,7 @@ sub printIndices(){
             print JSON "        \"createIndex\": {\n";
             print JSON "            \"tableName\": \"$table\",\n";
             print JSON "            \"indexName\": \"$index\",\n";
+	    print JSON "            \"clustered\": $isClustered,\n";
             print JSON "            \"columns\": [\n";
 
 
@@ -1658,6 +1680,7 @@ sub printIndices(){
             print JSON "            ]\n}\n}\n]\n}\n}";
             
         }
+	$count++;
     }
 }
 

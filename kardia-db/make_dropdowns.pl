@@ -52,11 +52,11 @@ $userlist=read_file("ddl-${backend}/kardia_users.txt");
 
 open (INFILE,$infile);
 $lasttable="";
-$jsonout="./ddl-$backend/wikiChangeLog.json";	#added (TODO: is this where I want it...?)
+$jsonout="./ddl-$backend/dropdownChangeLog.json";	#added (TODO: is this where I want it...?)
 
 open (OUTD,">$deleteout");
 open (OUTC,">$createout");
-open (JSON,">>$jsonout") or die;
+open (JSON,">$jsonout") or die;
 print OUTC "use Kardia_DB$cmd_terminator\n";
 print OUTD "use Kardia_DB$cmd_terminator\n";
  
