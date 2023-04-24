@@ -39,7 +39,7 @@ class ChangeLog:
 				elif keyList == ["property"]:
 					self.property = item["property"]
 				elif keyList == ["include"]:
-					self.include = item[include]
+					self.include = item["include"]
 				else:
 					raise KeyError("No match found! Keys are: {}".format(item.keys()))
 
@@ -106,6 +106,26 @@ class ChangeLog:
 	def setIncludes(self, newIncludes):
 		self.include = newIncludes
 		self.updateJSON()
+	
+	# endable addition of changesets
+	def appendChanges(self, other):
+		if not isinstance(other, ChangeLog):
+			print ("ERROR: attempted to append non-chnagelog object to changelog")
+			return
+		if other.jsonList != {}:
+			for item in other.jsonList:
+				keyList = list(item.keys())
+				if keyList == ["changeSet"]:
+					self.changeSetList.append(ChangeSet(item["changeSet"]))
+				elif keyList == ["preConditions"]:
+					self.preconditions = item["preConditions"]
+				elif keyList == ["property"]:
+					self.property = item["property"]
+				elif keyList == ["include"]:
+					self.include = item["include"]
+				else:
+					raise KeyError("No match found! Keys are: {}".format(item.keys()))
+		self.jsonList.append(other.jsonList)
 
 
 class ChangeSet:
@@ -339,38 +359,55 @@ if __name__ == "__main__":
 
 	if (len(sys.argv) < 2):
 		print("Not enough parameters!")
-		print("Usage: jsonCompare.py [database] [database change log] [wiki change log] [output]")
+		print("Usage: jsonCompare.py [database] [database change log] [wiki change log] [dropdwon change log] [output]")
 		print("Change logs are optional parameters. Default parameters are:")
 		print("database change log: ./ddl-[database]/liquibaseFiles/currentChangeLog.json")
 		print("wiki change log: ./ddl-[database]/wikiChangeLog.json")
+		print("dropdown change log: ./ddl-[database]/dropdownChangeLog.json")
 		print("output: ./ddl-[database]/liquibaseFiles/(datetime)ChangeLog.json")
 		raise SystemExit(0)
 	elif (len(sys.argv) == 2):
 		# os.path.dirname(os.path.realpath(__file__) gets the pathname of the current file
 		currentPath = os.path.join(os.path.dirname(os.path.realpath(__file__)), "ddl-{}".format(sys.argv[1]), "liquibaseFiles", "currentChangeLog.json")
 		wikiPath = os.path.join(os.path.dirname(os.path.realpath(__file__)), "ddl-{}".format(sys.argv[1]), "wikiChangeLog.json")
+		dropdownPath = os.path.join(os.path.dirname(os.path.realpath(__file__)), "ddl-{}".format(sys.argv[1]), "dropdownChangeLog.json")
 	elif (len(sys.argv) == 3):
 		# os.path.dirname(os.path.realpath(__file__) gets the pathname of the current file
-		currentPath = os.path.join(os.path.dirname(os.path.realpath(__file__)), "ddl-{}".format(sys.argv[1]), "liquibaseFiles", "currentChangeLog.json")
-		wikiPath = os.path.join(os.path.dirname(os.path.realpath(__file__)), sys.argv[2])
-	elif (4 <= len(sys.argv) <= 5):
 		currentPath = os.path.join(os.path.dirname(os.path.realpath(__file__)), sys.argv[2])
-		wikiPath = os.path.join(os.path.dirname(os.path.realpath(__file__)), sys.argv[3])
+		wikiPath = os.path.join(os.path.dirname(os.path.realpath(__file__)), "ddl-{}".format(sys.argv[1]), "wikiChangeLog.json")
+		dropdownPath = os.path.join(os.path.dirname(os.path.realpath(__file__)), "ddl-{}".format(sys.argv[1]), "dropdownChangeLog.json")
+	elif (len(sys.argv) == 4):
+		currentPath = os.path.join(os.path.dirname(os.path.realpath(__file__)), sys.argv[2])
+		dropdownPath = os.path.join(os.path.dirname(os.path.realpath(__file__)), sys.argv[3])
+		wikiPath = os.path.join(os.path.dirname(os.path.realpath(__file__)), "ddl-{}".format(sys.argv[1]), "dropdownChangeLog.json")
+	elif ( 5 <= len(sys.argv) <= 6): # handle output later
+		currentPath = os.path.join(os.path.dirname(os.path.realpath(__file__)), sys.argv[2])
+		dropdownPath = os.path.join(os.path.dirname(os.path.realpath(__file__)), sys.argv[3])
+		wikiPath = os.path.join(os.path.dirname(os.path.realpath(__file__)), sys.argv[4])
 	else:
 		print("Too many parameters!")
-		print("Usage: jsonCompare.py [database] [database change log] [wiki change log] [output]")
+		print("Usage: jsonCompare.py [database] [database change log] [wiki change log] [dropdwon change log] [output]")
 		print("Change logs are optional parameters. Default parameters are:")
 		print("database change log: ./ddl-[database]/liquibaseFiles/currentChangeLog.json")
 		print("wiki change log: ./ddl-[database]/wikiChangeLog.json")
+		print("dropdown change log: ./ddl-[database]/dropdownChangeLog.json")
 		print("output: ./ddl-[database]/liquibaseFiles/(datetime)ChangeLog.json")
 		raise SystemExit(0)
 	with open(currentPath, "r") as file:
 		currentChangeLogFile = json.load(file) #Data is a dict of a list of changeSet dictionaries
 	with open(wikiPath, "r") as file:
 		wikiChangeLogFile = json.load(file)
+	
 
 	currentChangeLog = ChangeLog(currentChangeLogFile)
 	wikiChangeLog = ChangeLog(wikiChangeLogFile)
+
+	# add dropdown to the existing changeset
+	if(dropdownPath != ""):
+		with open(dropdownPath, "r") as file:
+			dropdownFile = json.load(file)
+		dropdownLog = ChangeLog(dropdownFile)
+		wikiChangeLog.appendChanges(dropdownLog)
 
 	diffChangeLog = ChangeLog()
 	diffChangeSetList = []
@@ -436,6 +473,7 @@ if __name__ == "__main__":
 						temp = addColumnDiff(wikiCS, currentCS)
 						if temp != False:
 							diffChangeSetList.append(temp)
+# TODO: note that if columns are both added and dropped from the same table, it COULD be a modify and need to flag it for review...
 				# If the changeSet is an index
 				elif "createIndex" in wikiCS.changes[0] and "createIndex" in currentCS.changes[0]:
 					# if we're looking at the same index and same table
@@ -454,6 +492,9 @@ if __name__ == "__main__":
 					# TODO: Handling of automating rollback of specific changesets.
 					#	Can probably be implemented with generating a sql file for rollbacks of all changesets,
 					#	parsing file, writing relevant sql commands to a new file and executing the new file on the database
+					# NOTE: The above suggestion is actually against Liquibase's recomended good practice. Instead, roll forward
+					#	with drops for the problem tables. This also has the advantage of keeping a record of the tables and
+					#	grants the ability to rollback to them (provided the proper rollaback is generated with the drop)...
 					print("Note that a table is in the current file, but not in the wiki file:\n{}".format(changeSet))
 					print("Please remove this table from the database manually or rollback to a certain date or changeset using Liquibase")
 					print('You can rollback to a certain date in the database by using "liquibase rollbackDate [date]"')
