@@ -42,7 +42,7 @@ $glob_backend="sybase";
 
 #################################
 # The default users we will add to the sql
-$userlist=read_file("ddl-${glob_backend}/kardia_users.txt"); #FIXME: seems like this will always be sybase...?
+$userlist=read_file("ddl-${glob_backend}/kardia_users.txt");
 
 #################################
 # Where we look for the html files to pull from
@@ -552,7 +552,7 @@ sub process_file()
 
 sub make_sql_header()
 {
-#This will simply print out the SQL header for the file 		#TODO: add this in the liquibase?
+#This will simply print out the SQL header for the file
 print SQL_N '
 /* Create the ' . $glob_table . ' database */
 
@@ -706,14 +706,6 @@ for(my $i = 0 ; $i < scalar @aVals ; $i++) {
           }
         },
     ';
-#            "rollback": [
-#              {
-#                "delete": {
-#                  "tableName": "ra",
-#                  "where": "a=\'a_account\'"
-#                }
-#              }
-#            ]
 
 $jsonID++;
 }
@@ -1428,37 +1420,8 @@ sub print_table() {
     print WIKI "==Indexes==\n";
 
     my $count=0;
-#    foreach $index (sort (keys(%{$glob_indexes{$table}}))) {
-#        print INX_C "\n\n/* $table */\n" if ($count ==0);
-#        print INX_D "\n\n/* $table */\n" if ($count ==0);
-        #print "$table index $index equals $glob_indexes{$table}{$index}\n";
-#        my $idx_type="";
-        #$idx_type="foreign key" if ($index=~ /_fk/); 
-#        $idx_type="unique" if ($index=~ /_uk/); 
-        #$idx_type="primary key" if ($index=~ /_pk/); 
-#        if ($glob_clustered{$table} eq $index and $glob_backend eq "sybase") {
-#            $idx_type = "$idx_type clustered";
-#        }
-#FIXME: should leave ($glob_clustered{$table} qe $index_ out of this; need the indexes to still show up. Do after get sql to line up
-#        if ($index =~ /_pk$/ or $index =~ /_uk$/ or $glob_clustered{$table} eq $index) {
-#            print INX_C "/* create $idx_type index $index on $table $glob_indexes{$table}{$index}";
-#            print INX_C "*/ \n/* go */\n";
-#            print INX_D "/* drop index $table.$index */ \n/* go */\n";
-#        } else {
-#            print INX_C "create $idx_type index $index on $table $glob_indexes{$table}{$index}$cmd_terminator";
-#	    if ($glob_backend eq "sybase") {
-#		print INX_D "drop index $table.$index$cmd_terminator";
-#	    } else {
-#		print INX_D "alter table $table drop index $index$cmd_terminator";
-#	    }
-#            print WIKI "* $index ";
-#            print WIKI "($idx_type) " if ($idx_type ne "");
-#            print WIKI "on $table $glob_indexes{$table}{$index}\n";
-#	    
-#        }
-#        $count++;
-#    }
-    printIndices($table); # print the json version too
+
+    printIndices($table);
     
     $count=0;
     print WIKI "==References==\n";
@@ -1567,7 +1530,7 @@ sub printIndices(){
     my $jsonType = "";
     my $default = "";
     my $count = 0;
-    my $isClustered = "false";
+    my $isClustered = 0;
     
     my @indexes = keys(%{$glob_indexes{$table}});
 
@@ -1578,7 +1541,7 @@ sub printIndices(){
 	$idx_type="unique" if ($index=~ /_uk/);
 	if ($glob_clustered{$table} eq $index and $glob_backend eq "sybase") {
             $idx_type = "$idx_type clustered";
-	    $isClustered = "true";
+	    $isClustered = 1;
         }
 
         if($index =~ /_pk$/ or $index =~ /_uk$/) {
@@ -1612,7 +1575,7 @@ sub printIndices(){
             print JSON "        \"createIndex\": {\n";
             print JSON "            \"tableName\": \"$table\",\n";
             print JSON "            \"indexName\": \"$index\",\n";
-	    print JSON "            \"clustered\": $isClustered,\n";
+	    print JSON "            \"clustered\": true,\n" if($isClustered);
             print JSON "            \"columns\": [\n";
 
 
@@ -1647,7 +1610,8 @@ sub printIndices(){
                         $string = "$string  default $default";
                     }
                 }
-                if ($default ne "") { #FIXME:  why would an index ever have a default value...? seems like was copied from create table...?
+		# it is unclear why index can have a default value, but currentCHangelog can have thm so must include. 
+                if ($default ne "") {
                     if ($jsonType eq "integer" or $jsonType eq "int" or index($jsonType, "decimal") != -1) {
                         # default value is float or int
                         print JSON ",\n                \"defaultValueNumeric\": $default\n";

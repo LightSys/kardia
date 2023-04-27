@@ -52,7 +52,7 @@ $userlist=read_file("ddl-${backend}/kardia_users.txt");
 
 open (INFILE,$infile);
 $lasttable="";
-$jsonout="./ddl-$backend/dropdownChangeLog.json";	#added (TODO: is this where I want it...?)
+$jsonout="./ddl-$backend/dropdownChangeLog.json";
 
 open (OUTD,">$deleteout");
 open (OUTC,">$createout");
@@ -111,17 +111,7 @@ while (<INFILE>)
 		$isinteger = 0;
 	    }
 	    print JSON "                }\n              },\n";	
-	#    if ( $table=~ /_partner_class/ ) {
-	#	print OUTC "char(3) not null,\n";
-	#    } else {
-	#	if ( $table=~ /_s_process/ ) {
-	#	    print OUTC "char(2) not null,\n";
-	#	} elsif ($table =~ /_p_bulk_postal_code/ ) {
-	#	    print OUTC "char(4) not null,\n";
-	#	} else {
-	#	    print OUTC "char(1) not null,\n";
-	#	}
-	#    }
+
 	    print OUTC "  text	varchar(60) not null,\n";
 	    print JSON "                {\n";				
 	    print JSON "                  \"column\": {\n";		
