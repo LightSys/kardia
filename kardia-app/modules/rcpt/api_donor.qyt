@@ -441,7 +441,8 @@ api_donors "system/querytree"
                 identity /apps/kardia/data/Kardia_DB/p_donor/rows d,
                 /apps/kardia/data/Kardia_DB/p_partner/rows p
             where
-                :d:p_partner_key = :p:p_partner_key
+                :d:p_partner_key = :p:p_partner_key and
+                :d:p_partner_key = :donors:p_partner_key
             ";
         }
         }
