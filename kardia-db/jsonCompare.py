@@ -263,6 +263,16 @@ def addColumnDiff(wiki, current):
 
 	for column in wikiColumns:
 		if column not in currentColumns and column["column"]["name"] not in currentColumnList:
+			#before adding, take off primary key; have to update primary key separately 
+			if "constraints" in column["column"]:
+				if "primaryKey" in column["column"]["constraints"]:
+					if column["column"]["constraints"]["primaryKey"]:
+						#need to not add a primary key while still leaving original marked as such
+						temp = column.copy()
+						temp["column"] = column["column"].copy()
+						temp["column"]["constraints"] = column["column"]["constraints"].copy()
+						temp["column"]["constraints"]["primaryKey"] = False
+						column = temp
 			resColumns.append(column)
 	if len(resColumns) == 0:
 		return False
@@ -290,7 +300,7 @@ def dropColumnDiff(wiki, current):
 	count = 0
 	for column in resColumns:
 		resChangeSet = ChangeSet({"id": wiki.id + "-{}".format(count), "author": "jsonCompare.py"})
-		resChangeSet.changes = [{"dropColumn": {"tableName": wiki.changes[0]["createTable"]["tableName"], "columnName": column}}]
+		resChangeSet.changes = [{"dropColumn": {"tableName": wiki.changes[0]["createTable"]["tableName"], "columnName": column["column"]["name"]}}]
 		# resChangeSet.changes.append({"dropColumn": {"tableName": wiki.changes[0]["createTable"]["tableName"], "columnName": column}})
 		resChangeSet.updateJSON()
 		resCSList.append(resChangeSet)
@@ -332,6 +342,54 @@ def modifyColumnDiff(wiki, current):
 
 	return resCSList
 
+# check if the primary key needs to change
+def pkColumnDiff(wiki, current):
+	resCSList = [ChangeSet({"id": wiki.id+"-PK0", "author": "jsonCompare.py"}), ChangeSet({"id": wiki.id+"-PK1", "author": "jsonCompare.py"})] 
+	wikiKeyList = []
+	currentKeyList = []
+	wikiColumns = wiki.changes[0]["createTable"]["columns"]
+	currentColumns = current.changes[0]["createTable"]["columns"]
+
+	# get list of current and wiki primary keys
+	
+	for column in wikiColumns:
+		if "constraints" in column["column"]:
+			if "primaryKey" in column["column"]["constraints"]:
+				if column["column"]["constraints"]["primaryKey"]:
+					wikiKeyList.append(column["column"]["name"])
+
+	for column in currentColumns:
+		if "constraints" in column["column"]:
+			if "primaryKey" in column["column"]["constraints"]:
+				if column["column"]["constraints"]["primaryKey"]:
+					currentKeyList.append(column["column"]["name"])
+
+	# see if the primary key needs to change
+	isSameKey = True
+	if len(wikiKeyList) == len(currentKeyList):
+		for i in range(len(wikiKeyList)):
+			if wikiKeyList[i] != currentKeyList[i]:
+				isSameKey = False
+				break
+	else:
+		isSameKey = False
+	if isSameKey:
+		return []
+	
+	print('#'*50)
+	print("### wiki "+wiki.changes[0]["createTable"]["tableName"]+"'s target PK:")
+	for p in wikiKeyList: print("### - "+p)
+	print("### ")
+	print("### current "+current.changes[0]["createTable"]["tableName"]+"'s PK:")
+	for p in currentKeyList: print("### - "+p)
+	print('#'*50)
+
+	resCSList[0].changes = [{"dropPrimaryKey": {"constraintName": "PRIMARY", "dropIndex":True, "tableName": current.changes[0]["createTable"]["tableName"]}}]
+	resCSList[0].updateJSON()
+	resCSList[1].changes = [{"addPrimaryKey": {"columnNames":', '.join(wikiKeyList), "tableName": current.changes[0]["createTable"]["tableName"]}}]
+	resCSList[1].updateJSON()
+	return resCSList
+
 # Drop and re-add indexes if columns are different between wiki and current
 def addIndexDiff(wiki, current):
 	resCSList = []
@@ -351,7 +409,7 @@ def addIndexDiff(wiki, current):
 			break
 	if len(resCSList) == 0:
 		return []
-	return resChangeSet
+	return resCSList
 		
 
 
@@ -397,7 +455,6 @@ if __name__ == "__main__":
 		currentChangeLogFile = json.load(file) #Data is a dict of a list of changeSet dictionaries
 	with open(wikiPath, "r") as file:
 		wikiChangeLogFile = json.load(file)
-	
 
 	currentChangeLog = ChangeLog(currentChangeLogFile)
 	wikiChangeLog = ChangeLog(wikiChangeLogFile)
@@ -440,6 +497,7 @@ if __name__ == "__main__":
 				currentTableList.append(currentCS.changes[0]["createTable"]["tableName"])
 			elif "createIndex" in currentCS.changes[0]:
 				currentIndexList.append(currentCS.changes[0]["createIndex"]["indexName"])
+		# TODO: could attempt to detect table name changes with this - would have to share all columns for it to stand out though
 
 		for wikiCS in wikiChangeSets:
 			# If the changeSet is a new table, add it to the difference and go to next changeSet
@@ -459,7 +517,9 @@ if __name__ == "__main__":
 				if "createTable" in wikiCS.changes[0] and "createTable" in currentCS.changes[0]:
 					# if the tables are equal
 					if wikiCS.changes[0]["createTable"]["tableName"] == currentCS.changes[0]["createTable"]["tableName"]:
+			# TODO: if same # of cols and matching are in same order, just rename/change type. Else, do what is below
 						# add changeSet to list with appropriate drop columns
+						# only allow to drop, reorder, OR add/remove
 						temp = dropColumnDiff(wikiCS, currentCS)
 						if temp != []:
 							for dropChangeSet in temp:
@@ -473,6 +533,10 @@ if __name__ == "__main__":
 						temp = addColumnDiff(wikiCS, currentCS)
 						if temp != False:
 							diffChangeSetList.append(temp)
+						temp = pkColumnDiff(wikiCS, currentCS)
+						if temp != []:
+							for keyChangeSet in temp:
+								diffChangeSetList.append(keyChangeSet)
 # TODO: note that if columns are both added and dropped from the same table, it COULD be a modify and need to flag it for review...
 				# If the changeSet is an index
 				elif "createIndex" in wikiCS.changes[0] and "createIndex" in currentCS.changes[0]:
@@ -492,9 +556,7 @@ if __name__ == "__main__":
 					# TODO: Handling of automating rollback of specific changesets.
 					#	Can probably be implemented with generating a sql file for rollbacks of all changesets,
 					#	parsing file, writing relevant sql commands to a new file and executing the new file on the database
-					# NOTE: The above suggestion is actually against Liquibase's recomended good practice. Instead, roll forward
-					#	with drops for the problem tables. This also has the advantage of keeping a record of the tables and
-					#	grants the ability to rollback to them (provided the proper rollaback is generated with the drop)...
+					# TODO: look into possibility of table name changes
 					print("Note that a table is in the current file, but not in the wiki file:\n{}".format(changeSet))
 					print("Please remove this table from the database manually or rollback to a certain date or changeset using Liquibase")
 					print('You can rollback to a certain date in the database by using "liquibase rollbackDate [date]"')

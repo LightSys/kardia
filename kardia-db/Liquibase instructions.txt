@@ -29,3 +29,19 @@ Option 2:
 	Use "liquibase rollback [date]" to rollback to the given datetime
 Option 3:
 	Use "liquibase rollbackCount [num]" to rollback num changeSets
+
+Rules for automated changes with jsonCompare.py:
+(on a per table basis)
+1) Do NOT mix reordering columns with adds, renames, or drops
+2) Do NOT mix dropping columns with adds, renames, or reordering
+3) Do NOT add a column adjacent to a renamed column
+4) Do NOT reame a column to or add a column with the old name of a column that has been renamed in this same changeSet
+
+- These rules are designed to keep changest to tables conisting of renames, adds, drops, adds, and reorderings from reaching ambiguous states
+- Operations like changing data types or changing primary keys will not conflict and are thus not considered
+- Rules 1 and 2 remove a significant amount of ambiguity, and should be unobtrusive given they are rarer operations
+- Rule 3 is meant to prevent ambiguous cases such as ABC -> ABDE (A>A, B>B, C>D, +E | A>A, B>B, +D, C>E)
+- Rule 4 is mainly meant to prevent 2 types of ambiguous cases:
+	a) changing to an old column name as in: ABC -> XACY ( A>X, B>A, C>C, +Y | +X, A>A, B>C, C>Y)
+	b) adding a new column with the name of an old column ABC -> XYCABZ (+X, +Y, +C, A>A, B>B, C>Z | A>X, B>Y, C>C, +A, +B, +Z)
+	Or any mixture of the two, or any case that could be confused with simply reordering columns
