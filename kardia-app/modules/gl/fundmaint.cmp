@@ -1,5 +1,5 @@
 $Version=2$
-coamaint "widget/component-decl"
+fundmaint "widget/component-decl"
     {
     width=780; height=580;
     ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; deploy_to_client=yes; }

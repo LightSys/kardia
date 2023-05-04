@@ -74,7 +74,7 @@ plugin_gsearch_fund "widget/component-decl"
 		target=plugin_gsearch_fund;
 		action=Launch;
 		Multi = 1;
-		Source = runclient("/apps/kardia/modules/gl/coamaint.app?ledger=" + :kardia_sysattrs_osrc:Ledger + "&period=" + :kardia_sysattrs_osrc:CurrentPeriod + "&year_period=" + :kardia_sysattrs_osrc:YearPeriod + "&fund=" + :search_osrc:s_key);
+		Source = runclient("/apps/kardia/modules/gl/fundmaint.app?ledger=" + :kardia_sysattrs_osrc:Ledger + "&period=" + :kardia_sysattrs_osrc:CurrentPeriod + "&year_period=" + :kardia_sysattrs_osrc:YearPeriod + "&fund=" + :search_osrc:s_key);
 		//Width = runserver((select :width from object /apps/kardia/modules/base/partner_window.app));
 		//Height = runserver((select :height from object /apps/kardia/modules/base/partner_window.app));
 		Width=800;
