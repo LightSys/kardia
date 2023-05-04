@@ -144,6 +144,17 @@ new_partner "widget/component-decl"
 	    replicasize = 2;
 	    autoquery = never;
 
+	    // Return value on save
+	    return_to_cn "widget/connector"
+		{
+		event=ClientsSaved;
+		event_condition=runclient(:new_partner:set_payee or :new_partner:set_donor or :new_partner:set_staff or :new_partner:set_return);
+		event_delay=0.3;
+		target=return_to;
+		action=SetValue;
+		Value=runclient(:new_partner_form:p_partner_key);
+		}
+
 	    new_partner_form "widget/form"
 		{
 		next_form=new_location_form;
@@ -163,17 +174,6 @@ new_partner "widget/component-decl"
 		    target=dup_scan_done;
 		    action=SetValue;
 		    Value=0;
-		    }
-
-		// Return value on save
-		return_to_cn "widget/connector"
-		    {
-		    event=DataSaved;
-		    event_condition=runclient(:new_partner:set_payee or :new_partner:set_donor or :new_partner:set_staff or :new_partner:set_return);
-		    event_delay=0.3;
-		    target=return_to;
-		    action=SetValue;
-		    Value=runclient(:new_partner_form:p_partner_key);
 		    }
 
 		// Autogenerate partner key
