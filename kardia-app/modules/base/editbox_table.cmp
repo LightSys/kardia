@@ -63,8 +63,8 @@ editbox_table "widget/component-decl"
 
 	keyparam "widget/parameter" { type=runserver(:this:key_type); }
 	sql = runserver(:this:popup_sql + " where " + condition(char_length(:this:search_objname) > 0, ":" + :this:search_objname, "") + ":" + quote(:this:key_name) + " = :parameters:keyparam");
-	readahead = 2;
-	replicasize = 2;
+	readahead = 5;
+	replicasize = 5;
 	autoquery = never;
 
 	try_val_on_eb_change "widget/connector"
