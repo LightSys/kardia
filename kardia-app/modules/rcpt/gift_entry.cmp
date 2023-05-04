@@ -73,6 +73,7 @@ gift_entry "widget/component-decl"
 	{
 	path="copy_gift.cmp";
 
+	//on_copy_1 "widget/connector" { event=Copied; target=rcpt_form; action=Discard; }
 	on_copy_1 "widget/connector" { event=Copied; target=rcpt_form; action=Clear; force=1; }
 	on_copy_2 "widget/connector" { event=Copied; target=desig_form; action=Clear; force=1; }
 	on_copy_3 "widget/connector" { event=Copied; target=line_items_osrc; action=Invalidate; }
@@ -727,6 +728,16 @@ gift_entry "widget/component-decl"
 				    EventName=runclient("LoadSidebar");
 				    Donor=runclient(:f_rcpt_donorid:content);
 				    }
+
+				on_donor_click "widget/connector"
+				    {
+				    event=MouseDown;
+				    event_condition=runclient(:doing_copy:value == 0 and char_length(:f_rcpt_ackid:content) > 1 and :manage_osrc:partner != :f_rcpt_donorid:content and :rcpt_form:form_mode == 'View');
+				    target=gift_entry;
+				    action=TriggerEvent;
+				    EventName=runclient("LoadSidebar");
+				    Donor=runclient(:f_rcpt_donorid:content);
+				    }
 				}
 
 			    f_rcpt_ackid "widget/component"
@@ -755,6 +766,16 @@ gift_entry "widget/component-decl"
 				    {
 				    event=GetFocus;
 				    event_condition=runclient(:doing_copy:value == 0 and char_length(:f_rcpt_ackid:content) > 1 and :manage_osrc:partner != :f_rcpt_ackid:content);
+				    target=gift_entry;
+				    action=TriggerEvent;
+				    EventName=runclient("LoadSidebar");
+				    Donor=runclient(:f_rcpt_ackid:content);
+				    }
+
+				on_ack_click "widget/connector"
+				    {
+				    event=MouseDown;
+				    event_condition=runclient(:doing_copy:value == 0 and char_length(:f_rcpt_ackid:content) > 1 and :manage_osrc:partner != :f_rcpt_ackid:content and :rcpt_form:form_mode == 'View');
 				    target=gift_entry;
 				    action=TriggerEvent;
 				    EventName=runclient("LoadSidebar");
