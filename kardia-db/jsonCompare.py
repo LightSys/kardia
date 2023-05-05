@@ -261,7 +261,7 @@ def addColumnDiff(wiki, current):
 	for column in currentColumns:
 		currentColumnList.append(column["column"]["name"])
 
-	for column in wikiColumns:
+	for ind, column in enumerate(wikiColumns):
 		if column not in currentColumns and column["column"]["name"] not in currentColumnList:
 			#before adding, take off primary key; have to update primary key separately 
 			if "constraints" in column["column"]:
@@ -273,6 +273,9 @@ def addColumnDiff(wiki, current):
 						temp["column"]["constraints"] = column["column"]["constraints"].copy()
 						temp["column"]["constraints"]["primaryKey"] = False
 						column = temp
+			# find out what position to add column in
+			column["column"]["position"] = ind
+			
 			resColumns.append(column)
 	if len(resColumns) == 0:
 		return False
@@ -284,19 +287,34 @@ def addColumnDiff(wiki, current):
 
 # Used to create a changeSet to drop columns from table
 # Each column needs to be its own changeSet, so this function returns a list of changeSets
+# NOTE: this function only allows columns to be dropped if no other changes have been made to the table
 def dropColumnDiff(wiki, current):
 	resCSList = []
 	wikiColumns = wiki.changes[0]["createTable"]["columns"]
 	currentColumns = current.changes[0]["createTable"]["columns"]
 	resColumns = []
 	wikiColumnList = []
+	currentColumnList = []
 	for column in wikiColumns:
 		wikiColumnList.append(column["column"]["name"])
 	for column in currentColumns:
+		currentColumnList.append(column["column"]["name"])
 		if column not in wikiColumns and column["column"]["name"] not in wikiColumnList:
 			resColumns.append(column)
-	if len(resColumns) == 0:
-		return []
+
+	if(len(currentColumnList) <= len(wikiColumnList)):
+		return [] # any possible changes must be renames, adds, or reorders
+	
+	# Must have no new column names, and order must be the same
+	wikiTemp = wikiColumnList.copy()
+	for columnName in currentColumnList:
+		if columnName == wikiTemp[0]:
+			wikiTemp.pop(0)
+	if len(wikiTemp) != 0:
+		print("Error: Table "+wiki.changes[0]["CreateTable"]["TableName"]+" dropped and changed columns: cannot determine changeset")
+		print("PS: [] == None: "+([] == None))
+		return None
+
 	count = 0
 	for column in resColumns:
 		resChangeSet = ChangeSet({"id": wiki.id + "-{}".format(count), "author": "jsonCompare.py"})
@@ -375,19 +393,111 @@ def pkColumnDiff(wiki, current):
 		isSameKey = False
 	if isSameKey:
 		return []
-	
-	print('#'*50)
-	print("### wiki "+wiki.changes[0]["createTable"]["tableName"]+"'s target PK:")
-	for p in wikiKeyList: print("### - "+p)
-	print("### ")
-	print("### current "+current.changes[0]["createTable"]["tableName"]+"'s PK:")
-	for p in currentKeyList: print("### - "+p)
-	print('#'*50)
 
 	resCSList[0].changes = [{"dropPrimaryKey": {"constraintName": "PRIMARY", "dropIndex":True, "tableName": current.changes[0]["createTable"]["tableName"]}}]
 	resCSList[0].updateJSON()
 	resCSList[1].changes = [{"addPrimaryKey": {"columnNames":', '.join(wikiKeyList), "tableName": current.changes[0]["createTable"]["tableName"]}}]
 	resCSList[1].updateJSON()
+	return resCSList
+
+# create a changeset to reorder columns 
+# NOTE: columns can be rearranged as much as desired, but reordering must be the only change to the table
+def reorderColumnDif(wiki, current):
+	resCSList = [] 
+	wikiColumns = wiki.changes[0]["createTable"]["columns"]
+	currentColumns = current.changes[0]["createTable"]["columns"]
+	wikiColumnList = []
+	currentColumnList = []
+
+	# should have all of the same columns, just out of order
+	for column in wikiColumns:
+		wikiColumnList.append(column["column"]["name"])
+	isMixed = False
+	for ind, column in enumerate(currentColumns):
+		currentColumnList.append(column["column"]["name"])
+		if(currentColumnList[ind] != wikiColumnList[ind]): isMixed = True
+		if(not column["column"]["name"] in wikiColumnList):
+			return [] # cannot reorder if there are any new or renamed columns
+	if (not isMixed): 
+		return [] # no need to reorder; already in order
+	if(len(currentColumnList) != len(wikiColumnList)):
+		return [] # cannot reorder if clumns missing or added
+	
+	# make it faster to map column to index
+	wikiColInd = {} # the indexes for all of the wiki columns
+	for index, column in enumerate(wikiColumnList):
+		wikiColInd[column] = index
+
+	# find the optimal number of moves to sort the table 
+	# this is based on finding the largest set of rows that can be left alone, and then
+	# moving all of the rest.
+	maxSize = -1	# keep track of the largest consecutive run 
+	maxInd = -1 	# the index of the column used to find the run
+	maxRun = []	# all of the columns in the run
+	for i in range(len(currentColumnList)):
+		curRun = []
+		curSize = 0
+		iColumn = currentColumnList[i]
+		compCol = currentColumnList[i] # use this to keep track of run.
+		startIndex = i
+		# find first char before it that could be in the run (uses self if none)
+		for j in range(i):
+			if(wikiColInd[currentColumnList[i]] > wikiColInd[currentColumnList[j]]):
+				compCol = currentColumnList[j]
+				startIndex = j
+		j = startIndex
+		# loop through from startIndex until the end, looking for columns that fit run
+		while (j < len(currentColumnList)):
+			jColumn = currentColumnList[j]
+			# make sure fits in run
+			if(wikiColInd[compCol] <= wikiColInd[jColumn]):
+				# make sure works with the current row as well 
+				if((i < j and wikiColInd[iColumn] < wikiColInd[jColumn])
+				or (i > j and wikiColInd[iColumn] > wikiColInd[jColumn])
+				or (i == j)):
+					curSize += 1
+					compCol = jColumn
+					curRun.append(jColumn)
+			j += 1
+		# update best
+		if(curSize > maxSize):
+			maxSize = curSize
+			maxRun = curRun
+
+	print(curRun)	# DELETEME
+	total = 0 	# DELETEME
+	count=0 	# keep the indexes unique
+	# generate the changelog
+	# NOTE: currently also sorting the columns to be sure the instructions work
+	for ind, curCol in enumerate(wikiColumnList): # needs to be done in the same order as we want it to end in
+		curCol = wikiColumnList[ind]
+		if(curCol not in maxRun):
+			toMove = currentColumnList.pop(currentColumnList.index(curCol))
+			# find which column to place after
+			prev = ""
+			if(ind == 0):
+				# move to first position
+				prev = "FIRST"
+				currentColumnList.insert(0, toMove) #delete?
+			else:
+				# move after the column that should be before it
+				prev = "AFTER "+wikiColumnList[ind-1]
+				currentColumnList.insert(currentColumnList.index(wikiColumnList[ind - 1])+1, toMove)
+			total += 1
+			# find data type
+			dataType = wikiColumns[ind]["column"]["type"]
+
+			# perform the move on the out of place column
+			tempSet = ChangeSet({"id": wiki.id+"-"+str(count), "author": "jsonCompare.py"})
+			tempSet.changes = [{"sql": {"dbms": "mysql, mariadb", "sql":"ALTER TABLE "
+				+wiki.changes[0]["createTable"]["tableName"]+" MODIFY "+curCol+" "+dataType+" "+prev}}]
+			tempSet.updateJSON()
+			resCSList.append(tempSet)
+			count += 1 
+	prev = ""
+	for col in currentColumnList:
+		if(prev != ""): assert(wikiColInd[prev] < wikiColInd[col])
+		prev = col
 	return resCSList
 
 # Drop and re-add indexes if columns are different between wiki and current
@@ -517,26 +627,37 @@ if __name__ == "__main__":
 				if "createTable" in wikiCS.changes[0] and "createTable" in currentCS.changes[0]:
 					# if the tables are equal
 					if wikiCS.changes[0]["createTable"]["tableName"] == currentCS.changes[0]["createTable"]["tableName"]:
-			# TODO: if same # of cols and matching are in same order, just rename/change type. Else, do what is below
+
 						# add changeSet to list with appropriate drop columns
 						# only allow to drop, reorder, OR add/remove
-						temp = dropColumnDiff(wikiCS, currentCS)
-						if temp != []:
-							for dropChangeSet in temp:
+						drops = dropColumnDiff(wikiCS, currentCS)
+						moves = reorderColumnDif(wikiCS, currentCS)
+						adds = addColumnDiff(wikiCS, currentCS)
+						if drops != []:
+							#TODO: HANDLE ERRORS
+							for dropChangeSet in drops:
 								diffChangeSetList.append(dropChangeSet)
+						elif moves != []:
+							#TODO: HANDLE ERRORS
+							for moveChangeSet in moves:
+								diffChangeSetList.append(moveChangeSet)
+						elif adds != False:
+							# since not drop or modify, can have add and rename
+							# add changeSet to list with appropriate add columns
+							# TODO: make that rename and add function (all in one...)
+							diffChangeSetList.append(temp)
+							
+						# Column changes do not interfere, so can alway check 
+						temp = pkColumnDiff(wikiCS, currentCS)
+						if temp != []:
+							for keyChangeSet in temp:
+								diffChangeSetList.append(keyChangeSet)
 						# add changeSet to list with appropriate modify columns (only data types)
 						temp = modifyColumnDiff(wikiCS, currentCS)
 						if temp != []:
 							for modifyChangeSet in temp:
 								diffChangeSetList.append(modifyChangeSet)
-						# add changeSet to list with appropriate add columns
-						temp = addColumnDiff(wikiCS, currentCS)
-						if temp != False:
-							diffChangeSetList.append(temp)
-						temp = pkColumnDiff(wikiCS, currentCS)
-						if temp != []:
-							for keyChangeSet in temp:
-								diffChangeSetList.append(keyChangeSet)
+						
 # TODO: note that if columns are both added and dropped from the same table, it COULD be a modify and need to flag it for review...
 				# If the changeSet is an index
 				elif "createIndex" in wikiCS.changes[0] and "createIndex" in currentCS.changes[0]:
@@ -580,7 +701,7 @@ if __name__ == "__main__":
 		print("Creating file with differences...")
 		diffChangeLog.updateJSON()
 		diffJSON = json.dumps(diffChangeLog, cls=MyEncoder, indent=4)
-		if (len(sys.argv) != 5):
+		if (len(sys.argv) != 6):
 			currentDateTime = datetime.datetime.now()
 			outputFileName = str(currentDateTime)[0:10] + "." + str(currentDateTime.hour) + "." + str(currentDateTime.minute) + "." + str(currentDateTime.second) + "ChangeLog.json"	
 			writePath = os.path.join(os.path.dirname(os.path.realpath(__file__)), "ddl-{}".format(sys.argv[1]), "liquibaseFiles", outputFileName)
