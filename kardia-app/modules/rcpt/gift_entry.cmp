@@ -408,6 +408,11 @@ gift_entry "widget/component-decl"
 					/apps/kardia/data/Kardia_DB/p_location/rows pl
 				WHERE
 					:p:p_partner_key *= :pl:p_partner_key
+				ORDER BY
+					isnull(:p:p_org_name, ''),
+					:p:p_surname,
+					:p:p_given_name,
+					charindex(:pl:p_record_status_code, 'OIQA') desc
 				HAVING
 					:hasgifts = 1
 				");
@@ -419,7 +424,7 @@ gift_entry "widget/component-decl"
 
 			srchtbl "widget/table"
 			    {
-			    height=109;
+			    height=209;
 			    titlebar=no;
 			    overlap_scrollbar=yes;
 			    demand_scrollbar=yes;
@@ -502,7 +507,7 @@ gift_entry "widget/component-decl"
 					
 			receipts_tbl "widget/table"
 			    {
-			    height=435;
+			    height=335;
 			    titlebar=no;
 			    overlap_scrollbar=yes;
 			    demand_scrollbar=yes;
