@@ -1,0 +1,111 @@
+$Version=2$
+api_gift "system/querytree"
+    {
+    ledgers "system/querytree"
+        {
+    	text = "Ledgers";
+
+        ledgers_list "system/querytree"
+            {
+            sql = " select
+                        *
+                    from
+                        identity /apps/kardia/data/Kardia_DB/a_ledger/rows
+                    ";
+
+            LedgerBatches "system/querytree"
+                {
+                text = "Batches";
+
+                ledgerbatches_list "system/querytree"
+                    {
+                    sql = " select
+                                *
+                            from
+                                identity /apps/kardia/data/Kardia_DB/a_batch/rows b
+                            where
+                                :b:a_ledger_number = :ledgers_list:a_ledger_number
+                            order by
+                                :b:a_batch_number asc
+                            ";
+
+                    LedgerBatchGifts "system/querytree"
+                        {
+                        text = "Gifts";
+                        
+                        ledgerbatchgifts_list "system/querytree"
+                            {
+                            sql = " select
+                                        *
+                				    from
+                                        identity /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g
+                				    where
+                                        :g:a_ledger_number = :ledgers_list:a_ledger_number and
+                                        :g:a_batch_number = :ledgerbatches_list:a_batch_number
+                				    group by
+                                        :g:a_ledger_number,
+                                        :g:a_batch_number,
+                                        :g:a_gift_number
+                				    ";
+
+                            LedgerBatchGiftItems "system/querytree"
+                                {
+                                text = "Items";
+                        
+                                ledgerbatchgiftitems_list "system/querytree"
+                                    {
+                                    sql = " select
+                                                *
+                                            from
+                                                identity /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i
+                                            where
+                                                :i:a_ledger_number = :ledgers_list:a_ledger_number and
+                                                :i:a_batch_number = :ledgerbatches_list:a_batch_number and
+                                                :i:a_gift_number = :ledgerbatchgifts_list:a_gift_number
+                                            group by
+                                                :i:a_ledger_number,
+                                                :i:a_batch_number,
+                                                :i:a_gift_number,
+                                                :i:a_split_number
+                                            ";
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+            NextReceiptNumber "system/querytree"
+                {
+                text = "NextReceiptNumber";
+
+                nextreceipt "system/querytree"
+                    {
+                    sql = "	declare object info;
+
+                            select
+                                :info:receipt_number = :a_next_receipt_number
+                            from
+                                /apps/kardia/data/Kardia_DB/a_subtrx_gift_rcptcnt/rows
+                            where
+                                :a_ledger_number = :ledgers_list:a_ledger_number
+                            ;
+
+                            update
+                                /apps/kardia/data/Kardia_DB/a_subtrx_gift_rcptcnt/rows
+                            set
+                                :a_next_receipt_number = :a_next_receipt_number + 1
+                            where
+                                :a_ledger_number = :ledgers_list:a_ledger_number
+                            ;
+
+                            select
+                                name = 'response',
+                                :info:receipt_number
+                            ";
+                    use_having = yes;
+                    }
+                }
+            }
+        }
+    }
