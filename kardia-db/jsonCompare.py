@@ -283,6 +283,97 @@ def addColumnDiff(wiki, current):
 	resChangeSet.updateJSON()
 	return resChangeSet
 
+# determine which columns were added and which need renamed. Replaces the old add columns functionality 
+def addRenameColumnDiff(wiki, current):
+	wikiColumns = wiki.changes[0]["createTable"]["columns"]
+	currentColumns = current.changes[0]["createTable"]["columns"]
+	wikiColumnList = []
+	currentColumnList = []
+	MATCH = 1	# state: step past matching columns
+	FIND = 2	# state: collect unkown columns 
+
+	for column in wikiColumns:
+		wikiColumnList.append(column["column"]["name"])
+	for column in currentColumns:
+		currentColumnList.append(column["column"]["name"])
+
+	i = 0		# Track pos in current
+	j = 0		# track pos in wiki
+	colBuf = []	# Track unkown columns until can see if added or renamed
+	state = MATCH	# keep track of current state
+
+	# find adds and renames, assuming an add and a rename are never adjacent
+	while(i < len(currentColumnList) and j < len(wikiColumnList)):
+		curCol = currentColumnList[i]
+		wikiCol = wikiColumnList[j]
+		if(state == MATCH):
+			# move past matching pairs
+			if(wikiCol == curCol):
+				i += 1
+				j += 1
+			else:
+				# allow the other state to identify next action
+				state = FIND
+		elif(state == FIND):
+			# if the current set matches, all previous were added
+			if(wikiCol == curCol):
+				if(i > 0): prev = "after "+currentColumnList[i-1] #TODO: get actual liquibase style info
+				else: prev = "first"
+				while(colBuf):
+					temp = colBuf.pop(0)
+					#TODO: need to make this format an actual 
+					print("@"*50)
+					print("@@@ Add column "+temp+" "+prev)
+					print("@"*50)
+					prev = "after "+temp
+				state = MATCH
+			# if the current macthes a value found later, must have been renames
+			elif(wikiCol in currentColumnList):
+				# make sure is valid
+				if(len(colBuf) > currentColumnList.index(wikiCol) - i):
+					print("ERROR: not enough columns in current to rename")
+					exit()
+				while(colBuf):
+					# TODO: do actual changelog stuff
+					print("@"*50)
+					print("@@@ Rename Column "+currentColumnList[i]+" to "+colBuf.pop(0))
+					print("@"*50)
+					i += 1 # step past the newly renamed column
+			# neither matched nor found in curCols, so add it to the unknown buffer
+			else:
+				colBuf.append(wikiCol)
+				j += 1
+	
+	# handle any leftover columns at the end
+	# check if any columns still need renamed
+	if(i < len(currentColumnList)): 
+		if(colBuf):
+			if(len(colBuf) > len(currentColumnList) - i):
+				print("ERROR: Too few columns to rename at end")
+				exit()
+			while(colBuf):
+				# TODO: do actual changelog stuff
+				print("@"*50)
+				print("@@@ Rename Column "+currentColumnList[i]+" to "+colBuf.pop(0))
+				print("@"*50)
+				i += 1 # step past the newly renamed column
+		else:
+			print("ERROR: wiki seems to have deleted columns=(s)")
+			exit()
+	# check for any columns that still need added
+	elif(j < len(wikiColumnList)):
+		# add in the remainder of the values from the wiki
+		if(i > 0): prev = currentColumns[i - 1] #handle case of table that starts with no columns
+		else: prev = "none"
+		while(j < len(wikiColumnList)):
+			prev = "after "+wikiColumnList[j]
+			j += 1
+
+	if(colBuf): 
+		print("ERROR: Buff is not empty!!")
+		exit()
+	
+	exit() # TODO: DELETEME
 
 
 # Used to create a changeSet to drop columns from table
@@ -312,7 +403,6 @@ def dropColumnDiff(wiki, current):
 			wikiTemp.pop(0)
 	if len(wikiTemp) != 0:
 		print("Error: Table "+wiki.changes[0]["CreateTable"]["TableName"]+" dropped and changed columns: cannot determine changeset")
-		print("PS: [] == None: "+([] == None))
 		return None
 
 	count = 0
