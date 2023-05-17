@@ -251,44 +251,32 @@ class MyEncoder(JSONEncoder):
 			return o.inputDict
 
 
-# Used to create a changeSet to add columns to table
-def addColumnDiff(wiki, current):
-	resChangeSet = ChangeSet({"id": wiki.id, "author": "jsonCompare.py"})
-	wikiColumns = wiki.changes[0]["createTable"]["columns"]
-	currentColumns = current.changes[0]["createTable"]["columns"]
-	resColumns = []
-	currentColumnList = []
-	for column in currentColumns:
-		currentColumnList.append(column["column"]["name"])
-
-	for ind, column in enumerate(wikiColumns):
-		if column not in currentColumns and column["column"]["name"] not in currentColumnList:
-			#before adding, take off primary key; have to update primary key separately 
-			if "constraints" in column["column"]:
-				if "primaryKey" in column["column"]["constraints"]:
-					if column["column"]["constraints"]["primaryKey"]:
-						#need to not add a primary key while still leaving original marked as such
-						temp = column.copy()
-						temp["column"] = column["column"].copy()
-						temp["column"]["constraints"] = column["column"]["constraints"].copy()
-						temp["column"]["constraints"]["primaryKey"] = False
-						column = temp
-			# find out what position to add column in
-			column["column"]["position"] = ind
-			
-			resColumns.append(column)
-	if len(resColumns) == 0:
-		return False
-	resChangeSet.changes = [{"addColumn": {"tableName": wiki.changes[0]["createTable"]["tableName"], "columns": resColumns}}]
-	resChangeSet.updateJSON()
-	return resChangeSet
+# remove column PK and set the position for adding a column
+def setupAddColumnDiff(column, pos):
+	#before adding, take off primary key; have to update primary key separately 
+	if "constraints" in column["column"]:
+		if "primaryKey" in column["column"]["constraints"]:
+			if column["column"]["constraints"]["primaryKey"]:
+				#need to not add a primary key while still leaving original marked as such
+				temp = column.copy()
+				temp["column"] = column["column"].copy()
+				temp["column"]["constraints"] = column["column"]["constraints"].copy()
+				temp["column"]["constraints"]["primaryKey"] = False
+				column = temp
+	# find out what position to add column in
+	column["column"]["position"] = pos
+	return column
 
 # determine which columns were added and which need renamed. Replaces the old add columns functionality 
 def addRenameColumnDiff(wiki, current):
+	resCSList = []
+	addColCS = ChangeSet({"id": wiki.id, "author": "jsonCompare.py"})
+	addColList = []
 	wikiColumns = wiki.changes[0]["createTable"]["columns"]
 	currentColumns = current.changes[0]["createTable"]["columns"]
 	wikiColumnList = []
 	currentColumnList = []
+	countCS = 0	# counter to keep changeset id's unique
 	MATCH = 1	# state: step past matching columns
 	FIND = 2	# state: collect unkown columns 
 
@@ -317,15 +305,14 @@ def addRenameColumnDiff(wiki, current):
 		elif(state == FIND):
 			# if the current set matches, all previous were added
 			if(wikiCol == curCol):
-				if(i > 0): prev = "after "+currentColumnList[i-1] #TODO: get actual liquibase style info
-				else: prev = "first"
+				if(colBuf): tempInd = wikiColumnList.index(colBuf[0])
 				while(colBuf):
-					temp = colBuf.pop(0)
-					#TODO: need to make this format an actual 
-					print("@"*50)
-					print("@@@ Add column "+temp+" "+prev)
-					print("@"*50)
-					prev = "after "+temp
+					colBuf.pop(0)
+					# add to set of columns to add; can do in one changeset at end
+					curCol = wikiColumns[tempInd]
+					curCol = setupAddColumnDiff(curCol, tempInd)
+					addColList.append(curCol)
+					tempInd += 1 # all in a row, so are in consecuative positions 
 				state = MATCH
 			# if the current macthes a value found later, must have been renames
 			elif(wikiCol in currentColumnList):
@@ -333,11 +320,17 @@ def addRenameColumnDiff(wiki, current):
 				if(len(colBuf) > currentColumnList.index(wikiCol) - i):
 					print("ERROR: not enough columns in current to rename")
 					exit()
+				
 				while(colBuf):
-					# TODO: do actual changelog stuff
-					print("@"*50)
-					print("@@@ Rename Column "+currentColumnList[i]+" to "+colBuf.pop(0))
-					print("@"*50)
+					curCol = colBuf.pop(0)
+					curInd = wikiColumnList.index(curCol)
+					dataType = wikiColumns[curInd]["column"]["type"]
+					tempRenameCS = ChangeSet({"id": wiki.id + "-{}".format(countCS), "author": "jsonCompare.py"})
+					tempRenameCS.changes = [{"renameColumn": {"tableName": wiki.changes[0]["createTable"]["tableName"], "oldColumnName": currentColumnList[i],
+					      "newColumnName": curCol, "columnDataType": dataType}}]
+					tempRenameCS.updateJSON()
+					resCSList.append(tempRenameCS)
+					countCS += 1
 					i += 1 # step past the newly renamed column
 			# neither matched nor found in curCols, so add it to the unknown buffer
 			else:
@@ -353,9 +346,15 @@ def addRenameColumnDiff(wiki, current):
 				exit()
 			while(colBuf):
 				# TODO: do actual changelog stuff
-				print("@"*50)
-				print("@@@ Rename Column "+currentColumnList[i]+" to "+colBuf.pop(0))
-				print("@"*50)
+				curCol = colBuf.pop(0)
+				curInd = wikiColumnList.index(curCol)
+				dataType = wikiColumns[curInd]["column"]["type"]
+				tempRenameCS = ChangeSet({"id": wiki.id + "-{}".format(countCS), "author": "jsonCompare.py"})
+				tempRenameCS.changes = [{"renameColumn": {"tableName": wiki.changes[0]["createTable"]["tableName"], "oldColumnName": currentColumnList[i],
+				      "newColumnName": curCol, "columnDataType": dataType}}]
+				tempRenameCS.updateJSON()
+				resCSList.append(tempRenameCS)
+				countCS += 1
 				i += 1 # step past the newly renamed column
 		else:
 			print("ERROR: wiki seems to have deleted columns=(s)")
@@ -363,17 +362,23 @@ def addRenameColumnDiff(wiki, current):
 	# check for any columns that still need added
 	elif(j < len(wikiColumnList)):
 		# add in the remainder of the values from the wiki
-		if(i > 0): prev = currentColumns[i - 1] #handle case of table that starts with no columns
-		else: prev = "none"
 		while(j < len(wikiColumnList)):
-			prev = "after "+wikiColumnList[j]
+			# add to set of columns to add; can do in one changeset at end
+			curCol = wikiColumns[j]
+			curCol = setupAddColumnDiff(curCol, j)
+			addColList.append(curCol)
 			j += 1
 
 	if(colBuf): 
-		print("ERROR: Buff is not empty!!")
+		print("ERROR: Buff is not empty at end of addRenameColumn for table "+wiki.changes[0]["createTable"]["tableName"])
 		exit()
+
+	if(len(addColList) > 0):
+		addColCS.changes = [{"addColumn": {"tableName": wiki.changes[0]["createTable"]["tableName"], "columns": addColList}}]
+		addColCS.updateJSON()
+		resCSList.append(addColCS)
 	
-	exit() # TODO: DELETEME
+	return resCSList
 
 
 # Used to create a changeSet to drop columns from table
@@ -403,7 +408,7 @@ def dropColumnDiff(wiki, current):
 			wikiTemp.pop(0)
 	if len(wikiTemp) != 0:
 		print("Error: Table "+wiki.changes[0]["CreateTable"]["TableName"]+" dropped and changed columns: cannot determine changeset")
-		return None
+		exit()
 
 	count = 0
 	for column in resColumns:
@@ -554,8 +559,6 @@ def reorderColumnDif(wiki, current):
 			maxSize = curSize
 			maxRun = curRun
 
-	print(curRun)	# DELETEME
-	total = 0 	# DELETEME
 	count=0 	# keep the indexes unique
 	# generate the changelog
 	# NOTE: currently also sorting the columns to be sure the instructions work
@@ -573,7 +576,7 @@ def reorderColumnDif(wiki, current):
 				# move after the column that should be before it
 				prev = "AFTER "+wikiColumnList[ind-1]
 				currentColumnList.insert(currentColumnList.index(wikiColumnList[ind - 1])+1, toMove)
-			total += 1
+
 			# find data type
 			dataType = wikiColumns[ind]["column"]["type"]
 
@@ -610,7 +613,7 @@ def addIndexDiff(wiki, current):
 	if len(resCSList) == 0:
 		return []
 	return resCSList
-		
+
 
 
 if __name__ == "__main__":
@@ -662,9 +665,12 @@ if __name__ == "__main__":
 	# add dropdown to the existing changeset
 	if(dropdownPath != ""):
 		with open(dropdownPath, "r") as file:
-			dropdownFile = json.load(file)
-		dropdownLog = ChangeLog(dropdownFile)
-		wikiChangeLog.appendChanges(dropdownLog)
+			try:
+				dropdownFile = json.load(file)
+				dropdownLog = ChangeLog(dropdownFile)
+				wikiChangeLog.appendChanges(dropdownLog)
+			except:
+				print("Drop down file did not contain any json. Skipping it")
 
 	diffChangeLog = ChangeLog()
 	diffChangeSetList = []
@@ -722,7 +728,10 @@ if __name__ == "__main__":
 						# only allow to drop, reorder, OR add/remove
 						drops = dropColumnDiff(wikiCS, currentCS)
 						moves = reorderColumnDif(wikiCS, currentCS)
-						adds = addColumnDiff(wikiCS, currentCS)
+						addRename = addRenameColumnDiff(wikiCS, currentCS)
+						if addRename != []:
+							for addReChangeSet in addRename:
+								diffChangeSetList.append(addReChangeSet)
 						if drops != []:
 							#TODO: HANDLE ERRORS
 							for dropChangeSet in drops:
@@ -731,11 +740,6 @@ if __name__ == "__main__":
 							#TODO: HANDLE ERRORS
 							for moveChangeSet in moves:
 								diffChangeSetList.append(moveChangeSet)
-						elif adds != False:
-							# since not drop or modify, can have add and rename
-							# add changeSet to list with appropriate add columns
-							# TODO: make that rename and add function (all in one...)
-							diffChangeSetList.append(temp)
 							
 						# Column changes do not interfere, so can alway check 
 						temp = pkColumnDiff(wikiCS, currentCS)
@@ -768,10 +772,10 @@ if __name__ == "__main__":
 					#	Can probably be implemented with generating a sql file for rollbacks of all changesets,
 					#	parsing file, writing relevant sql commands to a new file and executing the new file on the database
 					# TODO: look into possibility of table name changes
-					print("Note that a table is in the current file, but not in the wiki file:\n{}".format(changeSet))
+#					print("Note that a table is in the current file, but not in the wiki file:\n{}".format(changeSet))
 					print("Please remove this table from the database manually or rollback to a certain date or changeset using Liquibase")
-					print('You can rollback to a certain date in the database by using "liquibase rollbackDate [date]"')
-					print('You can rollback to a certain changeSet by using "liquibase rollback [changeSet tag]"')
+#					print('You can rollback to a certain date in the database by using "liquibase rollbackDate [date]"')
+#					print('You can rollback to a certain changeSet by using "liquibase rollback [changeSet tag]"')
 			if "createIndex" in changeSet.changes[0]:
 				if changeSet.changes[0]["createIndex"]["indexName"] not in wikiIndexList:
 					# Shouln't happen unless there's been (offline) mods to the current database without using the wiki
@@ -779,10 +783,10 @@ if __name__ == "__main__":
 					# TODO: Handling of automating rollback of specific changesets.
 					#	Can probably be implemented with generating a sql file for rollbacks of all changesets,
 					#	parsing file, writing relevant sql commands to a new file and executing the new file on the database
-					print("Note that an index is in the current file, but not in the wiki file:\n{}".format(changeSet))
+#					print("Note that an index is in the current file, but not in the wiki file:\n{}".format(changeSet))
 					print("Please remove this index from the database manually or rollback to a certain date or changeset using Liquibase")
-					print('You can rollback to a certain date in the database by using "liquibase rollbackDate [date]"')
-					print('You can rollback to a certain changeSet by using "liquibase rollback [changeSet tag]"')
+#					print('You can rollback to a certain date in the database by using "liquibase rollbackDate [date]"')
+#					print('You can rollback to a certain changeSet by using "liquibase rollback [changeSet tag]"')
 
 		diffChangeLog.setChangeSetList(diffChangeSetList)
 
