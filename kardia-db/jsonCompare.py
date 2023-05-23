@@ -5,6 +5,7 @@ import os.path		#Used to get relative filenames (os.path.join)
 import sys			#Used to get command line inputs (sys.argv)
 import datetime		#Used for now() function to name output changeLog file
 import os			#Used to rollback changeSets
+from Levenshtein import ratio
 
 """How to use this file:
 Use liquibase to generate a full changelog of the database using liquibase
@@ -285,6 +286,10 @@ def addRenameColumnDiff(wiki, current):
 	for column in currentColumns:
 		currentColumnList.append(column["column"]["name"])
 
+	# make sure was not a delete 
+	if(len(wikiColumnList) < len(currentColumnList)):
+		return []
+
 	i = 0		# Track pos in current
 	j = 0		# track pos in wiki
 	colBuf = []	# Track unkown columns until can see if added or renamed
@@ -320,7 +325,10 @@ def addRenameColumnDiff(wiki, current):
 				if(len(colBuf) > currentColumnList.index(wikiCol) - i):
 					print("ERROR: not enough columns in current to rename")
 					exit()
-				
+				elif(len(colBuf) == 0):
+					print("ERROR: missing columns to rename; a reordering or delete must have occured")
+					return []
+
 				while(colBuf):
 					curCol = colBuf.pop(0)
 					curInd = wikiColumnList.index(curCol)
@@ -332,11 +340,12 @@ def addRenameColumnDiff(wiki, current):
 					resCSList.append(tempRenameCS)
 					countCS += 1
 					i += 1 # step past the newly renamed column
+				state = MATCH
 			# neither matched nor found in curCols, so add it to the unknown buffer
 			else:
 				colBuf.append(wikiCol)
 				j += 1
-	
+
 	# handle any leftover columns at the end
 	# check if any columns still need renamed
 	if(i < len(currentColumnList)): 
@@ -404,7 +413,7 @@ def dropColumnDiff(wiki, current):
 	# Must have no new column names, and order must be the same
 	wikiTemp = wikiColumnList.copy()
 	for columnName in currentColumnList:
-		if columnName == wikiTemp[0]:
+		if wikiTemp and columnName == wikiTemp[0]:
 			wikiTemp.pop(0)
 	if len(wikiTemp) != 0:
 		print("Error: Table "+wiki.changes[0]["CreateTable"]["TableName"]+" dropped and changed columns: cannot determine changeset")
@@ -442,13 +451,14 @@ def modifyColumnDiff(wiki, current):
 		if column not in wikiColumns and column["column"]["name"] in wikiColumnList and column["column"]["name"] not in resColumnList:
 			print("Column in current, but not in wiki. Cannot change data type of column:", column)
 
-	if len(resCSList) == 0:
+	if len(resColumns) == 0:
 		return []
 
 	count = 0
 	for column in resColumns:
 		resChangeSet = ChangeSet({"id": wiki.id + "-{}".format(count), "author": "jsonCompare.py"})
-		resChangeSet.changes = [{"modifyDataType": {"columnName": column["column"]["name"], "newDataType": column["column"]["type"], "tableName": wiki.changes[0]["createTable"]["tableName"]}}]
+		resChangeSet.changes = [{"modifyDataType": {"columnName": column["column"]["name"], "newDataType": 
+					column["column"]["type"], "tableName": wiki.changes[0]["createTable"]["tableName"]}}]
 		resChangeSet.updateJSON()
 		resCSList.append(resChangeSet)
 		count += 1
@@ -489,9 +499,9 @@ def pkColumnDiff(wiki, current):
 	if isSameKey:
 		return []
 
-	resCSList[0].changes = [{"dropPrimaryKey": {"constraintName": "PRIMARY", "dropIndex":True, "tableName": current.changes[0]["createTable"]["tableName"]}}]
+	resCSList[0].changes = [{"dropPrimaryKey": {"constraintName": "PRIMARY", "dropIndex":True, "tableName": wiki.changes[0]["createTable"]["tableName"]}}]
 	resCSList[0].updateJSON()
-	resCSList[1].changes = [{"addPrimaryKey": {"columnNames":', '.join(wikiKeyList), "tableName": current.changes[0]["createTable"]["tableName"]}}]
+	resCSList[1].changes = [{"addPrimaryKey": {"columnNames":', '.join(wikiKeyList), "tableName": wiki.changes[0]["createTable"]["tableName"]}}]
 	resCSList[1].updateJSON()
 	return resCSList
 
@@ -510,13 +520,14 @@ def reorderColumnDif(wiki, current):
 	isMixed = False
 	for ind, column in enumerate(currentColumns):
 		currentColumnList.append(column["column"]["name"])
+		if(ind >= len(wikiColumnList)): break # stop if sizes are not even
 		if(currentColumnList[ind] != wikiColumnList[ind]): isMixed = True
 		if(not column["column"]["name"] in wikiColumnList):
 			return [] # cannot reorder if there are any new or renamed columns
 	if (not isMixed): 
 		return [] # no need to reorder; already in order
 	if(len(currentColumnList) != len(wikiColumnList)):
-		return [] # cannot reorder if clumns missing or added
+		return [] # cannot reorder if columns missing or added
 	
 	# make it faster to map column to index
 	wikiColInd = {} # the indexes for all of the wiki columns
@@ -527,7 +538,6 @@ def reorderColumnDif(wiki, current):
 	# this is based on finding the largest set of rows that can be left alone, and then
 	# moving all of the rest.
 	maxSize = -1	# keep track of the largest consecutive run 
-	maxInd = -1 	# the index of the column used to find the run
 	maxRun = []	# all of the columns in the run
 	for i in range(len(currentColumnList)):
 		curRun = []
@@ -587,6 +597,7 @@ def reorderColumnDif(wiki, current):
 			tempSet.updateJSON()
 			resCSList.append(tempSet)
 			count += 1 
+	# check that everything is sorted
 	prev = ""
 	for col in currentColumnList:
 		if(prev != ""): assert(wikiColInd[prev] < wikiColInd[col])
@@ -615,17 +626,149 @@ def addIndexDiff(wiki, current):
 	return resCSList
 
 
+# make a table into a consistent string suitable for levenshtein and similar alrgorithms
+def tableToString(table):
+	# order of the attributes must be enforced for lev to work properly
+	attributeList = ['name', 'type', 'value', 'autoIncrement', 'computed', 'defaultValueBoolean', 
+			'defaultValueConstraintName', 'defaultValueDate', 'descending', 'incrementBy', 'position', 
+			'remarks', 'startWith', 'valueBlobFile', 'valueBoolean', 'valueClobFile', 'valueComputed', 
+			'valueDate', 'valueNumeric']
+	constraintList = ['checkConstraint', 'deleteCascade', 'deferrable', 'foreignKeyName', 'initiallyDeferred', 
+			'notNullConstraintName', 'nullable', 'primaryKey', 'primaryKeyName', 'primaryKeyTablespace', 
+			'unique', 'uniqueConstraintName', 'references', 'referencedColumnNames', 
+			'referencedTableCatalogName', 'referencedTableName', 'referencedTableSchemaName', 
+			'validateForeignKey', 'validateNullable', 'validatePrimaryKey', 'validateUnique']
+	tableStr = table[0]["createTable"]["tableName"]
+
+	# concatinate all of the attributes
+	for column in table[0]["createTable"]["columns"]:
+		column = column["column"]					
+		for attribute in attributeList:
+			if attribute in column: 
+				tableStr += " "+attribute+":"+str(column[attribute])
+		if "constraints" in column:
+			for constraint in constraintList:
+				if constraint in column["constraints"]:
+					tableStr += " "+constraint+":"+str(column["constraints"][constraint])
+		tableStr+="|"
+
+	return tableStr
+
+
+# Find which tables have most likley been renamed, added, or deleted. 
+# NOTE: Tables cannot be dropped at the same time as an add or rename
+def renameTableDiff(wikiCS, currentCS, oldToNewTableName):
+	resCSList = []
+	wikiTableList = []
+	wikiTableNames = []
+	currentTableList = []
+	currentTableNames = []
+
+	for changeSet in wikiCS:
+		if("createTable" in changeSet.changes[0]):
+			wikiTableList.append(changeSet.changes)
+			wikiTableNames.append(changeSet.changes[0]["createTable"]["tableName"])
+
+	for changeSet in currentCS:
+		if("createTable" in changeSet.changes[0]):
+			currentTableList.append(changeSet.changes)
+			currentTableNames.append(changeSet.changes[0]["createTable"]["tableName"])
+			
+	# look for dropped tables
+	if(len(currentTableNames) > len(wikiTableNames)):
+		# make sure was only a delete
+		for table in wikiTableNames:
+			if not table in currentTableNames:
+				print("ERROR: Table "+table+" was added at the same time as some deletes. Cannot mix table drops and renames/adds")
+				exit()
+		# make the drop table changeset
+		count = 0 # keep ids unique
+		for table in currentTableNames:
+			if not table in wikiTableNames:
+				resChangeSet = ChangeSet({"id": wikiCS[0].id + "-{}".format(count), "author": "jsonCompare.py"})
+				resChangeSet.changes = [{"dropTable": {"tableName":table}}]
+				resChangeSet.updateJSON()
+				resCSList.append(resChangeSet)
+				count += 1
+
+	# look for added and renamed tables
+	else:
+		# remove all of the tables that are the same
+		i = 0
+		while(i < len(currentTableNames)):
+			j = 0
+			while(j < len(wikiTableNames)):
+				if(currentTableNames[i] == wikiTableNames[j]):
+					# remove from all lists
+					currentTableNames.pop(i)
+					currentTableList.pop(i)
+					wikiTableNames.pop(j)
+					wikiTableList.pop(j)
+					i -= 1
+					j -= 1
+					break
+				j += 1
+			i += 1
+		
+		# now compare what's left and find the most likely pairs 
+		# keep track of all of the best matches for each still in current
+		bestMatch = []
+		levResults = []
+		#levResults.append(wikiTableNames.copy())
+		#levResults[0].insert(0, "")
+		count = 0  # keep ids unique
+
+		for i, curTable in enumerate(currentTableNames):
+			best = -1
+			bestInd = -1
+			fullCur = tableToString(currentTableList[i])
+			tempResults = []
+			tempResults.append(curTable)
+			for j, wikiTable in enumerate(wikiTableNames):
+				fullWiki = tableToString(wikiTableList[j])
+				rat = ratio(fullWiki, fullCur)
+				tempResults.append(rat)
+				if(best < rat):
+					best = rat
+					bestInd = j
+			levResults.append(tempResults)
+			if(bestInd not in bestMatch):
+				bestMatch.append(bestInd)
+			else: 
+				print("Error: cannot rename tables; comparisons are too ambiguous")
+				print("	Problem was caused by "+curTable+" and "+(currentTableNames[bestMatch.index(bestInd)])+" over "+wikiTableNames[bestInd])
+				exit()
+
+		print("concluded that the results were as follows:")
+		for i, j in enumerate(bestMatch):
+			resChangeSet = ChangeSet({"id": wikiCS[0].id + "-{}".format(count), "author": "jsonCompare.py"})
+			resChangeSet.changes = [{"renameTable": {"oldTableName":currentTableNames[i], "newTableName": wikiTableNames[j]}}]
+			resChangeSet.updateJSON()
+			resCSList.append(resChangeSet)
+			count += 1
+			oldToNewTableName[currentTableNames[i]] = wikiTableNames[j]
+
+	
+		for j in range(len(wikiTableNames)):
+			if( j not in bestMatch): 
+				resChangeSet = ChangeSet({"id": wikiCS[0].id + "-{}".format(count), "author": "jsonCompare.py"})
+				resChangeSet.changes = wikiTableList[j]
+				resChangeSet.updateJSON()
+				resCSList.append(resChangeSet)
+				count += 1
+	return resCSList
 
 if __name__ == "__main__":
 
 	if (len(sys.argv) < 2):
 		print("Not enough parameters!")
-		print("Usage: jsonCompare.py [database] [database change log] [wiki change log] [dropdwon change log] [output]")
+		print("Usage: jsonCompare.py [database] [database change log] [wiki change log] [dropdwon change log] [output] [table drop output]")
 		print("Change logs are optional parameters. Default parameters are:")
 		print("database change log: ./ddl-[database]/liquibaseFiles/currentChangeLog.json")
 		print("wiki change log: ./ddl-[database]/wikiChangeLog.json")
 		print("dropdown change log: ./ddl-[database]/dropdownChangeLog.json")
 		print("output: ./ddl-[database]/liquibaseFiles/(datetime)ChangeLog.json")
+		print("table drop output: ./ddl-[database]/liquibaseFiles/DROP_TABLE.(datetime)ChangeLog.json")
 		raise SystemExit(0)
 	elif (len(sys.argv) == 2):
 		# os.path.dirname(os.path.realpath(__file__) gets the pathname of the current file
@@ -641,18 +784,19 @@ if __name__ == "__main__":
 		currentPath = os.path.join(os.path.dirname(os.path.realpath(__file__)), sys.argv[2])
 		dropdownPath = os.path.join(os.path.dirname(os.path.realpath(__file__)), sys.argv[3])
 		wikiPath = os.path.join(os.path.dirname(os.path.realpath(__file__)), "ddl-{}".format(sys.argv[1]), "dropdownChangeLog.json")
-	elif ( 5 <= len(sys.argv) <= 6): # handle output later
+	elif ( 5 <= len(sys.argv) <= 7): # handle output later
 		currentPath = os.path.join(os.path.dirname(os.path.realpath(__file__)), sys.argv[2])
 		dropdownPath = os.path.join(os.path.dirname(os.path.realpath(__file__)), sys.argv[3])
 		wikiPath = os.path.join(os.path.dirname(os.path.realpath(__file__)), sys.argv[4])
 	else:
 		print("Too many parameters!")
-		print("Usage: jsonCompare.py [database] [database change log] [wiki change log] [dropdwon change log] [output]")
+		print("Usage: jsonCompare.py [database] [database change log] [wiki change log] [dropdwon change log] [output] [table drop output]")
 		print("Change logs are optional parameters. Default parameters are:")
 		print("database change log: ./ddl-[database]/liquibaseFiles/currentChangeLog.json")
 		print("wiki change log: ./ddl-[database]/wikiChangeLog.json")
 		print("dropdown change log: ./ddl-[database]/dropdownChangeLog.json")
 		print("output: ./ddl-[database]/liquibaseFiles/(datetime)ChangeLog.json")
+		print("table drop output: ./ddl-[database]/liquibaseFiles/DROP_TABLE.(datetime)ChangeLog.json")
 		raise SystemExit(0)
 	with open(currentPath, "r") as file:
 		currentChangeLogFile = json.load(file) #Data is a dict of a list of changeSet dictionaries
@@ -692,6 +836,7 @@ if __name__ == "__main__":
 		wikiIndexList = []
 		currentTableList = []
 		currentIndexList = []
+		oldToNewTableName = {}
 
 		for wikiCS in wikiChangeSets:
 			if "createTable" in wikiCS.changes[0]:
@@ -703,14 +848,39 @@ if __name__ == "__main__":
 				currentTableList.append(currentCS.changes[0]["createTable"]["tableName"])
 			elif "createIndex" in currentCS.changes[0]:
 				currentIndexList.append(currentCS.changes[0]["createIndex"]["indexName"])
-		# TODO: could attempt to detect table name changes with this - would have to share all columns for it to stand out though
 
+		tableEdit = renameTableDiff(wikiChangeSets, currentChangeSets, oldToNewTableName)
+		if(tableEdit != []): 
+			# If was a drop table, is only table drops. Put in a seperate file to avoid accidental data loss
+			if("dropTable" in tableEdit[0].changes[0]):
+				# set up a seperate file for deletes
+				deleteChangeLog = ChangeLog()
+				deleteChangeLog.setChangeSetList(tableEdit)
+
+				print("Creating seperate file for table drops. Confirm you wish to drop these tables before adding")
+				deleteChangeLog.updateJSON()
+				diffJSON = json.dumps(deleteChangeLog, cls=MyEncoder, indent=4)
+				if (len(sys.argv) != 7):
+					currentDateTime = datetime.datetime.now()
+					outputFileName = "DROP_TABLE." + str(currentDateTime)[0:10] + "." + str(currentDateTime.hour) + "." + str(currentDateTime.minute) + "." + str(currentDateTime.second) + "ChangeLog.json"	
+					writePath = os.path.join(os.path.dirname(os.path.realpath(__file__)), "ddl-{}".format(sys.argv[1]), "liquibaseFiles", outputFileName)
+				else:
+					writePath = os.path.join(os.path.dirname(os.path.realpath(__file__)), sys.argv[6])
+				f = open(writePath, "w")
+				f.write(diffJSON)
+				f.close()
+				print("See %s for the table drop commands" % writePath)
+				print("checking to make sure formatting is correct...")
+				with open(writePath, "r") as file:
+					testChangeLogFile = json.load(file)
+				testChangeLog = ChangeLog(testChangeLogFile)
+			# if no drops, safe to add renames to the general changelog
+			else:
+				for tEdit in tableEdit:
+					diffChangeSetList.append(tEdit)
+				
 		for wikiCS in wikiChangeSets:
-			# If the changeSet is a new table, add it to the difference and go to next changeSet
-			if "createTable" in wikiCS.changes[0]:
-				if wikiCS.changes[0]["createTable"]["tableName"] not in currentTableList:
-					diffChangeSetList.append(wikiCS)
-					continue
+			# New/Renamed tables are handled above; just consider indexes
 			# If the changeSet is a new index, add it to the difference and go to next changeSet
 			if "createIndex" in wikiCS.changes[0]:
 				if wikiCS.changes[0]["createIndex"]["indexName"] not in currentIndexList:
@@ -722,8 +892,9 @@ if __name__ == "__main__":
 				# If the changeSet is a table
 				if "createTable" in wikiCS.changes[0] and "createTable" in currentCS.changes[0]:
 					# if the tables are equal
-					if wikiCS.changes[0]["createTable"]["tableName"] == currentCS.changes[0]["createTable"]["tableName"]:
-
+					wikiTable = wikiCS.changes[0]["createTable"]["tableName"]
+					currentTable = currentCS.changes[0]["createTable"]["tableName"]
+					if wikiTable == currentTable or (currentTable in oldToNewTableName and oldToNewTableName[currentTable] == wikiTable):
 						# add changeSet to list with appropriate drop columns
 						# only allow to drop, reorder, OR add/remove
 						drops = dropColumnDiff(wikiCS, currentCS)
@@ -752,7 +923,6 @@ if __name__ == "__main__":
 							for modifyChangeSet in temp:
 								diffChangeSetList.append(modifyChangeSet)
 						
-# TODO: note that if columns are both added and dropped from the same table, it COULD be a modify and need to flag it for review...
 				# If the changeSet is an index
 				elif "createIndex" in wikiCS.changes[0] and "createIndex" in currentCS.changes[0]:
 					# if we're looking at the same index and same table
@@ -772,10 +942,10 @@ if __name__ == "__main__":
 					#	Can probably be implemented with generating a sql file for rollbacks of all changesets,
 					#	parsing file, writing relevant sql commands to a new file and executing the new file on the database
 					# TODO: look into possibility of table name changes
-#					print("Note that a table is in the current file, but not in the wiki file:\n{}".format(changeSet))
+					print("Note that a table is in the current file, but not in the wiki file:\n{}".format(changeSet))
 					print("Please remove this table from the database manually or rollback to a certain date or changeset using Liquibase")
-#					print('You can rollback to a certain date in the database by using "liquibase rollbackDate [date]"')
-#					print('You can rollback to a certain changeSet by using "liquibase rollback [changeSet tag]"')
+					print('You can rollback to a certain date in the database by using "liquibase rollbackDate [date]"')
+					print('You can rollback to a certain changeSet by using "liquibase rollback [changeSet tag]"')
 			if "createIndex" in changeSet.changes[0]:
 				if changeSet.changes[0]["createIndex"]["indexName"] not in wikiIndexList:
 					# Shouln't happen unless there's been (offline) mods to the current database without using the wiki
@@ -783,10 +953,10 @@ if __name__ == "__main__":
 					# TODO: Handling of automating rollback of specific changesets.
 					#	Can probably be implemented with generating a sql file for rollbacks of all changesets,
 					#	parsing file, writing relevant sql commands to a new file and executing the new file on the database
-#					print("Note that an index is in the current file, but not in the wiki file:\n{}".format(changeSet))
+					print("Note that an index is in the current file, but not in the wiki file:\n{}".format(changeSet))
 					print("Please remove this index from the database manually or rollback to a certain date or changeset using Liquibase")
-#					print('You can rollback to a certain date in the database by using "liquibase rollbackDate [date]"')
-#					print('You can rollback to a certain changeSet by using "liquibase rollback [changeSet tag]"')
+					print('You can rollback to a certain date in the database by using "liquibase rollbackDate [date]"')
+					print('You can rollback to a certain changeSet by using "liquibase rollback [changeSet tag]"')
 
 		diffChangeLog.setChangeSetList(diffChangeSetList)
 
