@@ -253,7 +253,7 @@ class MyEncoder(JSONEncoder):
 
 
 # remove column PK and set the position for adding a column
-def setupAddColumnDiff(column, pos):
+def setupAddColumnDiff(column):
 	#before adding, take off primary key; have to update primary key separately 
 	if "constraints" in column["column"]:
 		if "primaryKey" in column["column"]["constraints"]:
@@ -264,8 +264,6 @@ def setupAddColumnDiff(column, pos):
 				temp["column"]["constraints"] = column["column"]["constraints"].copy()
 				temp["column"]["constraints"]["primaryKey"] = False
 				column = temp
-	# find out what position to add column in
-	column["column"]["position"] = pos
 	return column
 
 # determine which columns were added and which need renamed. Replaces the old add columns functionality 
@@ -311,13 +309,18 @@ def addRenameColumnDiff(wiki, current):
 			# if the current set matches, all previous were added
 			if(wikiCol == curCol):
 				if(colBuf): tempInd = wikiColumnList.index(colBuf[0])
+				if(tempInd > 0): prev = wikiColumnList[tempInd-1]
+				else: prev = ""
 				while(colBuf):
 					colBuf.pop(0)
 					# add to set of columns to add; can do in one changeset at end
 					curCol = wikiColumns[tempInd]
-					curCol = setupAddColumnDiff(curCol, tempInd)
+					curCol = setupAddColumnDiff(curCol)
+					if(prev != ""): curCol["column"]["afterColumn"] = prev
+					else: curCol["column"]["position"] = 0 # this may cause a problem with mariadb... can only do after...?
 					addColList.append(curCol)
 					tempInd += 1 # all in a row, so are in consecuative positions 
+					prev = curCol["column"]["name"]
 				state = MATCH
 			# if the current macthes a value found later, must have been renames
 			elif(wikiCol in currentColumnList):
@@ -370,12 +373,17 @@ def addRenameColumnDiff(wiki, current):
 			exit()
 	# check for any columns that still need added
 	elif(j < len(wikiColumnList)):
+		if(j > 0): prev = wikiColumnList[j-1]
+		else: prev = ""
 		# add in the remainder of the values from the wiki
 		while(j < len(wikiColumnList)):
 			# add to set of columns to add; can do in one changeset at end
 			curCol = wikiColumns[j]
-			curCol = setupAddColumnDiff(curCol, j)
+			curCol = setupAddColumnDiff(curCol)
+			if(prev != ""): curCol["column"]["afterColumn"] = prev
+			else: curCol["column"]["position"] = 0 # FIXME: this may cause a problem with mariadb... can only do after...?
 			addColList.append(curCol)
+			prev = curCol["column"]["name"]
 			j += 1
 
 	if(colBuf): 
@@ -429,6 +437,7 @@ def dropColumnDiff(wiki, current):
 		count += 1
 	return resCSList
 
+# changes to data type of a column if needed
 def modifyColumnDiff(wiki, current):
 	resCSList = []
 	wikiColumns = wiki.changes[0]["createTable"]["columns"]
@@ -444,19 +453,21 @@ def modifyColumnDiff(wiki, current):
 		currentColumnList.append(column["column"]["name"])
 
 	for column in wikiColumns:
-		if column not in currentColumns and column["column"]["name"] in currentColumnList:
+		# if column was renamed, the type change is handled by addRenameColumnDiff
+		if(column["column"]["name"] in currentColumnList):
+			curInd = currentColumnList.index(column["column"]["name"])
+		else: curInd = -1
+		if(curInd >= 0 and column["column"]["type"] != currentColumns[curInd]["column"]["type"]):
 			resColumns.append(column)
 			resColumnList.append(column["column"]["name"])
-	for column in currentColumns:
-		if column not in wikiColumns and column["column"]["name"] in wikiColumnList and column["column"]["name"] not in resColumnList:
-			print("Column in current, but not in wiki. Cannot change data type of column:", column)
 
 	if len(resColumns) == 0:
 		return []
 
 	count = 0
 	for column in resColumns:
-		resChangeSet = ChangeSet({"id": wiki.id + "-{}".format(count), "author": "jsonCompare.py"})
+		# NOTE: needs the extra -1- to avoid conflicting with column renames
+		resChangeSet = ChangeSet({"id": wiki.id + "-1-{}".format(count), "author": "jsonCompare.py"})
 		resChangeSet.changes = [{"modifyDataType": {"columnName": column["column"]["name"], "newDataType": 
 					column["column"]["type"], "tableName": wiki.changes[0]["createTable"]["tableName"]}}]
 		resChangeSet.updateJSON()
@@ -714,8 +725,6 @@ def renameTableDiff(wikiCS, currentCS, oldToNewTableName):
 		# keep track of all of the best matches for each still in current
 		bestMatch = []
 		levResults = []
-		#levResults.append(wikiTableNames.copy())
-		#levResults[0].insert(0, "")
 		count = 0  # keep ids unique
 
 		for i, curTable in enumerate(currentTableNames):
@@ -934,18 +943,7 @@ if __name__ == "__main__":
 							diffChangeSetList.append(temp[1])
 
 		for changeSet in currentChangeSets:
-			if "createTable" in changeSet.changes[0]:
-				if changeSet.changes[0]["createTable"]["tableName"] not in wikiTableList:
-					# Shouln't happen unless there's been (offline) mods to the current database without using the wiki
-					#	or something has been deleted from the wiki
-					# TODO: Handling of automating rollback of specific changesets.
-					#	Can probably be implemented with generating a sql file for rollbacks of all changesets,
-					#	parsing file, writing relevant sql commands to a new file and executing the new file on the database
-					# TODO: look into possibility of table name changes
-					print("Note that a table is in the current file, but not in the wiki file:\n{}".format(changeSet))
-					print("Please remove this table from the database manually or rollback to a certain date or changeset using Liquibase")
-					print('You can rollback to a certain date in the database by using "liquibase rollbackDate [date]"')
-					print('You can rollback to a certain changeSet by using "liquibase rollback [changeSet tag]"')
+			# NOTE: No longer concerned about tables only existant in current changeset; they would be renamed or dropped
 			if "createIndex" in changeSet.changes[0]:
 				if changeSet.changes[0]["createIndex"]["indexName"] not in wikiIndexList:
 					# Shouln't happen unless there's been (offline) mods to the current database without using the wiki
