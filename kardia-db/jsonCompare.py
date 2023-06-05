@@ -329,8 +329,8 @@ def addRenameColumnDiff(wiki, current):
 					print("ERROR: not enough columns in current to rename")
 					exit()
 				elif(len(colBuf) == 0):
-					print("ERROR: missing columns to rename; a reordering or delete must have occured")
-					return []
+					print("ERROR: Cannot add or rename columns in table "+wiki.changes[0]["createTable"]["tableName"]+"; a reordering or delete must have occured")
+					exit()
 
 				while(colBuf):
 					curCol = colBuf.pop(0)
@@ -416,7 +416,8 @@ def dropColumnDiff(wiki, current):
 			resColumns.append(column)
 
 	if(len(currentColumnList) <= len(wikiColumnList)):
-		return [] # any possible changes must be renames, adds, or reorders
+		print("ERROR: no columns found to delete")
+		exit()
 	
 	# Must have no new column names, and order must be the same
 	wikiTemp = wikiColumnList.copy()
@@ -424,7 +425,7 @@ def dropColumnDiff(wiki, current):
 		if wikiTemp and columnName == wikiTemp[0]:
 			wikiTemp.pop(0)
 	if len(wikiTemp) != 0:
-		print("Error: Table "+wiki.changes[0]["CreateTable"]["TableName"]+" dropped and changed columns: cannot determine changeset")
+		print("Error: Table "+wiki.changes[0]["createTable"]["tableName"]+" dropped and changed columns: cannot determine changeset")
 		exit()
 
 	count = 0
@@ -526,6 +527,10 @@ def reorderColumnDif(wiki, current):
 	currentColumnList = []
 
 	# should have all of the same columns, just out of order
+	# should only run if there is work to do; error if requirements not met
+	if(len(wikiColumns) != len(currentColumns)):
+		print("ERROR: cannot reorder if there are any added or removed columns")
+		exit()
 	for column in wikiColumns:
 		wikiColumnList.append(column["column"]["name"])
 	isMixed = False
@@ -534,11 +539,11 @@ def reorderColumnDif(wiki, current):
 		if(ind >= len(wikiColumnList)): break # stop if sizes are not even
 		if(currentColumnList[ind] != wikiColumnList[ind]): isMixed = True
 		if(not column["column"]["name"] in wikiColumnList):
-			return [] # cannot reorder if there are any new or renamed columns
+			print("ERROR: cannot reorder if there are any new or renamed columns")
+			exit()
 	if (not isMixed): 
-		return [] # no need to reorder; already in order
-	if(len(currentColumnList) != len(wikiColumnList)):
-		return [] # cannot reorder if columns missing or added
+		print("ERROR: Nothing to reorder")
+		exit()
 	
 	# make it faster to map column to index
 	wikiColInd = {} # the indexes for all of the wiki columns
@@ -558,7 +563,7 @@ def reorderColumnDif(wiki, current):
 		startIndex = i
 		# find first char before it that could be in the run (uses self if none)
 		for j in range(i):
-			if(wikiColInd[currentColumnList[i]] > wikiColInd[currentColumnList[j]]):
+			if(wikiColInd[compCol] > wikiColInd[currentColumnList[j]]):
 				compCol = currentColumnList[j]
 				startIndex = j
 		j = startIndex
@@ -748,7 +753,6 @@ def renameTableDiff(wikiCS, currentCS, oldToNewTableName):
 				print("	Problem was caused by "+curTable+" and "+(currentTableNames[bestMatch.index(bestInd)])+" over "+wikiTableNames[bestInd])
 				exit()
 
-		print("concluded that the results were as follows:")
 		for i, j in enumerate(bestMatch):
 			resChangeSet = ChangeSet({"id": wikiCS[0].id + "-{}".format(count), "author": "jsonCompare.py"})
 			resChangeSet.changes = [{"renameTable": {"oldTableName":currentTableNames[i], "newTableName": wikiTableNames[j]}}]
@@ -906,20 +910,23 @@ if __name__ == "__main__":
 					if wikiTable == currentTable or (currentTable in oldToNewTableName and oldToNewTableName[currentTable] == wikiTable):
 						# add changeSet to list with appropriate drop columns
 						# only allow to drop, reorder, OR add/remove
-						drops = dropColumnDiff(wikiCS, currentCS)
-						moves = reorderColumnDif(wikiCS, currentCS)
-						addRename = addRenameColumnDiff(wikiCS, currentCS)
-						if addRename != []:
-							for addReChangeSet in addRename:
-								diffChangeSetList.append(addReChangeSet)
-						if drops != []:
-							#TODO: HANDLE ERRORS
-							for dropChangeSet in drops:
-								diffChangeSetList.append(dropChangeSet)
-						elif moves != []:
-							#TODO: HANDLE ERRORS
-							for moveChangeSet in moves:
-								diffChangeSetList.append(moveChangeSet)
+						temp = []
+						wikiColumnNames = [col["column"]["name"] for col in wikiCS.changes[0]["createTable"]["columns"]]
+						currentColumnNames = [col["column"]["name"] for col in currentCS.changes[0]["createTable"]["columns"]]
+						# determine if drops, adds/renames, or reordering occured. 
+						if(len(wikiColumnNames) < len(currentColumnNames)):
+							# must have been a dropped column
+							temp = dropColumnDiff(wikiCS, currentCS)
+						elif(len(set(wikiColumnNames).difference(set(currentColumnNames))) > 0 ):
+							# there is a column in the wiki table not found in the current table. Must be add or rename
+							temp = addRenameColumnDiff(wikiCS, currentCS)
+						elif(set(wikiColumnNames) == set(currentColumnNames) and wikiColumnNames != currentColumnNames):
+							# same columns, different order. 
+							temp = reorderColumnDif(wikiCS, currentCS)
+
+						if temp != []:
+							for changes in temp:
+								diffChangeSetList.append(changes)
 							
 						# Column changes do not interfere, so can alway check 
 						temp = pkColumnDiff(wikiCS, currentCS)
@@ -946,16 +953,15 @@ if __name__ == "__main__":
 			# NOTE: No longer concerned about tables only existant in current changeset; they would be renamed or dropped
 			if "createIndex" in changeSet.changes[0]:
 				if changeSet.changes[0]["createIndex"]["indexName"] not in wikiIndexList:
-					# Shouln't happen unless there's been (offline) mods to the current database without using the wiki
-					#	or something has been deleted from the wiki
-					# TODO: Handling of automating rollback of specific changesets.
-					#	Can probably be implemented with generating a sql file for rollbacks of all changesets,
-					#	parsing file, writing relevant sql commands to a new file and executing the new file on the database
-					print("Note that an index is in the current file, but not in the wiki file:\n{}".format(changeSet))
-					print("Please remove this index from the database manually or rollback to a certain date or changeset using Liquibase")
-					print('You can rollback to a certain date in the database by using "liquibase rollbackDate [date]"')
-					print('You can rollback to a certain changeSet by using "liquibase rollback [changeSet tag]"')
+					# drop the changeset. May have been a name change or actually removed. Either way, no longer needed
+					# make sure the table name is correct
+					tableName = changeSet.changes[0]["createIndex"]["tableName"]
+					if(tableName in oldToNewTableName): tableName = oldToNewTableName[tableName]
 
+					dropChangeSet = ChangeSet({"id": changeSet.id, "author": "jsonCompare.py"})
+					dropChangeSet.changes = [{"dropIndex": {"indexName": changeSet.changes[0]["createIndex"]["indexName"], "tableName": tableName}}]
+					dropChangeSet.updateJSON()
+					diffChangeSetList.append(dropChangeSet)
 		diffChangeLog.setChangeSetList(diffChangeSetList)
 
 
