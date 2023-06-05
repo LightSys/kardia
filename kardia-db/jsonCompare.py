@@ -6,6 +6,7 @@ import sys			#Used to get command line inputs (sys.argv)
 import datetime		#Used for now() function to name output changeLog file
 import os			#Used to rollback changeSets
 from Levenshtein import ratio
+from math import floor
 
 """How to use this file:
 Use liquibase to generate a full changelog of the database using liquibase
@@ -553,55 +554,56 @@ def reorderColumnDif(wiki, current):
 	# find the optimal number of moves to sort the table 
 	# this is based on finding the largest set of rows that can be left alone, and then
 	# moving all of the rest.
-	maxSize = -1	# keep track of the largest consecutive run 
-	maxRun = []	# all of the columns in the run
-	for i in range(len(currentColumnList)):
-		curRun = []
-		curSize = 0
-		iColumn = currentColumnList[i]
-		compCol = currentColumnList[i] # use this to keep track of run.
-		startIndex = i
-		# find first char before it that could be in the run (uses self if none)
-		for j in range(i):
-			if(wikiColInd[compCol] > wikiColInd[currentColumnList[j]]):
-				compCol = currentColumnList[j]
-				startIndex = j
-		j = startIndex
-		# loop through from startIndex until the end, looking for columns that fit run
-		while (j < len(currentColumnList)):
-			jColumn = currentColumnList[j]
-			# make sure fits in run
-			if(wikiColInd[compCol] <= wikiColInd[jColumn]):
-				# make sure works with the current row as well 
-				if((i < j and wikiColInd[iColumn] < wikiColInd[jColumn])
-				or (i > j and wikiColInd[iColumn] > wikiColInd[jColumn])
-				or (i == j)):
-					curSize += 1
-					compCol = jColumn
-					curRun.append(jColumn)
-			j += 1
-		# update best
-		if(curSize > maxSize):
-			maxSize = curSize
-			maxRun = curRun
+	
+	prevColInd = [-1]*len(currentColumnList)	# keeps track of the previous column for each column in one of the best index lists
+	bestInds = [-1]*(len(currentColumnList)+1)	# stores indexes for the last columns in a subset. The length of the subset = index into bestInds
+	longest = 0 					# longest nonconsecutive subset have currently found
 
-	count=0 	# keep the indexes unique
+	for i in range(len(currentColumnList)):
+		# find the smallest (first in order) column which the current column is smaller than
+		# uses a binary search
+		lowest = 1		# lowest index could replace/add
+		highest = longest+1	# highest index could replace/add
+		while(lowest < highest):
+			midpoint = lowest + floor((highest - lowest)/2) # midpoint will be <= lowest
+			# compare where midpoint column and current column rank in target (wiki) columns
+			curCol = currentColumnList[i]
+			midCol = currentColumnList[bestInds[midpoint]]
+			if(wikiColInd[midCol] >= wikiColInd[curCol]):
+				highest = midpoint
+			else: 
+				lowest = midpoint+1
+		
+		newLowest = lowest
+		prevColInd[i] = bestInds[newLowest-1]
+		bestInds[newLowest] = i # this will either replace a higher end on a exitsting subset, or will create a new, longer subset
+
+		if(newLowest > longest):
+			longest = newLowest
+	
+	# generate the resulting longest sequence
+	longestSubset = [""]*longest
+	prevInd = prevColInd[longest]
+	j = longest-1
+	while(j >= 0):
+		longestSubset[j] = currentColumnNames[prevInd]
+		prevInd = prevColInd[prevInd]
+		j -= 1
+
+
+	count=0 	# keep the liquibase command indexes unique
 	# generate the changelog
-	# NOTE: currently also sorting the columns to be sure the instructions work
 	for ind, curCol in enumerate(wikiColumnList): # needs to be done in the same order as we want it to end in
 		curCol = wikiColumnList[ind]
-		if(curCol not in maxRun):
-			toMove = currentColumnList.pop(currentColumnList.index(curCol))
+		if(curCol not in longestSubset):
 			# find which column to place after
 			prev = ""
 			if(ind == 0):
 				# move to first position
 				prev = "FIRST"
-				currentColumnList.insert(0, toMove) #delete?
 			else:
 				# move after the column that should be before it
 				prev = "AFTER "+wikiColumnList[ind-1]
-				currentColumnList.insert(currentColumnList.index(wikiColumnList[ind - 1])+1, toMove)
 
 			# find data type
 			dataType = wikiColumns[ind]["column"]["type"]
@@ -613,11 +615,6 @@ def reorderColumnDif(wiki, current):
 			tempSet.updateJSON()
 			resCSList.append(tempSet)
 			count += 1 
-	# check that everything is sorted
-	prev = ""
-	for col in currentColumnList:
-		if(prev != ""): assert(wikiColInd[prev] < wikiColInd[col])
-		prev = col
 	return resCSList
 
 # Drop and re-add indexes if columns are different between wiki and current
