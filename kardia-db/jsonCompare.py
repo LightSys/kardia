@@ -272,6 +272,7 @@ def addRenameColumnDiff(wiki, current):
 	resCSList = []
 	addColCS = ChangeSet({"id": wiki.id, "author": "jsonCompare.py"})
 	addColList = []
+	addColFirst = ChangeSet({"id": wiki.id+"-1", "author": "jsonCompare.py"})
 	wikiColumns = wiki.changes[0]["createTable"]["columns"]
 	currentColumns = current.changes[0]["createTable"]["columns"]
 	wikiColumnList = []
@@ -318,8 +319,10 @@ def addRenameColumnDiff(wiki, current):
 					curCol = wikiColumns[tempInd]
 					curCol = setupAddColumnDiff(curCol)
 					if(prev != ""): curCol["column"]["afterColumn"] = prev
-					else: curCol["column"]["position"] = 0 # this may cause a problem with mariadb... can only do after...?
-					addColList.append(curCol)
+					else: # mariaDB does not allow adding to a position, and liquibase does not support adding to first, so have to move
+						addColFirst.changes = [{"sql": {"dbms": "mysql, mariadb", "sql":"ALTER TABLE "
+				+wiki.changes[0]["createTable"]["tableName"]+" MODIFY "+curCol["column"]["name"]+" "+curCol["column"]["type"]+" first"}}]
+					
 					tempInd += 1 # all in a row, so are in consecuative positions 
 					prev = curCol["column"]["name"]
 				state = MATCH
@@ -358,7 +361,6 @@ def addRenameColumnDiff(wiki, current):
 				print("ERROR: Too few columns to rename at end")
 				exit()
 			while(colBuf):
-				# TODO: do actual changelog stuff
 				curCol = colBuf.pop(0)
 				curInd = wikiColumnList.index(curCol)
 				dataType = wikiColumns[curInd]["column"]["type"]
@@ -382,7 +384,9 @@ def addRenameColumnDiff(wiki, current):
 			curCol = wikiColumns[j]
 			curCol = setupAddColumnDiff(curCol)
 			if(prev != ""): curCol["column"]["afterColumn"] = prev
-			else: curCol["column"]["position"] = 0 # FIXME: this may cause a problem with mariadb... can only do after...?
+			else: # mariaDB does not allow adding to a position, and liquibase does not support adding to first, so have to move
+				addColFirst.changes = [{"sql": {"dbms": "mysql, mariadb", "sql":"ALTER TABLE "
+				+wiki.changes[0]["createTable"]["tableName"]+" MODIFY "+curCol["column"]["name"]+" "+curCol["column"]["type"]+" first"}}]
 			addColList.append(curCol)
 			prev = curCol["column"]["name"]
 			j += 1
@@ -395,7 +399,7 @@ def addRenameColumnDiff(wiki, current):
 		addColCS.changes = [{"addColumn": {"tableName": wiki.changes[0]["createTable"]["tableName"], "columns": addColList}}]
 		addColCS.updateJSON()
 		resCSList.append(addColCS)
-	
+	if(addColFirst.changes != []): resCSList.append(addColFirst)
 	return resCSList
 
 
@@ -414,7 +418,7 @@ def dropColumnDiff(wiki, current):
 	for column in currentColumns:
 		currentColumnList.append(column["column"]["name"])
 		if column not in wikiColumns and column["column"]["name"] not in wikiColumnList:
-			resColumns.append(column)
+			resColumns.insert(0, column) # load in reverse order to make rollbacks easier
 
 	if(len(currentColumnList) <= len(wikiColumnList)):
 		print("ERROR: no columns found to delete")
@@ -433,7 +437,16 @@ def dropColumnDiff(wiki, current):
 	for column in resColumns:
 		resChangeSet = ChangeSet({"id": wiki.id + "-{}".format(count), "author": "jsonCompare.py"})
 		resChangeSet.changes = [{"dropColumn": {"tableName": wiki.changes[0]["createTable"]["tableName"], "columnName": column["column"]["name"]}}]
-		# resChangeSet.changes.append({"dropColumn": {"tableName": wiki.changes[0]["createTable"]["tableName"], "columnName": column}})
+		# make rollbacks possible. 
+		# Since columns dropped in reverse order, the rollback will go in order; indexes are the same
+		rollbackCol = setupAddColumnDiff(column) # don't add as PK. TODO: make sure the PK status is handled elswhere
+		curPos = currentColumnList.index(column["column"]["name"])
+		if(curPos > 0): rollbackCol["column"]["afterColumn"] = currentColumnList[curPos-1]
+		resChangeSet.rollback = [{"addColumn":{"tableName":wiki.changes[0]["createTable"]["tableName"], "columns":[rollbackCol]}}]
+		if(curPos == 0): # need to move to the front
+			moveColFirst = {"sql": {"dbms": "mysql, mariadb", "sql":"ALTER TABLE "
+				+wiki.changes[0]["createTable"]["tableName"]+" MODIFY "+column["column"]["name"]+" "+column["column"]["type"]+" first"}}
+			resChangeSet.rollback.append(moveColFirst)
 		resChangeSet.updateJSON()
 		resCSList.append(resChangeSet)
 		count += 1
@@ -480,14 +493,16 @@ def modifyColumnDiff(wiki, current):
 
 # check if the primary key needs to change
 def pkColumnDiff(wiki, current):
-	resCSList = [ChangeSet({"id": wiki.id+"-PK0", "author": "jsonCompare.py"}), ChangeSet({"id": wiki.id+"-PK1", "author": "jsonCompare.py"})] 
+	dropOldKey = ChangeSet({"id": wiki.id+"-PK0", "author": "jsonCompare.py"})
+	addNewKey = ChangeSet({"id": wiki.id+"-PK1", "author": "jsonCompare.py"})
+	resCSList = []
 	wikiKeyList = []
 	currentKeyList = []
 	wikiColumns = wiki.changes[0]["createTable"]["columns"]
 	currentColumns = current.changes[0]["createTable"]["columns"]
 
 	# get list of current and wiki primary keys
-	
+
 	for column in wikiColumns:
 		if "constraints" in column["column"]:
 			if "primaryKey" in column["column"]["constraints"]:
@@ -512,10 +527,16 @@ def pkColumnDiff(wiki, current):
 	if isSameKey:
 		return []
 
-	resCSList[0].changes = [{"dropPrimaryKey": {"constraintName": "PRIMARY", "dropIndex":True, "tableName": wiki.changes[0]["createTable"]["tableName"]}}]
-	resCSList[0].updateJSON()
-	resCSList[1].changes = [{"addPrimaryKey": {"columnNames":', '.join(wikiKeyList), "tableName": wiki.changes[0]["createTable"]["tableName"]}}]
-	resCSList[1].updateJSON()
+	# drop the old PK
+	dropOldKey.changes = [{"dropPrimaryKey": {"constraintName": "PRIMARY", "dropIndex":True, "tableName": wiki.changes[0]["createTable"]["tableName"]}}]
+	dropOldKey.rollback = [{"addPrimaryKey": {"columnNames":', '.join(currentKeyList), "tableName": wiki.changes[0]["createTable"]["tableName"]}}]
+	dropOldKey.updateJSON()
+	resCSList.append(dropOldKey)
+	# make sure there is a new PK to add
+	if(len(wikiKeyList) > 0):
+		addNewKey.changes = [{"addPrimaryKey": {"columnNames":', '.join(wikiKeyList), "tableName": wiki.changes[0]["createTable"]["tableName"]}}]
+		addNewKey.updateJSON()
+		resCSList.append(addNewKey)
 	return resCSList
 
 # create a changeset to reorder columns 
@@ -583,14 +604,16 @@ def reorderColumnDif(wiki, current):
 	
 	# generate the resulting longest sequence
 	longestSubset = [""]*longest
-	prevInd = prevColInd[longest]
+	prevInd = bestInds[longest]
+	print(prevColInd)
+	print(longest)
 	j = longest-1
 	while(j >= 0):
 		longestSubset[j] = currentColumnNames[prevInd]
 		prevInd = prevColInd[prevInd]
 		j -= 1
 
-
+	print(currentColumnList)
 	count=0 	# keep the liquibase command indexes unique
 	# generate the changelog
 	for ind, curCol in enumerate(wikiColumnList): # needs to be done in the same order as we want it to end in
@@ -604,7 +627,6 @@ def reorderColumnDif(wiki, current):
 			else:
 				# move after the column that should be before it
 				prev = "AFTER "+wikiColumnList[ind-1]
-
 			# find data type
 			dataType = wikiColumns[ind]["column"]["type"]
 
@@ -612,6 +634,21 @@ def reorderColumnDif(wiki, current):
 			tempSet = ChangeSet({"id": wiki.id+"-"+str(count), "author": "jsonCompare.py"})
 			tempSet.changes = [{"sql": {"dbms": "mysql, mariadb", "sql":"ALTER TABLE "
 				+wiki.changes[0]["createTable"]["tableName"]+" MODIFY "+curCol+" "+dataType+" "+prev}}]
+			
+			# Set up rollback based on current
+			currentIndex = currentColumnList.index(curCol)
+			if(currentIndex == 0): prev = "FIRST"
+			else: prev = "AFTER "+currentColumnList[currentIndex -1]
+			dataType = currentColumns[ind]["column"]["type"]
+			tempSet.rollback = [{"sql": {"dbms": "mysql, mariadb", "sql":"ALTER TABLE "
+				+wiki.changes[0]["createTable"]["tableName"]+" MODIFY "+curCol+" "+dataType+" "+prev}}]
+			
+			# now have to take step with currentColumnList so the next rollback can properly undo the step
+			currentColumnList.remove(curCol)
+			if(ind == 0): currentColumnList.insert(0, curCol)
+			else: currentColumnList.insert(currentColumnList.index(wikiColumnList[ind-1])+1, curCol)
+			print(currentColumnList)
+
 			tempSet.updateJSON()
 			resCSList.append(tempSet)
 			count += 1 
@@ -627,6 +664,7 @@ def addIndexDiff(wiki, current):
 			# drop and re-add all columns if there is at least one different column
 			dropChangeSet = ChangeSet({"id": wiki.id + "-1", "author": "jsonCompare.py"})
 			dropChangeSet.changes = [{"dropIndex": {"indexName": wiki.changes[0]["createIndex"]["indexName"], "tableName": wiki.changes[0]["createIndex"]["tableName"]}}]
+			dropChangeSet.rollback = [{"createIndex": {"indexName": wiki.changes[0]["createIndex"]["indexName"], "tableName": wiki.changes[0]["createIndex"]["tableName"], "columns": currentColumns}}]
 			dropChangeSet.updateJSON()
 			resCSList.append(dropChangeSet)
 			addChangeSet = ChangeSet({"id": wiki.id + "-2", "author": "jsonCompare.py"})
@@ -700,6 +738,7 @@ def renameTableDiff(wikiCS, currentCS, oldToNewTableName):
 			if not table in wikiTableNames:
 				resChangeSet = ChangeSet({"id": wikiCS[0].id + "-{}".format(count), "author": "jsonCompare.py"})
 				resChangeSet.changes = [{"dropTable": {"tableName":table}}]
+				resChangeSet.rollback = currentTableList[currentTableNames.index(table)]
 				resChangeSet.updateJSON()
 				resCSList.append(resChangeSet)
 				count += 1
@@ -908,6 +947,13 @@ if __name__ == "__main__":
 						# add changeSet to list with appropriate drop columns
 						# only allow to drop, reorder, OR add/remove
 						temp = []
+
+						# Column changes do not interfere, so can alway check 
+						temp = pkColumnDiff(wikiCS, currentCS)
+						if temp != []:
+							for keyChangeSet in temp:
+								diffChangeSetList.append(keyChangeSet)
+
 						wikiColumnNames = [col["column"]["name"] for col in wikiCS.changes[0]["createTable"]["columns"]]
 						currentColumnNames = [col["column"]["name"] for col in currentCS.changes[0]["createTable"]["columns"]]
 						# determine if drops, adds/renames, or reordering occured. 
@@ -925,11 +971,6 @@ if __name__ == "__main__":
 							for changes in temp:
 								diffChangeSetList.append(changes)
 							
-						# Column changes do not interfere, so can alway check 
-						temp = pkColumnDiff(wikiCS, currentCS)
-						if temp != []:
-							for keyChangeSet in temp:
-								diffChangeSetList.append(keyChangeSet)
 						# add changeSet to list with appropriate modify columns (only data types)
 						temp = modifyColumnDiff(wikiCS, currentCS)
 						if temp != []:
@@ -957,6 +998,7 @@ if __name__ == "__main__":
 
 					dropChangeSet = ChangeSet({"id": changeSet.id, "author": "jsonCompare.py"})
 					dropChangeSet.changes = [{"dropIndex": {"indexName": changeSet.changes[0]["createIndex"]["indexName"], "tableName": tableName}}]
+					dropChangeSet.rollback = [{"createIndex": {"indexName": changeSet.changes[0]["createIndex"]["indexName"], "tableName": changeSet.changes[0]["createIndex"]["tableName"], "columns": changeSet.changes[0]["createIndex"]["columns"]}}]
 					dropChangeSet.updateJSON()
 					diffChangeSetList.append(dropChangeSet)
 		diffChangeLog.setChangeSetList(diffChangeSetList)
