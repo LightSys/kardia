@@ -106,6 +106,22 @@ api_gift "system/querytree"
                     use_having = yes;
                     }
                 }
+
+            LedgerEGGiftImports "system/querytree"
+                {
+                text = "EGGiftImports";
+
+                ledgereggiftimports_list "system/querytree"
+                    {
+                    sql = " select
+                                *
+                            from
+                                identity /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows i
+                            where
+                                :i:a_ledger_number = :ledgers_list:a_ledger_number
+                            ";
+                    }
+                }
             }
         }
     }
