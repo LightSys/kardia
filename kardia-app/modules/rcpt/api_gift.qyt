@@ -42,9 +42,7 @@ api_gift "system/querytree"
                 				    where
                                         :g:a_ledger_number = :ledgers_list:a_ledger_number and
                                         :g:a_batch_number = :ledgerbatches_list:a_batch_number
-                				    group by
-                                        :g:a_ledger_number,
-                                        :g:a_batch_number,
+                                    order by
                                         :g:a_gift_number
                 				    ";
 
@@ -62,9 +60,7 @@ api_gift "system/querytree"
                                                 :i:a_ledger_number = :ledgers_list:a_ledger_number and
                                                 :i:a_batch_number = :ledgerbatches_list:a_batch_number and
                                                 :i:a_gift_number = :ledgerbatchgifts_list:a_gift_number
-                                            group by
-                                                :i:a_ledger_number,
-                                                :i:a_batch_number,
+                                            order by
                                                 :i:a_gift_number,
                                                 :i:a_split_number
                                             ";
