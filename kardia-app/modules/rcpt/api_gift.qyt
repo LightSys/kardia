@@ -61,7 +61,6 @@ api_gift "system/querytree"
                                                 :i:a_batch_number = :ledgerbatches_list:a_batch_number and
                                                 :i:a_gift_number = :ledgerbatchgifts_list:a_gift_number
                                             order by
-                                                :i:a_gift_number,
                                                 :i:a_split_number
                                             ";
                                     }
