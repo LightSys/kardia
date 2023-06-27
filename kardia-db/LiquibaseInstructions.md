@@ -28,6 +28,7 @@
 	```
 	perl make_dropdowns.pl [database]
 	```
+	**NOTE:** If tables need to be dropped, the resulting changeset will be placed in a seperate file to avoid the accidental loss of data, and to make double checking which tables are being dropped far more convenient. 
 5. Navigate up a folder to ```kardia/kardia-db```
 6. enerate the differences between the schema in the current database and the wiki by running the following:
 	```
@@ -51,15 +52,16 @@ Option 3:
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Use "liquibase rollbackCount [num]" to rollback num changeSets  
 <br>
 ## Rules for automated changes with jsonCompare.py:
-1. Do NOT mix reordering columns with adds, renames, or drops
-2. Do NOT mix dropping columns with adds, renames, or reordering
+1. Do NOT mix reordering columns with column adds, renames, or drops
+2. Do NOT mix dropping columns with column adds, renames, or reordering
 3. Do NOT add a column adjacent to a renamed column
 4. Do NOT reame a column to or add a column with the old name of a column that has been renamed in this same set of changes
 5. Do NOT mix dropping tables with renaming tables or adding tables
+	- Note: be careful when renaming tables which are also having columns modified. A similarity huristic is used to match renamed tables to thier new names. If the table changes too much, the function may make inaccurate assumptions. 
 
 **Note:** Rules 1 through 4 apply to changes on a single table, while rule 5 refers to changes to table names.
 
- These rules are designed to keep changest to tables conisting of renames, adds, drops, adds, and reorderings from reaching ambiguous states
+ These rules are designed to keep changest to tables conisting of renames, adds, drops, and reorderings from reaching ambiguous states
 - Operations like changing data types or changing primary keys will not conflict and are thus not considered
 - Rules 1 and 2 remove a significant amount of ambiguity, and should be unobtrusive given they are rarer operations
 - Rule 3 is meant to prevent ambiguous cases such as:
@@ -70,11 +72,14 @@ Option 3:
 
 	a) changing to an old column name as in:
 	```
-	ABC -> XACY ( A>X, B>A, C>C, +Y | +X, A>A, B>C, C>Y)
+	ABC -> XACY ( A>X, B>A, C>C, +Y | +X, A>A, B>C, C>Y) 
 	```
 	b) adding a new column with the name of an old column:
 	```
 	ABC -> XYCABZ (+X, +Y, +C, A>A, B>B, C>Z | A>X, B>Y, C>C, +A, +B, +Z)
 	```
 	Or any mixture of the two, or any case that could be confused with simply reordering columns
-- Rule 5 is similar to rule 2; an add and drop will likely be mistaken for a rename
+- Rule 5 is similar to rule 2; an add and drop would likely be mistaken for a rename
+
+If a change needs to be made that breaks one or more of the above rules, the change can still be made by creating a changelog manually. Once the changelog is created, follow steps 7 and onward ("How to use Liquibase", above) to apply the changes. 
+Alternatively, breaking up the desired illegal change into multiple legal changes may be possible. For example, while the change AB --> BX (A>B, B>X) is illegal (rule 4), creating one changeset with AB --> AX and then creating one with AX --> BX is fine. 

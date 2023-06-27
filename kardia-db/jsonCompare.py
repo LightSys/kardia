@@ -427,8 +427,8 @@ def dropColumnDiff(wiki, current, currToWikiCol):
 		currentColumnList.append(column["column"]["name"])
 		if column not in wikiColumns and column["column"]["name"] not in wikiColumnList:
 			resColumns.insert(0, column) # load in reverse order to make rollbacks easier
-			currToWikiCol[column] = None
-		else: currToWikiCol[column] = wikiColumns[wikiColumnList.index(column)]
+			currToWikiCol[column["column"]["name"]] = None
+		else: currToWikiCol[column["column"]["name"]] = wikiColumns[wikiColumnList.index(column["column"]["name"])]
 
 	if(len(currentColumnList) <= len(wikiColumnList)):
 		print("ERROR: no columns found to delete")
@@ -498,7 +498,6 @@ def modifyColumnDiff(wiki, current):
 		resChangeSet.updateJSON()
 		resCSList.append(resChangeSet)
 		count += 1
-
 	return resCSList
 
 # check if the primary key needs to change
@@ -666,14 +665,35 @@ def attributeColumnDif(wiki, current, currToWikiCol):
 	wikiColumns = wiki.changes[0]["createTable"]["columns"].copy()
 	currentColumns = current.changes[0]["createTable"]["columns"].copy()
 	count = 0
-	
+
+	# make a list of all of the attributes that need to be managed
+	# NOTE: this is NOT the same as the lists used in table name change comparisons
+	attributeList = ['autoIncrement', 'defaultValue', 'defaultValueBoolean', 'defaultValueComputed',
+			'defaultValueConstraintName', 'defaultValueDate', 'defaultValueNumeric']
+	#constraintList = ['checkConstraint', 'deleteCascade', 'deferrable', 'foreignKeyName', 'initiallyDeferred', 
+	#		'notNullConstraintName', 'nullable', 'primaryKey', 'primaryKeyName', 'primaryKeyTablespace', 
+	#		'unique', 'uniqueConstraintName', 'references', 'referencedColumnNames', 
+	#		'referencedTableCatalogName', 'referencedTableName', 'referencedTableSchemaName', 
+	#		'validateForeignKey', 'validateNullable', 'validatePrimaryKey', 'validateUnique']
+
 	# for each column, check each possible attribute
 	for currColumn in currentColumns:
 		currColumn = currColumn["column"]
 		currName = currColumn["name"]
 		wikiColumn = currToWikiCol[currName]["column"]
 		if(wikiColumn == None): continue # if not in cur and wiki, skip
-		# check auto increment
+		# Itterate through possible attributes
+		# check for each constraint
+		for attr in attributeList:
+			inCur = attr in currColumn
+			inWiki = attr in wikiColumn
+			if(inCur and inWiki):
+				print("* Need to determine if attribute "+attr+" on column "+currColumn["name"]+" needs updated "+" in table "+wiki.changes[0]["createTable"]["tableName"])
+			elif(inCur):
+				print("* Need to remove attribute "+attr+" from column "+currColumn["name"]+" in table "+wiki.changes[0]["createTable"]["tableName"])
+			elif(inWiki):
+				print("* Need to add attribute "+attr+" to column "+currColumn["name"]+" in table "+wiki.changes[0]["createTable"]["tableName"])
+
 		if("autoIncrement" in currColumn):
 			if("autoIncrement" in wikiColumn):
 				# assume that autoIncrement wouldn't appear in the table unless it was set to true
@@ -698,7 +718,7 @@ def attributeColumnDif(wiki, current, currToWikiCol):
 					}}]
 				tempCS.rollback = [{"addAutoIncrement": {
 					"columnName": wikiColumn["name"],
-					"columnDataType": wikiColumn["column"]["type"],
+					"columnDataType": wikiColumn["type"],
 					"tableName": wiki.changes[0]["createTable"]["tableName"]
 					}}]
 				if("incrementBy" in currColumn): tempCS.rollback[0]["incrementBy"] = currColumn["incrementBy"]
@@ -758,8 +778,8 @@ def addIndexDiff(wiki, current):
 # make a table into a consistent string suitable for levenshtein and similar alrgorithms
 def tableToString(table):
 	# order of the attributes must be enforced for lev to work properly
-	attributeList = ['name', 'type', 'value', 'autoIncrement', 'computed', 'defaultValueBoolean', 
-			'defaultValueConstraintName', 'defaultValueDate', 'descending', 'incrementBy', 'position', 
+	attributeList = ['name', 'type', 'value', 'autoIncrement', 'defaultValue', 'computed', 'defaultValueBoolean', 'defaultValueComputed',
+			'defaultValueConstraintName', 'defaultValueDate', 'defaultValueNumeric', 'descending', 'incrementBy', 'position', 
 			'remarks', 'startWith', 'valueBlobFile', 'valueBoolean', 'valueClobFile', 'valueComputed', 
 			'valueDate', 'valueNumeric']
 	constraintList = ['checkConstraint', 'deleteCascade', 'deferrable', 'foreignKeyName', 'initiallyDeferred', 
@@ -786,7 +806,7 @@ def tableToString(table):
 
 # Find which tables have most likley been renamed, added, or deleted. 
 # NOTE: Tables cannot be dropped at the same time as an add or rename
-def renameTableDiff(wikiCS, currentCS, oldToNewTableName, oldToNewCol):
+def renameTableDiff(wikiCS, currentCS, oldToNewTableName):
 	resCSList = []
 	wikiTableList = []
 	wikiTableNames = []
@@ -1026,11 +1046,6 @@ if __name__ == "__main__":
 						# only allow to drop, reorder, OR add/remove
 						temp = []
 
-						# Column changes do not interfere, so can alway check 
-						temp = pkColumnDiff(wikiCS, currentCS)
-						if temp != []:
-							for keyChangeSet in temp:
-								diffChangeSetList.append(keyChangeSet)
 						currToWikiCol = {}
 						wikiColumnNames = [col["column"]["name"] for col in wikiCS.changes[0]["createTable"]["columns"]]
 						currentColumnNames = [col["column"]["name"] for col in currentCS.changes[0]["createTable"]["columns"]]
@@ -1058,11 +1073,17 @@ if __name__ == "__main__":
 							for modifyChangeSet in temp:
 								diffChangeSetList.append(modifyChangeSet)
 						
-						# add attribute changes
-						temp = attributeColumnDif(wikiCS, currentCS, currToWikiCol)
+						# Column changes do not interfere, so can alway check 
+						temp = pkColumnDiff(wikiCS, currentCS)
 						if temp != []:
-							for attrChangeSet in temp:
-								diffChangeSetList.append(attrChangeSet)
+							for keyChangeSet in temp:
+								diffChangeSetList.append(keyChangeSet)
+
+						# add attribute changes
+						#temp = attributeColumnDif(wikiCS, currentCS, currToWikiCol)
+						#if temp != []:
+						#	for attrChangeSet in temp:
+						#		diffChangeSetList.append(attrChangeSet)
 
 				# If the changeSet is an index
 				elif "createIndex" in wikiCS.changes[0] and "createIndex" in currentCS.changes[0]:
