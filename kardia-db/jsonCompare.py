@@ -266,6 +266,20 @@ def setupAddColumnDiff(column):
 				temp["column"]["constraints"]["primaryKey"] = False
 				column = temp
 	return column
+# given a column, returns the attributes that should be appended to the type
+def genAttrString(column):
+	# NOTE: this is NOT the same as the lists used in table name change comparisons. It need only contain
+	# attributes likley to be erased by various commands
+	attrStr = ""
+	attributeList = ['autoIncrement', 'defaultValue', 'defaultValueBoolean', 'defaultValueComputed',
+			 'defaultValueDate', 'defaultValueNumeric']
+	for attr in attributeList:
+		if(attr in column["column"]):
+			if("defaultValue" in attr): 
+				if("char" in column["column"]["type"]): attrStr += " default '"+column["column"][attr]+"'"
+				else: attrStr += " default "+column["column"][attr]
+			else: attrStr += " "+str(column["column"][attr])
+	return attrStr
 
 # determine which columns were added and which need renamed. Replaces the old add columns functionality 
 def addRenameColumnDiff(wiki, current, currToWikiCol):
@@ -304,6 +318,8 @@ def addRenameColumnDiff(wiki, current, currToWikiCol):
 			if(wikiCol == curCol):
 				i += 1
 				j += 1
+				# update the old to new column maping to reflect the match
+				currToWikiCol[curCol] = wikiColumns[j-1]
 			else:
 				# allow the other state to identify next action
 				state = FIND
@@ -326,13 +342,14 @@ def addRenameColumnDiff(wiki, current, currToWikiCol):
 						addColFirst.rollback = "empty" # rolling back is just deleteing, so no need for action
 						addColFirst.updateJSON()
 					tempInd += 1 # all in a row, so are in consecuative positions 
+					addColList.append(curCol)
 					prev = curCol["column"]["name"]
 				state = MATCH
 			# if the current macthes a value found later, must have been renames
 			elif(wikiCol in currentColumnList):
 				# make sure is valid
 				if(len(colBuf) > currentColumnList.index(wikiCol) - i):
-					print("ERROR: not enough columns in current to rename")
+					print("ERROR: not enough columns in current to rename in table "+wiki.changes[0]["createTable"]["tableName"])
 					exit()
 				elif(len(colBuf) == 0):
 					print("ERROR: Cannot add or rename columns in table "+wiki.changes[0]["createTable"]["tableName"]+"; a reordering or delete must have occured")
@@ -341,7 +358,9 @@ def addRenameColumnDiff(wiki, current, currToWikiCol):
 				while(colBuf):
 					curCol = colBuf.pop(0)
 					curInd = wikiColumnList.index(curCol)
-					dataType = wikiColumns[curInd]["column"]["type"]
+					dataType = wikiColumns[curInd]["column"]["type"] # TODO: may need to leave this as the curr so can be updated manually later
+					# add in attributes if needed
+					dataType += genAttrString(currentColumns[i])
 					tempRenameCS = ChangeSet({"id": wiki.id + "-{}".format(countCS), "author": "jsonCompare.py"})
 					tempRenameCS.changes = [{"renameColumn": {"tableName": wiki.changes[0]["createTable"]["tableName"], "oldColumnName": currentColumnList[i],
 					      "newColumnName": curCol, "columnDataType": dataType}}]
@@ -370,7 +389,7 @@ def addRenameColumnDiff(wiki, current, currToWikiCol):
 				tempRenameCS = ChangeSet({"id": wiki.id + "-{}".format(countCS), "author": "jsonCompare.py"})
 				tempRenameCS.changes = [{"renameColumn": {"tableName": wiki.changes[0]["createTable"]["tableName"], "oldColumnName": currentColumnList[i],
 				      "newColumnName": curCol, "columnDataType": dataType}}]
-				currToWikiCol[currentColumnList[i]] = wikiColumns[wikiColumnList.index(curCol)] # keep trakc of rename
+				currToWikiCol[currentColumnList[i]] = wikiColumns[wikiColumnList.index(curCol)] # keep track of rename
 				tempRenameCS.updateJSON()
 				resCSList.append(tempRenameCS)
 				countCS += 1
@@ -560,7 +579,7 @@ def reorderColumnDif(wiki, current, currToWikiCol):
 	# should have all of the same columns, just out of order
 	# should only run if there is work to do; error if requirements not met
 	if(len(wikiColumns) != len(currentColumns)):
-		print("ERROR: cannot reorder if there are any added or removed columns")
+		print("ERROR: cannot reorder table "+wiki.changes[0]["createTable"]["tableName"]+" if there are any added or removed columns")
 		exit()
 	for column in wikiColumns:
 		wikiColumnList.append(column["column"]["name"])
@@ -570,10 +589,10 @@ def reorderColumnDif(wiki, current, currToWikiCol):
 		if(ind >= len(wikiColumnList)): break # stop if sizes are not even
 		if(currentColumnList[ind] != wikiColumnList[ind]): isMixed = True
 		if(not column["column"]["name"] in wikiColumnList):
-			print("ERROR: cannot reorder if there are any new or renamed columns")
+			print("ERROR: cannot reorder table "+wiki.changes[0]["createTable"]["tableName"]+" if there are any new or renamed columns")
 			exit()
 	if (not isMixed): 
-		print("ERROR: Nothing to reorder")
+		print("ERROR: Nothing to reorder in table "+wiki.changes[0]["createTable"]["tableName"])
 		exit()
 	
 	# make it faster to map column to index
@@ -622,9 +641,9 @@ def reorderColumnDif(wiki, current, currToWikiCol):
 
 	count=0 	# keep the liquibase command indexes unique
 	# generate the changelog
-	for ind, curCol in enumerate(wikiColumnList): # needs to be done in the same order as we want it to end in
-		currToWikiCol[curCol] = wikiColumns[ind] # make sure changed order does not disrupt matching old to new
-		if(curCol not in longestSubset):
+	for ind, wikiCol in enumerate(wikiColumnList): # needs to be done in the same order as we want it to end in
+		currToWikiCol[wikiCol] = wikiColumns[ind] # make sure changed order does not disrupt matching old to new. Names are same though
+		if(wikiCol not in longestSubset):
 			# find which column to place after
 			prev = ""
 			if(ind == 0):
@@ -633,26 +652,30 @@ def reorderColumnDif(wiki, current, currToWikiCol):
 			else:
 				# move after the column that should be before it
 				prev = "AFTER "+wikiColumnList[ind-1]
-			# find data type
-			dataType = wikiColumns[ind]["column"]["type"]
+			
+			# leave the data type same as the old one
+			currentColumn = -1
+			for column in currentColumns: 
+				if(column["column"]["name"] == wikiCol): currentColumn = column; break
+			dataType = currentColumn["column"]["type"] + genAttrString(currentColumn)
 
 			# perform the move on the out of place column
 			tempSet = ChangeSet({"id": wiki.id+"-"+str(count), "author": "jsonCompare.py"})
 			tempSet.changes = [{"sql": {"dbms": "mysql, mariadb", "sql":"ALTER TABLE "
-				+wiki.changes[0]["createTable"]["tableName"]+" MODIFY "+curCol+" "+dataType+" "+prev}}]
+				+wiki.changes[0]["createTable"]["tableName"]+" MODIFY "+wikiCol+" "+dataType+" "+prev}}]
 			
-			# Set up rollback based on current
-			currentIndex = currentColumnList.index(curCol)
+			# Set up rollback
+			currentIndex = currentColumnList.index(wikiCol)
 			if(currentIndex == 0): prev = "FIRST"
 			else: prev = "AFTER "+currentColumnList[currentIndex -1]
-			dataType = currentColumns[ind]["column"]["type"]
+			
 			tempSet.rollback = [{"sql": {"dbms": "mysql, mariadb", "sql":"ALTER TABLE "
-				+wiki.changes[0]["createTable"]["tableName"]+" MODIFY "+curCol+" "+dataType+" "+prev}}]
+				+wiki.changes[0]["createTable"]["tableName"]+" MODIFY "+wikiCol+" "+dataType+" "+prev}}]
 			
 			# now have to take step with currentColumnList so the next rollback can properly undo the step
-			currentColumnList.remove(curCol)
-			if(ind == 0): currentColumnList.insert(0, curCol)
-			else: currentColumnList.insert(currentColumnList.index(wikiColumnList[ind-1])+1, curCol)
+			currentColumnList.remove(wikiCol)
+			if(ind == 0): currentColumnList.insert(0, wikiCol)
+			else: currentColumnList.insert(currentColumnList.index(wikiColumnList[ind-1])+1, wikiCol)
 
 			tempSet.updateJSON()
 			resCSList.append(tempSet)
@@ -665,11 +688,12 @@ def attributeColumnDif(wiki, current, currToWikiCol):
 	wikiColumns = wiki.changes[0]["createTable"]["columns"].copy()
 	currentColumns = current.changes[0]["createTable"]["columns"].copy()
 	count = 0
+	tableName = wiki.changes[0]["createTable"]["tableName"]
 
 	# make a list of all of the attributes that need to be managed
 	# NOTE: this is NOT the same as the lists used in table name change comparisons
 	attributeList = ['autoIncrement', 'defaultValue', 'defaultValueBoolean', 'defaultValueComputed',
-			'defaultValueConstraintName', 'defaultValueDate', 'defaultValueNumeric']
+			 'defaultValueDate', 'defaultValueNumeric']
 	#constraintList = ['checkConstraint', 'deleteCascade', 'deferrable', 'foreignKeyName', 'initiallyDeferred', 
 	#		'notNullConstraintName', 'nullable', 'primaryKey', 'primaryKeyName', 'primaryKeyTablespace', 
 	#		'unique', 'uniqueConstraintName', 'references', 'referencedColumnNames', 
@@ -677,77 +701,102 @@ def attributeColumnDif(wiki, current, currToWikiCol):
 	#		'validateForeignKey', 'validateNullable', 'validatePrimaryKey', 'validateUnique']
 
 	# for each column, check each possible attribute
+	count = 0
 	for currColumn in currentColumns:
 		currColumn = currColumn["column"]
 		currName = currColumn["name"]
+		if(currToWikiCol[currName] == None): continue # if not in cur and wiki, skip
 		wikiColumn = currToWikiCol[currName]["column"]
-		if(wikiColumn == None): continue # if not in cur and wiki, skip
+		wikiName = wikiColumn["name"]
 		# Itterate through possible attributes
 		# check for each constraint
 		for attr in attributeList:
 			inCur = attr in currColumn
 			inWiki = attr in wikiColumn
 			if(inCur and inWiki):
-				print("* Need to determine if attribute "+attr+" on column "+currColumn["name"]+" needs updated "+" in table "+wiki.changes[0]["createTable"]["tableName"])
+				if(currColumn[attr] != wikiColumn[attr]):
+					# handle any of the default value attributes
+					if("defaultValue" in attr): 
+						tempSet = ChangeSet({"id": wiki.id+"-at-"+str(count), "author": "jsonCompare.py"})
+						tempSet.changes = [{"addDefaultValue": {"columnName":wikiName, "tableName":tableName, attr:wikiColumn[attr]}}]
+						tempSet.rollback = [{"addDefaultValue": {"columnName":wikiName, "tableName":tableName, attr:currColumn[attr]}}]
+						tempSet.updateJSON()
+						resCSList.append(tempSet)
+						count += 1
+					print("* Updated attribute "+attr+" on column "+currColumn["name"]+" in table "+wiki.changes[0]["createTable"]["tableName"])
+					
 			elif(inCur):
-				print("* Need to remove attribute "+attr+" from column "+currColumn["name"]+" in table "+wiki.changes[0]["createTable"]["tableName"])
+				# handle any of the default value attributes
+				if("defaultValue" in attr): 
+					tempSet = ChangeSet({"id": wiki.id+"-at-"+str(count), "author": "jsonCompare.py"})
+					tempSet.changes = [{"dropDefaultValue": {"columnName":wikiName, "tableName":tableName}}]
+					tempSet.rollback = [{"addDefaultValue": {"columnName":wikiName, "tableName":tableName, attr:currColumn[attr]}}]
+					tempSet.updateJSON()
+					resCSList.append(tempSet)
+					count += 1
+				print("* Removed attribute "+attr+" from column "+currColumn["name"]+" in table "+wiki.changes[0]["createTable"]["tableName"])
+
 			elif(inWiki):
-				print("* Need to add attribute "+attr+" to column "+currColumn["name"]+" in table "+wiki.changes[0]["createTable"]["tableName"])
+				# handle any of the default value attributes
+				if("defaultValue" in attr): 
+					tempSet = ChangeSet({"id": wiki.id+"-at-"+str(count), "author": "jsonCompare.py"})
+					tempSet.changes = [{"addDefaultValue": {"columnName":wikiName, "tableName":tableName, attr:wikiColumn[attr]}}]
+					tempSet.updateJSON()
+					resCSList.append(tempSet)
+					count += 1
+				print("* Added attribute "+attr+" to column "+currColumn["name"]+" in table "+wiki.changes[0]["createTable"]["tableName"])
 
-		if("autoIncrement" in currColumn):
-			if("autoIncrement" in wikiColumn):
-				# assume that autoIncrement wouldn't appear in the table unless it was set to true
-				# need to make all of the attributes the same
-				incByCurr = "incrementBy" in currColumn 
-				incByWiki =  "incrementBy" in wikiColumn
-				startCurr = "startWith" in currColumn
-				startWiki = "startWith" in wikiColumn
-				if((incByCurr != incByWiki) or (incByCurr and incByWiki and currColumn["incrementBy"] != wikiColumn["incrementBy"]) or
-					(startCurr != startWiki) or (startCurr and startWiki and currColumn["startWith"] != wikiColumn["startWith"])):
-					# TODO: find out how to either update or efceiently remove and re-add. Consider custom SQL
-					print("ERROR: cannot yet resolve differecnes between two auto incremets")
-					exit()
-			else: 
-				# need to remove auto increment. 
-				# Liquibase does not support directly, but "updating" the column types should clear it
-				tempCS = ChangeSet({"id": wiki.id+"-2-"+str(count), "author": "jsonCompare.py"})
-				tempCS.changes = [{"modifyDataType": {
-					"columnName": wikiColumn["name"], 
-					"newDataType": wikiColumn["type"], 
-					"tableName": wiki.changes[0]["createTable"]["tableName"]
-					}}]
-				tempCS.rollback = [{"addAutoIncrement": {
-					"columnName": wikiColumn["name"],
-					"columnDataType": wikiColumn["type"],
-					"tableName": wiki.changes[0]["createTable"]["tableName"]
-					}}]
-				if("incrementBy" in currColumn): tempCS.rollback[0]["incrementBy"] = currColumn["incrementBy"]
-				if("startWith" in currColumn): tempCS.rollback[0]["startWith"] = currColumn["startWith"]
-				tempCS.updateJSON()
-				resCSList.append(tempCS)
-				count += 1
-		elif("autoIncrement" in wikiColumn):
-			# add auto increment
-			tempCS = ChangeSet({"id": wiki.id+"-2-"+str(count), "author": "jsonCompare.py"})
-			tempCS.changes = [{"addAutoIncrement": {
-				"columnName": wikiColumn["name"],
-				"columnDataType": wikiColumn["type"],
-				"tableName": wiki.changes[0]["createTable"]["tableName"]
-				}}]
-			if("incrementBy" in wikiColumn): tempCS.changes[0]["incrementBy"] = wikiColumn["incrementBy"]
-			if("startWith" in wikiColumn): tempCS.changes[0]["startWith"] = wikiColumn["startWith"]
-			# to remove in rollback, just set type to itself again; should clear it
-			tempCS.rollback = [{"modifyDataType": {
-				"columnName": wikiColumn["name"], 
-				"newDataType": wikiColumn["type"], 
-				"tableName": wiki.changes[0]["createTable"]["tableName"]
-				}}]
-			tempCS.updateJSON()
-			resCSList.append(tempCS)
-			count += 1
-
-		
-
+		#if("autoIncrement" in currColumn):
+		#	if("autoIncrement" in wikiColumn):
+		#		# assume that autoIncrement wouldn't appear in the table unless it was set to true
+		#		# need to make all of the attributes the same
+		#		incByCurr = "incrementBy" in currColumn 
+		#		incByWiki =  "incrementBy" in wikiColumn
+		#		startCurr = "startWith" in currColumn
+		#		startWiki = "startWith" in wikiColumn
+		#		if((incByCurr != incByWiki) or (incByCurr and incByWiki and currColumn["incrementBy"] != wikiColumn["incrementBy"]) or
+		#			(startCurr != startWiki) or (startCurr and startWiki and currColumn["startWith"] != wikiColumn["startWith"])):
+		#			# TODO: find out how to either update or efceiently remove and re-add. Consider custom SQL
+		#			print("ERROR: cannot yet resolve differecnes between two auto incremets")
+		#			exit()
+		#	else: 
+		#		# need to remove auto increment. 
+		#		# Liquibase does not support directly, but "updating" the column types should clear it
+		#		tempCS = ChangeSet({"id": wiki.id+"-2-"+str(count), "author": "jsonCompare.py"})
+		#		tempCS.changes = [{"modifyDataType": {
+		#			"columnName": wikiColumn["name"], 
+		#			"newDataType": wikiColumn["type"], 
+		#			"tableName": wiki.changes[0]["createTable"]["tableName"]
+		#			}}]
+		#		tempCS.rollback = [{"addAutoIncrement": {
+		#			"columnName": wikiColumn["name"],
+		#			"columnDataType": wikiColumn["type"],
+		#			"tableName": wiki.changes[0]["createTable"]["tableName"]
+		#			}}]
+		#		if("incrementBy" in currColumn): tempCS.rollback[0]["incrementBy"] = currColumn["incrementBy"]
+		#		if("startWith" in currColumn): tempCS.rollback[0]["startWith"] = currColumn["startWith"]
+		#		tempCS.updateJSON()
+		#		resCSList.append(tempCS)
+		#		count += 1
+		#elif("autoIncrement" in wikiColumn):
+		#	# add auto increment
+		#	tempCS = ChangeSet({"id": wiki.id+"-2-"+str(count), "author": "jsonCompare.py"})
+		#	tempCS.changes = [{"addAutoIncrement": {
+		#		"columnName": wikiColumn["name"],
+		#		"columnDataType": wikiColumn["type"],
+		#		"tableName": wiki.changes[0]["createTable"]["tableName"]
+		#		}}]
+		#	if("incrementBy" in wikiColumn): tempCS.changes[0]["incrementBy"] = wikiColumn["incrementBy"]
+		#	if("startWith" in wikiColumn): tempCS.changes[0]["startWith"] = wikiColumn["startWith"]
+		#	# to remove in rollback, just set type to itself again; should clear it
+		#	tempCS.rollback = [{"modifyDataType": {
+		#		"columnName": wikiColumn["name"], 
+		#		"newDataType": wikiColumn["type"], 
+		#		"tableName": wiki.changes[0]["createTable"]["tableName"]
+		#		}}]
+		#	tempCS.updateJSON()
+		#	resCSList.append(tempCS)
+		#	count += 1
 
 	return resCSList
 
@@ -1080,10 +1129,10 @@ if __name__ == "__main__":
 								diffChangeSetList.append(keyChangeSet)
 
 						# add attribute changes
-						#temp = attributeColumnDif(wikiCS, currentCS, currToWikiCol)
-						#if temp != []:
-						#	for attrChangeSet in temp:
-						#		diffChangeSetList.append(attrChangeSet)
+						temp = attributeColumnDif(wikiCS, currentCS, currToWikiCol)
+						if temp != []:
+							for attrChangeSet in temp:
+								diffChangeSetList.append(attrChangeSet)
 
 				# If the changeSet is an index
 				elif "createIndex" in wikiCS.changes[0] and "createIndex" in currentCS.changes[0]:
