@@ -702,8 +702,8 @@ def attributeColumnDif(wiki, current, currToWikiCol):
 
 	# for each column, check each possible attribute
 	count = 0
-	for currColumn in currentColumns:
-		currColumn = currColumn["column"]
+	for curr in currentColumns:
+		currColumn = curr["column"]
 		currName = currColumn["name"]
 		if(currToWikiCol[currName] == None): continue # if not in cur and wiki, skip
 		wikiColumn = currToWikiCol[currName]["column"]
@@ -714,17 +714,39 @@ def attributeColumnDif(wiki, current, currToWikiCol):
 			inCur = attr in currColumn
 			inWiki = attr in wikiColumn
 			if(inCur and inWiki):
-				if(currColumn[attr] != wikiColumn[attr]):
-					# handle any of the default value attributes
-					if("defaultValue" in attr): 
+				# handle any of the default value attributes
+				if("defaultValue" in attr): 
+					if(currColumn[attr] != wikiColumn[attr]):
 						tempSet = ChangeSet({"id": wiki.id+"-at-"+str(count), "author": "jsonCompare.py"})
 						tempSet.changes = [{"addDefaultValue": {"columnName":wikiName, "tableName":tableName, attr:wikiColumn[attr]}}]
 						tempSet.rollback = [{"addDefaultValue": {"columnName":wikiName, "tableName":tableName, attr:currColumn[attr]}}]
 						tempSet.updateJSON()
 						resCSList.append(tempSet)
 						count += 1
-					print("* Updated attribute "+attr+" on column "+currColumn["name"]+" in table "+wiki.changes[0]["createTable"]["tableName"])
-					
+				elif(attr == "autoIncrement"):
+					# determine if an update is needed
+					needsUpdate = False
+					incByCurr = "incrementBy" in currColumn 
+					incByWiki =  "incrementBy" in wikiColumn
+					startCurr = "startWith" in currColumn
+					startWiki = "startWith" in wikiColumn
+					if(incByCurr and incByWiki and currColumn["incrementBy"] != wikiColumn["IncrementBy"]): needsUpdate = True
+					if(incByCurr != incByWiki): needsUpdate = True
+					if(startCurr and startWiki and currColumn["startWith"] != wikiColumn["startWith"]): needsUpdate = True
+					if(startCurr != startWiki): needsUpdate = True
+
+					if(needsUpdate):
+						# update the auto increment
+						tempSet = ChangeSet({"id": wiki.id+"-at-"+str(count), "author": "jsonCompare.py"})
+						tempSet.changes = [{"addAutoIncrement": {"columnName":wikiName, "tableName":tableName, "columnDataType":wikiColumn["type"]+genAttrString(currToWikiCol[currName])}}]
+						if(incByWiki): tempSet.changes[0]["addAutoIncrement"]["incrementBy"] = wikiColumn["incrementBy"]
+						if(startWiki): tempSet.changes[0]["addAutoIncrement"]["startWith"] = wikiColumn["startWith"]
+						tempSet.rollback = [{"addAutoIncrement": {"columnName":wikiName, "tableName":tableName, attr:currColumn[attr]}}]
+						if(incByWiki): tempSet.rollback[0]["addAutoIncrement"]["incrementBy"] = currColumn["incrementBy"]
+						if(startWiki): tempSet.rollback[0]["addAutoIncrement"]["startWith"] = currColumn["startWith"]
+						tempSet.updateJSON()
+						resCSList.append(tempSet)
+						count += 1
 			elif(inCur):
 				# handle any of the default value attributes
 				if("defaultValue" in attr): 
@@ -734,6 +756,8 @@ def attributeColumnDif(wiki, current, currToWikiCol):
 					tempSet.updateJSON()
 					resCSList.append(tempSet)
 					count += 1
+				elif(attr == "autoIncrement"):
+					print("will get on soon")
 				print("* Removed attribute "+attr+" from column "+currColumn["name"]+" in table "+wiki.changes[0]["createTable"]["tableName"])
 
 			elif(inWiki):
