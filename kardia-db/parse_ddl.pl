@@ -1252,7 +1252,12 @@ sub print_table() {
 
             foreach $pkColumn (@indexArray) {
                 if ($pkColumn eq $jsonName) {
-                    $jsonConstraint="\"primaryKey\": true";
+                    if($jsonConstraint eq ""){
+			 $jsonConstraint ="\"primaryKey\": true";
+		    }
+		    else{
+			$jsonConstraint ="$jsonConstraint,\n                    \"primaryKey\": true";
+		    }
                     break;
                 }
             }
@@ -1285,7 +1290,7 @@ sub print_table() {
 	    if($jsonConstraint ne ""){
 		print JSON ",\n";
 		print JSON "                \"constraints\": {\n";
-		print JSON "        $jsonConstraint\n";
+		print JSON "                    $jsonConstraint\n";
 		print JSON "                }\n";
 	    }
 	    else
