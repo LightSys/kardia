@@ -376,7 +376,7 @@ def addRenameColumnDiff(wiki, current, currToWikiCol):
 				while(colBuf):
 					renameCol = colBuf.pop(0)
 					renameInd = wikiColumnList.index(renameCol)
-					dataType = wikiColumns[renameInd]["column"]["type"] # TODO: may need to leave this as the curr so can be updated manually later
+					dataType = currentColumns[i]["column"]["type"] # TODO: may need to leave this as the curr so can be updated manually later
 					# add in attributes if needed
 					dataType += genAttrConString(currentColumns[i])
 					tempRenameCS = ChangeSet({"id": wiki.id + "-{}".format(countCS), "author": "jsonCompare.py"})
@@ -415,8 +415,9 @@ def addRenameColumnDiff(wiki, current, currToWikiCol):
 				exit()
 			while(colBuf):
 				renameCol = colBuf.pop(0)
-				curInd = wikiColumnList.index(renameCol)
-				dataType = wikiColumns[curInd]["column"]["type"]
+				dataType = currentColumns[i]["column"]["type"]
+				# add in attributes if needed
+				dataType += genAttrConString(currentColumns[i])
 				tempRenameCS = ChangeSet({"id": wiki.id + "-{}".format(countCS), "author": "jsonCompare.py"})
 				tempRenameCS.changes = [{"renameColumn": {"tableName": wiki.changes[0]["createTable"]["tableName"], "oldColumnName": currentColumnList[i],
 				      "newColumnName": renameCol, "columnDataType": dataType}}]
@@ -562,11 +563,12 @@ def pkColumnDiff(wiki, current):
 	if isSameKey:
 		return []
 
-	# drop the old PK
-	dropOldKey.changes = [{"dropPrimaryKey": {"constraintName": "PRIMARY", "dropIndex":True, "tableName": wiki.changes[0]["createTable"]["tableName"]}}]
-	dropOldKey.rollback = [{"addPrimaryKey": {"columnNames":', '.join(currentKeyList), "tableName": wiki.changes[0]["createTable"]["tableName"]}}]
-	dropOldKey.updateJSON()
-	resCSList.append(dropOldKey)
+	# drop the old PK if there was one
+	if(len(currentKeyList) > 0):
+		dropOldKey.changes = [{"dropPrimaryKey": {"constraintName": "PRIMARY", "dropIndex":True, "tableName": wiki.changes[0]["createTable"]["tableName"]}}]
+		dropOldKey.rollback = [{"addPrimaryKey": {"columnNames":', '.join(currentKeyList), "tableName": wiki.changes[0]["createTable"]["tableName"]}}]
+		dropOldKey.updateJSON()
+		resCSList.append(dropOldKey)
 	# make sure there is a new PK to add
 	if(len(wikiKeyList) > 0):
 		addNewKey.changes = [{"addPrimaryKey": {"columnNames":', '.join(wikiKeyList), "tableName": wiki.changes[0]["createTable"]["tableName"]}}]
@@ -725,8 +727,8 @@ def attributeColumnDif(wiki, current, currToWikiCol):
 			elif(attr in currColumn["column"] or attr in wikiColumn["column"]):
 				# ignore if the problem is that a primary key has a non-null default value in current but is null on wiki; MariaDB forces keys to not allow null values
 				# 	This will look like the current needs to drop it's default value, when that actually isn't possible. 
-				if("defaultValue" in attr and attr in currColumn["column"] and "constraints" in wikiColumn["column"] and 
-					"primaryKey" in wikiColumn["column"]["constraints"] and wikiColumn["column"]["constraints"]["primaryKey"]): continue
+				#if("defaultValue" in attr and attr in currColumn["column"] and "constraints" in wikiColumn["column"] and 
+				#	"primaryKey" in wikiColumn["column"]["constraints"] and wikiColumn["column"]["constraints"]["primaryKey"]): continue
 				needsUpdate = True
 				break
 		# If an update is needed, must apply update with all attributes (otherwise, they get overwritten)
@@ -815,21 +817,27 @@ def addIndexDiff(wiki, current):
 	resCSList = []
 	wikiColumns = wiki.changes[0]["createIndex"]["columns"]
 	currentColumns = current.changes[0]["createIndex"]["columns"]
-	for column in wikiColumns:
-		if column not in currentColumns:
-			# drop and re-add all columns if there is at least one different column
-			dropChangeSet = ChangeSet({"id": wiki.id + "-1", "author": "jsonCompare.py"})
-			dropChangeSet.changes = [{"dropIndex": {"indexName": wiki.changes[0]["createIndex"]["indexName"], "tableName": wiki.changes[0]["createIndex"]["tableName"]}}]
-			dropChangeSet.rollback = [{"createIndex": {"indexName": wiki.changes[0]["createIndex"]["indexName"], "tableName": wiki.changes[0]["createIndex"]["tableName"], "columns": currentColumns}}]
-			dropChangeSet.updateJSON()
-			resCSList.append(dropChangeSet)
-			addChangeSet = ChangeSet({"id": wiki.id + "-2", "author": "jsonCompare.py"})
-			addChangeSet.changes = [{"createIndex": {"indexName": wiki.changes[0]["createIndex"]["indexName"], "tableName": wiki.changes[0]["createIndex"]["tableName"], "columns": wikiColumns}}]
-			addChangeSet.updateJSON()
-			resCSList.append(addChangeSet)
-			break
-	if len(resCSList) == 0:
-		return []
+	needsUpdate = False
+	if(len(wikiColumns) != len(currentColumns)): 
+		needsUpdate = True
+	else:
+		for i in range(len(wikiColumns)):
+			if wikiColumns[i] != currentColumns[i]:
+				needsUpdate = True
+				break
+	if not needsUpdate: return []
+	
+	# drop and re-add all columns if there is at least one different column
+	dropChangeSet = ChangeSet({"id": wiki.id + "-1", "author": "jsonCompare.py"})
+	dropChangeSet.changes = [{"dropIndex": {"indexName": wiki.changes[0]["createIndex"]["indexName"], "tableName": wiki.changes[0]["createIndex"]["tableName"]}}]
+	dropChangeSet.rollback = [{"createIndex": {"indexName": wiki.changes[0]["createIndex"]["indexName"], "tableName": wiki.changes[0]["createIndex"]["tableName"], "columns": currentColumns}}]
+	dropChangeSet.updateJSON()
+	resCSList.append(dropChangeSet)
+	addChangeSet = ChangeSet({"id": wiki.id + "-2", "author": "jsonCompare.py"})
+	addChangeSet.changes = [{"createIndex": {"indexName": wiki.changes[0]["createIndex"]["indexName"], "tableName": wiki.changes[0]["createIndex"]["tableName"], "columns": wikiColumns}}]
+	addChangeSet.updateJSON()
+	resCSList.append(addChangeSet)
+
 	return resCSList
 
 

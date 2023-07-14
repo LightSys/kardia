@@ -20,7 +20,10 @@
 	liquibase generateChangeLog --changeLogFile liquibaseFiles/currentChangeLog.json
 	``` 
 	a. Use  the ```--username``` and ```--password``` tags if they are not in the .properties file
-4. Get the database schema from the wiki by running:  
+	
+	b. If the currentChangeLog.json file already exists, include the ```--overwrite-output-file``` tag
+4. Navigate up a folder to ```kardia/kardia-db```
+5. Get the database schema from the wiki by running:  
 	```
 	perl parse_ddl.pl -b [database] -n
 	```
@@ -28,12 +31,11 @@
 	```
 	perl make_dropdowns.pl [database]
 	```
-	**NOTE:** If tables need to be dropped, the resulting changeset will be placed in a seperate file to avoid the accidental loss of data, and to make double checking which tables are being dropped far more convenient. 
-5. Navigate up a folder to ```kardia/kardia-db```
 6. enerate the differences between the schema in the current database and the wiki by running the following:
 	```
 	python jsonCompare.py [database]
 	```
+	**NOTE:** If tables need to be dropped, the resulting changeset will be placed in a seperate file to avoid the accidental loss of data, and to make double checking which tables are being dropped far more convenient. 
 7. Edit masterChangeLog.json (located at ```kardia/kardia-db/ddl-[database]/liquibaseFiles```) to include the newly created json file
 8. Navigate to ```kardia/kardia-db/ddl-[database]``` in the command line
 9. Update the current database with the following command:
@@ -47,9 +49,9 @@ There are 3 main options to rollback a database schema using Liquibase.
 Option 1:  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Use "liquibase rollback [tag]" to rollback to the changeSet with the given tag  
 Option 2:  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Use "liquibase rollback [date]" to rollback to the given datetime  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Use "liquibase rollback-to-date [date]" to rollback to the given datetime  
 Option 3:  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Use "liquibase rollbackCount [num]" to rollback num changeSets  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Use "liquibase rollback-count --count=[num]" to rollback num changeSets  
 <br>
 ## Rules for automated changes with jsonCompare.py:
 1. Do NOT mix reordering columns with column adds, renames, or drops
@@ -58,8 +60,9 @@ Option 3:
 4. Do NOT reame a column to or add a column with the old name of a column that has been renamed in this same set of changes
 5. Do NOT mix dropping tables with renaming tables or adding tables
 	- Note: be careful when renaming tables which are also having columns modified. A similarity huristic is used to match renamed tables to thier new names. If the table changes too much, the function may make inaccurate assumptions. 
+6. Do NOT have the primary key order and the column order in a table differ. 
 
-**Note:** Rules 1 through 4 apply to changes on a single table, while rule 5 refers to changes to table names.
+**Note:** Rules 1 through 4 apply to changes on a single table, while rule 5 refers to changes to table names. Rule 6 applies to the ordering of columnss within a table. 
 
  These rules are designed to keep changest to tables conisting of renames, adds, drops, and reorderings from reaching ambiguous states
 - Operations like changing data types or changing primary keys will not conflict and are thus not considered
@@ -80,6 +83,7 @@ Option 3:
 	```
 	Or any mixture of the two, or any case that could be confused with simply reordering columns
 - Rule 5 is similar to rule 2; an add and drop would likely be mistaken for a rename
+- Rule 6 is the result of a limitation with the way Liquibase handles primary keys. The order of composite keys can only differ from the table's column order if the PK is added after the table is created. This creates problems with the current workflow. Furthermore, the changelog generation for the current schema does not indicate what order the columns in a composite PK are, meaning in order to support it additional work would need to be done. 
 
 If a change needs to be made that breaks one or more of the above rules, the change can still be made by creating a changelog manually. Once the changelog is created, follow steps 7 and onward ("How to use Liquibase", above) to apply the changes. 
 Alternatively, breaking up the desired illegal change into multiple legal changes may be possible. For example, while the change AB --> BX (A>B, B>X) is illegal (rule 4), creating one changeset with AB --> AX and then creating one with AX --> BX is fine. 
