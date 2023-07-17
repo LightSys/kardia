@@ -153,21 +153,28 @@ plugin_base_partneredit_donor "widget/component-decl"
 		gifts_osrc "widget/osrc"
 		    {
 		    sql = " SELECT
-				:a_amount,
+				a_amount = sum(:a_amount),
 				-- date = substring(convert(string,:a_effective_date), 1, charindex(' ', convert(string,:a_effective_date))),
-				date = substring(convert(string,isnull(:a_gift_postmark_date, :a_gift_received_date)), 1, 11),
-				stat = condition(:a_amount = $0, 'Voided', condition(:a_posted == 0, 'Processing', 'Receipted')),
+				date = substring(convert(string,isnull(:a_dn_gift_postmark_date, :a_dn_gift_received_date)), 1, 11),
+				stat = condition(sum(:a_amount) = $0, 'Voided', condition(:a_posted == 0, 'Processing', 'Receipted')),
 				:a_period,
-				:a_receipt_number,
-				:a_comment,
+				a_receipt_number = :a_dn_receipt_number,
+				a_comment = sum(:a_comment + ', ') - ', ',
 				:a_ledger_number,
-				:a_batch_number
+				:a_batch_number,
+				fundlist = sum(:a_fund + ',') - ','
 			    FROM
-				/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows
+				/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows
 			    WHERE
 				:a_posted = 1
+			    GROUP BY
+				:a_ledger_number,
+				:a_batch_number DESC,
+				:a_gift_number
 			    ORDER BY
-				isnull(:a_gift_postmark_date, :a_gift_received_date) DESC
+				isnull(:a_dn_gift_postmark_date, :a_dn_gift_received_date) DESC
+			    HAVING
+				:date is not null
 			    ";
 		    replicasize = 25;
 		    readahead = 25;
@@ -178,7 +185,7 @@ plugin_base_partneredit_donor "widget/component-decl"
 			{
 			ruletype=osrc_relationship;
 			target = partner_osrc;
-			key_1 = p_donor_partner_id;
+			key_1 = p_dn_donor_partner_id;
 			target_key_1 = p_partner_key;
 			}
 
@@ -189,8 +196,8 @@ plugin_base_partneredit_donor "widget/component-decl"
 			mode = dynamicrow;
 
 			t_date "widget/table-column" { title="Date"; fieldname="date"; width=100; }
-			t_batno "widget/table-column" { title="Batch#"; fieldname="a_batch_number"; width=80; }
 			t_rcptno "widget/table-column" { title="Receipt"; fieldname="a_receipt_number"; width=80; }
+			t_funds "widget/table-column" { title="Fund(s)"; fieldname="fundlist"; width=80; }
 			t_amt "widget/table-column"
 			    {
 			    require_endorsements="kardia:gift_amt";
@@ -207,8 +214,8 @@ plugin_base_partneredit_donor "widget/component-decl"
 			    target=plugin_base_partneredit_donor;
 			    action=Launch;
 			    Source = runclient("/apps/kardia/modules/rcpt/gift_entry.app");
-			    Width=800;
-			    Height=600;
+			    Width=1000;
+			    Height=700;
 			    ledger=runclient(:gifts_osrc:a_ledger_number);
 			    batch=runclient(:gifts_osrc:a_batch_number);
 			    receipt=runclient(:gifts_osrc:a_receipt_number);
@@ -236,8 +243,8 @@ plugin_base_partneredit_donor "widget/component-decl"
 			target=plugin_base_partneredit_donor;
 			action=Launch;
 			Source = runclient("/apps/kardia/modules/rcpt/gift_entry.app");
-			Width=800;
-			Height=600;
+			Width=1000;
+			Height=700;
 			ledger=runclient(:gifts_osrc:a_ledger_number);
 			batch=runclient(:gifts_osrc:a_batch_number);
 			receipt=runclient(:gifts_osrc:a_receipt_number);

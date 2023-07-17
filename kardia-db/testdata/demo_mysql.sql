@@ -87,7 +87,7 @@ UNLOCK TABLES;
 
 LOCK TABLES `a_admin_fee_type_item` WRITE;
 /*!40000 ALTER TABLE `a_admin_fee_type_item` DISABLE KEYS */;
-INSERT INTO `a_admin_fee_type_item` (`a_ledger_number`, `a_admin_fee_type`, `a_admin_fee_subtype`, `a_dest_cost_center`, `a_percentage`, `a_is_fixed`, `a_comment`, `s_date_created`, `s_created_by`, `s_date_modified`, `s_modified_by`, `__cx_osml_control`) VALUES ('DEMO','GEN','A','GEN000',0.1,'\0','10% to General Fund','2011-03-12 12:14:12','gbeeley','2011-03-12 12:14:12','gbeeley',NULL);
+INSERT INTO `a_admin_fee_type_item` (`a_ledger_number`, `a_admin_fee_type`, `a_admin_fee_subtype`, `a_dest_fund`, `a_percentage`, `a_is_fixed`, `a_comment`, `s_date_created`, `s_created_by`, `s_date_modified`, `s_modified_by`, `__cx_osml_control`) VALUES ('DEMO','GEN','A','GEN000',0.1,'\0','10% to General Fund','2011-03-12 12:14:12','gbeeley','2011-03-12 12:14:12','gbeeley',NULL);
 /*!40000 ALTER TABLE `a_admin_fee_type_item` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -138,88 +138,88 @@ INSERT INTO `a_batch` (`a_batch_number`, `a_ledger_number`, `a_period`, `a_batch
 UNLOCK TABLES;
 
 --
--- Dumping data for table `a_cc_acct`
+-- Dumping data for table `a_fund_acct`
 --
 
-LOCK TABLES `a_cc_acct` WRITE;
-/*!40000 ALTER TABLE `a_cc_acct` DISABLE KEYS */;
-/*!40000 ALTER TABLE `a_cc_acct` ENABLE KEYS */;
+LOCK TABLES `a_fund_acct` WRITE;
+/*!40000 ALTER TABLE `a_fund_acct` DISABLE KEYS */;
+/*!40000 ALTER TABLE `a_fund_acct` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
--- Dumping data for table `a_cc_admin_fee`
+-- Dumping data for table `a_fund_admin_fee`
 --
 
-LOCK TABLES `a_cc_admin_fee` WRITE;
-/*!40000 ALTER TABLE `a_cc_admin_fee` DISABLE KEYS */;
-INSERT INTO `a_cc_admin_fee` (`a_cost_center`, `a_ledger_number`, `a_admin_fee_type`, `a_default_subtype`, `a_percentage`, `s_date_created`, `s_created_by`, `s_date_modified`, `s_modified_by`, `__cx_osml_control`) VALUES ('PRJ000','DEMO','GEN','A',NULL,'2011-03-12 12:15:55','gbeeley','2011-03-12 12:15:55','gbeeley',NULL);
-/*!40000 ALTER TABLE `a_cc_admin_fee` ENABLE KEYS */;
+LOCK TABLES `a_fund_admin_fee` WRITE;
+/*!40000 ALTER TABLE `a_fund_admin_fee` DISABLE KEYS */;
+INSERT INTO `a_fund_admin_fee` (`a_fund`, `a_ledger_number`, `a_admin_fee_type`, `a_default_subtype`, `a_percentage`, `s_date_created`, `s_created_by`, `s_date_modified`, `s_modified_by`, `__cx_osml_control`) VALUES ('PRJ000','DEMO','GEN','A',NULL,'2011-03-12 12:15:55','gbeeley','2011-03-12 12:15:55','gbeeley',NULL);
+/*!40000 ALTER TABLE `a_fund_admin_fee` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
--- Dumping data for table `a_cc_analysis_attr`
+-- Dumping data for table `a_fund_analysis_attr`
 --
 
-LOCK TABLES `a_cc_analysis_attr` WRITE;
-/*!40000 ALTER TABLE `a_cc_analysis_attr` DISABLE KEYS */;
-/*!40000 ALTER TABLE `a_cc_analysis_attr` ENABLE KEYS */;
+LOCK TABLES `a_fund_analysis_attr` WRITE;
+/*!40000 ALTER TABLE `a_fund_analysis_attr` DISABLE KEYS */;
+/*!40000 ALTER TABLE `a_fund_analysis_attr` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
--- Dumping data for table `a_cc_auto_subscribe`
+-- Dumping data for table `a_fund_auto_subscribe`
 --
 
-LOCK TABLES `a_cc_auto_subscribe` WRITE;
-/*!40000 ALTER TABLE `a_cc_auto_subscribe` DISABLE KEYS */;
-INSERT INTO `a_cc_auto_subscribe` (`a_cost_center`, `a_ledger_number`, `m_list_code`, `a_minimum_gift`, `a_subscribe_months`, `a_comments`, `s_date_created`, `s_created_by`, `s_date_modified`, `s_modified_by`, `__cx_osml_control`) VALUES ('GEN000','DEMO','M000','0.0000',NULL,NULL,'2011-03-12 12:20:20','gbeeley','2011-03-12 12:20:20','gbeeley',NULL),('PRJ000','DEMO','M001','0.0000',NULL,NULL,'2011-03-12 12:20:34','gbeeley','2011-03-12 12:20:34','gbeeley',NULL);
-/*!40000 ALTER TABLE `a_cc_auto_subscribe` ENABLE KEYS */;
+LOCK TABLES `a_fund_auto_subscribe` WRITE;
+/*!40000 ALTER TABLE `a_fund_auto_subscribe` DISABLE KEYS */;
+INSERT INTO `a_fund_auto_subscribe` (`a_fund`, `a_ledger_number`, `m_list_code`, `a_minimum_gift`, `a_subscribe_months`, `a_comments`, `s_date_created`, `s_created_by`, `s_date_modified`, `s_modified_by`, `__cx_osml_control`) VALUES ('GEN000','DEMO','M000','0.0000',NULL,NULL,'2011-03-12 12:20:20','gbeeley','2011-03-12 12:20:20','gbeeley',NULL),('PRJ000','DEMO','M001','0.0000',NULL,NULL,'2011-03-12 12:20:34','gbeeley','2011-03-12 12:20:34','gbeeley',NULL);
+/*!40000 ALTER TABLE `a_fund_auto_subscribe` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
--- Dumping data for table `a_cc_receipting`
+-- Dumping data for table `a_fund_receipting`
 --
 
-LOCK TABLES `a_cc_receipting` WRITE;
-/*!40000 ALTER TABLE `a_cc_receipting` DISABLE KEYS */;
-/*!40000 ALTER TABLE `a_cc_receipting` ENABLE KEYS */;
+LOCK TABLES `a_fund_receipting` WRITE;
+/*!40000 ALTER TABLE `a_fund_receipting` DISABLE KEYS */;
+/*!40000 ALTER TABLE `a_fund_receipting` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
--- Dumping data for table `a_cc_receipting_accts`
+-- Dumping data for table `a_fund_receipting_accts`
 --
 
-LOCK TABLES `a_cc_receipting_accts` WRITE;
-/*!40000 ALTER TABLE `a_cc_receipting_accts` DISABLE KEYS */;
-/*!40000 ALTER TABLE `a_cc_receipting_accts` ENABLE KEYS */;
+LOCK TABLES `a_fund_receipting_accts` WRITE;
+/*!40000 ALTER TABLE `a_fund_receipting_accts` DISABLE KEYS */;
+/*!40000 ALTER TABLE `a_fund_receipting_accts` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
--- Dumping data for table `a_cost_center`
+-- Dumping data for table `a_fund`
 --
 
-LOCK TABLES `a_cost_center` WRITE;
-/*!40000 ALTER TABLE `a_cost_center` DISABLE KEYS */;
-INSERT INTO `a_cost_center` (`a_cost_center`, `a_ledger_number`, `a_parent_cost_center`, `a_bal_cost_center`, `a_cost_center_class`, `a_reporting_level`, `a_is_posting`, `a_is_external`, `a_is_balancing`, `a_restricted_type`, `a_cc_desc`, `a_cc_comments`, `a_legacy_code`, `s_date_created`, `s_created_by`, `s_date_modified`, `s_modified_by`, `__cx_osml_control`) VALUES ('GEN000','DEMO',NULL,'GEN000','ORG',1,'',NULL,'','N','General Fund',NULL,'','2011-03-12 12:07:39','gbeeley','2011-03-13 17:51:16','gbeeley',NULL),('PRJ000','DEMO',NULL,'PRJ000','PRO',1,'','','','T','Demo Project',NULL,'','2011-03-12 12:14:56','gbeeley','2011-03-13 17:51:37','gbeeley',NULL);
-/*!40000 ALTER TABLE `a_cost_center` ENABLE KEYS */;
+LOCK TABLES `a_fund` WRITE;
+/*!40000 ALTER TABLE `a_fund` DISABLE KEYS */;
+INSERT INTO `a_fund` (`a_fund`, `a_ledger_number`, `a_parent_fund`, `a_bal_fund`, `a_fund_class`, `a_reporting_level`, `a_is_posting`, `a_is_external`, `a_is_balancing`, `a_restricted_type`, `a_fund_desc`, `a_fund_comments`, `a_legacy_code`, `s_date_created`, `s_created_by`, `s_date_modified`, `s_modified_by`, `__cx_osml_control`) VALUES ('GEN000','DEMO',NULL,'GEN000','ORG',1,'',NULL,'','N','General Fund',NULL,'','2011-03-12 12:07:39','gbeeley','2011-03-13 17:51:16','gbeeley',NULL),('PRJ000','DEMO',NULL,'PRJ000','PRO',1,'','','','T','Demo Project',NULL,'','2011-03-12 12:14:56','gbeeley','2011-03-13 17:51:37','gbeeley',NULL);
+/*!40000 ALTER TABLE `a_fund` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
--- Dumping data for table `a_cost_center_class`
+-- Dumping data for table `a_fund_class`
 --
 
-LOCK TABLES `a_cost_center_class` WRITE;
-/*!40000 ALTER TABLE `a_cost_center_class` DISABLE KEYS */;
-INSERT INTO `a_cost_center_class` (`a_cost_center_class`, `a_ledger_number`, `a_acct_class_desc`, `s_date_created`, `s_created_by`, `s_date_modified`, `s_modified_by`, `__cx_osml_control`) VALUES ('DEP','DEMO','Department','2011-03-13 17:47:32','gbeeley','2011-03-13 17:47:34','gbeeley',NULL),('FLD','DEMO','Field','2011-03-13 17:47:43','gbeeley','2011-03-13 17:47:43','gbeeley',NULL),('MIS','DEMO','Missionary','2011-03-13 17:47:51','gbeeley','2011-03-13 17:47:52','gbeeley',NULL),('ORG','DEMO','Organization','2011-03-13 17:48:01','gbeeley','2011-03-13 17:48:01','gbeeley',NULL),('PRO','DEMO','Project','2011-03-13 17:48:08','gbeeley','2011-03-13 17:48:09','gbeeley',NULL),('SPC','DEMO','Special','2011-03-13 17:48:17','gbeeley','2011-03-13 17:48:18','gbeeley',NULL);
-/*!40000 ALTER TABLE `a_cost_center_class` ENABLE KEYS */;
+LOCK TABLES `a_fund_class` WRITE;
+/*!40000 ALTER TABLE `a_fund_class` DISABLE KEYS */;
+INSERT INTO `a_fund_class` (`a_fund_class`, `a_ledger_number`, `a_fund_class_desc`, `s_date_created`, `s_created_by`, `s_date_modified`, `s_modified_by`, `__cx_osml_control`) VALUES ('DEP','DEMO','Department','2011-03-13 17:47:32','gbeeley','2011-03-13 17:47:34','gbeeley',NULL),('FLD','DEMO','Field','2011-03-13 17:47:43','gbeeley','2011-03-13 17:47:43','gbeeley',NULL),('MIS','DEMO','Missionary','2011-03-13 17:47:51','gbeeley','2011-03-13 17:47:52','gbeeley',NULL),('ORG','DEMO','Organization','2011-03-13 17:48:01','gbeeley','2011-03-13 17:48:01','gbeeley',NULL),('PRO','DEMO','Project','2011-03-13 17:48:08','gbeeley','2011-03-13 17:48:09','gbeeley',NULL),('SPC','DEMO','Special','2011-03-13 17:48:17','gbeeley','2011-03-13 17:48:18','gbeeley',NULL);
+/*!40000 ALTER TABLE `a_fund_class` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
--- Dumping data for table `a_cost_center_prefix`
+-- Dumping data for table `a_fund_prefix`
 --
 
-LOCK TABLES `a_cost_center_prefix` WRITE;
-/*!40000 ALTER TABLE `a_cost_center_prefix` DISABLE KEYS */;
-/*!40000 ALTER TABLE `a_cost_center_prefix` ENABLE KEYS */;
+LOCK TABLES `a_fund_prefix` WRITE;
+/*!40000 ALTER TABLE `a_fund_prefix` DISABLE KEYS */;
+/*!40000 ALTER TABLE `a_fund_prefix` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -256,7 +256,7 @@ UNLOCK TABLES;
 
 LOCK TABLES `a_payroll_group` WRITE;
 /*!40000 ALTER TABLE `a_payroll_group` DISABLE KEYS */;
-INSERT INTO `a_payroll_group` (`a_ledger_number`, `a_payroll_group_id`, `a_payroll_group_name`, `a_payroll_interval`, `a_cost_center`, `a_liab_cost_center`, `a_cash_cost_center`, `a_service_bureau_id`, `a_service_bureau_group_name`, `a_start_date`, `a_end_date`, `s_date_created`, `s_created_by`, `s_date_modified`, `s_modified_by`, `__cx_osml_control`) VALUES ('DEMO',1,'Demo Group','5','GEN000','GEN000','GEN000',NULL,NULL,NULL,NULL,'2011-03-12 00:09:38','gbeeley','2011-03-12 00:09:39','gbeeley',NULL);
+INSERT INTO `a_payroll_group` (`a_ledger_number`, `a_payroll_group_id`, `a_payroll_group_name`, `a_payroll_interval`, `a_fund`, `a_liab_fund`, `a_cash_fund`, `a_service_bureau_id`, `a_service_bureau_group_name`, `a_start_date`, `a_end_date`, `s_date_created`, `s_created_by`, `s_date_modified`, `s_modified_by`, `__cx_osml_control`) VALUES ('DEMO',1,'Demo Group','5','GEN000','GEN000','GEN000',NULL,NULL,NULL,NULL,'2011-03-12 00:09:38','gbeeley','2011-03-12 00:09:39','gbeeley',NULL);
 /*!40000 ALTER TABLE `a_payroll_group` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -386,7 +386,7 @@ UNLOCK TABLES;
 
 LOCK TABLES `a_subtrx_gift_item` WRITE;
 /*!40000 ALTER TABLE `a_subtrx_gift_item` DISABLE KEYS */;
-INSERT INTO `a_subtrx_gift_item` (`a_ledger_number`, `a_batch_number`, `a_gift_number`, `a_split_number`, `a_period`, `a_cost_center`, `a_account_code`, `a_amount`, `a_recv_document_id`, `a_posted`, `a_posted_to_gl`, `a_gift_admin_fee`, `a_gift_admin_subtype`, `a_calc_admin_fee`, `a_calc_admin_fee_type`, `a_calc_admin_fee_subtype`, `p_recip_partner_id`, `a_confidential`, `a_non_tax_deductible`, `a_motivational_code`, `a_comment`, `s_date_created`, `s_created_by`, `s_date_modified`, `s_modified_by`, `__cx_osml_control`) VALUES ('DEMO',100005,1,1,'2011.03','PRJ000','4100','100.0000','1234','','',NULL,'A',0.1,'GEN','A',NULL,'\0','\0',NULL,NULL,'2011-03-13 17:57:01','gbeeley','2011-03-13 17:57:01','gbeeley',NULL);
+INSERT INTO `a_subtrx_gift_item` (`a_ledger_number`, `a_batch_number`, `a_gift_number`, `a_split_number`, `a_period`, `a_fund`, `a_account_code`, `a_amount`, `a_recv_document_id`, `a_posted`, `a_posted_to_gl`, `a_gift_admin_fee`, `a_gift_admin_subtype`, `a_calc_admin_fee`, `a_calc_admin_fee_type`, `a_calc_admin_fee_subtype`, `p_recip_partner_id`, `a_confidential`, `a_non_tax_deductible`, `a_motivational_code`, `a_comment`, `s_date_created`, `s_created_by`, `s_date_modified`, `s_modified_by`, `__cx_osml_control`) VALUES ('DEMO',100005,1,1,'2011.03','PRJ000','4100','100.0000','1234','','',NULL,'A',0.1,'GEN','A',NULL,'\0','\0',NULL,NULL,'2011-03-13 17:57:01','gbeeley','2011-03-13 17:57:01','gbeeley',NULL);
 /*!40000 ALTER TABLE `a_subtrx_gift_item` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -442,7 +442,7 @@ UNLOCK TABLES;
 
 LOCK TABLES `a_transaction` WRITE;
 /*!40000 ALTER TABLE `a_transaction` DISABLE KEYS */;
-INSERT INTO `a_transaction` (`a_ledger_number`, `a_batch_number`, `a_journal_number`, `a_transaction_number`, `a_period`, `a_effective_date`, `a_transaction_type`, `a_cost_center`, `a_account_category`, `a_account_code`, `a_amount`, `a_posted`, `a_modified`, `a_corrected`, `a_correcting`, `a_corrected_batch`, `a_corrected_journal`, `a_corrected_transaction`, `a_reconciled`, `a_postprocessed`, `a_postprocess_type`, `a_origin`, `a_recv_document_id`, `a_sent_document_id`, `p_ext_partner_id`, `p_int_partner_id`, `a_legacy_code`, `a_receipt_sent`, `a_receipt_desired`, `a_first_gift`, `a_gift_type`, `a_goods_provided`, `a_gift_received_date`, `a_gift_postmark_date`, `a_comment`, `s_date_created`, `s_created_by`, `s_date_modified`, `s_modified_by`, `__cx_osml_control`) VALUES ('DEMO',100005,1,1,'2011.03','2011-03-13 17:53:45','T','PRJ000','40','4100','-100.0000','\0','\0','\0','\0',NULL,NULL,NULL,'\0','\0','XX','CR',NULL,NULL,NULL,NULL,NULL,'','','\0',NULL,'0.0000',NULL,NULL,'1 Gifts for PRJ000','2011-03-13 19:46:58','gbeeley','2011-03-13 19:46:58','gbeeley',NULL),('DEMO',100005,1,2,'2011.03','2011-03-13 17:53:45','T','GEN000','10','1100','100.0000','\0','\0','\0','\0',NULL,NULL,NULL,'\0','\0','XX','CR',NULL,NULL,NULL,NULL,NULL,'\0','\0','\0',NULL,'0.0000',NULL,NULL,'1 Gifts deposited','2011-03-13 19:46:58','gbeeley','2011-03-13 19:46:58','gbeeley',NULL),('DEMO',100005,2,1,'2011.03','2011-03-13 17:53:45','T','PRJ000','52','5700','10.0000','\0','\0','\0','\0',NULL,NULL,NULL,'\0','\0','XX','CR',NULL,NULL,NULL,NULL,NULL,'\0','\0','\0',NULL,'0.0000',NULL,NULL,'Admin fee to GEN000 for gift(s) totaling $100.00 (10% to General Fund)','2011-03-13 19:46:58','gbeeley','2011-03-13 19:46:58','gbeeley',NULL),('DEMO',100005,2,2,'2011.03','2011-03-13 17:53:45','T','GEN000','42','4700','-10.0000','\0','\0','\0','\0',NULL,NULL,NULL,'\0','\0','XX','CR',NULL,NULL,NULL,NULL,NULL,'\0','\0','\0',NULL,'0.0000',NULL,NULL,'Admin fee revenue','2011-03-13 19:46:58','gbeeley','2011-03-13 19:46:58','gbeeley',NULL),('DEMO',100005,1,3,'2011.03','2011-03-13 17:53:45','T','GEN000','19','1900','-100.0000','\0','\0','\0','\0',NULL,NULL,NULL,'\0','\0','XX','CR',NULL,NULL,NULL,NULL,NULL,'\0','\0','\0',NULL,'0.0000',NULL,NULL,'1 transactions for GEN000','2011-03-13 19:46:58','gbeeley','2011-03-13 19:46:58','gbeeley',NULL),('DEMO',100005,1,4,'2011.03','2011-03-13 17:53:45','T','PRJ000','19','1900','100.0000','\0','\0','\0','\0',NULL,NULL,NULL,'\0','\0','XX','CR',NULL,NULL,NULL,NULL,NULL,'\0','\0','\0',NULL,'0.0000',NULL,NULL,'1 transactions for PRJ000','2011-03-13 19:46:58','gbeeley','2011-03-13 19:46:58','gbeeley',NULL),('DEMO',100005,2,3,'2011.03','2011-03-13 17:53:45','T','GEN000','19','1900','10.0000','\0','\0','\0','\0',NULL,NULL,NULL,'\0','\0','XX','CR',NULL,NULL,NULL,NULL,NULL,'\0','\0','\0',NULL,'0.0000',NULL,NULL,'1 transactions for GEN000','2011-03-13 19:46:58','gbeeley','2011-03-13 19:46:58','gbeeley',NULL),('DEMO',100005,2,4,'2011.03','2011-03-13 17:53:45','T','PRJ000','19','1900','-10.0000','\0','\0','\0','\0',NULL,NULL,NULL,'\0','\0','XX','CR',NULL,NULL,NULL,NULL,NULL,'\0','\0','\0',NULL,'0.0000',NULL,NULL,'1 transactions for PRJ000','2011-03-13 19:46:58','gbeeley','2011-03-13 19:46:58','gbeeley',NULL);
+INSERT INTO `a_transaction` (`a_ledger_number`, `a_batch_number`, `a_journal_number`, `a_transaction_number`, `a_period`, `a_effective_date`, `a_transaction_type`, `a_fund`, `a_account_category`, `a_account_code`, `a_amount`, `a_posted`, `a_modified`, `a_corrected`, `a_correcting`, `a_corrected_batch`, `a_corrected_journal`, `a_corrected_transaction`, `a_reconciled`, `a_postprocessed`, `a_postprocess_type`, `a_origin`, `a_recv_document_id`, `a_sent_document_id`, `p_ext_partner_id`, `p_int_partner_id`, `a_legacy_code`, `a_receipt_sent`, `a_receipt_desired`, `a_first_gift`, `a_gift_type`, `a_goods_provided`, `a_gift_received_date`, `a_gift_postmark_date`, `a_comment`, `s_date_created`, `s_created_by`, `s_date_modified`, `s_modified_by`, `__cx_osml_control`) VALUES ('DEMO',100005,1,1,'2011.03','2011-03-13 17:53:45','T','PRJ000','40','4100','-100.0000','\0','\0','\0','\0',NULL,NULL,NULL,'\0','\0','XX','CR',NULL,NULL,NULL,NULL,NULL,'','','\0',NULL,'0.0000',NULL,NULL,'1 Gifts for PRJ000','2011-03-13 19:46:58','gbeeley','2011-03-13 19:46:58','gbeeley',NULL),('DEMO',100005,1,2,'2011.03','2011-03-13 17:53:45','T','GEN000','10','1100','100.0000','\0','\0','\0','\0',NULL,NULL,NULL,'\0','\0','XX','CR',NULL,NULL,NULL,NULL,NULL,'\0','\0','\0',NULL,'0.0000',NULL,NULL,'1 Gifts deposited','2011-03-13 19:46:58','gbeeley','2011-03-13 19:46:58','gbeeley',NULL),('DEMO',100005,2,1,'2011.03','2011-03-13 17:53:45','T','PRJ000','52','5700','10.0000','\0','\0','\0','\0',NULL,NULL,NULL,'\0','\0','XX','CR',NULL,NULL,NULL,NULL,NULL,'\0','\0','\0',NULL,'0.0000',NULL,NULL,'Admin fee to GEN000 for gift(s) totaling $100.00 (10% to General Fund)','2011-03-13 19:46:58','gbeeley','2011-03-13 19:46:58','gbeeley',NULL),('DEMO',100005,2,2,'2011.03','2011-03-13 17:53:45','T','GEN000','42','4700','-10.0000','\0','\0','\0','\0',NULL,NULL,NULL,'\0','\0','XX','CR',NULL,NULL,NULL,NULL,NULL,'\0','\0','\0',NULL,'0.0000',NULL,NULL,'Admin fee revenue','2011-03-13 19:46:58','gbeeley','2011-03-13 19:46:58','gbeeley',NULL),('DEMO',100005,1,3,'2011.03','2011-03-13 17:53:45','T','GEN000','19','1900','-100.0000','\0','\0','\0','\0',NULL,NULL,NULL,'\0','\0','XX','CR',NULL,NULL,NULL,NULL,NULL,'\0','\0','\0',NULL,'0.0000',NULL,NULL,'1 transactions for GEN000','2011-03-13 19:46:58','gbeeley','2011-03-13 19:46:58','gbeeley',NULL),('DEMO',100005,1,4,'2011.03','2011-03-13 17:53:45','T','PRJ000','19','1900','100.0000','\0','\0','\0','\0',NULL,NULL,NULL,'\0','\0','XX','CR',NULL,NULL,NULL,NULL,NULL,'\0','\0','\0',NULL,'0.0000',NULL,NULL,'1 transactions for PRJ000','2011-03-13 19:46:58','gbeeley','2011-03-13 19:46:58','gbeeley',NULL),('DEMO',100005,2,3,'2011.03','2011-03-13 17:53:45','T','GEN000','19','1900','10.0000','\0','\0','\0','\0',NULL,NULL,NULL,'\0','\0','XX','CR',NULL,NULL,NULL,NULL,NULL,'\0','\0','\0',NULL,'0.0000',NULL,NULL,'1 transactions for GEN000','2011-03-13 19:46:58','gbeeley','2011-03-13 19:46:58','gbeeley',NULL),('DEMO',100005,2,4,'2011.03','2011-03-13 17:53:45','T','PRJ000','19','1900','-10.0000','\0','\0','\0','\0',NULL,NULL,NULL,'\0','\0','XX','CR',NULL,NULL,NULL,NULL,NULL,'\0','\0','\0',NULL,'0.0000',NULL,NULL,'1 transactions for PRJ000','2011-03-13 19:46:58','gbeeley','2011-03-13 19:46:58','gbeeley',NULL);
 /*!40000 ALTER TABLE `a_transaction` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -452,7 +452,7 @@ UNLOCK TABLES;
 
 LOCK TABLES `a_transaction_tmp` WRITE;
 /*!40000 ALTER TABLE `a_transaction_tmp` DISABLE KEYS */;
-INSERT INTO `a_transaction_tmp` (`a_ledger_number`, `a_batch_number`, `a_journal_number`, `a_transaction_number`, `a_period`, `a_effective_date`, `a_transaction_type`, `a_cost_center`, `a_account_category`, `a_account_code`, `a_amount`, `a_posted`, `a_modified`, `a_corrected`, `a_correcting`, `a_corrected_batch`, `a_corrected_journal`, `a_corrected_transaction`, `a_reconciled`, `a_postprocessed`, `a_postprocess_type`, `a_origin`, `a_recv_document_id`, `a_sent_document_id`, `p_ext_partner_id`, `p_int_partner_id`, `a_legacy_code`, `a_receipt_sent`, `a_receipt_desired`, `a_first_gift`, `a_gift_type`, `a_goods_provided`, `a_gift_received_date`, `a_gift_postmark_date`, `a_comment`, `s_date_created`, `s_created_by`, `s_date_modified`, `s_modified_by`, `__cx_osml_control`) VALUES ('DEMO',100005,2,1,'2011.03','2011-03-13 17:53:45','T','PRJ000','52','5700','10.0000','\0','\0','\0','\0',NULL,NULL,NULL,'\0','\0','XX','CR',NULL,'GEN000',NULL,NULL,NULL,'\0','\0','\0',NULL,'100.0000',NULL,NULL,'10% to General Fund','2011-03-13 19:46:58','gbeeley','2011-03-13 19:46:58','gbeeley',NULL);
+INSERT INTO `a_transaction_tmp` (`a_ledger_number`, `a_batch_number`, `a_journal_number`, `a_transaction_number`, `a_period`, `a_effective_date`, `a_transaction_type`, `a_fund`, `a_account_category`, `a_account_code`, `a_amount`, `a_posted`, `a_modified`, `a_corrected`, `a_correcting`, `a_corrected_batch`, `a_corrected_journal`, `a_corrected_transaction`, `a_reconciled`, `a_postprocessed`, `a_postprocess_type`, `a_origin`, `a_recv_document_id`, `a_sent_document_id`, `p_ext_partner_id`, `p_int_partner_id`, `a_legacy_code`, `a_receipt_sent`, `a_receipt_desired`, `a_first_gift`, `a_gift_type`, `a_goods_provided`, `a_gift_received_date`, `a_gift_postmark_date`, `a_comment`, `s_date_created`, `s_created_by`, `s_date_modified`, `s_modified_by`, `__cx_osml_control`) VALUES ('DEMO',100005,2,1,'2011.03','2011-03-13 17:53:45','T','PRJ000','52','5700','10.0000','\0','\0','\0','\0',NULL,NULL,NULL,'\0','\0','XX','CR',NULL,'GEN000',NULL,NULL,NULL,'\0','\0','\0',NULL,'100.0000',NULL,NULL,'10% to General Fund','2011-03-13 19:46:58','gbeeley','2011-03-13 19:46:58','gbeeley',NULL);
 /*!40000 ALTER TABLE `a_transaction_tmp` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -462,7 +462,7 @@ UNLOCK TABLES;
 
 LOCK TABLES `m_list` WRITE;
 /*!40000 ALTER TABLE `m_list` DISABLE KEYS */;
-INSERT INTO `m_list` (`m_list_code`, `m_list_parent`, `m_list_description`, `m_list_status`, `m_list_type`, `m_discard_after`, `m_list_frozen`, `m_date_sent`, `m_charge_ledger`, `p_postal_mode`, `m_charge_cost_ctr`, `s_date_created`, `s_created_by`, `s_date_modified`, `s_modified_by`, `__cx_osml_control`) VALUES ('M000',NULL,'General Updates','A','P',NULL,'\0',NULL,'DEMO',NULL,'GEN000','2011-03-12 12:18:17','gbeeley','2011-03-12 12:18:19','gbeeley',NULL),('M001',NULL,'Demo Project Updates','A','P',NULL,'\0',NULL,'DEMO',NULL,'PRJ000','2011-03-12 12:18:53','gbeeley','2011-03-12 12:18:53','gbeeley',NULL);
+INSERT INTO `m_list` (`m_list_code`, `m_list_parent`, `m_list_description`, `m_list_status`, `m_list_type`, `m_discard_after`, `m_list_frozen`, `m_date_sent`, `m_charge_ledger`, `p_postal_mode`, `m_charge_fund`, `s_date_created`, `s_created_by`, `s_date_modified`, `s_modified_by`, `__cx_osml_control`) VALUES ('M000',NULL,'General Updates','A','P',NULL,'\0',NULL,'DEMO',NULL,'GEN000','2011-03-12 12:18:17','gbeeley','2011-03-12 12:18:19','gbeeley',NULL),('M001',NULL,'Demo Project Updates','A','P',NULL,'\0',NULL,'DEMO',NULL,'PRJ000','2011-03-12 12:18:53','gbeeley','2011-03-12 12:18:53','gbeeley',NULL);
 /*!40000 ALTER TABLE `m_list` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -546,7 +546,7 @@ UNLOCK TABLES;
 
 LOCK TABLES `p_partner` WRITE;
 /*!40000 ALTER TABLE `p_partner` DISABLE KEYS */;
-INSERT INTO `p_partner` (`p_partner_key`, `p_creating_office`, `p_parent_key`, `p_partner_class`, `p_status_code`, `p_status_change_date`, `p_title`, `p_given_name`, `p_preferred_name`, `p_surname`, `p_surname_first`, `p_localized_name`, `p_org_name`, `p_gender`, `p_language_code`, `p_acquisition_code`, `p_comments`, `p_record_status_code`, `p_no_solicitations`, `p_no_mail`, `p_cost_center`, `p_best_contact`, `p_merged_with`, `p_legacy_key_1`, `p_legacy_key_2`, `p_legacy_key_3`, `s_date_created`, `s_created_by`, `s_date_modified`, `s_modified_by`, `__cx_osml_control`) VALUES ('100000','100000',NULL,'MIS','A','2011-03-12 22:35:06',NULL,NULL,NULL,NULL,NULL,NULL,'Demo Organization','C',NULL,NULL,NULL,'A','\0','\0','GEN000',NULL,NULL,NULL,NULL,NULL,'2011-03-12 22:35:39','gbeeley','2011-03-12 22:35:42','gbeeley',NULL),('100001','100000',NULL,'IND','A','2011-03-12 22:36:03',NULL,'John',NULL,'Smith','\0',NULL,NULL,'M',NULL,NULL,NULL,'A','\0','\0',NULL,NULL,NULL,NULL,NULL,NULL,'2011-03-12 22:36:36','gbeeley','2011-03-12 22:36:37','gbeeley',NULL);
+INSERT INTO `p_partner` (`p_partner_key`, `p_creating_office`, `p_parent_key`, `p_partner_class`, `p_status_code`, `p_status_change_date`, `p_title`, `p_given_name`, `p_preferred_name`, `p_surname`, `p_surname_first`, `p_localized_name`, `p_org_name`, `p_gender`, `p_language_code`, `p_acquisition_code`, `p_comments`, `p_record_status_code`, `p_no_solicitations`, `p_no_mail`, `p_fund`, `p_best_contact`, `p_merged_with`, `p_legacy_key_1`, `p_legacy_key_2`, `p_legacy_key_3`, `s_date_created`, `s_created_by`, `s_date_modified`, `s_modified_by`, `__cx_osml_control`) VALUES ('100000','100000',NULL,'MIS','A','2011-03-12 22:35:06',NULL,NULL,NULL,NULL,NULL,NULL,'Demo Organization','C',NULL,NULL,NULL,'A','\0','\0','GEN000',NULL,NULL,NULL,NULL,NULL,'2011-03-12 22:35:39','gbeeley','2011-03-12 22:35:42','gbeeley',NULL),('100001','100000',NULL,'IND','A','2011-03-12 22:36:03',NULL,'John',NULL,'Smith','\0',NULL,NULL,'M',NULL,NULL,NULL,'A','\0','\0',NULL,NULL,NULL,NULL,NULL,NULL,'2011-03-12 22:36:36','gbeeley','2011-03-12 22:36:37','gbeeley',NULL);
 /*!40000 ALTER TABLE `p_partner` ENABLE KEYS */;
 UNLOCK TABLES;
 

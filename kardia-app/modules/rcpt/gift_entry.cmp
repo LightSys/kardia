@@ -79,6 +79,7 @@ gift_entry "widget/component-decl"
 	{
 	path="copy_gift.cmp";
 
+	//on_copy_1 "widget/connector" { event=Copied; target=rcpt_form; action=Discard; }
 	on_copy_1 "widget/connector" { event=Copied; target=rcpt_form; action=Clear; force=1; }
 	on_copy_2 "widget/connector" { event=Copied; target=desig_form; action=Clear; force=1; }
 	on_copy_3 "widget/connector" { event=Copied; target=line_items_osrc; action=Invalidate; }
@@ -483,6 +484,11 @@ gift_entry "widget/component-decl"
 					/apps/kardia/data/Kardia_DB/p_location/rows pl
 				WHERE
 					:p:p_partner_key *= :pl:p_partner_key
+				ORDER BY
+					isnull(:p:p_org_name, ''),
+					:p:p_surname,
+					:p:p_given_name,
+					charindex(:pl:p_record_status_code, 'OIQA') desc
 				HAVING
 					:hasgifts = 1
 				");
@@ -494,7 +500,7 @@ gift_entry "widget/component-decl"
 
 			srchtbl "widget/table"
 			    {
-			    height=109;
+			    height=209;
 			    titlebar=no;
 			    overlap_scrollbar=yes;
 			    demand_scrollbar=yes;
@@ -577,7 +583,7 @@ gift_entry "widget/component-decl"
 					
 			receipts_tbl "widget/table"
 			    {
-			    height=435;
+			    height=335;
 			    titlebar=no;
 			    overlap_scrollbar=yes;
 			    demand_scrollbar=yes;
@@ -807,6 +813,16 @@ gift_entry "widget/component-decl"
 				    EventName=runclient("LoadSidebar");
 				    Donor=runclient(:f_rcpt_donorid:content);
 				    }
+
+				on_donor_click "widget/connector"
+				    {
+				    event=MouseDown;
+				    event_condition=runclient(:doing_copy:value == 0 and char_length(:f_rcpt_ackid:content) > 1 and :manage_osrc:partner != :f_rcpt_donorid:content and :rcpt_form:form_mode == 'View');
+				    target=gift_entry;
+				    action=TriggerEvent;
+				    EventName=runclient("LoadSidebar");
+				    Donor=runclient(:f_rcpt_donorid:content);
+				    }
 				}
 
 			    f_rcpt_ackid "widget/component"
@@ -835,6 +851,16 @@ gift_entry "widget/component-decl"
 				    {
 				    event=GetFocus;
 				    event_condition=runclient(:doing_copy:value == 0 and char_length(:f_rcpt_ackid:content) > 1 and :manage_osrc:partner != :f_rcpt_ackid:content);
+				    target=gift_entry;
+				    action=TriggerEvent;
+				    EventName=runclient("LoadSidebar");
+				    Donor=runclient(:f_rcpt_ackid:content);
+				    }
+
+				on_ack_click "widget/connector"
+				    {
+				    event=MouseDown;
+				    event_condition=runclient(:doing_copy:value == 0 and char_length(:f_rcpt_ackid:content) > 1 and :manage_osrc:partner != :f_rcpt_ackid:content and :rcpt_form:form_mode == 'View');
 				    target=gift_entry;
 				    action=TriggerEvent;
 				    EventName=runclient("LoadSidebar");

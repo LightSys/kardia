@@ -573,7 +573,7 @@ create table p_partner_sort_tmp (
 
 create table p_acquisition_code (
         p_acquisition_code                    char(3)  not null,       /* The 3-character acquisition code for how we originally came in contact with the person --  */
-        p_acquisition_name                    varchar(32)  not null,   /* A brief description or label for the acquisition code --  */
+        p_acquisition_name                    varchar(48)  not null,   /* A brief description or label for the acquisition code --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -590,7 +590,7 @@ insert into p_acquisition_code (p_acquisition_code,p_acquisition_name,s_date_cre
 insert into p_acquisition_code (p_acquisition_code,p_acquisition_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'MIS' as p_acquisition_code, 'New Missionary' as p_acquisition_name, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
 insert into p_acquisition_code (p_acquisition_code,p_acquisition_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'EVT' as p_acquisition_code, 'Met at an Event' as p_acquisition_name, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
 insert into p_acquisition_code (p_acquisition_code,p_acquisition_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'UNI' as p_acquisition_code, 'Met at a College or University' as p_acquisition_name, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into p_acquisition_code (p_acquisition_code,p_acquisition_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'RAN' as p_acquisition_code, 'Met at Rnd / Divine Appointment' as p_acquisition_name, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into p_acquisition_code (p_acquisition_code,p_acquisition_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'RAN' as p_acquisition_code, 'Met at Random / Divine Appointment' as p_acquisition_name, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
 
 
 /* p_partner_search */
@@ -840,13 +840,13 @@ create table e_contact_history_type (
         __cx_osml_control                     varchar(255)  null       /*  --  */
 
 );
-insert into e_contact_history_type (e_contact_history_type,e_short_name,e_description,e_is_notes,e_is_inperson,e_user_selectable,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 1 as e_contact_history_type, 'Phone' as e_short_name, 'Phone Call' as e_description,0 as e_is_notes, 0 as e_is_inperson, 1 as e_user_selectable, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into e_contact_history_type (e_contact_history_type,e_short_name,e_description,e_is_notes,e_is_inperson,e_user_selectable,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 2 as e_contact_history_type, 'Email' as e_short_name, 'Email Message' as e_description,1 as e_is_notes, 0 as e_is_inperson, 1 as e_user_selectable, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into e_contact_history_type (e_contact_history_type,e_short_name,e_description,e_is_notes,e_is_inperson,e_user_selectable,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 3 as e_contact_history_type, 'Conversation' as e_short_name, 'In-Person Conversation' as e_description,0 as e_is_notes, 1 as e_is_inperson, 1 as e_user_selectable, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into e_contact_history_type (e_contact_history_type,e_short_name,e_description,e_is_notes,e_is_inperson,e_user_selectable,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 4 as e_contact_history_type, 'Note' as e_short_name, 'Note' as e_description,1 as e_is_notes, 0 as e_is_inperson, 1 as e_user_selectable, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into e_contact_history_type (e_contact_history_type,e_short_name,e_description,e_is_notes,e_is_inperson,e_user_selectable,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 5 as e_contact_history_type, 'Pray' as e_short_name, 'Prayer/Praise Item' as e_description,1 as e_is_notes, 0 as e_is_inperson, 1 as e_user_selectable, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into e_contact_history_type (e_contact_history_type,e_short_name,e_description,e_is_notes,e_is_inperson,e_user_selectable,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 6 as e_contact_history_type, 'SignUp' as e_short_name, 'Sign Up List' as e_description,1 as e_is_notes, 1 as e_is_inperson, 1 as e_user_selectable, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-insert into e_contact_history_type (e_contact_history_type,e_short_name,e_description,e_is_notes,e_is_inperson,e_user_selectable,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 7 as e_contact_history_type, 'Update' as e_short_name, 'Update' as e_description,0 as e_is_notes, 0 as e_is_inperson, 1 as e_user_selectable, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into e_contact_history_type (e_contact_history_type,e_short_name,e_description,e_user_selectable,e_is_notes,e_is_inperson,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 1 as e_contact_history_type, 'Phone' as e_short_name, 'Phone Call' as e_description, 1 as e_user_selectable, 0 as e_is_notes, 0 as e_is_inperson, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into e_contact_history_type (e_contact_history_type,e_short_name,e_description,e_user_selectable,e_is_notes,e_is_inperson,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 2 as e_contact_history_type, 'Email' as e_short_name, 'Email Message' as e_description, 1 as e_user_selectable, 0 as e_is_notes, 0 as e_is_inperson, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into e_contact_history_type (e_contact_history_type,e_short_name,e_description,e_user_selectable,e_is_notes,e_is_inperson,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 3 as e_contact_history_type, 'Conversation' as e_short_name, 'In-Person Conversation' as e_description, 1 as e_user_selectable, 0 as e_is_notes, 1 as e_is_inperson, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into e_contact_history_type (e_contact_history_type,e_short_name,e_description,e_user_selectable,e_is_notes,e_is_inperson,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 4 as e_contact_history_type, 'Note' as e_short_name, 'Note' as e_description, 1 as e_user_selectable, 1 as e_is_notes, 0 as e_is_inperson, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into e_contact_history_type (e_contact_history_type,e_short_name,e_description,e_user_selectable,e_is_notes,e_is_inperson,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 5 as e_contact_history_type, 'Pray' as e_short_name, 'Prayer/Praise Item' as e_description, 1 as e_user_selectable, 1 as e_is_notes, 0 as e_is_inperson, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into e_contact_history_type (e_contact_history_type,e_short_name,e_description,e_user_selectable,e_is_notes,e_is_inperson,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 6 as e_contact_history_type, 'SignUp' as e_short_name, 'Sign Up List' as e_description, 1 as e_user_selectable, 0 as e_is_notes, 1 as e_is_inperson, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into e_contact_history_type (e_contact_history_type,e_short_name,e_description,e_user_selectable,e_is_notes,e_is_inperson,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 7 as e_contact_history_type, 'Update' as e_short_name, 'Update' as e_description, 1 as e_user_selectable, 0 as e_is_notes, 0 as e_is_inperson, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
 
 
 /* e_contact_history */
@@ -3781,12 +3781,28 @@ create table i_crm_partner_import (
         i_crm_import_id                       integer  not null,       /* unique import ID for this record in the given import data session. --  */
         i_crm_import_session_id               integer  not null,       /* import session ID (unique for imported data set) --  */
         i_crm_import_type_id                  integer  null,           /* type of import being done (ref. i_crm_import_type table) --  */
+        i_crm_import_status                   char(1)  not null,       /* status of this import record: A = fully automated complete, I = incomplete (needs user Q/A), C = complete (after manual Q/A) --  */
         i_crm_external_key                    varchar(64)  null,       /* external key for data import source --  */
         i_crm_partner_key                     char(10)  null,          /* Partner key for newly inserted record --  */
         i_crm_create_partner                  bit  not null,           /* whether to create a new partner (and possibly address/location) record (0=no, 1=yes) --  */
         i_crm_create_email                    bit  not null,           /* whether to create a new email address record for the partner --  */
         i_crm_create_phone                    bit  not null,           /* whether to create a new phone# record for partner --  */
-        i_crm_comment                         varchar(255)  null,      /* Comment for newly created record --  */
+        i_crm_surname                         varchar(64)  null,       /* surname (last name / family name) --  */
+        i_crm_given_name                      varchar(64)  null,       /* given name / first name. If the source has a middle name, it is combined into this field. --  */
+        i_crm_date                            datetime  null,          /* date the data was created on the data source --  */
+        i_crm_org_name                        varchar(64)  null,       /* name of organization --  */
+        i_crm_phone                           varchar(80)  null,       /* phone number --  */
+        i_crm_email                           varchar(80)  null,       /* email address --  */
+        i_crm_address1                        varchar(80)  null,       /* Address Line 1 --  */
+        i_crm_address2                        varchar(80)  null,       /* Address Line 2 --  */
+        i_crm_address3                        varchar(80)  null,       /* Address Line 3 --  */
+        i_crm_in_care_of                      varchar(80)  null,       /* in-care-of --  */
+        i_crm_city                            varchar(80)  null,       /* City --  */
+        i_crm_state_province                  varchar(64)  null,       /* State/Province code --  */
+        i_crm_postal_code                     char(12)  null,          /* Postal (zip) code --  */
+        i_crm_country_code                    char(2)  null,           /* Country code - ISO-3166-2 with the UK exception. If the import data has a different country code system, it is converted before this value is set. --  */
+        i_crm_comment                         varchar(255)  null,      /* Comment for the new partner record --  */
+        i_crm_addr_comment                    varchar(255)  null,      /* Comment for the new address record --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -3807,6 +3823,8 @@ create table i_crm_partner_import_option (
         i_crm_tag_strength                    float  null,             /* strength value for tag (default 1.0) --  */
         i_crm_tag_certainty                   float  null,             /* certainty value for tag (default 1.0) --  */
         i_crm_task_due_days                   integer  null,           /* for tasks, how soon the task will be due (in days, from the import date) --  */
+        i_crm_track_step                      integer  null,           /* for tracks, the step to put the person in --  */
+        i_crm_req_fulfill                     integer  null,           /* for requirements, the requirement ID to fulfill --  */
         i_crm_collab_id                       char(10)  null,          /* partner key for collaborator being added. --  */
         i_crm_create_option                   bit  not null,           /* Whether to create this option at all --  */
         s_date_created                        datetime  not null,      /*  --  */
@@ -3822,9 +3840,13 @@ create table i_crm_partner_import_option (
 
 create table i_crm_import_type (
         i_crm_import_type_id                  integer  not null,       /* unique import type --  */
+        i_crm_import_type_desc                varchar(255)  not null,  /* Import type description --  */
+        i_crm_import_type_subsys              char(4)  not null,       /* A 4-letter abbreviation of the subsystem using this import specification. Use "LSDB" for Limesurvey data import from the backend database, "LSAP" for Limesurvey import from API. --  */
+        i_crm_import_type_path                varchar(255)  null,      /* Data source path for this data import, if available, such as the database table path or the HTTP web services client path. --  */
         i_crm_field_pk                        varchar(255)  null,      /* field to be used for import key (this won't become the Partner Key, but will be stored in the legacy key 1 field) --  */
         i_crm_field_surname                   varchar(255)  null,      /* field for surname (last name / family name) field. --  */
-        i_crm_field_given_name                varchar(255)  null,      /* field for given name / first name --  */
+        i_crm_field_given_name                varchar(255)  null,      /* field for given name / first name. If the import source does not have separate surname/given name fields, then this is the complete name field and i_crm_field_surname is null. --  */
+        i_crm_field_middle_name               varchar(255)  null,      /* field for middle name, null if there is no middle name field (or if middle name is combined into the given name field) --  */
         i_crm_field_date                      varchar(255)  null,      /* field for date the data was created --  */
         i_crm_field_org_name                  varchar(255)  null,      /* field for name of organization --  */
         i_crm_field_phone                     varchar(255)  null,      /* field(spec) for phone number --  */
@@ -3837,7 +3859,7 @@ create table i_crm_import_type (
         i_crm_field_stateprov                 varchar(255)  null,      /* field(spec) for State/Province --  */
         i_crm_field_postal_code               varchar(255)  null,      /* field(spec) for Postal (zip) code --  */
         i_crm_field_country                   varchar(255)  null,      /* field(spec) for Country. --  */
-        i_crm_country_type                    varchar(12)  null,       /* What code set (or full name) to be used for interpreting country data --  */
+        i_crm_country_type                    varchar(16)  null,       /* What code set (or full name) to be used for interpreting country data: iso_3166_2, iso_3166_3, fips_40, iso_3166_2_uk (with the UK exception), or full. --  */
         i_crm_field_comment                   varchar(255)  null,      /* field(spec) for Partner Comment --  */
         i_crm_field_addr_comment              varchar(255)  null,      /* field(spec) for Address Comment --  */
         s_date_created                        datetime  not null,      /*  --  */
@@ -3854,12 +3876,19 @@ create table i_crm_import_type (
 create table i_crm_import_type_option (
         i_crm_import_type_id                  integer  not null,       /* unique import type --  */
         i_crm_import_type_option_id           integer  not null,       /* the identifier for the option in this import type --  */
-        i_crm_option_type                     char(1)  not null,       /* T = tag, K = track, C = collaborator, I = interaction, N = note, F = task(followup) --  */
-        i_crm_option_class                    integer  not null,       /* the classification of the option (for tags, this is the tag type. for tracks, the track type. etc.) --  */
-        i_crm_option_comment                  varchar(900)  null,      /* a comment to be added for the option. This can contain substitute() specs, to include various fields as needed. --  */
+        i_crm_import_type_option_desc         varchar(255)  null,      /* a description of this import option --  */
+        i_crm_option_field                    varchar(255)  null,      /* field name for the source data for this option --  */
+        i_crm_option_value                    varchar(255)  null,      /* for conditional data creation, this is the field value for this option required for this data to be created --  */
+        i_crm_option_type                     char(1)  not null,       /* T = tag, K = track, C = collaborator, I = interaction, N = note, F = task(followup), D = data field, R = track step requirement --  */
+        i_crm_option_class                    integer  null,           /* the classification of the option (for tags, this is the tag type ID. for tracks or requirements, the track ID. data item ID for data fields, etc.) --  */
+        i_crm_option_comment                  varchar(900)  null,      /* a comment to be added for the option. This can contain substitute() function specs, to include various fields as needed. --  */
         i_crm_tag_strength                    float  null,             /* strength value for tag (default 1.0) --  */
+        i_crm_tag_strength_expr               varchar(900)  null,      /* expression to give the tag strength (provided object: "import" attribute "value", i.e. :import:value) --  */
         i_crm_tag_certainty                   float  null,             /* certainty value for tag (default 1.0) --  */
+        i_crm_tag_certainty_expr              varchar(900)  null,      /* expression to give the tag certainty (provided object: "import" attribute "value", i.e. :import:value) --  */
         i_crm_task_due_days                   integer  null,           /* for tasks, how soon the task will be due (in days, from the import date) --  */
+        i_crm_track_step                      integer  null,           /* for tracks, this is the step to put the person in. If null, the person is put in the starting step (by e_step_sequence). If the person is already in the track, setting this moves them to this step. --  */
+        i_crm_req_fulfill                     integer  null,           /* for step requirements, this is which requirement ID to fulfill (track provided in option class, step provided in i_crm_track_step) --  */
         i_crm_collab_id                       char(10)  null,          /* partner key for collaborator being added. --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */

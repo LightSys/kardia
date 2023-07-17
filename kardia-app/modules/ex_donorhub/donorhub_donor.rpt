@@ -39,6 +39,7 @@ donorhub_donor "system/report"
 	{
 	sql = "	declare collection funds scope application;
 		declare collection donors scope application;
+		declare collection donordata scope application;
 		declare object config;
 
 		-- Configuration
@@ -93,8 +94,14 @@ donorhub_donor "system/report"
 		    :donor is not null
 		;
 
-		-- Return the donor data
+		-- Compile the donor data
+		insert
+		    collection donordata
 		select
+		    :p:p_partner_key,
+		    :p:p_parent_key,
+		    d1 = 1, -- d1 and d2 are to force the optimizer in the later queries that use them
+		    d2 = 1,
 		    'Donor ID' = :d:donor,
 		    'Is Organization' = condition(char_length(:p:p_org_name) > 1, 'TRUE', 'FALSE'),
 		    'Organization Name' = condition(char_length(:p:p_org_name) > 1, :p:p_org_name, null),
@@ -114,6 +121,18 @@ donorhub_donor "system/report"
 					    :p:p_given_name
 				    )
 			    ),
+		    p_given_name =
+			    condition(char_length(:p:p_org_name) > 1,
+				    null,
+				    :p:p_given_name
+			    ),
+		    p_spouse_given_name = null,
+		    p_preferred_name =
+			    condition(char_length(:p:p_org_name) > 1,
+				    null,
+				    :p:p_given_name
+			    ),
+		    p_spouse_preferred_name = null,
 		    'Middle Name' = null,
 		    'Last Name' = condition(char_length(:p:p_org_name) > 1, null, :p:p_surname),
 		    'Suffix' = condition(char_length(:p:p_org_name) > 1, null, :p:p_suffix),
@@ -144,15 +163,15 @@ donorhub_donor "system/report"
 				    '',
 				    first(condition(:ci:p_contact_type = 'C', (isnull(:ci:p_phone_country + ' ', '') + isnull(:ci:p_phone_area_city + ' ', '') + :ci:p_contact_data), null))
 			    ),
-		    'Spouse Mobile Phone' = null,
+		    'Spouse Mobile Phone' = convert(string, null),
 		    'Email' = 
 			    condition(:config:ExDonhubExcEmail,
 				    '',
 				    first(condition(:ci:p_contact_type = 'E', (isnull(:ci:p_phone_country + ' ', '') + isnull(:ci:p_phone_area_city + ' ', '') + :ci:p_contact_data), null))
 			    ),
-		    'Spouse Email' = null,
+		    'Spouse Email' = convert(string, null),
 		    'Staff Memo' = :p:p_comments,
-		    'Donor Memo' = null,
+		    'Donor Memo' = convert(string, null),
 		    'Category' = :pc:text,
 		    'Organization Contact Person' =
 			    condition(char_length(:p:p_org_name) > 1,
@@ -233,6 +252,156 @@ donorhub_donor "system/report"
 		    (:dates_qy:from_date is null or :lastmod >= :dates_qy:from_date) and
 		    (:dates_qy:to_date is null or :lastmod <= :dates_qy:to_date) and
 		    :'Donor ID' is not null
+		;
+
+		-- Spouse adjustments
+		update
+		    collection donordata
+		set
+		    :'Spouse First/Given Name' = condition(charindex(' and ', :'First Name') > 0,
+				substring(:'First Name', charindex(' and ', :'First Name') + 5, 999),
+				substring(:'First Name', charindex(' & ', :'First Name') + 3, 999)
+			),
+		    :'First Name' = condition(charindex(' and ', :'First Name') > 0,
+				substring(:'First Name', 1, charindex(' and ', :'First Name') - 1),
+				substring(:'First Name', 1, charindex(' & ', :'First Name') - 1)
+			),
+		    :'Spouse Title' = condition(charindex(' and ', :'Title') > 0,
+				substring(:'Title', charindex(' and ', :'Title') + 5, 999),
+				substring(:'Title', charindex(' & ', :'Title') + 3, 999)
+			),
+		    :'Title' = condition(charindex(' and ', :'Title') > 0,
+				substring(:'Title', 1, charindex(' and ', :'Title') - 1),
+				substring(:'Title', 1, charindex(' & ', :'Title') - 1)
+			),
+		    :p_spouse_given_name = condition(charindex(' and ', :p_given_name) > 0,
+				substring(:p_given_name, charindex(' and ', :p_given_name) + 5, 999),
+				substring(:p_given_name, charindex(' & ', :p_given_name) + 3, 999)
+			),
+		    :p_given_name = condition(charindex(' and ', :p_given_name) > 0,
+				substring(:p_given_name, 1, charindex(' and ', :p_given_name) - 1),
+				substring(:p_given_name, 1, charindex(' & ', :p_given_name) - 1)
+			),
+		    :p_spouse_preferred_name = condition(charindex(' and ', :p_preferred_name) > 0,
+				substring(:p_preferred_name, charindex(' and ', :p_preferred_name) + 5, 999),
+				substring(:p_preferred_name, charindex(' & ', :p_preferred_name) + 3, 999)
+			),
+		    :p_preferred_name = condition(charindex(' and ', :p_preferred_name) > 0,
+				substring(:p_preferred_name, 1, charindex(' and ', :p_preferred_name) - 1),
+				substring(:p_preferred_name, 1, charindex(' & ', :p_preferred_name) - 1)
+			),
+		    :'Spouse Last Name' = :'Last Name'
+		where
+		    (charindex(' and ', :'First Name') > 0 or charindex(' & ', :'First Name') > 0) and
+		    (:Category = 'Individual' or :Category = 'Household')
+		;
+
+		-- Fix-up spouse emails and phones
+		update
+		    identity collection donordata d,
+		    /apps/kardia/data/Kardia_DB/p_partner/rows p,
+		    /apps/kardia/data/Kardia_DB/p_contact_info/rows ci
+		set
+		    :d:'Spouse Email' = condition(:config:ExDonhubExcEmail, '', :ci:p_contact_data)
+		where
+		    (:p:p_partner_key = :d:p_partner_key or :p:p_partner_key = :d:p_parent_key or :p:p_parent_key = :d:p_partner_key or :p:p_parent_key = :d:p_parent_key) and
+		    :ci:p_partner_key = :p:p_partner_key and
+		    :ci:p_record_status_code = 'A' and
+		    :ci:p_contact_type = 'E' and
+		    (:p:p_preferred_name = :d:'Spouse First/Given Name' or :p:p_given_name = :d:'Spouse First/Given Name' or charindex(lower(:d:'Spouse First/Given Name'), lower(:ci:p_contact_comments)) > 0 or charindex('wife', lower(:ci:p_contact_comments)) > 0) and
+		    :d:'Spouse First/Given Name' is not null and
+		    :d:d1 = 1 and
+		    :d:d2 = 1
+		;
+		update
+		    identity collection donordata d,
+		    /apps/kardia/data/Kardia_DB/p_partner/rows p,
+		    /apps/kardia/data/Kardia_DB/p_contact_info/rows ci
+		set
+		    :d:'Email' = condition(:config:ExDonhubExcEmail, '', :ci:p_contact_data)
+		where
+		    (:p:p_partner_key = :d:p_partner_key or :p:p_partner_key = :d:p_parent_key or :p:p_parent_key = :d:p_partner_key or :p:p_parent_key = :d:p_parent_key) and
+		    :ci:p_partner_key = :p:p_partner_key and
+		    :ci:p_record_status_code = 'A' and
+		    :ci:p_contact_type = 'E' and
+		    (:p:p_preferred_name = :d:'First Name' or :p:p_given_name = :d:'First Name' or charindex(lower(:d:'First Name'), lower(:ci:p_contact_comments)) > 0 or charindex('husband', lower(:ci:p_contact_comments)) > 0) and
+		    :d:'Spouse First/Given Name' is not null and
+		    :d:d1 = 1 and
+		    :d:d2 = 1
+		;
+		update
+		    identity collection donordata d,
+		    /apps/kardia/data/Kardia_DB/p_partner/rows p,
+		    /apps/kardia/data/Kardia_DB/p_contact_info/rows ci
+		set
+		    :d:'Spouse Mobile Phone' = 
+			    condition(:config:ExDonhubExcPhone,
+				    '',
+				    isnull(:ci:p_phone_country + ' ', '') + isnull(:ci:p_phone_area_city + ' ', '') + :ci:p_contact_data
+			    )
+		where
+		    (:p:p_partner_key = :d:p_partner_key or :p:p_partner_key = :d:p_parent_key or :p:p_parent_key = :d:p_partner_key or :p:p_parent_key = :d:p_parent_key) and
+		    :ci:p_partner_key = :p:p_partner_key and
+		    :ci:p_record_status_code = 'A' and
+		    (:ci:p_contact_type = 'P' or :ci:p_contact_type = 'C') and
+		    (:p:p_preferred_name = :d:'Spouse First/Given Name' or :p:p_given_name = :d:'Spouse First/Given Name' or charindex(lower(:d:'Spouse First/Given Name'), lower(:ci:p_contact_comments)) > 0 or charindex('wife', lower(:ci:p_contact_comments)) > 0) and
+		    :d:'Spouse First/Given Name' is not null and
+		    :d:d1 = 1 and
+		    :d:d2 = 1
+		;
+		update
+		    identity collection donordata d,
+		    /apps/kardia/data/Kardia_DB/p_partner/rows p,
+		    /apps/kardia/data/Kardia_DB/p_contact_info/rows ci
+		set
+		    :d:'Mobile Phone' =
+			    condition(:config:ExDonhubExcPhone,
+				    '',
+				    isnull(:ci:p_phone_country + ' ', '') + isnull(:ci:p_phone_area_city + ' ', '') + :ci:p_contact_data
+			    )
+		where
+		    (:p:p_partner_key = :d:p_partner_key or :p:p_partner_key = :d:p_parent_key or :p:p_parent_key = :d:p_partner_key or :p:p_parent_key = :d:p_parent_key) and
+		    :ci:p_partner_key = :p:p_partner_key and
+		    :ci:p_record_status_code = 'A' and
+		    (:ci:p_contact_type = 'P' or :ci:p_contact_type = 'C') and
+		    (:p:p_preferred_name = :d:'First Name' or :p:p_given_name = :d:'First Name' or charindex(lower(:d:'First Name'), lower(:ci:p_contact_comments)) > 0 or charindex('husband', lower(:ci:p_contact_comments)) > 0) and
+		    :d:'Spouse First/Given Name' is not null and
+		    :d:d1 = 1 and
+		    :d:d2 = 1
+		;
+
+		-- Return the results
+		select
+		    :'Donor ID',
+		    :'Is Organization',
+		    :'Organization Name',
+		    :'Title',
+		    :'First Name',
+		    :'Middle Name',
+		    :'Last Name',
+		    :'Suffix',
+		    :'Spouse Title',
+		    :'Spouse First/Given Name',
+		    :'Spouse Middle Name',
+		    :'Spouse Last Name',
+		    :'Street Address',
+		    :'City',
+		    :'State/Province',
+		    :'ZIP/Postal Code',
+		    :'Country/Region',
+		    :'Phone',
+		    :'Mobile Phone',
+		    :'Spouse Mobile Phone',
+		    :'Email',
+		    :'Spouse Email',
+		    :'Staff Memo',
+		    :'Donor Memo',
+		    :'Category',
+		    :'Organization Contact Person',
+		    :'Deceased',
+		    :lastmod
+		from
+		    collection donordata
 		";
 
 	all_cnt "report/aggregate" { compute="count(:'Donor ID')"; reset=0; }

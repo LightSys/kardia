@@ -5,6 +5,17 @@ taskstpl "widget/template"
 
     editbox "widget/editbox" { fgcolor=white; }
 
+    button "widget/textbutton"
+	{
+	widget_class=iconbutton;
+	tristate=no;
+	border_color="#6080c0";
+	border_radius=8;
+	border_style=none;
+	//border_style=solid;
+	image_width=24;
+	image_height=24;
+	}
     textbutton "widget/textbutton"
 	{
 	background="/apps/kardia/images/bg/lsblue_btngradient.png";
