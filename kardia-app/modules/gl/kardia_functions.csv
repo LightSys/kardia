@@ -8,7 +8,7 @@ Fund Maintenance,APP,fundmaint.app,Create and Edit Funds,
 Account Maintenance,APP,acctmaint.app,Create and Edit GL Accounts,
 Batches,APP,batches.app,Enter and Manage GL (and other) batches,                                 
 Trial Balance - Ctl,RPT,trial_balance_ctl.app,General Ledger Trial Balance - Control Accts,""                             
-Change in Net Assets,RPT,inc_exp_balance.app,"Change in Net Assets by Fund or by Batch",""                                      
+Change in Net Assets,RPT,net_assets_change.app,Change in Net Assets by Fund or by Batch,""                                      
 Period Maintenance,APP,periodmaint.app,"Create, open, close, and archive accounting periods",                                 
 Fund Manager Report,RPT,fundmgr_report.app,Report on all funds managed by a particular person,                                 
 Revenue & Expense by Period,RPT,inc_exp_matrix.app,Revenue & Expense by Period and GL Classification,                                 
