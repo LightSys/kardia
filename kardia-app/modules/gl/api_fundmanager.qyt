@@ -20,6 +20,24 @@ api_fundmanager "system/querytree"
 		    :cs:p_staff_partner_key
 		";
 
+        settings "system/querytree"
+            {
+            text = "Settings";
+
+            settingslist "system/querytree"
+                {
+                sql = " select
+                            *
+                        from
+                            identity /apps/kardia/data/Kardia_DB/a_fund_staff/rows fs
+                        where
+                            :fs:p_staff_partner_key = :managerlist:manager_id
+                        order by
+                            :fs:p_staff_partner_key asc
+                        ";
+                }
+            }
+
 	funds "system/querytree"
 	    {
 	    text = "Funds";
