@@ -18,6 +18,11 @@
             "include":{
                 "file":"liquibaseFiles\\initChangeLog.json"
             }
+        },
+        {
+            "include":{
+                "file":"liquibaseFiles\\2023-07-18.17.23.12ChangeLog.json"
+            }
         }
     ]
 }

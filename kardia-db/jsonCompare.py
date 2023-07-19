@@ -380,8 +380,9 @@ def addRenameColumnDiff(wiki, current, currToWikiCol):
 					# add in attributes if needed
 					dataType += genAttrConString(currentColumns[i])
 					tempRenameCS = ChangeSet({"id": wiki.id + "-{}".format(countCS), "author": "jsonCompare.py"})
-					tempRenameCS.changes = [{"renameColumn": {"tableName": wiki.changes[0]["createTable"]["tableName"], "oldColumnName": currentColumnList[i],
-					      "newColumnName": renameCol, "columnDataType": dataType}}]
+					# renameColumn makes Certain types, like bit and number/numeric, loose attributes/constraints, while others keep them. Need consistency, so use custom sql
+					tempRenameCS.changes  = [{"sql": {"sql": "ALTER TABLE "+wiki.changes[0]["createTable"]["tableName"]+" CHANGE "+currentColumnList[i]+" "+renameCol+" "+dataType}}]
+					tempRenameCS.rollback = [{"sql": {"sql": "ALTER TABLE "+wiki.changes[0]["createTable"]["tableName"]+" CHANGE "+renameCol+" "+currentColumnList[i]+" "+dataType}}]
 					currToWikiCol[currentColumnList[i]] = wikiColumns[wikiColumnList.index(renameCol)] # keep trakc of rename
 					tempRenameCS.updateJSON()
 					resCSList.append(tempRenameCS)
@@ -419,8 +420,9 @@ def addRenameColumnDiff(wiki, current, currToWikiCol):
 				# add in attributes if needed
 				dataType += genAttrConString(currentColumns[i])
 				tempRenameCS = ChangeSet({"id": wiki.id + "-{}".format(countCS), "author": "jsonCompare.py"})
-				tempRenameCS.changes = [{"renameColumn": {"tableName": wiki.changes[0]["createTable"]["tableName"], "oldColumnName": currentColumnList[i],
-				      "newColumnName": renameCol, "columnDataType": dataType}}]
+				# renameColumn makes Certain types, like bit and number/numeric, loose attributes/constraints, while others keep them. Need consistency, so use custom sql
+				tempRenameCS.changes = [{"sql": {"sql": "ALTER TABLE "+wiki.changes[0]["createTable"]["tableName"]+" CHANGE "+currentColumnList[i]+" "+renameCol +" "+dataType}}]
+				tempRenameCS.rollback = [{"sql": {"sql": "ALTER TABLE "+wiki.changes[0]["createTable"]["tableName"]+" CHANGE "+renameCol+" "+currentColumnList[i]+" "+dataType}}]
 				currToWikiCol[currentColumnList[i]] = wikiColumns[wikiColumnList.index(renameCol)] # keep track of rename
 				tempRenameCS.updateJSON()
 				resCSList.append(tempRenameCS)
