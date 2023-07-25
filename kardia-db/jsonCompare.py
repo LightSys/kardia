@@ -818,25 +818,36 @@ def attributeColumnDif(wiki, current, currToWikiCol):
 def addIndexDiff(wiki, current):
 	resCSList = []
 	wikiColumns = wiki.changes[0]["createIndex"]["columns"]
+	wikiIndex = wiki.changes[0]["createIndex"]
 	currentColumns = current.changes[0]["createIndex"]["columns"]
+	currIndex = current.changes[0]["createIndex"]
 	needsUpdate = False
-	if(len(wikiColumns) != len(currentColumns)): 
+
+	if(len(wikiColumns) != len(currentColumns)):
 		needsUpdate = True
+	elif(("unique" in wikiIndex) != ("unique" in currIndex) or 
+		("unique" in wikiIndex and "unique" in currIndex and wikiIndex["unique"] != currIndex["unique"])):
+		needsUpdate = True
+
 	else:
 		for i in range(len(wikiColumns)):
 			if wikiColumns[i] != currentColumns[i]:
 				needsUpdate = True
+				print(wikiIndex["indexName"])
 				break
 	if not needsUpdate: return []
 	
-	# drop and re-add all columns if there is at least one different column
+	# drop and re-add all columns if there is at least one difference
 	dropChangeSet = ChangeSet({"id": wiki.id + "-1", "author": "jsonCompare.py"})
-	dropChangeSet.changes = [{"dropIndex": {"indexName": wiki.changes[0]["createIndex"]["indexName"], "tableName": wiki.changes[0]["createIndex"]["tableName"]}}]
-	dropChangeSet.rollback = [{"createIndex": {"indexName": wiki.changes[0]["createIndex"]["indexName"], "tableName": wiki.changes[0]["createIndex"]["tableName"], "columns": currentColumns}}]
+	dropChangeSet.changes = [{"dropIndex": {"indexName": wikiIndex["indexName"], "tableName": wikiIndex["tableName"]}}]
+	dropChangeSet.rollback = [{"createIndex": {"indexName": wikiIndex["indexName"], "tableName": wikiIndex["tableName"], "columns": currentColumns}}]
+	if("unique" in currIndex and currIndex["unique"]): dropChangeSet.rollback[0]["createIndex"]["unique"] = True
 	dropChangeSet.updateJSON()
 	resCSList.append(dropChangeSet)
+
 	addChangeSet = ChangeSet({"id": wiki.id + "-2", "author": "jsonCompare.py"})
-	addChangeSet.changes = [{"createIndex": {"indexName": wiki.changes[0]["createIndex"]["indexName"], "tableName": wiki.changes[0]["createIndex"]["tableName"], "columns": wikiColumns}}]
+	addChangeSet.changes = [{"createIndex": {"indexName": wikiIndex["indexName"], "tableName": wikiIndex["tableName"], "columns": wikiColumns}}]
+	if("unique" in wikiIndex and wikiIndex["unique"]): addChangeSet.changes[0]["createIndex"]["unique"] = True
 	addChangeSet.updateJSON()
 	resCSList.append(addChangeSet)
 
@@ -1158,7 +1169,7 @@ if __name__ == "__main__":
 							diffChangeSetList.append(temp[1])
 
 		for changeSet in currentChangeSets:
-			# NOTE: No longer concerned about tables only existant in current changeset; they would be renamed or dropped
+			# NOTE: No longer concerned about tables only existent in current changeset; they would be renamed or dropped
 			if "createIndex" in changeSet.changes[0]:
 				if changeSet.changes[0]["createIndex"]["indexName"] not in wikiIndexList:
 					# drop the changeset. May have been a name change or actually removed. Either way, no longer needed
