@@ -178,7 +178,7 @@ class ChangeSet:
 			columns = []
 			for item in columnNameList:
 				columns.append({"column":{"name":item}})
-			changes["createIndex"] = {"tableName": tableName, "indexName": indexName, "columns": columns}
+			changes["createIndex"] = {"tableName": tableName, "indexName": indexName, "columns": columns, "unique":True}
 
 
 
@@ -530,7 +530,7 @@ def dropColumnDiff(wiki, current, currToWikiCol):
 	return resCSList
 
 # check if the primary key needs to change
-def pkColumnDiff(wiki, current):
+def pkColumnDiff(wiki, current, currToWikiCol):
 	dropOldKey = ChangeSet({"id": wiki.id+"-PK0", "author": "jsonCompare.py"})
 	addNewKey = ChangeSet({"id": wiki.id+"-PK1", "author": "jsonCompare.py"})
 	resCSList = []
@@ -564,6 +564,12 @@ def pkColumnDiff(wiki, current):
 		isSameKey = False
 	if isSameKey:
 		return []
+
+	# update columns names if needed
+	for i in range(len(currentKeyList)):
+		name = currentKeyList[i]
+		if(name in currToWikiCol and currToWikiCol[name] != None and currToWikiCol[name]["column"]["name"] != name): 
+			currentKeyList[i] = currToWikiCol[name]["column"]["name"]
 
 	# drop the old PK if there was one
 	if(len(currentKeyList) > 0):
@@ -815,7 +821,7 @@ def attributeColumnDif(wiki, current, currToWikiCol):
 
 
 # Drop and re-add indexes if columns are different between wiki and current
-def addIndexDiff(wiki, current):
+def addIndexDiff(wiki, current, currToWikiCol):
 	resCSList = []
 	wikiColumns = wiki.changes[0]["createIndex"]["columns"]
 	wikiIndex = wiki.changes[0]["createIndex"]
@@ -842,6 +848,13 @@ def addIndexDiff(wiki, current):
 	dropChangeSet.changes = [{"dropIndex": {"indexName": wikiIndex["indexName"], "tableName": wikiIndex["tableName"]}}]
 	dropChangeSet.rollback = [{"createIndex": {"indexName": wikiIndex["indexName"], "tableName": wikiIndex["tableName"], "columns": currentColumns}}]
 	if("unique" in currIndex and currIndex["unique"]): dropChangeSet.rollback[0]["createIndex"]["unique"] = True
+	# make sure the old names get updated to be the new names
+	for i in range(len(dropChangeSet.rollback[0]["createIndex"]["columns"])):
+		col = dropChangeSet.rollback[0]["createIndex"]["columns"][i]["column"]
+		name = col["name"]
+		if(name in currToWikiCol and currToWikiCol[name] != None and currToWikiCol[name]["column"]["name"] != name): 
+			col["name"] = currToWikiCol[name]["column"]["name"]
+
 	dropChangeSet.updateJSON()
 	resCSList.append(dropChangeSet)
 
@@ -1064,6 +1077,8 @@ if __name__ == "__main__":
 		currentIndexList = []
 		oldToNewTableName = {}
 
+		columnDrops = [] # in order for rollbacks to work, need to hold off on column drops until everything with indexes are handled. 
+
 		for wikiCS in wikiChangeSets:
 			if "createTable" in wikiCS.changes[0]:
 				wikiTableList.append(wikiCS.changes[0]["createTable"]["tableName"])
@@ -1107,7 +1122,7 @@ if __name__ == "__main__":
 				
 		for wikiCS in wikiChangeSets:
 			# New/Renamed tables are handled above; just consider indexes
-			# If the changeSet is a new index, add it to the difference and go to next changeSet
+			# If the changeSet is a new index, add it to the difference and go to next changeSet (will always be after create table in wiki, so table will be updated first)
 			if "createIndex" in wikiCS.changes[0]:
 				if wikiCS.changes[0]["createIndex"]["indexName"] not in currentIndexList:
 					diffChangeSetList.append(wikiCS)
@@ -1121,6 +1136,12 @@ if __name__ == "__main__":
 					wikiTable = wikiCS.changes[0]["createTable"]["tableName"]
 					currentTable = currentCS.changes[0]["createTable"]["tableName"]
 					if wikiTable == currentTable or (currentTable in oldToNewTableName and oldToNewTableName[currentTable] == wikiTable):
+						# may have column drops from the last table. If so, handle it now:
+						if(columnDrops != []):
+							for changes in columnDrops:
+								diffChangeSetList.append(changes)
+							columnDrops = []
+
 						# add changeSet to list with appropriate drop columns
 						# only allow to drop, reorder, OR add/remove
 						temp = []
@@ -1131,7 +1152,7 @@ if __name__ == "__main__":
 						# determine if drops, adds/renames, or reordering occured. 
 						if(len(wikiColumnNames) < len(currentColumnNames)):
 							# must have been a dropped column
-							temp = dropColumnDiff(wikiCS, currentCS, currToWikiCol)
+							columnDrops = dropColumnDiff(wikiCS, currentCS, currToWikiCol)
 						elif(len(set(wikiColumnNames).difference(set(currentColumnNames))) > 0 ):
 							# there is a column in the wiki table not found in the current table. Must be add or rename
 							temp = addRenameColumnDiff(wikiCS, currentCS, currToWikiCol)
@@ -1147,7 +1168,7 @@ if __name__ == "__main__":
 								diffChangeSetList.append(changes)
 													
 						# Column changes do not interfere, so can alway check 
-						temp = pkColumnDiff(wikiCS, currentCS)
+						temp = pkColumnDiff(wikiCS, currentCS, currToWikiCol)
 						if temp != []:
 							for keyChangeSet in temp:
 								diffChangeSetList.append(keyChangeSet)
@@ -1157,31 +1178,44 @@ if __name__ == "__main__":
 						if temp != []:
 							for attrChangeSet in temp:
 								diffChangeSetList.append(attrChangeSet)
+				# drop any indexes that match this table but are not present in the current. Needs to be done before any column drops
+				elif "createTable" in wikiCS.changes[0] and "createIndex" in currentCS.changes[0]:
+					currTableName = currentCS.changes[0]["createIndex"]["tableName"]
+					if wikiCS.changes[0]["createTable"]["tableName"] == currTableName or (currTableName in oldToNewTableName and oldToNewTableName[currTableName] == wikiTable):
+					# NOTE: No longer concerned about tables only existent in current changeset; they would be renamed or dropped
+						if currentCS.changes[0]["createIndex"]["indexName"] not in wikiIndexList:
+							# drop the changeset. May have been a name change or actually removed. Either way, no longer needed
+							# make sure the table name is correct
+							tableName = wikiCS.changes[0]["createTable"]["tableName"]
+							dropChangeSet = ChangeSet({"id": currentCS.id, "author": "jsonCompare.py"})
+							dropChangeSet.changes = [{"dropIndex": {"indexName": currentCS.changes[0]["createIndex"]["indexName"], "tableName": tableName}}]
+							dropChangeSet.rollback = [{"createIndex": {"indexName": currentCS.changes[0]["createIndex"]["indexName"], "tableName": tableName, "columns": currentCS.changes[0]["createIndex"]["columns"]}}]
+							if("unique" in currentCS.changes[0]["createIndex"] and currentCS.changes[0]["createIndex"]["unique"]): dropChangeSet.rollback[0]["createIndex"]["unique"] = True
+							# make sure the columns are ussing the correct names if they were renamed
+							for i in range(len(dropChangeSet.rollback[0]["createIndex"]["columns"])):
+								col = dropChangeSet.rollback[0]["createIndex"]["columns"][i]["column"]
+								name = col["name"]
+								if(name in currToWikiCol and currToWikiCol[name] != None and currToWikiCol[name]["column"]["name"] != name): 
+									col["name"] = currToWikiCol[name]["column"]["name"]
+
+							dropChangeSet.updateJSON()
+							diffChangeSetList.append(dropChangeSet)
 
 				# If the changeSet is an index
 				elif "createIndex" in wikiCS.changes[0] and "createIndex" in currentCS.changes[0]:
 					# if we're looking at the same index and same table
 					if (wikiCS.changes[0]["createIndex"]["tableName"] == currentCS.changes[0]["createIndex"]["tableName"]) and (wikiCS.changes[0]["createIndex"]["indexName"] == currentCS.changes[0]["createIndex"]["indexName"]):
 						# add changeSets to drop and re-add indexes if a column is different between wiki and current
-						temp = addIndexDiff(wikiCS, currentCS)
+						temp = addIndexDiff(wikiCS, currentCS, currToWikiCol)
 						if temp != []:
 							diffChangeSetList.append(temp[0])
 							diffChangeSetList.append(temp[1])
-
-		for changeSet in currentChangeSets:
-			# NOTE: No longer concerned about tables only existent in current changeset; they would be renamed or dropped
-			if "createIndex" in changeSet.changes[0]:
-				if changeSet.changes[0]["createIndex"]["indexName"] not in wikiIndexList:
-					# drop the changeset. May have been a name change or actually removed. Either way, no longer needed
-					# make sure the table name is correct
-					tableName = changeSet.changes[0]["createIndex"]["tableName"]
-					if(tableName in oldToNewTableName): tableName = oldToNewTableName[tableName]
-
-					dropChangeSet = ChangeSet({"id": changeSet.id, "author": "jsonCompare.py"})
-					dropChangeSet.changes = [{"dropIndex": {"indexName": changeSet.changes[0]["createIndex"]["indexName"], "tableName": tableName}}]
-					dropChangeSet.rollback = [{"createIndex": {"indexName": changeSet.changes[0]["createIndex"]["indexName"], "tableName": changeSet.changes[0]["createIndex"]["tableName"], "columns": changeSet.changes[0]["createIndex"]["columns"]}}]
-					dropChangeSet.updateJSON()
-					diffChangeSetList.append(dropChangeSet)
+		# could be one last set of column drops
+		if(columnDrops != []):
+			for changes in columnDrops:
+				diffChangeSetList.append(changes)
+			columnDrops = []
+			
 		diffChangeLog.setChangeSetList(diffChangeSetList)
 
 

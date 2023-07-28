@@ -2561,6 +2561,40 @@
         },
         {
             "changeSet": {
+                "id": "1689960919964-403",
+                "author": "jsoncompare.py",
+                "changes": [
+                    {
+                        "dropIndex": {
+                            "indexName": "p_cost_ctr_idx",
+                            "tableName": "p_partner"
+                        }
+                    }
+                ],
+                "rollback": [
+                    {
+                        "createIndex": {
+                            "indexName": "p_cost_ctr_idx",
+                            "tableName": "p_partner",
+                            "columns": [
+                                {
+                                    "column": {
+                                        "name": "a_fund"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "p_partner_key"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "changeSet": {
                 "id": "202307251545-11",
                 "author": "parse_ddl.pl",
                 "tagDatabase": {
@@ -2993,7 +3027,8 @@
                                         "name": "p_partner_key"
                                     }
                                 }
-                            ]
+                            ],
+                            "unique": true
                         }
                     }
                 ]
@@ -3366,107 +3401,6 @@
                                 {
                                     "column": {
                                         "name": "p_state_province"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "p_partner_key"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "p_location_id"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "p_revision_id"
-                                    }
-                                }
-                            ],
-                            "unique": true
-                        }
-                    }
-                ]
-            }
-        },
-        {
-            "changeSet": {
-                "id": "202307251545-26-1",
-                "author": "jsoncompare.py",
-                "changes": [
-                    {
-                        "dropIndex": {
-                            "indexName": "p_postal_sort_clustered_idx",
-                            "tableName": "p_location"
-                        }
-                    }
-                ],
-                "rollback": [
-                    {
-                        "createIndex": {
-                            "indexName": "p_postal_sort_clustered_idx",
-                            "tableName": "p_location",
-                            "columns": [
-                                {
-                                    "column": {
-                                        "name": "p_country_code"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "p_bulk_postal_code"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "p_postal_code"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "p_partner_key"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "p_location_id"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "p_revision_id"
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                ]
-            }
-        },
-        {
-            "changeSet": {
-                "id": "202307251545-26-2",
-                "author": "jsoncompare.py",
-                "changes": [
-                    {
-                        "createIndex": {
-                            "indexName": "p_postal_sort_clustered_idx",
-                            "tableName": "p_location",
-                            "columns": [
-                                {
-                                    "column": {
-                                        "name": "p_country_code"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "p_bulk_postal_code"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "p_postal_code"
                                     }
                                 },
                                 {
@@ -4313,87 +4247,6 @@
                                 {
                                     "column": {
                                         "name": "p_feature_type"
-                                    }
-                                }
-                            ],
-                            "unique": true
-                        }
-                    }
-                ]
-            }
-        },
-        {
-            "changeSet": {
-                "id": "202307251545-58-1",
-                "author": "jsoncompare.py",
-                "changes": [
-                    {
-                        "dropIndex": {
-                            "indexName": "p_gaz_name_clustered_idx",
-                            "tableName": "p_gazetteer"
-                        }
-                    }
-                ],
-                "rollback": [
-                    {
-                        "createIndex": {
-                            "indexName": "p_gaz_name_clustered_idx",
-                            "tableName": "p_gazetteer",
-                            "columns": [
-                                {
-                                    "column": {
-                                        "name": "p_feature_name"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "p_country_code"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "p_feature_type"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "p_feature_id"
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                ]
-            }
-        },
-        {
-            "changeSet": {
-                "id": "202307251545-58-2",
-                "author": "jsoncompare.py",
-                "changes": [
-                    {
-                        "createIndex": {
-                            "indexName": "p_gaz_name_clustered_idx",
-                            "tableName": "p_gazetteer",
-                            "columns": [
-                                {
-                                    "column": {
-                                        "name": "p_feature_name"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "p_country_code"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "p_feature_type"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "p_feature_id"
                                     }
                                 }
                             ],
@@ -9762,7 +9615,7 @@
                 "rollback": [
                     {
                         "addPrimaryKey": {
-                            "columnNames": "a_attr_code, a_ledger_number, a_cost_center",
+                            "columnNames": "r_group_name, r_group_sched_id, r_param_name",
                             "tableName": "r_group_sched_param"
                         }
                     }
@@ -10693,7 +10546,7 @@
                 "rollback": [
                     {
                         "addPrimaryKey": {
-                            "columnNames": "a_cost_center, a_ledger_number",
+                            "columnNames": "a_fund, a_ledger_number",
                             "tableName": "a_fund"
                         }
                     }
@@ -10709,6 +10562,157 @@
                         "addPrimaryKey": {
                             "columnNames": "a_fund, a_ledger_number",
                             "tableName": "a_fund"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "changeSet": {
+                "id": "1689960919964-253",
+                "author": "jsoncompare.py",
+                "changes": [
+                    {
+                        "dropIndex": {
+                            "indexName": "a_cc_bal_idx",
+                            "tableName": "a_fund"
+                        }
+                    }
+                ],
+                "rollback": [
+                    {
+                        "createIndex": {
+                            "indexName": "a_cc_bal_idx",
+                            "tableName": "a_fund",
+                            "columns": [
+                                {
+                                    "column": {
+                                        "name": "a_bal_fund"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_fund"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_ledger_number"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "changeSet": {
+                "id": "1689960919964-254",
+                "author": "jsoncompare.py",
+                "changes": [
+                    {
+                        "dropIndex": {
+                            "indexName": "a_cc_ledger_number_idx",
+                            "tableName": "a_fund"
+                        }
+                    }
+                ],
+                "rollback": [
+                    {
+                        "createIndex": {
+                            "indexName": "a_cc_ledger_number_idx",
+                            "tableName": "a_fund",
+                            "columns": [
+                                {
+                                    "column": {
+                                        "name": "a_ledger_number"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_fund"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "changeSet": {
+                "id": "1689960919964-255",
+                "author": "jsoncompare.py",
+                "changes": [
+                    {
+                        "dropIndex": {
+                            "indexName": "a_cc_legacy_idx",
+                            "tableName": "a_fund"
+                        }
+                    }
+                ],
+                "rollback": [
+                    {
+                        "createIndex": {
+                            "indexName": "a_cc_legacy_idx",
+                            "tableName": "a_fund",
+                            "columns": [
+                                {
+                                    "column": {
+                                        "name": "a_legacy_code"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_fund"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_ledger_number"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "changeSet": {
+                "id": "1689960919964-256",
+                "author": "jsoncompare.py",
+                "changes": [
+                    {
+                        "dropIndex": {
+                            "indexName": "a_cc_parent_idx",
+                            "tableName": "a_fund"
+                        }
+                    }
+                ],
+                "rollback": [
+                    {
+                        "createIndex": {
+                            "indexName": "a_cc_parent_idx",
+                            "tableName": "a_fund",
+                            "columns": [
+                                {
+                                    "column": {
+                                        "name": "a_parent_fund"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_fund"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_ledger_number"
+                                    }
+                                }
+                            ]
                         }
                     }
                 ]
@@ -11250,7 +11254,7 @@
                 "rollback": [
                     {
                         "addPrimaryKey": {
-                            "columnNames": "a_ledger_number, a_period, a_cost_center, a_account_code",
+                            "columnNames": "a_ledger_number, a_period, a_fund, a_account_code",
                             "tableName": "a_fund_acct"
                         }
                     }
@@ -11418,6 +11422,180 @@
                     {
                         "sql": {
                             "sql": "ALTER TABLE a_transaction CHANGE a_fund a_cost_center char(20) NOT NULL"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "changeSet": {
+                "id": "1689960919964-238",
+                "author": "jsoncompare.py",
+                "changes": [
+                    {
+                        "dropIndex": {
+                            "indexName": "a_trx_cc_clustered_idx",
+                            "tableName": "a_transaction"
+                        }
+                    }
+                ],
+                "rollback": [
+                    {
+                        "createIndex": {
+                            "indexName": "a_trx_cc_clustered_idx",
+                            "tableName": "a_transaction",
+                            "columns": [
+                                {
+                                    "column": {
+                                        "name": "a_fund"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_account_code"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_ledger_number"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_batch_number"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_journal_number"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_transaction_number"
+                                    }
+                                }
+                            ],
+                            "unique": true
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "changeSet": {
+                "id": "1689960919964-306",
+                "author": "jsoncompare.py",
+                "changes": [
+                    {
+                        "dropIndex": {
+                            "indexName": "a_trx_cc_quicksum_idx",
+                            "tableName": "a_transaction"
+                        }
+                    }
+                ],
+                "rollback": [
+                    {
+                        "createIndex": {
+                            "indexName": "a_trx_cc_quicksum_idx",
+                            "tableName": "a_transaction",
+                            "columns": [
+                                {
+                                    "column": {
+                                        "name": "a_ledger_number"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_fund"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_effective_date"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "defaultValueBoolean": false,
+                                        "name": "a_posted"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_amount"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_batch_number"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_journal_number"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_transaction_number"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "changeSet": {
+                "id": "1689960919964-307",
+                "author": "jsoncompare.py",
+                "changes": [
+                    {
+                        "dropIndex": {
+                            "indexName": "a_trx_ccperiod_idx",
+                            "tableName": "a_transaction"
+                        }
+                    }
+                ],
+                "rollback": [
+                    {
+                        "createIndex": {
+                            "indexName": "a_trx_ccperiod_idx",
+                            "tableName": "a_transaction",
+                            "columns": [
+                                {
+                                    "column": {
+                                        "name": "a_ledger_number"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_fund"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_period"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_batch_number"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_journal_number"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_transaction_number"
+                                    }
+                                }
+                            ]
                         }
                     }
                 ]
@@ -11867,7 +12045,7 @@
                                 },
                                 {
                                     "column": {
-                                        "name": "a_cost_center"
+                                        "name": "a_fund"
                                     }
                                 },
                                 {
@@ -12125,6 +12303,126 @@
                     {
                         "sql": {
                             "sql": "ALTER TABLE a_transaction_tmp CHANGE a_fund a_cost_center char(20) NOT NULL"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "changeSet": {
+                "id": "1689960919964-239",
+                "author": "jsoncompare.py",
+                "changes": [
+                    {
+                        "dropIndex": {
+                            "indexName": "a_trxt_cc_clustered_idx",
+                            "tableName": "a_transaction_tmp"
+                        }
+                    }
+                ],
+                "rollback": [
+                    {
+                        "createIndex": {
+                            "indexName": "a_trxt_cc_clustered_idx",
+                            "tableName": "a_transaction_tmp",
+                            "columns": [
+                                {
+                                    "column": {
+                                        "name": "a_fund"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_account_code"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_ledger_number"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_batch_number"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_journal_number"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_transaction_number"
+                                    }
+                                }
+                            ],
+                            "unique": true
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "changeSet": {
+                "id": "1689960919964-314",
+                "author": "jsoncompare.py",
+                "changes": [
+                    {
+                        "dropIndex": {
+                            "indexName": "a_trxt_cc_quicksum_idx",
+                            "tableName": "a_transaction_tmp"
+                        }
+                    }
+                ],
+                "rollback": [
+                    {
+                        "createIndex": {
+                            "indexName": "a_trxt_cc_quicksum_idx",
+                            "tableName": "a_transaction_tmp",
+                            "columns": [
+                                {
+                                    "column": {
+                                        "name": "a_ledger_number"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_fund"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_effective_date"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "defaultValueBoolean": false,
+                                        "name": "a_posted"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_amount"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_batch_number"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_journal_number"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_transaction_number"
+                                    }
+                                }
+                            ]
                         }
                     }
                 ]
@@ -12722,7 +13020,7 @@
                 "rollback": [
                     {
                         "addPrimaryKey": {
-                            "columnNames": "a_cost_center_class, a_ledger_number",
+                            "columnNames": "a_fund_class, a_ledger_number",
                             "tableName": "a_fund_class"
                         }
                     }
@@ -12819,7 +13117,7 @@
                 "rollback": [
                     {
                         "addPrimaryKey": {
-                            "columnNames": "a_cost_center_prefix, a_ledger_number",
+                            "columnNames": "a_fund_prefix, a_ledger_number",
                             "tableName": "a_fund_prefix"
                         }
                     }
@@ -12835,6 +13133,40 @@
                         "addPrimaryKey": {
                             "columnNames": "a_fund_prefix, a_ledger_number",
                             "tableName": "a_fund_prefix"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "changeSet": {
+                "id": "1689960919964-257",
+                "author": "jsoncompare.py",
+                "changes": [
+                    {
+                        "dropIndex": {
+                            "indexName": "a_cc_pfx_ledger_number_idx",
+                            "tableName": "a_fund_prefix"
+                        }
+                    }
+                ],
+                "rollback": [
+                    {
+                        "createIndex": {
+                            "indexName": "a_cc_pfx_ledger_number_idx",
+                            "tableName": "a_fund_prefix",
+                            "columns": [
+                                {
+                                    "column": {
+                                        "name": "a_ledger_number"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_fund_prefix"
+                                    }
+                                }
+                            ]
                         }
                     }
                 ]
@@ -12906,7 +13238,7 @@
                 "rollback": [
                     {
                         "addPrimaryKey": {
-                            "columnNames": "a_ledger_number, a_cost_center, p_staff_partner_key",
+                            "columnNames": "a_ledger_number, a_fund, p_staff_partner_key",
                             "tableName": "a_fund_staff"
                         }
                     }
@@ -12977,6 +13309,50 @@
                     {
                         "sql": {
                             "sql": "ALTER TABLE a_payroll CHANGE a_fund a_cost_center char(20) NOT NULL"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "changeSet": {
+                "id": "1689960919964-294",
+                "author": "jsoncompare.py",
+                "changes": [
+                    {
+                        "dropIndex": {
+                            "indexName": "a_payroll_cc_idx",
+                            "tableName": "a_payroll"
+                        }
+                    }
+                ],
+                "rollback": [
+                    {
+                        "createIndex": {
+                            "indexName": "a_payroll_cc_idx",
+                            "tableName": "a_payroll",
+                            "columns": [
+                                {
+                                    "column": {
+                                        "name": "a_ledger_number"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_fund"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_payroll_group_id"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_payroll_id"
+                                    }
+                                }
+                            ]
                         }
                     }
                 ]
@@ -13294,6 +13670,45 @@
                     {
                         "sql": {
                             "sql": "ALTER TABLE a_payroll_import CHANGE a_fund a_cost_center char(20) NOT NULL"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "changeSet": {
+                "id": "1689960919964-296",
+                "author": "jsoncompare.py",
+                "changes": [
+                    {
+                        "dropIndex": {
+                            "indexName": "a_payrolli_cc_idx",
+                            "tableName": "a_payroll_import"
+                        }
+                    }
+                ],
+                "rollback": [
+                    {
+                        "createIndex": {
+                            "indexName": "a_payrolli_cc_idx",
+                            "tableName": "a_payroll_import",
+                            "columns": [
+                                {
+                                    "column": {
+                                        "name": "a_ledger_number"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_fund"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_payroll_id"
+                                    }
+                                }
+                            ]
                         }
                     }
                 ]
@@ -13683,7 +14098,7 @@
                 "rollback": [
                     {
                         "addPrimaryKey": {
-                            "columnNames": "a_cost_center, a_ledger_number",
+                            "columnNames": "a_fund, a_ledger_number",
                             "tableName": "a_fund_admin_fee"
                         }
                     }
@@ -13770,7 +14185,7 @@
                 "rollback": [
                     {
                         "addPrimaryKey": {
-                            "columnNames": "a_ledger_number, a_admin_fee_type, a_admin_fee_subtype, a_dest_cost_center",
+                            "columnNames": "a_ledger_number, a_admin_fee_type, a_admin_fee_subtype, a_dest_fund",
                             "tableName": "a_admin_fee_type_item"
                         }
                     }
@@ -13816,7 +14231,7 @@
                                 },
                                 {
                                     "column": {
-                                        "name": "a_dest_cost_center"
+                                        "name": "a_dest_fund"
                                     }
                                 },
                                 {
@@ -13908,7 +14323,7 @@
                 "rollback": [
                     {
                         "addPrimaryKey": {
-                            "columnNames": "a_ledger_number, a_admin_fee_type, a_admin_fee_subtype, a_dest_cost_center",
+                            "columnNames": "a_ledger_number, a_admin_fee_type, a_admin_fee_subtype, a_dest_fund",
                             "tableName": "a_admin_fee_type_item_tmp"
                         }
                     }
@@ -13954,7 +14369,7 @@
                                 },
                                 {
                                     "column": {
-                                        "name": "a_dest_cost_center"
+                                        "name": "a_dest_fund"
                                     }
                                 },
                                 {
@@ -14046,7 +14461,7 @@
                 "rollback": [
                     {
                         "addPrimaryKey": {
-                            "columnNames": "a_cost_center, a_ledger_number",
+                            "columnNames": "a_fund, a_ledger_number",
                             "tableName": "a_fund_receipting"
                         }
                     }
@@ -14062,6 +14477,40 @@
                         "addPrimaryKey": {
                             "columnNames": "a_fund, a_ledger_number",
                             "tableName": "a_fund_receipting"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "changeSet": {
+                "id": "1689960919964-258",
+                "author": "jsoncompare.py",
+                "changes": [
+                    {
+                        "dropIndex": {
+                            "indexName": "a_ccr_ledger_number_idx",
+                            "tableName": "a_fund_receipting"
+                        }
+                    }
+                ],
+                "rollback": [
+                    {
+                        "createIndex": {
+                            "indexName": "a_ccr_ledger_number_idx",
+                            "tableName": "a_fund_receipting",
+                            "columns": [
+                                {
+                                    "column": {
+                                        "name": "a_ledger_number"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_fund"
+                                    }
+                                }
+                            ]
                         }
                     }
                 ]
@@ -14133,7 +14582,7 @@
                 "rollback": [
                     {
                         "addPrimaryKey": {
-                            "columnNames": "a_cost_center, a_ledger_number, a_account_code",
+                            "columnNames": "a_fund, a_ledger_number, a_account_code",
                             "tableName": "a_fund_receipting_accts"
                         }
                     }
@@ -14149,6 +14598,84 @@
                         "addPrimaryKey": {
                             "columnNames": "a_fund, a_ledger_number, a_account_code",
                             "tableName": "a_fund_receipting_accts"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "changeSet": {
+                "id": "1689960919964-259",
+                "author": "jsoncompare.py",
+                "changes": [
+                    {
+                        "dropIndex": {
+                            "indexName": "a_ccra_acct_number_idx",
+                            "tableName": "a_fund_receipting_accts"
+                        }
+                    }
+                ],
+                "rollback": [
+                    {
+                        "createIndex": {
+                            "indexName": "a_ccra_acct_number_idx",
+                            "tableName": "a_fund_receipting_accts",
+                            "columns": [
+                                {
+                                    "column": {
+                                        "name": "a_ledger_number"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_account_code"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_fund"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "changeSet": {
+                "id": "1689960919964-260",
+                "author": "jsoncompare.py",
+                "changes": [
+                    {
+                        "dropIndex": {
+                            "indexName": "a_ccra_ledger_number_idx",
+                            "tableName": "a_fund_receipting_accts"
+                        }
+                    }
+                ],
+                "rollback": [
+                    {
+                        "createIndex": {
+                            "indexName": "a_ccra_ledger_number_idx",
+                            "tableName": "a_fund_receipting_accts",
+                            "columns": [
+                                {
+                                    "column": {
+                                        "name": "a_ledger_number"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_fund"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_account_code"
+                                    }
+                                }
+                            ]
                         }
                     }
                 ]
@@ -14239,6 +14766,56 @@
                     {
                         "sql": {
                             "sql": "ALTER TABLE a_subtrx_gift CHANGE a_fund a_cost_center char(20) NOT NULL"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "changeSet": {
+                "id": "1689960919964-236",
+                "author": "jsoncompare.py",
+                "changes": [
+                    {
+                        "dropIndex": {
+                            "indexName": "a_gifttrx_cc_clustered_idx",
+                            "tableName": "a_subtrx_gift"
+                        }
+                    }
+                ],
+                "rollback": [
+                    {
+                        "createIndex": {
+                            "indexName": "a_gifttrx_cc_clustered_idx",
+                            "tableName": "a_subtrx_gift",
+                            "columns": [
+                                {
+                                    "column": {
+                                        "name": "a_fund"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_account_code"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_ledger_number"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_batch_number"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_gift_number"
+                                    }
+                                }
+                            ],
+                            "unique": true
                         }
                     }
                 ]
@@ -15145,6 +15722,61 @@
         },
         {
             "changeSet": {
+                "id": "1689960919964-237",
+                "author": "jsoncompare.py",
+                "changes": [
+                    {
+                        "dropIndex": {
+                            "indexName": "a_gifttrxi_cc_clustered_idx",
+                            "tableName": "a_subtrx_gift_item"
+                        }
+                    }
+                ],
+                "rollback": [
+                    {
+                        "createIndex": {
+                            "indexName": "a_gifttrxi_cc_clustered_idx",
+                            "tableName": "a_subtrx_gift_item",
+                            "columns": [
+                                {
+                                    "column": {
+                                        "name": "a_fund"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_account_code"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_ledger_number"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_batch_number"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_gift_number"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_split_number"
+                                    }
+                                }
+                            ],
+                            "unique": true
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "changeSet": {
                 "id": "202307251545-321",
                 "author": "parse_ddl.pl",
                 "tagDatabase": {
@@ -16000,7 +16632,7 @@
                 "rollback": [
                     {
                         "addPrimaryKey": {
-                            "columnNames": "a_cost_center, a_ledger_number, m_list_code",
+                            "columnNames": "a_fund, a_ledger_number, m_list_code",
                             "tableName": "a_fund_auto_subscribe"
                         }
                     }
@@ -16016,6 +16648,84 @@
                         "addPrimaryKey": {
                             "columnNames": "a_fund, a_ledger_number, m_list_code",
                             "tableName": "a_fund_auto_subscribe"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "changeSet": {
+                "id": "1689960919964-251",
+                "author": "jsoncompare.py",
+                "changes": [
+                    {
+                        "dropIndex": {
+                            "indexName": "a_cc_as_ledger_number_idx",
+                            "tableName": "a_fund_auto_subscribe"
+                        }
+                    }
+                ],
+                "rollback": [
+                    {
+                        "createIndex": {
+                            "indexName": "a_cc_as_ledger_number_idx",
+                            "tableName": "a_fund_auto_subscribe",
+                            "columns": [
+                                {
+                                    "column": {
+                                        "name": "a_ledger_number"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_fund"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "m_list_code"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "changeSet": {
+                "id": "1689960919964-252",
+                "author": "jsoncompare.py",
+                "changes": [
+                    {
+                        "dropIndex": {
+                            "indexName": "a_cc_as_listcode_idx",
+                            "tableName": "a_fund_auto_subscribe"
+                        }
+                    }
+                ],
+                "rollback": [
+                    {
+                        "createIndex": {
+                            "indexName": "a_cc_as_listcode_idx",
+                            "tableName": "a_fund_auto_subscribe",
+                            "columns": [
+                                {
+                                    "column": {
+                                        "name": "m_list_code"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_fund"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_ledger_number"
+                                    }
+                                }
+                            ]
                         }
                     }
                 ]
@@ -16106,6 +16816,50 @@
                     {
                         "sql": {
                             "sql": "ALTER TABLE a_motivational_code CHANGE a_fund a_cost_center varchar(20)"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "changeSet": {
+                "id": "1689960919964-290",
+                "author": "jsoncompare.py",
+                "changes": [
+                    {
+                        "dropIndex": {
+                            "indexName": "a_motiv_code_cc",
+                            "tableName": "a_motivational_code"
+                        }
+                    }
+                ],
+                "rollback": [
+                    {
+                        "createIndex": {
+                            "indexName": "a_motiv_code_cc",
+                            "tableName": "a_motivational_code",
+                            "columns": [
+                                {
+                                    "column": {
+                                        "name": "a_ledger_number"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_fund"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_account_code"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_motivational_code"
+                                    }
+                                }
+                            ]
                         }
                     }
                 ]
@@ -16349,7 +17103,7 @@
                 "rollback": [
                     {
                         "addPrimaryKey": {
-                            "columnNames": "a_ledger_number, p_donor_partner_key, a_cost_center, a_pattern_id, a_history_id",
+                            "columnNames": "a_ledger_number, p_donor_partner_key, a_fund, a_pattern_id, a_history_id",
                             "tableName": "a_giving_pattern"
                         }
                     }
@@ -16390,7 +17144,7 @@
                             "columns": [
                                 {
                                     "column": {
-                                        "name": "a_actual_cost_center"
+                                        "name": "a_actual_fund"
                                     }
                                 },
                                 {
@@ -16405,7 +17159,7 @@
                                 },
                                 {
                                     "column": {
-                                        "name": "a_cost_center"
+                                        "name": "a_fund"
                                     }
                                 },
                                 {
@@ -16501,7 +17255,7 @@
                                 },
                                 {
                                     "column": {
-                                        "name": "a_cost_center"
+                                        "name": "a_fund"
                                     }
                                 },
                                 {
@@ -16582,7 +17336,7 @@
                             "columns": [
                                 {
                                     "column": {
-                                        "name": "a_cost_center"
+                                        "name": "a_fund"
                                     }
                                 },
                                 {
@@ -16688,7 +17442,7 @@
                                 },
                                 {
                                     "column": {
-                                        "name": "a_cost_center"
+                                        "name": "a_fund"
                                     }
                                 },
                                 {
@@ -16810,7 +17564,7 @@
                 "rollback": [
                     {
                         "addPrimaryKey": {
-                            "columnNames": "a_ledger_number, p_donor_partner_key, a_cost_center, a_pattern_id, a_history_id",
+                            "columnNames": "a_ledger_number, p_donor_partner_key, a_fund, a_pattern_id, a_history_id",
                             "tableName": "a_giving_pattern_allocation"
                         }
                     }
@@ -16851,7 +17605,7 @@
                             "columns": [
                                 {
                                     "column": {
-                                        "name": "a_actual_cost_center"
+                                        "name": "a_actual_fund"
                                     }
                                 },
                                 {
@@ -16866,7 +17620,7 @@
                                 },
                                 {
                                     "column": {
-                                        "name": "a_cost_center"
+                                        "name": "a_fund"
                                     }
                                 },
                                 {
@@ -16962,7 +17716,7 @@
                                 },
                                 {
                                     "column": {
-                                        "name": "a_cost_center"
+                                        "name": "a_fund"
                                     }
                                 },
                                 {
@@ -17043,7 +17797,7 @@
                             "columns": [
                                 {
                                     "column": {
-                                        "name": "a_cost_center"
+                                        "name": "a_fund"
                                     }
                                 },
                                 {
@@ -17149,7 +17903,7 @@
                                 },
                                 {
                                     "column": {
-                                        "name": "a_cost_center"
+                                        "name": "a_fund"
                                     }
                                 },
                                 {
@@ -17251,7 +18005,7 @@
                 "rollback": [
                     {
                         "addPrimaryKey": {
-                            "columnNames": "a_ledger_number, p_donor_partner_key, a_cost_center, a_pattern_id, a_history_id",
+                            "columnNames": "a_ledger_number, p_donor_partner_key, a_fund, a_pattern_id, a_history_id",
                             "tableName": "a_giving_pattern_flag"
                         }
                     }
@@ -17307,7 +18061,7 @@
                                 },
                                 {
                                     "column": {
-                                        "name": "a_cost_center"
+                                        "name": "a_fund"
                                     }
                                 },
                                 {
@@ -17409,7 +18163,7 @@
                 "rollback": [
                     {
                         "addPrimaryKey": {
-                            "columnNames": "a_ledger_number, a_cost_center, a_target_id",
+                            "columnNames": "a_ledger_number, a_fund, a_target_id",
                             "tableName": "a_funding_target"
                         }
                     }
@@ -17466,7 +18220,7 @@
                 "rollback": [
                     {
                         "addPrimaryKey": {
-                            "columnNames": "a_ledger_number, a_cost_center, a_target_id, a_review",
+                            "columnNames": "a_ledger_number, a_fund, a_target_id, a_review",
                             "tableName": "a_support_review_target"
                         }
                     }
@@ -17517,7 +18271,7 @@
                                 },
                                 {
                                     "column": {
-                                        "name": "a_cost_center"
+                                        "name": "a_fund"
                                     }
                                 },
                                 {
@@ -17598,7 +18352,7 @@
                                 },
                                 {
                                     "column": {
-                                        "name": "a_cost_center"
+                                        "name": "a_fund"
                                     }
                                 },
                                 {
@@ -17685,7 +18439,7 @@
                 "rollback": [
                     {
                         "addPrimaryKey": {
-                            "columnNames": "a_ledger_number, p_donor_partner_key, a_cost_center",
+                            "columnNames": "a_ledger_number, p_donor_partner_key, a_fund",
                             "tableName": "a_descriptives"
                         }
                     }
@@ -17701,6 +18455,45 @@
                         "addPrimaryKey": {
                             "columnNames": "a_ledger_number, p_donor_partner_key, a_fund",
                             "tableName": "a_descriptives"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "changeSet": {
+                "id": "1689960919964-262",
+                "author": "jsoncompare.py",
+                "changes": [
+                    {
+                        "dropIndex": {
+                            "indexName": "a_descr_cc_idx",
+                            "tableName": "a_descriptives"
+                        }
+                    }
+                ],
+                "rollback": [
+                    {
+                        "createIndex": {
+                            "indexName": "a_descr_cc_idx",
+                            "tableName": "a_descriptives",
+                            "columns": [
+                                {
+                                    "column": {
+                                        "name": "a_ledger_number"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_fund"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "p_donor_partner_key"
+                                    }
+                                }
+                            ]
                         }
                     }
                 ]
@@ -17771,7 +18564,7 @@
                                 },
                                 {
                                     "column": {
-                                        "name": "a_cost_center"
+                                        "name": "a_fund"
                                     }
                                 }
                             ]
@@ -17848,7 +18641,7 @@
                 "rollback": [
                     {
                         "addPrimaryKey": {
-                            "columnNames": "a_ledger_number, p_donor_partner_key, a_cost_center, a_hist_id",
+                            "columnNames": "a_ledger_number, p_donor_partner_key, a_fund, a_hist_id",
                             "tableName": "a_descriptives_hist"
                         }
                     }
@@ -17864,6 +18657,50 @@
                         "addPrimaryKey": {
                             "columnNames": "a_ledger_number, p_donor_partner_key, a_fund, a_hist_id",
                             "tableName": "a_descriptives_hist"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "changeSet": {
+                "id": "1689960919964-264",
+                "author": "jsoncompare.py",
+                "changes": [
+                    {
+                        "dropIndex": {
+                            "indexName": "a_descrhist_cc_idx",
+                            "tableName": "a_descriptives_hist"
+                        }
+                    }
+                ],
+                "rollback": [
+                    {
+                        "createIndex": {
+                            "indexName": "a_descrhist_cc_idx",
+                            "tableName": "a_descriptives_hist",
+                            "columns": [
+                                {
+                                    "column": {
+                                        "name": "a_ledger_number"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_fund"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "p_donor_partner_key"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_hist_id"
+                                    }
+                                }
+                            ]
                         }
                     }
                 ]
@@ -17934,7 +18771,7 @@
                                 },
                                 {
                                     "column": {
-                                        "name": "a_cost_center"
+                                        "name": "a_fund"
                                     }
                                 },
                                 {
@@ -18030,7 +18867,7 @@
                                 },
                                 {
                                     "column": {
-                                        "name": "a_cost_center"
+                                        "name": "a_fund"
                                     }
                                 },
                                 {
@@ -18907,6 +19744,55 @@
         },
         {
             "changeSet": {
+                "id": "1689960919964-393",
+                "author": "jsoncompare.py",
+                "changes": [
+                    {
+                        "dropIndex": {
+                            "indexName": "i_eg_kdoncc_idx",
+                            "tableName": "i_eg_gift_import"
+                        }
+                    }
+                ],
+                "rollback": [
+                    {
+                        "createIndex": {
+                            "indexName": "i_eg_kdoncc_idx",
+                            "tableName": "i_eg_gift_import",
+                            "columns": [
+                                {
+                                    "column": {
+                                        "name": "p_donor_partner_key"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_ledger_number"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "a_fund"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "i_eg_trx_uuid"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "i_eg_desig_uuid"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "changeSet": {
                 "id": "202307251545-386-1",
                 "author": "jsoncompare.py",
                 "changes": [
@@ -19537,7 +20423,7 @@
                             "columns": [
                                 {
                                     "column": {
-                                        "name": "a_cost_center"
+                                        "name": "a_fund"
                                     }
                                 },
                                 {
@@ -19725,7 +20611,7 @@
                 "rollback": [
                     {
                         "addPrimaryKey": {
-                            "columnNames": "a_ledger_number, a_cost_center",
+                            "columnNames": "a_ledger_number, a_fund",
                             "tableName": "i_eg_giving_url"
                         }
                     }
@@ -19766,7 +20652,7 @@
                             "columns": [
                                 {
                                     "column": {
-                                        "name": "a_cost_center"
+                                        "name": "a_fund"
                                     }
                                 },
                                 {
@@ -20328,29 +21214,30 @@
         },
         {
             "changeSet": {
-                "id": "202307251545-412-0",
+                "id": "1689960919964-443",
                 "author": "jsoncompare.py",
                 "changes": [
                     {
-                        "dropColumn": {
-                            "tableName": "t_sprint",
-                            "columnName": "t_project_id"
+                        "dropIndex": {
+                            "indexName": "t_sprint_proj_idx",
+                            "tableName": "t_sprint"
                         }
                     }
                 ],
                 "rollback": [
                     {
-                        "addColumn": {
+                        "createIndex": {
+                            "indexName": "t_sprint_proj_idx",
                             "tableName": "t_sprint",
                             "columns": [
                                 {
                                     "column": {
-                                        "constraints": {
-                                            "nullable": false
-                                        },
-                                        "name": "t_project_id",
-                                        "type": "int",
-                                        "afterColumn": "t_sprint_id"
+                                        "name": "t_project_id"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "t_sprint_id"
                                     }
                                 }
                             ]
@@ -20376,6 +21263,39 @@
                                 {
                                     "column": {
                                         "name": "t_sprint_id"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "changeSet": {
+                "id": "202307251545-412-0",
+                "author": "jsoncompare.py",
+                "changes": [
+                    {
+                        "dropColumn": {
+                            "tableName": "t_sprint",
+                            "columnName": "t_project_id"
+                        }
+                    }
+                ],
+                "rollback": [
+                    {
+                        "addColumn": {
+                            "tableName": "t_sprint",
+                            "columns": [
+                                {
+                                    "column": {
+                                        "constraints": {
+                                            "nullable": false
+                                        },
+                                        "name": "t_project_id",
+                                        "type": "int",
+                                        "afterColumn": "t_sprint_id"
                                     }
                                 }
                             ]
@@ -20672,36 +21592,6 @@
         },
         {
             "changeSet": {
-                "id": "202307251545-421-0",
-                "author": "jsoncompare.py",
-                "changes": [
-                    {
-                        "dropColumn": {
-                            "tableName": "t_participant",
-                            "columnName": "t_skill_ratio"
-                        }
-                    }
-                ],
-                "rollback": [
-                    {
-                        "addColumn": {
-                            "tableName": "t_participant",
-                            "columns": [
-                                {
-                                    "column": {
-                                        "name": "t_skill_ratio",
-                                        "type": "float",
-                                        "afterColumn": "t_role"
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                ]
-            }
-        },
-        {
-            "changeSet": {
                 "id": "202307251545-422-1",
                 "author": "jsoncompare.py",
                 "changes": [
@@ -20756,6 +21646,36 @@
                                 }
                             ],
                             "unique": true
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "changeSet": {
+                "id": "202307251545-421-0",
+                "author": "jsoncompare.py",
+                "changes": [
+                    {
+                        "dropColumn": {
+                            "tableName": "t_participant",
+                            "columnName": "t_skill_ratio"
+                        }
+                    }
+                ],
+                "rollback": [
+                    {
+                        "addColumn": {
+                            "tableName": "t_participant",
+                            "columns": [
+                                {
+                                    "column": {
+                                        "name": "t_skill_ratio",
+                                        "type": "float",
+                                        "afterColumn": "t_role"
+                                    }
+                                }
+                            ]
                         }
                     }
                 ]
@@ -21536,1103 +22456,6 @@
                         "sql": {
                             "dbms": "mysql, mariadb",
                             "sql": "ALTER TABLE _a_payroll_interval CHANGE COLUMN tag tag char(1) NOT NULL"
-                        }
-                    }
-                ]
-            }
-        },
-        {
-            "changeSet": {
-                "id": "1689960919964-236",
-                "author": "jsoncompare.py",
-                "changes": [
-                    {
-                        "dropIndex": {
-                            "indexName": "a_gifttrx_cc_clustered_idx",
-                            "tableName": "a_subtrx_gift"
-                        }
-                    }
-                ],
-                "rollback": [
-                    {
-                        "createIndex": {
-                            "indexName": "a_gifttrx_cc_clustered_idx",
-                            "tableName": "a_subtrx_gift",
-                            "columns": [
-                                {
-                                    "column": {
-                                        "name": "a_cost_center"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_account_code"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_ledger_number"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_batch_number"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_gift_number"
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                ]
-            }
-        },
-        {
-            "changeSet": {
-                "id": "1689960919964-237",
-                "author": "jsoncompare.py",
-                "changes": [
-                    {
-                        "dropIndex": {
-                            "indexName": "a_gifttrxi_cc_clustered_idx",
-                            "tableName": "a_subtrx_gift_item"
-                        }
-                    }
-                ],
-                "rollback": [
-                    {
-                        "createIndex": {
-                            "indexName": "a_gifttrxi_cc_clustered_idx",
-                            "tableName": "a_subtrx_gift_item",
-                            "columns": [
-                                {
-                                    "column": {
-                                        "name": "a_cost_center"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_account_code"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_ledger_number"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_batch_number"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_gift_number"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_split_number"
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                ]
-            }
-        },
-        {
-            "changeSet": {
-                "id": "1689960919964-238",
-                "author": "jsoncompare.py",
-                "changes": [
-                    {
-                        "dropIndex": {
-                            "indexName": "a_trx_cc_clustered_idx",
-                            "tableName": "a_transaction"
-                        }
-                    }
-                ],
-                "rollback": [
-                    {
-                        "createIndex": {
-                            "indexName": "a_trx_cc_clustered_idx",
-                            "tableName": "a_transaction",
-                            "columns": [
-                                {
-                                    "column": {
-                                        "name": "a_cost_center"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_account_code"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_ledger_number"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_batch_number"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_journal_number"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_transaction_number"
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                ]
-            }
-        },
-        {
-            "changeSet": {
-                "id": "1689960919964-239",
-                "author": "jsoncompare.py",
-                "changes": [
-                    {
-                        "dropIndex": {
-                            "indexName": "a_trxt_cc_clustered_idx",
-                            "tableName": "a_transaction_tmp"
-                        }
-                    }
-                ],
-                "rollback": [
-                    {
-                        "createIndex": {
-                            "indexName": "a_trxt_cc_clustered_idx",
-                            "tableName": "a_transaction_tmp",
-                            "columns": [
-                                {
-                                    "column": {
-                                        "name": "a_cost_center"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_account_code"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_ledger_number"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_batch_number"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_journal_number"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_transaction_number"
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                ]
-            }
-        },
-        {
-            "changeSet": {
-                "id": "1689960919964-251",
-                "author": "jsoncompare.py",
-                "changes": [
-                    {
-                        "dropIndex": {
-                            "indexName": "a_cc_as_ledger_number_idx",
-                            "tableName": "a_fund_auto_subscribe"
-                        }
-                    }
-                ],
-                "rollback": [
-                    {
-                        "createIndex": {
-                            "indexName": "a_cc_as_ledger_number_idx",
-                            "tableName": "a_cc_auto_subscribe",
-                            "columns": [
-                                {
-                                    "column": {
-                                        "name": "a_ledger_number"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_cost_center"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "m_list_code"
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                ]
-            }
-        },
-        {
-            "changeSet": {
-                "id": "1689960919964-252",
-                "author": "jsoncompare.py",
-                "changes": [
-                    {
-                        "dropIndex": {
-                            "indexName": "a_cc_as_listcode_idx",
-                            "tableName": "a_fund_auto_subscribe"
-                        }
-                    }
-                ],
-                "rollback": [
-                    {
-                        "createIndex": {
-                            "indexName": "a_cc_as_listcode_idx",
-                            "tableName": "a_cc_auto_subscribe",
-                            "columns": [
-                                {
-                                    "column": {
-                                        "name": "m_list_code"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_cost_center"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_ledger_number"
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                ]
-            }
-        },
-        {
-            "changeSet": {
-                "id": "1689960919964-253",
-                "author": "jsoncompare.py",
-                "changes": [
-                    {
-                        "dropIndex": {
-                            "indexName": "a_cc_bal_idx",
-                            "tableName": "a_fund"
-                        }
-                    }
-                ],
-                "rollback": [
-                    {
-                        "createIndex": {
-                            "indexName": "a_cc_bal_idx",
-                            "tableName": "a_cost_center",
-                            "columns": [
-                                {
-                                    "column": {
-                                        "name": "a_bal_cost_center"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_cost_center"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_ledger_number"
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                ]
-            }
-        },
-        {
-            "changeSet": {
-                "id": "1689960919964-254",
-                "author": "jsoncompare.py",
-                "changes": [
-                    {
-                        "dropIndex": {
-                            "indexName": "a_cc_ledger_number_idx",
-                            "tableName": "a_fund"
-                        }
-                    }
-                ],
-                "rollback": [
-                    {
-                        "createIndex": {
-                            "indexName": "a_cc_ledger_number_idx",
-                            "tableName": "a_cost_center",
-                            "columns": [
-                                {
-                                    "column": {
-                                        "name": "a_ledger_number"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_cost_center"
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                ]
-            }
-        },
-        {
-            "changeSet": {
-                "id": "1689960919964-255",
-                "author": "jsoncompare.py",
-                "changes": [
-                    {
-                        "dropIndex": {
-                            "indexName": "a_cc_legacy_idx",
-                            "tableName": "a_fund"
-                        }
-                    }
-                ],
-                "rollback": [
-                    {
-                        "createIndex": {
-                            "indexName": "a_cc_legacy_idx",
-                            "tableName": "a_cost_center",
-                            "columns": [
-                                {
-                                    "column": {
-                                        "name": "a_legacy_code"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_cost_center"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_ledger_number"
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                ]
-            }
-        },
-        {
-            "changeSet": {
-                "id": "1689960919964-256",
-                "author": "jsoncompare.py",
-                "changes": [
-                    {
-                        "dropIndex": {
-                            "indexName": "a_cc_parent_idx",
-                            "tableName": "a_fund"
-                        }
-                    }
-                ],
-                "rollback": [
-                    {
-                        "createIndex": {
-                            "indexName": "a_cc_parent_idx",
-                            "tableName": "a_cost_center",
-                            "columns": [
-                                {
-                                    "column": {
-                                        "name": "a_parent_cost_center"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_cost_center"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_ledger_number"
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                ]
-            }
-        },
-        {
-            "changeSet": {
-                "id": "1689960919964-257",
-                "author": "jsoncompare.py",
-                "changes": [
-                    {
-                        "dropIndex": {
-                            "indexName": "a_cc_pfx_ledger_number_idx",
-                            "tableName": "a_fund_prefix"
-                        }
-                    }
-                ],
-                "rollback": [
-                    {
-                        "createIndex": {
-                            "indexName": "a_cc_pfx_ledger_number_idx",
-                            "tableName": "a_cost_center_prefix",
-                            "columns": [
-                                {
-                                    "column": {
-                                        "name": "a_ledger_number"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_cost_center_prefix"
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                ]
-            }
-        },
-        {
-            "changeSet": {
-                "id": "1689960919964-258",
-                "author": "jsoncompare.py",
-                "changes": [
-                    {
-                        "dropIndex": {
-                            "indexName": "a_ccr_ledger_number_idx",
-                            "tableName": "a_fund_receipting"
-                        }
-                    }
-                ],
-                "rollback": [
-                    {
-                        "createIndex": {
-                            "indexName": "a_ccr_ledger_number_idx",
-                            "tableName": "a_cc_receipting",
-                            "columns": [
-                                {
-                                    "column": {
-                                        "name": "a_ledger_number"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_cost_center"
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                ]
-            }
-        },
-        {
-            "changeSet": {
-                "id": "1689960919964-259",
-                "author": "jsoncompare.py",
-                "changes": [
-                    {
-                        "dropIndex": {
-                            "indexName": "a_ccra_acct_number_idx",
-                            "tableName": "a_fund_receipting_accts"
-                        }
-                    }
-                ],
-                "rollback": [
-                    {
-                        "createIndex": {
-                            "indexName": "a_ccra_acct_number_idx",
-                            "tableName": "a_cc_receipting_accts",
-                            "columns": [
-                                {
-                                    "column": {
-                                        "name": "a_ledger_number"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_account_code"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_cost_center"
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                ]
-            }
-        },
-        {
-            "changeSet": {
-                "id": "1689960919964-260",
-                "author": "jsoncompare.py",
-                "changes": [
-                    {
-                        "dropIndex": {
-                            "indexName": "a_ccra_ledger_number_idx",
-                            "tableName": "a_fund_receipting_accts"
-                        }
-                    }
-                ],
-                "rollback": [
-                    {
-                        "createIndex": {
-                            "indexName": "a_ccra_ledger_number_idx",
-                            "tableName": "a_cc_receipting_accts",
-                            "columns": [
-                                {
-                                    "column": {
-                                        "name": "a_ledger_number"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_cost_center"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_account_code"
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                ]
-            }
-        },
-        {
-            "changeSet": {
-                "id": "1689960919964-262",
-                "author": "jsoncompare.py",
-                "changes": [
-                    {
-                        "dropIndex": {
-                            "indexName": "a_descr_cc_idx",
-                            "tableName": "a_descriptives"
-                        }
-                    }
-                ],
-                "rollback": [
-                    {
-                        "createIndex": {
-                            "indexName": "a_descr_cc_idx",
-                            "tableName": "a_descriptives",
-                            "columns": [
-                                {
-                                    "column": {
-                                        "name": "a_ledger_number"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_cost_center"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "p_donor_partner_key"
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                ]
-            }
-        },
-        {
-            "changeSet": {
-                "id": "1689960919964-264",
-                "author": "jsoncompare.py",
-                "changes": [
-                    {
-                        "dropIndex": {
-                            "indexName": "a_descrhist_cc_idx",
-                            "tableName": "a_descriptives_hist"
-                        }
-                    }
-                ],
-                "rollback": [
-                    {
-                        "createIndex": {
-                            "indexName": "a_descrhist_cc_idx",
-                            "tableName": "a_descriptives_hist",
-                            "columns": [
-                                {
-                                    "column": {
-                                        "name": "a_ledger_number"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_cost_center"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "p_donor_partner_key"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_hist_id"
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                ]
-            }
-        },
-        {
-            "changeSet": {
-                "id": "1689960919964-290",
-                "author": "jsoncompare.py",
-                "changes": [
-                    {
-                        "dropIndex": {
-                            "indexName": "a_motiv_code_cc",
-                            "tableName": "a_motivational_code"
-                        }
-                    }
-                ],
-                "rollback": [
-                    {
-                        "createIndex": {
-                            "indexName": "a_motiv_code_cc",
-                            "tableName": "a_motivational_code",
-                            "columns": [
-                                {
-                                    "column": {
-                                        "name": "a_ledger_number"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_cost_center"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_account_code"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_motivational_code"
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                ]
-            }
-        },
-        {
-            "changeSet": {
-                "id": "1689960919964-294",
-                "author": "jsoncompare.py",
-                "changes": [
-                    {
-                        "dropIndex": {
-                            "indexName": "a_payroll_cc_idx",
-                            "tableName": "a_payroll"
-                        }
-                    }
-                ],
-                "rollback": [
-                    {
-                        "createIndex": {
-                            "indexName": "a_payroll_cc_idx",
-                            "tableName": "a_payroll",
-                            "columns": [
-                                {
-                                    "column": {
-                                        "name": "a_ledger_number"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_cost_center"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_payroll_group_id"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_payroll_id"
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                ]
-            }
-        },
-        {
-            "changeSet": {
-                "id": "1689960919964-296",
-                "author": "jsoncompare.py",
-                "changes": [
-                    {
-                        "dropIndex": {
-                            "indexName": "a_payrolli_cc_idx",
-                            "tableName": "a_payroll_import"
-                        }
-                    }
-                ],
-                "rollback": [
-                    {
-                        "createIndex": {
-                            "indexName": "a_payrolli_cc_idx",
-                            "tableName": "a_payroll_import",
-                            "columns": [
-                                {
-                                    "column": {
-                                        "name": "a_ledger_number"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_cost_center"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_payroll_id"
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                ]
-            }
-        },
-        {
-            "changeSet": {
-                "id": "1689960919964-306",
-                "author": "jsoncompare.py",
-                "changes": [
-                    {
-                        "dropIndex": {
-                            "indexName": "a_trx_cc_quicksum_idx",
-                            "tableName": "a_transaction"
-                        }
-                    }
-                ],
-                "rollback": [
-                    {
-                        "createIndex": {
-                            "indexName": "a_trx_cc_quicksum_idx",
-                            "tableName": "a_transaction",
-                            "columns": [
-                                {
-                                    "column": {
-                                        "name": "a_ledger_number"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_cost_center"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_effective_date"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "defaultValueBoolean": false,
-                                        "name": "a_posted"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_amount"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_batch_number"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_journal_number"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_transaction_number"
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                ]
-            }
-        },
-        {
-            "changeSet": {
-                "id": "1689960919964-307",
-                "author": "jsoncompare.py",
-                "changes": [
-                    {
-                        "dropIndex": {
-                            "indexName": "a_trx_ccperiod_idx",
-                            "tableName": "a_transaction"
-                        }
-                    }
-                ],
-                "rollback": [
-                    {
-                        "createIndex": {
-                            "indexName": "a_trx_ccperiod_idx",
-                            "tableName": "a_transaction",
-                            "columns": [
-                                {
-                                    "column": {
-                                        "name": "a_ledger_number"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_cost_center"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_period"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_batch_number"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_journal_number"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_transaction_number"
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                ]
-            }
-        },
-        {
-            "changeSet": {
-                "id": "1689960919964-314",
-                "author": "jsoncompare.py",
-                "changes": [
-                    {
-                        "dropIndex": {
-                            "indexName": "a_trxt_cc_quicksum_idx",
-                            "tableName": "a_transaction_tmp"
-                        }
-                    }
-                ],
-                "rollback": [
-                    {
-                        "createIndex": {
-                            "indexName": "a_trxt_cc_quicksum_idx",
-                            "tableName": "a_transaction_tmp",
-                            "columns": [
-                                {
-                                    "column": {
-                                        "name": "a_ledger_number"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_cost_center"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_effective_date"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "defaultValueBoolean": false,
-                                        "name": "a_posted"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_amount"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_batch_number"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_journal_number"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_transaction_number"
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                ]
-            }
-        },
-        {
-            "changeSet": {
-                "id": "1689960919964-393",
-                "author": "jsoncompare.py",
-                "changes": [
-                    {
-                        "dropIndex": {
-                            "indexName": "i_eg_kdoncc_idx",
-                            "tableName": "i_eg_gift_import"
-                        }
-                    }
-                ],
-                "rollback": [
-                    {
-                        "createIndex": {
-                            "indexName": "i_eg_kdoncc_idx",
-                            "tableName": "i_eg_gift_import",
-                            "columns": [
-                                {
-                                    "column": {
-                                        "name": "p_donor_partner_key"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_ledger_number"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "a_cost_center"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "i_eg_trx_uuid"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "i_eg_desig_uuid"
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                ]
-            }
-        },
-        {
-            "changeSet": {
-                "id": "1689960919964-403",
-                "author": "jsoncompare.py",
-                "changes": [
-                    {
-                        "dropIndex": {
-                            "indexName": "p_cost_ctr_idx",
-                            "tableName": "p_partner"
-                        }
-                    }
-                ],
-                "rollback": [
-                    {
-                        "createIndex": {
-                            "indexName": "p_cost_ctr_idx",
-                            "tableName": "p_partner",
-                            "columns": [
-                                {
-                                    "column": {
-                                        "name": "p_cost_center"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "p_partner_key"
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                ]
-            }
-        },
-        {
-            "changeSet": {
-                "id": "1689960919964-443",
-                "author": "jsoncompare.py",
-                "changes": [
-                    {
-                        "dropIndex": {
-                            "indexName": "t_sprint_proj_idx",
-                            "tableName": "t_sprint"
-                        }
-                    }
-                ],
-                "rollback": [
-                    {
-                        "createIndex": {
-                            "indexName": "t_sprint_proj_idx",
-                            "tableName": "t_sprint",
-                            "columns": [
-                                {
-                                    "column": {
-                                        "name": "t_project_id"
-                                    }
-                                },
-                                {
-                                    "column": {
-                                        "name": "t_sprint_id"
-                                    }
-                                }
-                            ]
                         }
                     }
                 ]
