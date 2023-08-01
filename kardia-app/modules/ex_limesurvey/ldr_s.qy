@@ -1,0 +1,11 @@
+$Version=2$
+myquery "system/query"
+    {
+    id "query/parameter" { type=integer; }
+
+    sql = " select 
+		* 
+	    from 
+		 /apps/kardia/data/Kardia_DB/i_crm_import_type/rows
+            ";
+    }

@@ -1,0 +1,38 @@
+$Version=2$
+myquery "system/query"
+{
+    SURVEY_ID "query/parameter" { type=integer; }
+
+	sql = "
+        INSERT INTO
+            /apps/kardia/data/Kardia_DB/i_crm_partner_import_option/rows
+        SELECT
+            --i_crm_import_type_id = 
+            --i_crm_import_type_option_id = 
+            --primary key from i_crm_import_type_option table
+            
+            i_crm_tag_strength = convert(double, substring(eval(\":j:'\" + :cit:i_crm_option_field + \"'\", \"O\"), 2, 1)) / 4.0,
+            
+            i_crm_create_option = 1,
+
+            s_date_created = getdate(),
+            s_created_by = user_name(),
+            s_date_modified = getdate(),
+            s_modified_by = user_name()
+        FROM
+            IDENTITY
+                WILDCARD expression('/apps/kardia/modules/ex_limesurvey/connect.qy?SURVEY_ID='+:parameters:SURVEY_ID+'/response.json/responses/*') j
+                ,
+                /apps/kardia/data/Kardia_DB/i_crm_import_type_option/rows cit
+        WHERE
+            :cit:i_crm_import_type_id = :parameters:SURVEY_ID
+	        AND
+            :j:submitdate IS NOT NULL
+        HAVING
+            charindex(
+                ',' + eval(\":j:'\" + :cit:i_crm_option_field + \"'\", \"O\") + ','
+                ,
+                ',' + :cit:i_crm_option_value + ','
+            ) > 0
+	";
+}
