@@ -898,6 +898,7 @@ def tableToString(table):
 
 # Find which tables have most likley been renamed, added, or deleted. 
 # NOTE: Tables cannot be dropped at the same time as an add or rename
+# NOTE: renames are now based off of the history on the online wiki
 def renameTableDiff(wikiCS, currentCS, oldToNewTableName):
 	resCSList = []
 	wikiTableList = []
@@ -907,94 +908,73 @@ def renameTableDiff(wikiCS, currentCS, oldToNewTableName):
 
 	for changeSet in wikiCS:
 		if("createTable" in changeSet.changes[0]):
-			wikiTableList.append(changeSet.changes)
+			wikiTableList.append(changeSet)
 			wikiTableNames.append(changeSet.changes[0]["createTable"]["tableName"])
 
 	for changeSet in currentCS:
 		if("createTable" in changeSet.changes[0]):
-			currentTableList.append(changeSet.changes)
+			currentTableList.append(changeSet)
 			currentTableNames.append(changeSet.changes[0]["createTable"]["tableName"])
+
+	# remove all of the tables that are the same
+	i = 0
+	while(i < len(currentTableNames)):
+		j = 0
+		while(j < len(wikiTableNames)):
+			if(currentTableNames[i] == wikiTableNames[j]):
+				# remove from all lists
+				currentTableNames.pop(i)
+				currentTableList.pop(i)
+				wikiTableNames.pop(j)
+				wikiTableList.pop(j)
+				i -= 1
+				j -= 1
+				break
+			j += 1
+		i += 1
+	
+	count = 0  # keep ids unique
+	# now compare what's left. If wiki has a remarks and the old name is in current, rename.
+	for i in range(len(wikiTableNames)):
+		if("remarks" in wikiTableList[0].changes[0]["createTable"] and wikiTableList[0].changes[0]["createTable"]["remarks"] != None):
+			oldName = wikiTableList[0].changes[0]["createTable"]["remarks"]
+			# find index of the old name
+			j = currentTableNames.index(oldName)
 			
-	# look for dropped tables
-	if(len(currentTableNames) > len(wikiTableNames)):
-		# make sure was only a delete
-		for table in wikiTableNames:
-			if not table in currentTableNames:
-				print("ERROR: Table "+table+" was added at the same time as some deletes. Cannot mix table drops and renames/adds")
-				exit()
-		# make the drop table changeset
-		count = 0 # keep ids unique
-		for table in currentTableNames:
-			if not table in wikiTableNames:
-				resChangeSet = ChangeSet({"id": wikiCS[0].id + "-{}".format(count), "author": "jsonCompare.py"})
-				resChangeSet.changes = [{"dropTable": {"tableName":table}}]
-				resChangeSet.rollback = currentTableList[currentTableNames.index(table)]
-				resChangeSet.updateJSON()
-				resCSList.append(resChangeSet)
-				count += 1
-
-	# look for added and renamed tables
-	else:
-		# remove all of the tables that are the same
-		i = 0
-		while(i < len(currentTableNames)):
-			j = 0
-			while(j < len(wikiTableNames)):
-				if(currentTableNames[i] == wikiTableNames[j]):
-					# remove from all lists
-					currentTableNames.pop(i)
-					currentTableList.pop(i)
-					wikiTableNames.pop(j)
-					wikiTableList.pop(j)
-					i -= 1
-					j -= 1
-					break
-				j += 1
-			i += 1
-		
-		# now compare what's left and find the most likely pairs 
-		# keep track of all of the best matches for each still in current
-		bestMatch = []
-		levResults = []
-		count = 0  # keep ids unique
-
-		for i, curTable in enumerate(currentTableNames):
-			best = -1
-			bestInd = -1
-			fullCur = tableToString(currentTableList[i])
-			tempResults = []
-			tempResults.append(curTable)
-			for j, wikiTable in enumerate(wikiTableNames):
-				fullWiki = tableToString(wikiTableList[j])
-				rat = ratio(fullWiki, fullCur)
-				tempResults.append(rat)
-				if(best < rat):
-					best = rat
-					bestInd = j
-			levResults.append(tempResults)
-			if(bestInd not in bestMatch):
-				bestMatch.append(bestInd)
-			else: 
-				print("Error: cannot rename tables; comparisons are too ambiguous")
-				print("	Problem was caused by "+curTable+" and "+(currentTableNames[bestMatch.index(bestInd)])+" over "+wikiTableNames[bestInd])
-				exit()
-
-		for i, j in enumerate(bestMatch):
 			resChangeSet = ChangeSet({"id": wikiCS[0].id + "-{}".format(count), "author": "jsonCompare.py"})
-			resChangeSet.changes = [{"renameTable": {"oldTableName":currentTableNames[i], "newTableName": wikiTableNames[j]}}]
+			resChangeSet.changes = [{"renameTable": {"oldTableName":currentTableNames[j], "newTableName": wikiTableNames[0]}}]
 			resChangeSet.updateJSON()
 			resCSList.append(resChangeSet)
 			count += 1
-			oldToNewTableName[currentTableNames[i]] = wikiTableNames[j]
+			oldToNewTableName[currentTableNames[j]] = wikiTableNames[0]
 
-	
-		for j in range(len(wikiTableNames)):
-			if( j not in bestMatch): 
-				resChangeSet = ChangeSet({"id": wikiCS[0].id + "-{}".format(count), "author": "jsonCompare.py"})
-				resChangeSet.changes = wikiTableList[j]
-				resChangeSet.updateJSON()
-				resCSList.append(resChangeSet)
-				count += 1
+			print("rename "+currentTableNames[j]+" to "+wikiTableNames[0])
+
+			wikiTableNames.pop(0)
+			wikiTableList.pop(0)
+			currentTableNames.pop(j)
+			currentTableList.pop(j)
+		else: 
+			print("adding "+wikiTableNames[0])
+			resChangeSet = ChangeSet({"id": wikiCS[0].id + "-{}".format(count), "author": "jsonCompare.py"})
+			resChangeSet.changes = wikiTableList[0].changes
+			resChangeSet.updateJSON()
+			resCSList.append(resChangeSet)
+			wikiTableNames.pop(0)
+			wikiTableList.pop(0)
+			count += 1
+
+	# anything left in current needs dropped
+	for i in range(len(currentTableNames)):
+		# make the drop table changeset
+		resChangeSet = ChangeSet({"id": wikiCS[0].id + "-{}".format(count), "author": "jsonCompare.py"})
+		resChangeSet.changes = [{"dropTable": {"tableName":currentTableNames[i]}}]
+		resChangeSet.rollback = currentTableList[i].changes
+		resChangeSet.updateJSON()
+		resCSList.append(resChangeSet)
+		count += 1
+		print("dropping "+currentTableNames[i])
+			
 	return resCSList
 
 if __name__ == "__main__":
@@ -1091,35 +1071,39 @@ if __name__ == "__main__":
 				currentIndexList.append(currentCS.changes[0]["createIndex"]["indexName"])
 
 		tableEdit = renameTableDiff(wikiChangeSets, currentChangeSets, oldToNewTableName)
+		dropChangeSetList = []
 		if(tableEdit != []): 
-			# If was a drop table, is only table drops. Put in a seperate file to avoid accidental data loss
-			if("dropTable" in tableEdit[0].changes[0]):
-				# set up a seperate file for deletes
-				deleteChangeLog = ChangeLog()
-				deleteChangeLog.setChangeSetList(tableEdit)
-
-				print("Creating seperate file for table drops. Confirm you wish to drop these tables before adding")
-				deleteChangeLog.updateJSON()
-				diffJSON = json.dumps(deleteChangeLog, cls=MyEncoder, indent=4)
-				if (len(sys.argv) != 7):
-					currentDateTime = datetime.datetime.now()
-					outputFileName = "DROP_TABLE." + str(currentDateTime)[0:10] + "." + str(currentDateTime.hour) + "." + str(currentDateTime.minute) + "." + str(currentDateTime.second) + "ChangeLog.json"	
-					writePath = os.path.join(os.path.dirname(os.path.realpath(__file__)), "ddl-{}".format(sys.argv[1]), "liquibaseFiles", outputFileName)
+			for tEdit in tableEdit:
+				# If was a drop table, needs to be in own file to avoid accidental data loss
+				if("dropTable" in tEdit.changes[0]):
+					dropChangeSetList.append(tEdit)
+				# if not a drop, safe to add to the general changelog
 				else:
-					writePath = os.path.join(os.path.dirname(os.path.realpath(__file__)), sys.argv[6])
-				f = open(writePath, "w")
-				f.write(diffJSON)
-				f.close()
-				print("See %s for the table drop commands" % writePath)
-				print("checking to make sure formatting is correct...")
-				with open(writePath, "r") as file:
-					testChangeLogFile = json.load(file)
-				testChangeLog = ChangeLog(testChangeLogFile)
-			# if no drops, safe to add renames to the general changelog
-			else:
-				for tEdit in tableEdit:
 					diffChangeSetList.append(tEdit)
-				
+		# if anything was dropped, create a new file
+		# set up a seperate file for deletes
+		if(len(dropChangeSetList) > 0):
+			deleteChangeLog = ChangeLog()
+			deleteChangeLog.setChangeSetList(dropChangeSetList)
+
+			print("Creating seperate file for table drops. Confirm you wish to drop these tables before adding")
+			deleteChangeLog.updateJSON()
+			diffJSON = json.dumps(deleteChangeLog, cls=MyEncoder, indent=4)
+			if (len(sys.argv) != 7):
+				currentDateTime = datetime.datetime.now()
+				outputFileName = "DROP_TABLE." + str(currentDateTime)[0:10] + "." + str(currentDateTime.hour) + "." + str(currentDateTime.minute) + "." + str(currentDateTime.second) + "ChangeLog.json"	
+				writePath = os.path.join(os.path.dirname(os.path.realpath(__file__)), "ddl-{}".format(sys.argv[1]), "liquibaseFiles", outputFileName)
+			else:
+				writePath = os.path.join(os.path.dirname(os.path.realpath(__file__)), sys.argv[6])
+			f = open(writePath, "w")
+			f.write(diffJSON)
+			f.close()
+			print("See %s for the table drop commands" % writePath)
+			print("checking to make sure formatting is correct...")
+			with open(writePath, "r") as file:
+				testChangeLogFile = json.load(file)
+			testChangeLog = ChangeLog(testChangeLogFile)
+
 		for wikiCS in wikiChangeSets:
 			# New/Renamed tables are handled above; just consider indexes
 			# If the changeSet is a new index, add it to the difference and go to next changeSet (will always be after create table in wiki, so table will be updated first)

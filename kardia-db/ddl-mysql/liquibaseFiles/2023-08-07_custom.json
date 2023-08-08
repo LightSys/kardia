@@ -1,0 +1,22 @@
+{ "databaseChangeLog": [
+    {
+            "changeSet": {
+                "id": "2023-07-08",
+                "author": "Noah Board",
+                "changes": [
+                    {
+                        "sql": {
+                            "sql": "ALTER TABLE a_cc_analysis_attr CHANGE a_cost_center a_fund char(20) NOT NULL"
+                        }
+                    }
+                ],
+                "rollback": [
+                    {
+                        "sql": {
+                            "sql": "ALTER TABLE a_cc_analysis_attr CHANGE a_fund a_cost_center char(20) NOT NULL"
+                        }
+                    }
+                ]
+            }
+        }
+]}

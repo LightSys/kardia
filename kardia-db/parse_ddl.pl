@@ -51,6 +51,7 @@ $path="/root/kardia/petradocs/tables";
 $clustered="cluster";
 #$uri="http://sourceforge.net/apps/mediawiki/kardia/index.php?title=kardia:NewTableList";
 $uri="https://www.codn.net/projects/kardia/wiki/index.php/Kardia:NewTableList";
+$renameUrl="https://www.codn.net/projects/kardia/wiki/index.php/Special:Log/move";
 
 #################################
 # The default file names we will use.
@@ -274,6 +275,15 @@ sub pull_off_web() {
             }
         }
     }
+
+    # now get the rename history
+    # TODO: put rename stuff HERE
+    #$flag=1;
+    #$p = SmartTokeParser->new( $url );
+    #while ($flag == 1 ) {
+	#stuffs
+
+    #}
 }
 
 
@@ -1157,6 +1167,8 @@ sub print_table() {
     print JSON "        {\n";
     print JSON "          \"createTable\": {\n";
     print JSON "            \"tableName\": \"$table\",\n";
+    # use the remarks feild to store the old table name
+    print JSON "            \"remarks\": \"$glob_table_rename{$table}\",\n" if($glob_table_rename{$table});
     print JSON "            \"columns\": [\n";
 
     foreach $field (keys(%{$glob_field{$table}})) { $num_fields++; }
@@ -1980,6 +1992,36 @@ print SQL_D "drop table ra$cmd_terminator";
 if ($#ARGV == -1) {
 print "Processing everything\n";
 my $count=0;
+
+    # get data on how tables were renamed
+    my $req = RequestAgent -> new (keep_alive => 1);
+    my $renameData = $req->get($renameUrl);
+    my @lines;
+    if ($renameData->is_success) {
+        @lines=split /\n/,$renameData->content;  # or whatever
+    }
+    else {
+        die $response->status_line;
+    }
+    %glob_table_rename;
+    # runs newest to oldest. Limit to 50 past renames; likley far more than needed, and prevents creating a massive hashmap
+    my $renames = 0;
+    foreach $line (@lines) {
+        # only care about the old and new names of the tables; ignore the rest of the lines
+        if ($line =~ /moved page <a.*>Kardia:NewTables ([a-z\ ]+)<\/a> to <a.*>Kardia:NewTables ([a-z\ ]+)<\/a>/) {
+            my $old = $1;
+            my $new = $2;
+            # change from spaces to _
+            $old =~ s/ /_/g;
+            $new =~ s/ /_/g;
+            # make sure can identify renamed tables later
+            $glob_table_rename{$new} = $old; 
+            print "$old to $new\n";
+	    $renames++;
+	    if($renames >= 50){last;}
+        }
+    }
+
     #Now we process every table
     foreach $table (keys( %glob_field)) {
         print "Table: $table\n";

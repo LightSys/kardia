@@ -1,0 +1,139 @@
+{
+    "databaseChangeLog": [
+        {
+            "changeSet": {
+                "id": "202307311551-1-31",
+                "author": "jsoncompare.py",
+                "changes": [
+                    {
+                        "dropTable": {
+                            "tableName": "rz"
+                        }
+                    }
+                ],
+                "rollback": [
+                    {
+                        "createTable": {
+                            "columns": [
+                                {
+                                    "column": {
+                                        "constraints": {
+                                            "nullable": false,
+                                            "primaryKey": true
+                                        },
+                                        "defaultValue": "",
+                                        "name": "a",
+                                        "type": "varchar(32)"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "b",
+                                        "type": "text"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "c",
+                                        "type": "text"
+                                    }
+                                }
+                            ],
+                            "tableName": "rz"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "changeSet": {
+                "id": "202307311551-1-32",
+                "author": "jsoncompare.py",
+                "changes": [
+                    {
+                        "dropTable": {
+                            "tableName": "rb"
+                        }
+                    }
+                ],
+                "rollback": [
+                    {
+                        "createTable": {
+                            "columns": [
+                                {
+                                    "column": {
+                                        "constraints": {
+                                            "nullable": false,
+                                            "primaryKey": true
+                                        },
+                                        "defaultValue": "",
+                                        "name": "a",
+                                        "type": "varchar(32)"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "b",
+                                        "type": "text"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "c",
+                                        "type": "text"
+                                    }
+                                }
+                            ],
+                            "tableName": "rb"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "changeSet": {
+                "id": "202307311551-1-33",
+                "author": "jsoncompare.py",
+                "changes": [
+                    {
+                        "dropTable": {
+                            "tableName": "rc"
+                        }
+                    }
+                ],
+                "rollback": [
+                    {
+                        "createTable": {
+                            "columns": [
+                                {
+                                    "column": {
+                                        "constraints": {
+                                            "nullable": false,
+                                            "primaryKey": true
+                                        },
+                                        "defaultValue": "",
+                                        "name": "a",
+                                        "type": "varchar(32)"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "b",
+                                        "type": "text"
+                                    }
+                                },
+                                {
+                                    "column": {
+                                        "name": "c",
+                                        "type": "text"
+                                    }
+                                }
+                            ],
+                            "tableName": "rc"
+                        }
+                    }
+                ]
+            }
+        }
+    ]
+}
