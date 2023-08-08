@@ -33,6 +33,8 @@ person_data "system/query"
 		:c:p_country_code =* :pl:p_country_code and
 		:af:p_country_code =* :pl:p_country_code and
 		:af:p_address_set = 'STANDARD'
+	    order by
+		charindex(:pl:p_record_status_code, 'OQIA') desc
 	    limit
 		1
 	    having

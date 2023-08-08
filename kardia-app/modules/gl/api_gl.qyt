@@ -24,6 +24,25 @@ gl "system/querytree"
 			order by
 			    :a:a_account_code asc
 			";
+
+            accountanalysisattrstxt "system/querytree"
+                {
+                text = "AnalysisAttributes";
+
+                accountanalysisattrs "system/querytree"
+                    {
+                    sql = "	select
+                                *
+                            from
+                                identity /apps/kardia/data/Kardia_DB/a_acct_analysis_attr/rows aaa
+                            where
+                                :aaa:a_ledger_number = :ledgers:a_ledger_number and
+                                :aaa:a_account_code = :accts:a_account_code
+                            order by
+                                :aaa:a_attr_code asc
+                            ";
+                    }
+                }
 		}
 	    }
 
@@ -81,6 +100,25 @@ gl "system/querytree"
 				";
 			}
 		    }
+
+            fundanalysisattrstxt "system/querytree"
+                {
+                text = "AnalysisAttributes";
+
+                fundanalysisattrs "system/querytree"
+                    {
+                    sql = "	select
+                                *
+                            from
+                                identity /apps/kardia/data/Kardia_DB/a_fund_analysis_attr/rows faa
+                            where
+                                :faa:a_ledger_number = :ledgers:a_ledger_number and
+                                :faa:a_fund = :funds:a_fund
+                            order by
+                                :faa:a_attr_code asc
+                            ";
+                    }
+                }
 		}
 	    }
 
@@ -185,5 +223,78 @@ gl "system/querytree"
 		    }
 		}
 	    }
+
+	analysisattrstxt "system/querytree"
+        {
+        text = "AnalysisAttributes";
+
+        analysisattrs "system/querytree"
+            {
+            sql = "	select
+                        *
+                    from
+                        identity /apps/kardia/data/Kardia_DB/a_analysis_attr/rows aa
+                    where
+                        :aa:a_ledger_number = :ledgers:a_ledger_number
+                    order by
+                        :aa:a_attr_code asc
+                    ";
+            }
+        }
+
+	analysisattrvaluestxt "system/querytree"
+        {
+        text = "AnalysisAttributeValues";
+
+        analysisattrvalues "system/querytree"
+            {
+            sql = "	select
+                        *
+                    from
+                        identity /apps/kardia/data/Kardia_DB/a_analysis_attr_value/rows aav
+                    where
+                        :aav:a_ledger_number = :ledgers:a_ledger_number
+                    order by
+                        :aav:a_attr_code asc
+                    ";
+            }
+        }
+
+	accountanalysisattrstxt "system/querytree"
+        {
+        text = "AccountAnalysisAttributes";
+
+        accountanalysisattrs "system/querytree"
+            {
+            sql = "	select
+                        *
+                    from
+                        identity /apps/kardia/data/Kardia_DB/a_acct_analysis_attr/rows aaa
+                    where
+                        :aaa:a_ledger_number = :ledgers:a_ledger_number
+                    order by
+                        :aaa:a_account_code, :aaa:a_attr_code asc
+                    ";
+            }
+        }
+
+	fundanalysisattrstxt "system/querytree"
+        {
+        text = "FundAnalysisAttributes";
+
+        fundanalysisattrs "system/querytree"
+            {
+            sql = "	select
+                        *
+                    from
+                        identity /apps/kardia/data/Kardia_DB/a_fund_analysis_attr/rows faa
+                    where
+                        :faa:a_ledger_number = :ledgers:a_ledger_number
+                    order by
+                        :faa:a_fund, :faa:a_attr_code asc
+                    ";
+            }
+        }
+
 	}
     }

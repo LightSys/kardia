@@ -2,7 +2,7 @@ $Version=2$
 cc_admin_fee "widget/component-decl"
     {
     // Component for setting up admin fees on a per-fund basis.  This can also
-    // largely be done from modules/gl/coamaint.cmp.
+    // largely be done from modules/gl/fundmaint.cmp.
     width=780; height=580;
     ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
 

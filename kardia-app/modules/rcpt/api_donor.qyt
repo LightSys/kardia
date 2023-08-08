@@ -413,5 +413,21 @@ api_donors "system/querytree"
 		    ";
 	    use_having = yes;
 	    }
-	}
+
+        Settings "system/querytree"
+            {
+            text = "Settings";
+
+            settings_list "system/querytree"
+                {
+                sql = " select
+                            *
+                        from
+                            identity /apps/kardia/data/Kardia_DB/p_donor/rows d
+                        where
+                            :d:p_partner_key = :donors:p_partner_key
+                        ";
+                }
+            }
+        }
     }

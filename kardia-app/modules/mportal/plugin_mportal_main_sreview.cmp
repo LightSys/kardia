@@ -44,9 +44,9 @@ support_review "widget/component-decl"
 		    :c:a_ledger_number = :cs:a_ledger_number and
 		    :c:a_fund = :cs:a_fund and
 		    :c:a_bal_fund = :c:a_fund and
-		    (:c:a_fund_class = 'MIS' or :c:a_fund_class = 'MIP')
+		    (:c:a_fund_class = 'MIS' or :c:a_fund_class = 'MIP' or :c:a_fund_class = 'ORG')
 		order by
-		    charindex(:c:a_fund_class, 'MISMIP')
+		    charindex(:c:a_fund_class, 'MIS,MIP,ORG')
 		limit
 		    1
 		;
@@ -327,12 +327,12 @@ support_review "widget/component-decl"
 
 		    :a_act_average_months = convert(integer, round(datediff(day, :d:a_act_lookback_date, :d:a_act_lookahead_date) / 30.5)),
 
-		    :a_act_average_amount = isnull((select condition(
+		    :a_act_average_amount = isnull(round((select condition(
 			    count(1) = 0 or datediff(month, :d:a_act_lookback_date, :d:a_act_lookahead_date) = 0,
 			    null,
 			    --sum(condition(:i:a_fund = :gp:a_fund, :i:a_amount, :i:a_amount * isnull(:gp:a_percent, 1.0))) / datediff(month, :d:a_act_lookback_date, :d:a_act_lookahead_date)
 			    sum(:i:a_amount * isnull(:gp:a_percent, 1.0)) / datediff(month, :d:a_act_lookback_date, :d:a_act_lookahead_date)
-		    ) from /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i where :i:a_posted = 1 and isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) > dateadd(month, -13, getdate()) and (:i:a_fund = :gp:a_fund or :i:a_fund = :gp:a_actual_fund) and :i:a_ledger_number = :d:a_ledger_number and :i:p_dn_donor_partner_id = :d:p_donor_partner_key), $0),
+		    ) from /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i where :i:a_posted = 1 and isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) > dateadd(month, -13, getdate()) and (:i:a_fund = :gp:a_fund or :i:a_fund = :gp:a_actual_fund) and :i:a_ledger_number = :d:a_ledger_number and :i:p_dn_donor_partner_id = :d:p_donor_partner_key), 2), $0),
 		    :a_act_average_interval = (select condition(
 			    count(1) = 0 or datediff(day, :d:a_act_lookback_date, :d:a_act_lookahead_date) = 0,
 			    null,
@@ -462,7 +462,7 @@ support_review "widget/component-decl"
 		    phone = (select isnull(:ci:p_phone_country + ' ', '') + isnull(:ci:p_phone_area_city + ' ', '') + :ci:p_contact_data from /apps/kardia/data/Kardia_DB/p_contact_info/rows ci where :ci:p_contact_type = 'P' and :ci:p_partner_key = :p:p_partner_key limit 1),
 		    cell = (select isnull(:ci:p_phone_country + ' ', '') + isnull(:ci:p_phone_area_city + ' ', '') + :ci:p_contact_data from /apps/kardia/data/Kardia_DB/p_contact_info/rows ci where :ci:p_contact_type = 'C' and :ci:p_partner_key = :p:p_partner_key limit 1),
 		    interval_txt = condition(:gp:a_interval is null, 'unknown', condition(:gp:a_interval = 0, 'onetime / as-able', condition(:gp:a_interval = 1, 'monthly', condition(:gp:a_interval = 12, 'annual', 'every ' + :gp:a_interval + ' months')))),
-		    month_equiv = condition(isnull(:gp:a_interval,0) = 0, :gp:a_amount / 12, :gp:a_amount / :gp:a_interval),
+		    month_equiv = round(condition(isnull(:gp:a_interval,0) = 0, :gp:a_amount / 12, :gp:a_amount / :gp:a_interval), 2),
 
 		    last_gift = max(isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date)),
 		    --last_amt = last(condition(:g:a_fund = :gp:a_fund, :g:a_amount, :g:a_amount * isnull(:gp:a_percent, 1.0))),
@@ -790,7 +790,7 @@ support_review "widget/component-decl"
 			    amt =	    :a_amount,
 			    cur_review =    :a_review,
 			    support_amt =   (select
-						sum(condition(isnull(:gp:a_interval,0) = 0, :gp:a_amount / 12, :gp:a_amount / :gp:a_interval))
+						sum(round(condition(isnull(:gp:a_interval,0) = 0, :gp:a_amount / 12, :gp:a_amount / :gp:a_interval), 2))
 					    from
 						/apps/kardia/data/Kardia_DB/a_giving_pattern/rows gp
 					    where
