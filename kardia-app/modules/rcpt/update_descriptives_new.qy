@@ -319,17 +319,6 @@ update_descriptives_new "system/query"
 	update
 		identity collection a_descriptives d
 	set
-		:a_hist_1_amount = (select
-					first(:dh:a_amount)
-				    from
-					collection a_descriptives_hist dh
-				    where
-					:d:a_ledger_number = :dh:a_ledger_number and
-					:d:a_fund = :dh:a_fund and
-					:d:p_donor_partner_key = :dh:p_donor_partner_key
-				    order by
-					:dh:a_last_gift desc
-				    ),
             :a_hist_1_last = (select
 					first(:dh:a_last_gift)
 				    from
@@ -351,12 +340,12 @@ update_descriptives_new "system/query"
 	set
 		:d:a_hist_1_count = :dh:a_count,
 		:d:a_hist_1_first = :dh:a_first_gift,
-		:d:a_hist_1_last = :dh:a_last_gift
+		:d:a_hist_1_last = :dh:a_last_gift,
+		:d:a_hist_1_amount = :dh:a_amount
 	where
 		:d:a_ledger_number = :dh:a_ledger_number and
 		:d:a_fund = :dh:a_fund and
 		:d:p_donor_partner_key = :dh:p_donor_partner_key and
-		:d:a_hist_1_amount = :dh:a_amount and
             :d:a_hist_1_last = :dh:a_last_gift and
 		(:parameters:fund is null or :parameters:fund = :d:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
