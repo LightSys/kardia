@@ -18,20 +18,20 @@ update_descriptives_merge_catchup "system/query"
 		identity collection a_descriptives_hist dh1,
 		collection a_descriptives_hist dh2
 	    set
-		:a_merged_id = 999999
+		--:a_merged_id = 999999
 		--:a_merged_id = :dh2:a_hist_id
-		--:a_merged_id = isnull(:dh2:a_merged_id, :dh2:a_hist_id)
+		:a_merged_id = isnull(:dh2:a_merged_id, :dh2:a_hist_id)
 	    where
 		(:parameters:fund is null or :parameters:fund = :dh2:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :dh2:p_donor_partner_key) and
 		:dh2:a_ledger_number = :dh1:a_ledger_number and
 		:dh2:a_fund = :dh1:a_fund and
 		:dh2:p_donor_partner_key = :dh1:p_donor_partner_key and
-		--:dh1:a_amount <= 8 * :dh2:a_amount and -- catchup more than regular within reason
-		--(:dh1:a_amount / :dh2:a_amount) = round(:dh1:a_amount / :dh2:a_amount, 0) and -- even multiple of regular
-		--round(:dh2:a_act_average_interval) <= round(isnull(:dh1:a_act_average_interval, 100)) and -- regular is more often than catchup
-		--:dh2:a_count > :dh1:a_count --and -- regular has more gifts than catchup
-		:dh2:a_count >= 2 --and -- regular has at least 2 gifts
+		:dh1:a_amount <= 8 * :dh2:a_amount and -- catchup more than regular within reason
+		(:dh1:a_amount / :dh2:a_amount) = round(:dh1:a_amount / :dh2:a_amount, 0) and -- even multiple of regular
+		round(:dh2:a_act_average_interval) <= round(isnull(:dh1:a_act_average_interval, 100)) and -- regular is more often than catchup
+		:dh2:a_count > :dh1:a_count --and -- regular has more gifts than catchup
+		--:dh2:a_count >= 2 --and -- regular has at least 2 gifts
 		--:dh2:a_first_gift < :dh2:a_last_gift --and -- regular gifts are not on the same day
 		--round(:dh2:a_act_average_interval, 0) != 0 --and -- regular has an established interval (non-zero)
 		--(:dh1:a_last_gift = :dh2:a_prev_end or :dh2:a_last_gift = :dh1:a_prev_end) --and -- gifts are adjacent	
