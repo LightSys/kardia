@@ -602,84 +602,82 @@ update_descriptives_new "system/query"
 	---- also require that the history entry and its predecessor both have at least two gifts,
         ---- unless the giving interval is greater than 7 (effectively yearly), in which case any
         ---- number of gifts for either produces useful results.
-	--print 'Identifying increases at ' + dateformat(getdate(), 'hh:mm:ss');
-	--update
-	--	identity collection a_descriptives_hist dh
-	--set
-	--	:dh:a_increase_pct = condition(
-        --                    :dh:a_act_average_interval > 7 or (datediff(day, :dh:a_prev_end, :dh:a_first_gift) > 212 and :dh:a_count = 1),
-        --                    convert(double, :dh:a_amount) / convert(double, isnull((select :dh2:a_amount from collection a_descriptives_hist dh2 where :dh2:a_ledger_number = :dh:a_ledger_number and :dh2:a_fund = :dh:a_fund and :dh2:p_donor_partner_key = :dh:p_donor_partner_key and isnull(:dh2:a_is_extra, 0) = 0 and :dh2:a_last_gift < :dh:a_first_gift order by :dh2:a_last_gift desc limit 1), :dh:a_amount)) - 1.0,
-        --                    condition(
-        --                            :dh:a_count > 1,
-        --                            convert(double, :dh:a_amount) / condition(round(:dh:a_act_average_interval) < 1, 1, round(:dh:a_act_average_interval)) / convert(double, isnull((select :dh2:a_amount / condition(round(:dh2:a_act_average_interval) < 1, 1, round(:dh2:a_act_average_interval)) from collection a_descriptives_hist dh2 where :dh2:a_ledger_number = :dh:a_ledger_number and :dh2:a_fund = :dh:a_fund and :dh2:p_donor_partner_key = :dh:p_donor_partner_key and isnull(:dh2:a_is_extra, 0) = 0 and :dh2:a_last_gift < :dh:a_first_gift and :dh2:a_count > 1 order by :dh2:a_last_gift desc limit 1), :dh:a_amount / condition(round(:dh:a_act_average_interval) < 1, 1, round(:dh:a_act_average_interval)))) - 1.0,
-        --                            null
-        --                            )
-        --                    )
-	--where
-	--	(:parameters:fund is null or :parameters:fund = :dh:a_fund) and
-	--	(:parameters:donor is null or :parameters:donor = :dh:p_donor_partner_key) and
-        --    not isnull(:dh:a_is_extra, 0) != 0
-	--;
-	--update
-	--	identity collection a_descriptives_hist dh,
-	--	collection a_descriptives d
-	--set
-	--	:dh:a_increase_pct = condition((:dh:a_count > 1 or :d:a_act_average_interval > 1.8) and :dh:a_increase_pct > 0.001, :dh:a_increase_pct, null)
-	--where
-	--	:d:a_ledger_number = :dh:a_ledger_number and
-	--	:d:a_fund = :dh:a_fund and
-	--	:d:p_donor_partner_key = :dh:p_donor_partner_key and
-	--	(:parameters:fund is null or :parameters:fund = :dh:a_fund) and
-	--	(:parameters:donor is null or :parameters:donor = :dh:p_donor_partner_key)
-	--;
-
-	---- Identify decreases in giving. A decrease is when the history entry has a smaller monthly
-	---- average than the immediately previous history entry that is not a one-time-extra gift. We
-	---- also require that the history entry and its predecessor both have at least two gifts,
-        ---- unless the giving interval is greater than 7 (effectively yearly), in which case any
-        ---- number of gifts for either produces useful results.
-	--print 'Identifying decreases at ' + dateformat(getdate(), 'hh:mm:ss');
-	--update
-	--	identity collection a_descriptives_hist dh
-	--set
-	--	:dh:a_decrease_pct = condition(
-        --                    :dh:a_act_average_interval > 7 or (datediff(day, :dh:a_prev_end, :dh:a_first_gift) > 212 and :dh:a_count = 1),
-        --                    1.0 - convert(double, :dh:a_amount) / convert(double, isnull((select :dh2:a_amount from collection a_descriptives_hist dh2 where :dh2:a_ledger_number = :dh:a_ledger_number and :dh2:a_fund = :dh:a_fund and :dh2:p_donor_partner_key = :dh:p_donor_partner_key and isnull(:dh2:a_is_extra, 0) = 0 and :dh2:a_last_gift < :dh:a_first_gift order by :dh2:a_last_gift desc limit 1), :dh:a_amount)),
-        --                    condition(
-        --                            :dh:a_count > 1,
-        --                            1.0 - convert(double, :dh:a_amount) / condition(round(:dh:a_act_average_interval) < 1, 1, round(:dh:a_act_average_interval)) / convert(double, isnull((select convert(double, :dh2:a_amount) / condition(round(:dh2:a_act_average_interval) < 1, 1, round(:dh2:a_act_average_interval)) from collection a_descriptives_hist dh2 where :dh2:a_ledger_number = :dh:a_ledger_number and :dh2:a_fund = :dh:a_fund and :dh2:p_donor_partner_key = :dh:p_donor_partner_key and isnull(:dh2:a_is_extra, 0) = 0 and :dh2:a_last_gift < :dh:a_first_gift and :dh2:a_count > 1 order by :dh2:a_last_gift desc limit 1), :dh:a_amount / condition(round(:dh:a_act_average_interval) < 1, 1, round(:dh:a_act_average_interval)))),
-        --                            null
-        --                            )
-        --                    )
-	--where
-	--	(:parameters:fund is null or :parameters:fund = :dh:a_fund) and
-	--	(:parameters:donor is null or :parameters:donor = :dh:p_donor_partner_key) and
-        --    not isnull(:dh:a_is_extra, 0) != 0
-	--;
-	--update
-	--	identity collection a_descriptives_hist dh
-	--set
-	--	:dh:a_decrease_pct = condition(:dh:a_decrease_pct > 0.001, :dh:a_decrease_pct, null)
-	--where
-	--	(:parameters:fund is null or :parameters:fund = :dh:a_fund) and
-	--	(:parameters:donor is null or :parameters:donor = :dh:p_donor_partner_key)
-	--;
-
-	---- Propagate informational flags/data to the overall giving descriptives
-	--print 'Setting informational flags at ' + dateformat(getdate(), 'hh:mm:ss');
-	--update
-	--	identity collection a_descriptives d
-	--set
-	--	:a_increase_pct = (select :dh:a_increase_pct from collection a_descriptives_hist dh where :dh:a_ledger_number = :d:a_ledger_number and :dh:a_fund = :d:a_fund and :dh:p_donor_partner_key = :d:p_donor_partner_key where :a_is_extra = 0 order by :a_last_gift desc limit 1),
-	--	:a_increase_date = (select condition(:dh:a_increase_pct is not null, :dh:a_first_gift, convert(datetime, null)) from collection a_descriptives_hist dh where :dh:a_ledger_number = :d:a_ledger_number and :dh:a_fund = :d:a_fund and :dh:p_donor_partner_key = :d:p_donor_partner_key where :a_is_extra = 0 order by :a_last_gift desc limit 1),
-	--	:a_decrease_pct = (select :dh:a_decrease_pct from collection a_descriptives_hist dh where :dh:a_ledger_number = :d:a_ledger_number and :dh:a_fund = :d:a_fund and :dh:p_donor_partner_key = :d:p_donor_partner_key where :a_is_extra = 0 order by :a_last_gift desc limit 1),
-	--	:a_decrease_date = (select condition(:dh:a_decrease_pct is not null, :dh:a_first_gift, convert(datetime, null)) from collection a_descriptives_hist dh where :dh:a_ledger_number = :d:a_ledger_number and :dh:a_fund = :d:a_fund and :dh:p_donor_partner_key = :d:p_donor_partner_key where :a_is_extra = 0 order by :a_last_gift desc limit 1),
-	--	:a_is_extra = (select max(:dh:a_is_extra) from collection a_descriptives_hist dh where :dh:a_ledger_number = :d:a_ledger_number and :dh:a_fund = :d:a_fund and :dh:p_donor_partner_key = :d:p_donor_partner_key order by :a_last_gift desc limit 3),
-        --    :a_is_approximate = (select max(:dh:a_is_approximate) from collection a_descriptives_hist dh where :dh:a_ledger_number = :d:a_ledger_number and :dh:a_fund = :d:a_fund and :dh:p_donor_partner_key = :d:p_donor_partner_key order by :a_last_gift desc limit 3)
-	--where
-	--	(:parameters:fund is null or :parameters:fund = :d:a_fund) and
-	--	(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
-	--;
+	print 'Identifying increases at ' + dateformat(getdate(), 'hh:mm:ss');
+	update
+		identity collection a_descriptives_hist dh
+	set
+		:dh:a_increase_pct = condition(
+                            :dh:a_act_average_interval > 7 or (datediff(day, :dh:a_prev_end, :dh:a_first_gift) > 212 and :dh:a_count = 1),
+                            convert(double, :dh:a_amount) / convert(double, isnull((select :dh2:a_amount from collection a_descriptives_hist dh2 where :dh2:a_ledger_number = :dh:a_ledger_number and :dh2:a_fund = :dh:a_fund and :dh2:p_donor_partner_key = :dh:p_donor_partner_key and (:dh2:a_is_extra is null) and :dh2:a_last_gift < :dh:a_first_gift order by :dh2:a_last_gift desc limit 1), :dh:a_amount)) - 1.0,
+                            condition(
+                                    :dh:a_count > 1,
+                                    convert(double, :dh:a_amount) / condition(round(:dh:a_act_average_interval) < 1, 1, round(:dh:a_act_average_interval)) / convert(double, isnull((select :dh2:a_amount / condition(round(:dh2:a_act_average_interval) < 1, 1, round(:dh2:a_act_average_interval)) from collection a_descriptives_hist dh2 where :dh2:a_ledger_number = :dh:a_ledger_number and :dh2:a_fund = :dh:a_fund and :dh2:p_donor_partner_key = :dh:p_donor_partner_key and (:dh2:a_is_extra is null) and :dh2:a_last_gift < :dh:a_first_gift and :dh2:a_count > 1 order by :dh2:a_last_gift desc limit 1), :dh:a_amount / condition(round(:dh:a_act_average_interval) < 1, 1, round(:dh:a_act_average_interval)))) - 1.0,
+                                    null
+                                    )
+                            )
+	where
+		(:parameters:fund is null or :parameters:fund = :dh:a_fund) and
+		(:parameters:donor is null or :parameters:donor = :dh:p_donor_partner_key) and
+            (:dh:a_is_extra is null)
+	;
+	update
+		identity collection a_descriptives_hist dh,
+		collection a_descriptives d
+	set
+		:dh:a_increase_pct = condition((:dh:a_count > 1 or :d:a_act_average_interval > 1.8) and :dh:a_increase_pct > 0.001, :dh:a_increase_pct, null)
+	where
+		:d:a_ledger_number = :dh:a_ledger_number and
+		:d:a_fund = :dh:a_fund and
+		:d:p_donor_partner_key = :dh:p_donor_partner_key and
+		(:parameters:fund is null or :parameters:fund = :dh:a_fund) and
+		(:parameters:donor is null or :parameters:donor = :dh:p_donor_partner_key)
+	;
+-- Identify decreases in giving. A decrease is when the history entry has a smaller monthly
+	-- average than the immediately previous history entry that is not a one-time-extra gift. We
+	-- also require that the history entry and its predecessor both have at least two gifts,
+        -- unless the giving interval is greater than 7 (effectively yearly), in which case any
+        -- number of gifts for either produces useful results.
+	print 'Identifying decreases at ' + dateformat(getdate(), 'hh:mm:ss');
+	update
+		identity collection a_descriptives_hist dh
+	set
+		:dh:a_decrease_pct = condition(
+                            :dh:a_act_average_interval > 7 or (datediff(day, :dh:a_prev_end, :dh:a_first_gift) > 212 and :dh:a_count = 1),
+                            1.0 - convert(double, :dh:a_amount) / convert(double, isnull((select :dh2:a_amount from collection a_descriptives_hist dh2 where :dh2:a_ledger_number = :dh:a_ledger_number and :dh2:a_fund = :dh:a_fund and :dh2:p_donor_partner_key = :dh:p_donor_partner_key and (:dh2:a_is_extra is null) and :dh2:a_last_gift < :dh:a_first_gift order by :dh2:a_last_gift desc limit 1), :dh:a_amount)),
+                            condition(
+                                    :dh:a_count > 1,
+                                    1.0 - convert(double, :dh:a_amount) / condition(round(:dh:a_act_average_interval) < 1, 1, round(:dh:a_act_average_interval)) / convert(double, isnull((select convert(double, :dh2:a_amount) / condition(round(:dh2:a_act_average_interval) < 1, 1, round(:dh2:a_act_average_interval)) from collection a_descriptives_hist dh2 where :dh2:a_ledger_number = :dh:a_ledger_number and :dh2:a_fund = :dh:a_fund and :dh2:p_donor_partner_key = :dh:p_donor_partner_key and (:dh2:a_is_extra is null) and :dh2:a_last_gift < :dh:a_first_gift and :dh2:a_count > 1 order by :dh2:a_last_gift desc limit 1), :dh:a_amount / condition(round(:dh:a_act_average_interval) < 1, 1, round(:dh:a_act_average_interval)))),
+                                    null
+                                    )
+                            )
+	where
+		(:parameters:fund is null or :parameters:fund = :dh:a_fund) and
+		(:parameters:donor is null or :parameters:donor = :dh:p_donor_partner_key) and
+            (:dh:a_is_extra is null)
+	;
+	update
+		identity collection a_descriptives_hist dh
+	set
+		:dh:a_decrease_pct = condition(:dh:a_decrease_pct > 0.001, :dh:a_decrease_pct, null)
+	where
+		(:parameters:fund is null or :parameters:fund = :dh:a_fund) and
+		(:parameters:donor is null or :parameters:donor = :dh:p_donor_partner_key)
+	;
+	-- Propagate informational flags/data to the overall giving descriptives
+	print 'Setting informational flags at ' + dateformat(getdate(), 'hh:mm:ss');
+	update
+		identity collection a_descriptives d
+	set
+		:a_increase_pct = (select :dh:a_increase_pct from collection a_descriptives_hist dh where :dh:a_ledger_number = :d:a_ledger_number and :dh:a_fund = :d:a_fund and :dh:p_donor_partner_key = :d:p_donor_partner_key where :a_is_extra = 0 order by :a_last_gift desc limit 1),
+		:a_increase_date = (select condition(:dh:a_increase_pct is not null, :dh:a_first_gift, convert(datetime, null)) from collection a_descriptives_hist dh where :dh:a_ledger_number = :d:a_ledger_number and :dh:a_fund = :d:a_fund and :dh:p_donor_partner_key = :d:p_donor_partner_key where :a_is_extra = 0 order by :a_last_gift desc limit 1),
+		:a_decrease_pct = (select :dh:a_decrease_pct from collection a_descriptives_hist dh where :dh:a_ledger_number = :d:a_ledger_number and :dh:a_fund = :d:a_fund and :dh:p_donor_partner_key = :d:p_donor_partner_key where :a_is_extra = 0 order by :a_last_gift desc limit 1),
+		:a_decrease_date = (select condition(:dh:a_decrease_pct is not null, :dh:a_first_gift, convert(datetime, null)) from collection a_descriptives_hist dh where :dh:a_ledger_number = :d:a_ledger_number and :dh:a_fund = :d:a_fund and :dh:p_donor_partner_key = :d:p_donor_partner_key where :a_is_extra = 0 order by :a_last_gift desc limit 1),
+		:a_is_extra = (select max(:dh:a_is_extra) from collection a_descriptives_hist dh where :dh:a_ledger_number = :d:a_ledger_number and :dh:a_fund = :d:a_fund and :dh:p_donor_partner_key = :d:p_donor_partner_key order by :a_last_gift desc limit 3),
+            :a_is_approximate = (select max(:dh:a_is_approximate) from collection a_descriptives_hist dh where :dh:a_ledger_number = :d:a_ledger_number and :dh:a_fund = :d:a_fund and :dh:p_donor_partner_key = :d:p_donor_partner_key order by :a_last_gift desc limit 3)
+	where
+		(:parameters:fund is null or :parameters:fund = :d:a_fund) and
+		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
+	;
 
 	--- Clear out any old descriptives
 	print 'Clearing old DB descriptives at ' + dateformat(getdate(), 'hh:mm:ss');
