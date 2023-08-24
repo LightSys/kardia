@@ -72,7 +72,7 @@ update_descriptives_merge_adjacent "system/query"
                 next_start_dh1 = condition(first(isnull(:dh1:a_next_start, 'null')) = 'null', null, first(:dh1:a_next_start)),
                 first_dh1_gift = min(:dh1:a_first_gift),
                 last_dh1_gift = max(:dh1:a_last_gift),
-                ntl_dh1_gift = condition(first(:dh1:a_count) >=2, first(:dh1:a_ntl_gift), nth(:dh1:a_first_gift, 2)),
+                ntl_dh1_gift = condition(first(:dh1:a_count) >=2, first(:dh1:a_ntl_gift), nth(:dh1:a_last_gift, 2)),
                 merge_next = :dh2:a_merged_id
             from
                 collection a_descriptives_hist dh1,
@@ -95,7 +95,7 @@ update_descriptives_merge_adjacent "system/query"
                 :dh1:a_fund,
                 :dh1:a_hist_id
             ;
-
+            select :first_dh1_gift, :ntl_dh1_gift, :last_dh1_gift from collection tmp_merge_aggregates;
 	    -- Step Three: Merge dh1 into dh2, but only if it is safe
             --  Due to extra merges, it should always be safe. However,
             --  this is not guaranteed for exceptionally large data sets
