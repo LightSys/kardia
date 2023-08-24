@@ -74,7 +74,7 @@ update_descriptives_merge_approx "system/query"
                 amount = null,
                 first = min(:t1:first),
                 last = max(:t1:last),
-                ntl = null,
+                ntl = convert(datetime, null),
                 count = sum(:t1:count),
                 total = sum(:t1:total),
                 prev_end = condition(last(isnull(:t1:prev_end, 'null')) = 'null', null, last(:t1:prev_end)),
@@ -110,7 +110,13 @@ update_descriptives_merge_approx "system/query"
                 (:parameters:fund is null or :parameters:fund = :t:fund) and
 		(:parameters:donor is null or :parameters:donor = :t:donor)
             ;
-            
+            --select :p_donor_partner_key, :a_fund, :a_first_gift, :a_last_gift, :a_ntl_gift from collection a_descriptives_hist;
+
+
+        --select :giftdate from collection tmp_gift_items limit 100;
+        --select :donor, :fund,:ntl from collection tmp_aggregated_segments;
+        --print 'TESTED FIRST'
+        -------------------------error #1-----------------------------------
 	    -- Step Four: Merge
 	    update
 		identity collection a_descriptives_hist dh2,
@@ -119,7 +125,7 @@ update_descriptives_merge_approx "system/query"
                 :dh2:a_amount = :t:amount,
                 :dh2:a_first_gift = :t:first,
 		:dh2:a_last_gift = :t:last,
-                :dh2:a_ntl_gift = condition(:t:count > 1, :t:ntl, null),
+                :dh2:a_ntl_gift = condition(:t:count > 1, :t:ntl, convert(datetime, null)),
                 :dh2:a_count = :t:count,
 		:dh2:a_total = :t:total,
                 :dh2:a_is_approximate = condition(:t:merge_count > 1, 1, 0),
@@ -145,7 +151,9 @@ update_descriptives_merge_approx "system/query"
                 :t:donor = :dh2:p_donor_partner_key and
                 :t:merged_id = :dh2:a_hist_id
 	    ;
-
+        ---------------------------error #1--------------------------------------
+        
+        print ' TESTED SECOND'
 	    -- Step Five: Delete Merged
 	    delete
 		collection a_descriptives_hist dh1
