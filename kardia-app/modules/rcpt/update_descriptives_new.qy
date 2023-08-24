@@ -167,6 +167,7 @@ update_descriptives_new "system/query"
 	    select
 		a_ledger_number = :ledger,
 		p_donor_partner_key = :donor,
+		a_hist_id = row_number(),
 		a_fund = :fund,
 		a_hist_id = row_number(),
 		a_amount = :amount,
@@ -241,6 +242,7 @@ update_descriptives_new "system/query"
 		fund=:parameters:fund,
 		donor=:parameters:donor
 	    ;
+
         -- Merge in adjacent giving segments
 	print 'Merge adjacent at ' + dateformat(getdate(), 'hh:mm:ss');
 	exec /apps/kardia/modules/rcpt/update_descriptives_merge_adjacent.qy
@@ -612,14 +614,14 @@ update_descriptives_new "system/query"
 		(:parameters:donor is null or :parameters:donor = :dh:p_donor_partner_key)
 	;
 
-	-- For the past/current flag for the overall giving to a fund, we use the history entry
-	-- with the most recent gift in it, ignoring other history entries even if they seem to
-	-- still be current.
+	---- For the past/current flag for the overall giving to a fund, we use the history entry
+	---- with the most recent gift in it, ignoring other history entries even if they seem to
+	---- still be current.
 	update
 		identity collection a_descriptives d
 	set
-		:a_is_current = (select first(:dh:a_is_current) from collection a_descriptives_hist dh where :dh:a_ledger_number = :d:a_ledger_number and :dh:a_fund = :d:a_fund and :dh:p_donor_partner_key = :d:p_donor_partner_key order by :a_last_gift desc limit 1),
-		:a_lapsed_days = (select first(:dh:a_lapsed_days) from collection a_descriptives_hist dh where :dh:a_ledger_number = :d:a_ledger_number and :dh:a_fund = :d:a_fund and :dh:p_donor_partner_key = :d:p_donor_partner_key order by :a_last_gift desc limit 1)
+		:a_is_current = (select first(:dh:a_is_current) from collection a_descriptives_hist dh where :dh:a_ledger_number = :d:a_ledger_number and :dh:a_fund = :d:a_fund and :dh:p_donor_partner_key = :d:p_donor_partner_key order by :a_last_gift desc ),
+		:a_lapsed_days = (select first(:dh:a_lapsed_days) from collection a_descriptives_hist dh where :dh:a_ledger_number = :d:a_ledger_number and :dh:a_fund = :d:a_fund and :dh:p_donor_partner_key = :d:p_donor_partner_key order by :a_last_gift desc )
 	where
 		(:parameters:fund is null or :parameters:fund = :d:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
@@ -692,7 +694,6 @@ update_descriptives_new "system/query"
 		(:parameters:fund is null or :parameters:fund = :dh:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :dh:p_donor_partner_key)
 	;
-
 	-- Propagate informational flags/data to the overall giving descriptives
 	print 'Setting informational flags at ' + dateformat(getdate(), 'hh:mm:ss');
 	update
