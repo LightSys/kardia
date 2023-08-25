@@ -75,6 +75,8 @@ update_descriptives_merge_catchup_with_extra "system/query"
 		:dh2:p_donor_partner_key = :dh1:p_donor_partner_key and
 		:dh1:a_merged_id = :dh2:a_hist_id
             ;
+        print 'Start printing collection'
+        select :merged_id, :regular_id, :catchup_amount from collection tmp_intermediate_vals;
 
 	    -- Step Three: Merge
 	    update

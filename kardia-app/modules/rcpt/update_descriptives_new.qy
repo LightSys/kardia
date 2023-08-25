@@ -620,8 +620,8 @@ update_descriptives_new "system/query"
 	update
 		identity collection a_descriptives d
 	set
-		:a_is_current = (select first(:dh:a_is_current) from collection a_descriptives_hist dh where :dh:a_ledger_number = :d:a_ledger_number and :dh:a_fund = :d:a_fund and :dh:p_donor_partner_key = :d:p_donor_partner_key order by :a_last_gift desc ),
-		:a_lapsed_days = (select first(:dh:a_lapsed_days) from collection a_descriptives_hist dh where :dh:a_ledger_number = :d:a_ledger_number and :dh:a_fund = :d:a_fund and :dh:p_donor_partner_key = :d:p_donor_partner_key order by :a_last_gift desc )
+		:a_is_current = (select :dh:a_is_current from collection a_descriptives_hist dh where :dh:a_ledger_number = :d:a_ledger_number and :dh:a_fund = :d:a_fund and :dh:p_donor_partner_key = :d:p_donor_partner_key order by :a_last_gift desc limit 1),
+		:a_lapsed_days = (select :dh:a_lapsed_days from collection a_descriptives_hist dh where :dh:a_ledger_number = :d:a_ledger_number and :dh:a_fund = :d:a_fund and :dh:p_donor_partner_key = :d:p_donor_partner_key order by :a_last_gift desc limit 1)
 	where
 		(:parameters:fund is null or :parameters:fund = :d:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
