@@ -1,0 +1,33 @@
+$Version=2$
+egvapi "application/http"
+    {
+    // TODO: any params we end up needing will have to be usage="post"
+    // set this to be the login endpoint for now
+
+    // Auth Params (mostly defaults):
+    "VancoWS.Auth.RequestType" "http/parameter" {type="string"; source="none"; usage="post"; default="Login";}
+    // TODO: see if can get unique ID and recent date
+    "VancoWS.Auth.RequestID" "http/parameter" {type="string"; source="none"; usage="post"; default="12345";} 
+    "VancoWS.Auth.RequestTime" "http/parameter" {type="string"; source="none"; usage="post"; default="2007-04-15 14:10:13";} 
+    "VancoWS.Auth.Version" "http/parameter" {type="string"; source="none"; usage="post"; default="3";} 
+    
+    // Request Params (username and password)
+    // TODO: make username and pass from params, and read from a config
+                         MerchUserName "http/parameter" { type=string; source=param; usage=post; default=runserver( (select first(:a_config_value) from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'EGS_Username') ); }
+    "VancoWS.Request.RequestVars.UserID" "http/parameter" {type=string; source=none; usage=post; default=runserver( (select first(:a_config_value) from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'vanco_api_user') );} 
+    "VancoWS.Request.RequestVars.Password" "http/parameter" {type="string"; source="none"; usage="post"; default="<vanco_pass>";} 
+
+
+    // Connection information -- https://myvanco.vancopayments.com/cgi-bin/ws2.vps
+    // But for now lets do this -- https://lightsys.org/testpost.php
+    //server = "myvanco.vancopayments.com";
+    server = "lightsys.org";
+    //path = "/cgi-bin/ws2.vpsp";
+    path = "/testpost.php";
+    protocol = "https";
+    method = POST;
+    allowsubdirs = 0;
+    cache_max_ttl = 86400000;
+    cache_min_ttl = 3600000;
+    request_content_type =  "application/xml";
+    }
