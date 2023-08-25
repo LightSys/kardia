@@ -169,7 +169,6 @@ update_descriptives_new "system/query"
 		p_donor_partner_key = :donor,
 		a_hist_id = row_number(),
 		a_fund = :fund,
-		a_hist_id = row_number(),
 		a_amount = :amount,
 		a_first_gift = last(:giftdate),
 		a_last_gift = first(:giftdate),
@@ -205,15 +204,14 @@ update_descriptives_new "system/query"
 		:seg,
 		:giftdate desc
 	    ;
-		--select :p_donor_partner_key,:a_fund, :a_ntl_gift from collection a_descriptives_hist;	
-		--print 'BEFORE'
-	    update
+	
+	  update
 		collection a_descriptives_hist
-	    set 
-	    	:a_ntl_gift = null
-	   where 
-	   	:a_ntl_gift = convert(datetime, '1900-00-00 00:00:00')
-	   ;
+	  set 
+		:a_ntl_gift = null
+	  where 
+		:a_ntl_gift = convert(datetime, '1900-00-00 00:00:00')
+	  ;
 
 		--select :p_donor_partner_key,:a_fund, :a_ntl_gift from collection a_descriptives_hist;	
 		---print 'AFTER'
@@ -237,6 +235,8 @@ update_descriptives_new "system/query"
             -- and may need to be repeated more for larger data sets.
 
             -- Merge in 'catch up' giving
+		
+
 	    print 'Merge catch-up at ' + dateformat(getdate(), 'hh:mm:ss');
 	    exec /apps/kardia/modules/rcpt/update_descriptives_merge_catchup.qy
 		fund=:parameters:fund,
