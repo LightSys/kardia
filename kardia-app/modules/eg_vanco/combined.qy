@@ -1,0 +1,96 @@
+
+$Version=2$
+myquery "system/query"
+    {
+    start "query/parameter" { type=string; style=strnull; }
+    end "query/parameter" { type=string; style=strnull; }
+
+    sql = "
+            -- get the login info. Gets new session every time so there is no need to worry about expired keys
+	    DECLARE OBJECT vancoKey;
+	    -- only get new session if don't already have one
+	    SELECT 
+	        :vancoKey:value = :SessionID
+            FROM
+                /apps/kardia/modules/eg_vanco/egvapi_login.http 
+            ;
+            PRINT 'now: '+:vancoKey:value
+
+	    DECLARE COLLECTION dataQuery;
+	    -- get the fund histories
+	    INSERT 
+		COLLECTION dataQuery
+	    SELECT 
+		cx_path1=:__cx_path, *
+	    FROM 
+		SUBTREE EXPRESSION('/apps/kardia/modules/eg_vanco/egvapi_transFundHist.http?VancoWS.Auth.SessionID='
+		+:vancoKey:value+'&VancoWS.Request.RequestVars.FromDate=2020-08-30&VancoWS.Request.RequestVars.ToDate=2020-08-30')
+	    ;
+
+	print 'start'
+	    -- run a join to combine transactions and funds into one line per fund gift. Joins based on path
+	    DECLARE COLLECTION transactions;
+	    INSERT 
+		COLLECTION transactions
+	    SELECT
+		:t:cx_path1, 
+		:t:TransactionRef, :t:CustomerID, :t:CustomerRef,
+		:t:PaymentMethodRef, :t:ProcessDate, :t:SettlementDate, :t:DepositDate, :t:CCAuthDesc, :t:CCStatus, :t:Amount,  
+		:f:FundID, :f:FundName, :f:FundAmount, :f:FundNote, :t:Credit, :t:ReturnDate, :t:ReturnCode, :t:ReturnReason
+	    FROM
+		IDENTITY COLLECTION dataQuery t,
+		COLLECTION dataQuery f
+	    WHERE 
+	    	-- make sure to just allow transactions for t
+		substring(:t:cx_path1, 1, 33) = 'Response/Transactions/Transaction'
+		AND charindex('/', substring(:t:cx_path1, 34)) = 0
+		-- only allow funds for f
+		AND substring(:f:cx_path1, 1, 34) = 'Response/Transactions/Transaction|'
+		AND charindex('Funds/Fund', substring(:f:cx_path1, 35)) != 0
+		-- join based on the transaction path appearing in the fund path
+		AND charindex(:t:cx_path1, :f:cx_path1) != 0
+		AND substring(:f:cx_path1, (char_length(:t:cx_path1) + 1), 1) = '/'	
+	    ;
+	print 'done'
+--	select * from collection transactions;
+	    DECLARE COLLECTION custRefList SCOPE APPLICATION;
+	    INSERT
+		collection custRefList
+	    SELECT 
+		:CustomerRef
+	    FROM
+		COLLECTION transactions
+	    GROUP BY
+		:CustomerRef
+	    ;
+
+--	select nth(:CustomerRef, 10) from collection custRefList;
+--	SELECT cx_path1=:__cx_path, :CustomerAddr1, * FROM SUBTREE EXPRESSION('/apps/kardia/modules/eg_vanco/egvapi_custInfo.http?VancoWS.Auth.SessionID='+:vancoKey:value+'&VancoWS.Request.RequestVars.CustomerID=21191465');
+
+	print 'again'
+	    -- now get the info on the customers
+	    DECLARE COLLECTION customers;
+	    INSERT 
+	        COLLECTION customers
+	    SELECT 
+	        *
+	    FROM 
+	        SUBTREE PAGED EXPRESSION('/apps/kardia/modules/eg_vanco/egvapi_custInfo.http?VancoWS.Auth.SessionID='
+		+:vancoKey:value+'&VancoWS.Request.RequestVars.CustomerRef='+
+		(select nth(:crl:CustomerRef, :cu:cx__page) from collection custRefList crl)) cu
+	    WHERE 
+		:CustomerRef IS NOT NULL
+	     ;
+	print 'over'
+
+	select * from collection customers;
+	    -- clear out global collection
+	    DELETE FROM
+		COLLECTION custRefList
+	    ;
+
+	    -- finally, join all of the data together 
+	    
+            ";
+	
+    }
