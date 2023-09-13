@@ -1,7 +1,7 @@
 {
     "databaseChangeLog": [
         {
-            "preconditions": [
+            "preConditions": [
                 {
                     "onFail":"WARN",
                     "runningAs":{
@@ -16,8 +16,17 @@
         },
         {
             "include":{
-                "file":"liquibaseFiles\\currentChangeLog.json"
-
+                "file":"liquibaseFiles\\initChangeLog.json"
+            }
+        },
+        {
+            "include":{
+                "file":"liquibaseFiles\\2023-08-07_custom.json"
+            }
+        },
+        {
+            "include":{
+                "file":"liquibaseFiles\\2023-09-13.14.53.22ChangeLog.json"
             }
         }
     ]

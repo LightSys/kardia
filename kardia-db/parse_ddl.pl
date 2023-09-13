@@ -51,6 +51,7 @@ $path="/root/kardia/petradocs/tables";
 $clustered="cluster";
 #$uri="http://sourceforge.net/apps/mediawiki/kardia/index.php?title=kardia:NewTableList";
 $uri="https://www.codn.net/projects/kardia/wiki/index.php/Kardia:NewTableList";
+$renameUrl="https://www.codn.net/projects/kardia/wiki/index.php/Special:Log/move";
 
 #################################
 # The default file names we will use.
@@ -274,6 +275,15 @@ sub pull_off_web() {
             }
         }
     }
+
+    # now get the rename history
+    # TODO: put rename stuff HERE
+    #$flag=1;
+    #$p = SmartTokeParser->new( $url );
+    #while ($flag == 1 ) {
+	#stuffs
+
+    #}
 }
 
 
@@ -612,6 +622,48 @@ create table ra(
 	);
 ';
 }
+
+print JSON '
+  {
+    "changeSet": {
+      "id": "' . $jsonRun . '-' . $jsonID . '",
+      "author": "parse_ddl.pl (generated)",
+      "changes": [
+        {
+          "createTable": {
+            "columns": [
+              {
+                "column": {
+                  "constraints": {
+                    "nullable": false,
+                    "primaryKey": true
+                  },
+                  "name": "a",
+                  "type": "varchar(32)"
+                }
+              },
+              {
+                "column": {
+                  "name": "b",
+                  "type": "text"
+                }
+              },
+              {
+                "column": {
+                  "name": "c",
+                  "type": "text"
+                }
+              }
+            ],
+            "tableName": "ra"
+          }
+        }
+      ]
+    }
+  },
+';
+$jsonID++;
+
 print SQL_C "
 insert ra values('a_account','GL Accounts',':a_acct_desc')$cmd_terminator
 insert ra values('a_account_category','Control Categories',':a_acct_cat_desc')$cmd_terminator
@@ -622,6 +674,53 @@ insert ra values('a_period','Periods',':a_period_desc')$cmd_terminator
 insert ra values('m_list','Mailing Lists',':m_list_description')$cmd_terminator
 insert ra values('p_partner','Partners',':p_surname + \", \" + :p_given_name')$cmd_terminator
 ";
+# add the values in the json as well:
+# to avoid taking up too much space, insert values into arrays:
+my @aVals = ('a_account', 'a_account_category', 'a_batch', 'a_fund', 'a_fund_prefix', 'a_period', 'm_list', 'p_partner');
+my @bVals = ('GL Accounts', 'Control Categories', 'Batches', 'Funds', 'Fund Prefixes', 'Periods', 'Mailing Lists', 'Partners',);
+my @cVals = (':a_acct_desc', ':a_acct_cat_desc', ':a_batch_desc', ':a_fund_desc', ':a_fund_prefix_desc', ':a_period_desc', ':m_list_description', ':p_surname + ", " + :p_given_name');
+
+for(my $i = 0 ; $i < scalar @aVals ; $i++) { 		
+    print JSON '
+  {
+    "changeSet": {
+      "id": "' . $jsonRun . '-' . $jsonID . '",
+      "author": "parse_ddl.pl (generated)",
+      "changes": [
+        {
+          "insert": {
+            "columns": [
+              {
+                "column": {
+                  "name": "a",
+                  "value": "'.$aVals[i].'"
+                }
+              },
+              {
+                "column": {
+                  "name": "b",
+                  "value": "'.$bVals[i].'"
+                }
+              },
+              {
+                "column": {
+                  "name": "c",
+                  "type": "'.$cVals[i].'"
+                }
+              }
+            ],
+            "tableName": "ra"
+          }
+        }
+      ]
+    }
+  },
+';
+
+$jsonID++;
+}
+
+
 }
 
 sub make_sql_footer() {
@@ -1058,16 +1157,18 @@ sub print_table() {
 
     #################################
     # JSON header for this table
-    print JSON "    {\n";
+    print JSON "  {\n";
     print JSON "    \"changeSet\": {\n";
-    print JSON "    \"id\": \"$jsonRun-$jsonID\",\n";
+    print JSON "      \"id\": \"$jsonRun-$jsonID\",\n";
     $jsonID++; #increment the id for every table we print
-    print JSON "    \"author\": \"parse_ddl.pl\",\n";
-    print JSON "    \"tagDatabase\": { \"tag\": \"tag-$jsonRun-$jsonID\" } ,\n";
-    print JSON "    \"changes\": [\n";
+    print JSON "      \"author\": \"parse_ddl.pl\",\n";
+    print JSON "      \"tagDatabase\": { \"tag\": \"tag-$jsonRun-$jsonID\" } ,\n";
+    print JSON "      \"changes\": [\n";
     print JSON "        {\n";
-    print JSON "        \"createTable\": {\n";
+    print JSON "          \"createTable\": {\n";
     print JSON "            \"tableName\": \"$table\",\n";
+    # use the remarks feild to store the old table name
+    print JSON "            \"remarks\": \"$glob_table_rename{$table}\",\n" if($glob_table_rename{$table});
     print JSON "            \"columns\": [\n";
 
     foreach $field (keys(%{$glob_field{$table}})) { $num_fields++; }
@@ -1163,7 +1264,12 @@ sub print_table() {
 
             foreach $pkColumn (@indexArray) {
                 if ($pkColumn eq $jsonName) {
-                    $jsonConstraint="\"primaryKey\": true";
+                    if($jsonConstraint eq ""){
+			 $jsonConstraint ="\"primaryKey\": true";
+		    }
+		    else{
+			$jsonConstraint ="$jsonConstraint,\n                    \"primaryKey\": true";
+		    }
                     break;
                 }
             }
@@ -1171,40 +1277,40 @@ sub print_table() {
 	    }
 
         print JSON ",\n" if ($count_num != 1);
-	    print JSON "        {\n";
-	    print JSON "            \"column\": {\n";
+	    print JSON "              {\n";
+	    print JSON "                \"column\": {\n";
         if ($default ne "") {
             if ($jsonType eq "integer" or $jsonType eq "int" or index($jsonType, "decimal") != -1) {
                 # default value is float or int
-                print JSON "                \"defaultValueNumeric\": $default,\n";
+                print JSON "                  \"defaultValueNumeric\": $default,\n";
             } elsif ($jsonType eq "bit") {
                 # default value is boolean
-                print JSON "                \"defaultValueBoolean\": false,\n" if ($default == 0);
-                print JSON "                \"defaultValueBoolean\": true,\n" if ($default == 1);
+                print JSON "                  \"defaultValueBoolean\": false,\n" if ($default == 0);
+                print JSON "                  \"defaultValueBoolean\": true,\n" if ($default == 1);
             } elsif (index($jsonType, "char") != -1) {
                 # default value is a char array or varchar array
                 my @defaultArray = split("'", $default);
                 my $charDefault = @defaultArray[1];
-                print JSON "                \"defaultValue\": \"${charDefault}\",\n";
+                print JSON "                  \"defaultValue\": \"${charDefault}\",\n";
             } else {
-                print "Default value found to be added to JSON, but not numeric, boolean or char array!";
-                print "Default value: ${default}";
+                print "Default value found to be added to JSON, but not numeric, boolean or char array!\n";
+                print "Default value: ${default}, Default type: ${jsonType}\n";
             }
         }
-	    print JSON "                \"name\": \"$jsonName\",\n";
-	    print JSON "                \"type\": \"$jsonType\"";
+	    print JSON "                  \"name\": \"$jsonName\",\n";
+	    print JSON "                  \"type\": \"$jsonType\"";
 	    if($jsonConstraint ne ""){
 		print JSON ",\n";
-		print JSON "                \"constraints\": {\n";
-		print JSON "        $jsonConstraint\n";
-		print JSON "                }\n";
+		print JSON "                  \"constraints\": {\n";
+		print JSON "                    $jsonConstraint\n";
+		print JSON "                  }\n";
 	    }
 	    else
 	    {
 		print JSON "\n";
 	    }
-	    print JSON "            }\n";
-	    print JSON "            }";
+	    print JSON "                }\n";
+	    print JSON "              }";
 
 
             print SQL_C "$string\n";
@@ -1221,22 +1327,19 @@ sub print_table() {
     }
     #End the JSON table
     print JSON "\n"; #to go after the last }.  We either put a comma there, or this \n
-    print JSON "        ]}\n";
+    print JSON "            ]\n";
+    print JSON "          }\n";
     print JSON "        }\n";
-    print JSON "        ]\n";
+    print JSON "      ]\n";
     print JSON "    }\n";
-    print JSON "    }\n";
-
-
-    printIndices($table);
-
+    print JSON "  }";
 
     #end the wiki table
     print WIKI "|}\n";
 
     my $count=0;
     my $pkcount=0;
-    my $primarykey="";
+    my @primarykey=();
     my $thisisunique="";
     print WIKI "==Keys==\n";
     foreach $index (sort { $glob_index_order{$table}{$a} <=> $glob_index_order{$table}{$b} }(keys(%{$glob_indexes{$table}}))) {
@@ -1252,11 +1355,25 @@ sub print_table() {
 	}
     }
     foreach $index (sort { $glob_index_order{$table}{$a} <=> $glob_index_order{$table}{$b} }(keys(%{$glob_indexes{$table}}))) {
-        #print "comparing $primarykey and $glob_indexes{$table}{$index}\n";
-        if ($primarykey ne "" and  $glob_indexes{$table}{$index} =~ /$primarykey/) {
-            $thisisunique="yes";    
+        #print "comparing ", join("|", @primaryKey), " and $glob_indexes{$table}{$index}\n";
+        # check if the index contains the full primary key. If does, add unique tag so DB can optimize it
+        if(@primaryKey > 0){
+            # parse index
+            $containsPK = 1;
+            $indexStr = $glob_indexes{$table}{$index};
+            foreach $pk (@primaryKey){
+                if(!($indexStr =~ /\b$pk\b/)){
+                    $containsPK = 0;
+                    last;
+                }
+            }
+            if ($containsPK) {
+                $thisisunique="yes";
+            } else {
+                $thisisunique="no";
+            }
         } else {
-            $thisisunique="no";    
+            $thisisunique="no";
         }
         #print "  thisisunique $thisisunique\n";
         if ($index =~ /_pk/) {
@@ -1282,9 +1399,10 @@ sub print_table() {
 		print KEY_D "\tdrop primary key$cmd_terminator";
 	    }
             print WIKI "* primary key: $indexsp $glob_indexes{$table}{$index}\n"; 
-            $primarykey=$glob_indexes{$table}{$index};
-            $primarykey=~s/\(//g;
-            $primarykey=~s/\)//g;
+            $tempPK = $glob_indexes{$table}{$index};
+            $tempPK=~s/\(//g;
+            $tempPK=~s/\)//g;
+	    @primaryKey = split(/, */, $tempPK); # can be with or without a space
             $pkcount++;
             $thisisunique="no";    #this would make a duplicate below
         }
@@ -1333,35 +1451,11 @@ sub print_table() {
     }
     print SQL_C "\n)$cmd_terminator";
     print WIKI "==Indexes==\n";
+
     my $count=0;
-    foreach $index (sort (keys(%{$glob_indexes{$table}}))) {
-        print INX_C "\n\n/* $table */\n" if ($count ==0);
-        print INX_D "\n\n/* $table */\n" if ($count ==0);
-        #print "$table index $index equals $glob_indexes{$table}{$index}\n";
-        my $idx_type="";
-        #$idx_type="foreign key" if ($index=~ /_fk/); 
-        $idx_type="unique" if ($index=~ /_uk/); 
-        #$idx_type="primary key" if ($index=~ /_pk/); 
-        if ($glob_clustered{$table} eq $index and $glob_backend eq "sybase") {
-            $idx_type = "$idx_type clustered";
-        }
-        if ($index =~ /_pk$/ or $index =~ /_uk$/ or $glob_clustered{$table} eq $index) {
-            print INX_C "/* create $idx_type index $index on $table $glob_indexes{$table}{$index}";
-            print INX_C "*/ \n/* go */\n";
-            print INX_D "/* drop index $table.$index */ \n/* go */\n";
-        } else {
-            print INX_C "create $idx_type index $index on $table $glob_indexes{$table}{$index}$cmd_terminator";
-	    if ($glob_backend eq "sybase") {
-		print INX_D "drop index $table.$index$cmd_terminator";
-	    } else {
-		print INX_D "alter table $table drop index $index$cmd_terminator";
-	    }
-            print WIKI "* $index ";
-            print WIKI "($idx_type) " if ($idx_type ne "");
-            print WIKI "on $table $glob_indexes{$table}{$index}\n";
-        }
-        $count++;
-    }
+
+    printIndices($table);
+    
     $count=0;
     print WIKI "==References==\n";
     foreach $key_name (sort (keys(%{$glob_keys{$table}}))){
@@ -1457,7 +1551,7 @@ sub processdeps(){
 	$total = scalar(@tables_to_process);
         foreach $table (sort(@tables_to_process))  {
         print "processing table $table for SQL\n";
-	    print JSON "    ,\n" if ($count > 0); #comma between records
+	    print JSON ",\n" if ($count > 0); #comma between records
                 &print_table($table);
 		$count++;
         }
@@ -1466,30 +1560,101 @@ sub processdeps(){
 sub printIndices(){
 
     my ($table) = (@_);
-    my $jsonType = "";
-    my $default = "";
+    my $count = 0;
+    my $isClustered = 0;
+    my @pkColumns=();
+    
+    # find the primary keys
+    foreach $index (keys(%{$glob_indexes{$table}})) {
+        if($index =~ /_pk$/){
+            $tempPK = $glob_indexes{$table}{$index};
+            $tempPK=~s/\(//g;
+            $tempPK=~s/\)//g;
+            @pkColumns = split(/, */, $tempPK); # can be with or without a space
+	    last;
+        }
+    }
 
     my @indexes = keys(%{$glob_indexes{$table}});
+    foreach $index (sort (keys(%{$glob_indexes{$table}}))) {
+	print INX_C "\n\n/* $table */\n" if ($count ==0);
+        print INX_D "\n\n/* $table */\n" if ($count ==0);
+	my $idx_type="";
+	$idx_type="unique" if ($index=~ /_uk/);
+	if ($glob_clustered{$table} eq $index and $glob_backend eq "sybase") {
+            $idx_type = "$idx_type clustered";
+	    $isClustered = 1;
+        }
 
-    foreach $index (keys(%{$glob_indexes{$table}})) {
-        if(!($index =~ /_pk/)) { 
+        if($index =~ /_pk$/ or $index =~ /_uk$/) {
+	    print INX_C "/* create $idx_type index $index on $table $glob_indexes{$table}{$index}";
+	    print INX_C "*/ \n/* go */\n";
+	    print INX_D "/* drop index $table.$index */ \n/* go */\n";
+	    # leave out json; it does not support comments
+	} else {
+            $isUnique = 0; # set to true if it is unique
+            if(@pkColumns > 0){
+                # parse index
+                $isUnique = 1;
+                $indexStr = $glob_indexes{$table}{$index};
+                foreach $pk (@pkColumns){
+                    if(!($indexStr =~ /\b$pk\b/)){
+                        $isUnique = 0;
+                        last;
+                    }
+                }
+                if($isUnique){
+                    # if it was unique, make sure the key size isn't too big
+                    # scan through columns from index. If has a VARCHAR bigger than 256, then don't mark as unique.
+                    # remove parens from indexStr
+                    $indexStr =~s/\(//g;
+                    $indexStr =~s/\)//g;
+                    foreach $column (split(/, */, $indexStr)) {
+                        my $type=$glob_field{$table}{$column}{type};
+                        if ($type eq "") {
+                            print "ERROR: column $column in index $index from table $table had no type\n";
+			    exit;
+                        } elsif($type =~ /(char|CHAR|Char)\((\d+)\)/){
+			    # get just the number
+			    $stringSize = $2;
+			    if($stringSize > 256){
+				$isUnique = 0;
+				last;
+			    }
+			}
+                    }
+                }
+                
+            }
+	    
+	    # print sql 
+	    print INX_C "create $idx_type index $index on $table $glob_indexes{$table}{$index}$cmd_terminator";
+	    if ($glob_backend eq "sybase") {
+		print INX_D "drop index $table.$index$cmd_terminator";
+	    } else {
+		print INX_D "alter table $table drop index $index$cmd_terminator";
+	    }
+            print WIKI "* $index ";
+            print WIKI "($idx_type) " if ($idx_type ne "");
+            print WIKI "on $table $glob_indexes{$table}{$index}\n";
 
             #################################
             # JSON header for this index
             print JSON ",\n";
-            print JSON "    {\n";
+            print JSON "  {\n";
             print JSON "    \"changeSet\": {\n";
-            print JSON "    \"id\": \"$jsonRun-$jsonID\",\n";
+            print JSON "      \"id\": \"$jsonRun-$jsonID\",\n";
             $jsonID++; #increment the id for every table we print
-            print JSON "    \"author\": \"parse_ddl.pl\",\n";
-            print JSON "    \"tagDatabase\": { \"tag\": \"tag-$jsonRun-$jsonID\" } ,\n";
-            print JSON "    \"changes\": [\n";
+            print JSON "      \"author\": \"parse_ddl.pl\",\n";
+            print JSON "      \"tagDatabase\": { \"tag\": \"tag-$jsonRun-$jsonID\" } ,\n";
+            print JSON "      \"changes\": [\n";
             print JSON "        {\n";
-            print JSON "        \"createIndex\": {\n";
+            print JSON "          \"createIndex\": {\n";
             print JSON "            \"tableName\": \"$table\",\n";
             print JSON "            \"indexName\": \"$index\",\n";
+	    print JSON "            \"unique\":true,\n" if($isUnique); 
+	    print JSON "            \"clustered\": true,\n" if($isClustered);
             print JSON "            \"columns\": [\n";
-
 
             my $columns = substr($glob_indexes{$table}{$index}, 1, -1);
             my @columnList = split(",", $columns);
@@ -1497,54 +1662,11 @@ sub printIndices(){
             sub  trim { my $s = shift; $s =~ s/^\s+|\s+$//g; return $s };
             foreach $indexColumn (@columnList) {
                 my $trimmedIndex = trim($indexColumn);
-                print JSON "                {\n";
-                print JSON "                    \"column\":{\n";
-                print JSON "                        \"name\":\"$trimmedIndex\"";
-
-                foreach $field (keys(%{$glob_field{$table}})) {
-                    # Go through each field in the table, find the correct column, check if there's a default value
-                    if ($field eq $trimmedIndex) {
-                        $default=$glob_field{$table}{$field}{default};
-                        $jsonType=$glob_field{$table}{$field}{type};
-                        break;
-                    }
-                }
-                my $string="";
-                $string = "        $field$tabstop$type";
-                $string = " $null" if ($null ne "");
-                $default =~ s/default//i;
-                $default =~ s/^ *//;
-                $default =~ s/ *$//;
-                if ($default ne "" ) {
-                    if ( $default =~ / / or $default=~ /\>|\*|Posted|level|Gift|UNKNOWN|Local|Warning|P|All/i) {
-                        $string = "$string  default \"$default\"";
-                    } else { 
-                        $string = "$string  default $default";
-                    }
-                }
-                if ($default ne "") {
-                    if ($jsonType eq "integer" or $jsonType eq "int" or index($jsonType, "decimal") != -1) {
-                        # default value is float or int
-                        print JSON ",\n                \"defaultValueNumeric\": $default\n";
-                    } elsif ($jsonType eq "bit") {
-                        # default value is boolean
-                        print JSON ",\n                \"defaultValueBoolean\": false\n" if ($default == 0);
-                        print JSON ",\n                \"defaultValueBoolean\": true\n" if ($default == 1);
-                    } elsif (index($jsonType, "char") != -1) {
-                        # default value is a char array or varchar array
-                        my @defaultArray = split("'", $default);
-                        my $charDefault = @defaultArray[1];
-                        print JSON ",\n                \"defaultValue\": \"${charDefault}\"\n";
-                    } else {
-                        print "Default value found to be added to JSON, but not numeric, boolean or char array!\n";
-                        print "Default value: ${default}\n";
-                    }
-                } else {
-                    print JSON "\n"
-                }
-
-                print JSON "                    }\n";
-                print JSON "                }";
+                print JSON "              {\n";
+                print JSON "                \"column\":{\n";
+                print JSON "                  \"name\":\"$trimmedIndex\"\n";
+                print JSON "                }\n";
+                print JSON "              }";
                 if ($length > 1) {
                     print JSON ",";
                 }
@@ -1552,9 +1674,10 @@ sub printIndices(){
                 $length = $length - 1;
             }
 
-            print JSON "            ]\n}\n}\n]\n}\n}";
+            print JSON "            ]\n          }\n        }\n      ]\n    }\n  }";
             
         }
+	$count++;
     }
 }
 
@@ -1790,6 +1913,9 @@ foreach $a (split /[,\s]+/,$userlist) {
 print SEC_C "grant select on ra to public$cmd_terminator";
 print SEC_D "revoke select on ra to public$cmd_terminator";
 
+#Start the JSON file
+print JSON "{ \"databaseChangeLog\": [\n";
+
 #print the "create database" stuff
 make_sql_header();
 #print notices to ignore page zise warnings
@@ -1799,8 +1925,7 @@ if ($glob_backend eq "sybase") {
     print REF_C "print \"Ignore any 'Warning: Row size (X bytes) could exceed row size limit...' errors\"\n";
 }
 
-#Start the JSON file
-print JSON "{ \"databaseChangeLog\": [\n";
+
 
 
 #SQL_C "use kardia" is in make_SQL_header
@@ -1821,6 +1946,36 @@ print SQL_D "drop table ra$cmd_terminator";
 if ($#ARGV == -1) {
 print "Processing everything\n";
 my $count=0;
+
+    # get data on how tables were renamed
+    my $req = RequestAgent -> new (keep_alive => 1);
+    my $renameData = $req->get($renameUrl);
+    my @lines;
+    if ($renameData->is_success) {
+        @lines=split /\n/,$renameData->content;  # or whatever
+    }
+    else {
+        die $response->status_line;
+    }
+    %glob_table_rename;
+    # runs newest to oldest. Limit to 50 past renames; likley far more than needed, and prevents creating a massive hashmap
+    my $renames = 0;
+    foreach $line (@lines) {
+        # only care about the old and new names of the tables; ignore the rest of the lines
+        if ($line =~ /moved page <a.*>Kardia:NewTables ([a-z\ ]+)<\/a> to <a.*>Kardia:NewTables ([a-z\ ]+)<\/a>/) {
+            my $old = $1;
+            my $new = $2;
+            # change from spaces to _
+            $old =~ s/ /_/g;
+            $new =~ s/ /_/g;
+            # make sure can identify renamed tables later
+            $glob_table_rename{$new} = $old; 
+            print "$old to $new\n";
+	    $renames++;
+	    if($renames >= 50){last;}
+        }
+    }
+
     #Now we process every table
     foreach $table (keys( %glob_field)) {
         print "Table: $table\n";
@@ -1830,7 +1985,7 @@ my $count=0;
             print WIKI "* [[Kardia:NewTables_$table| $table]]\n";    
         }
         foreach $table (sort { $glob_table_order{$a} <=> $glob_table_order{$b} } (keys (%glob_field)))  {
-	     print JSON "        ,\n" if ($count > 0); #comma between records
+	     print JSON ",\n" if ($count > 0); #comma between records
 	     $count++;
             &print_table($table);
         }
@@ -1839,7 +1994,7 @@ my $count=0;
             print WIKI "* [[Kardia:Tables_$table| $table]]\n";    
         }
         foreach $table (sort(keys (%glob_field)))  {
-	     print JSON "        ,\n" if ($count > 0); #comma between records
+	     print JSON ",\n" if ($count > 0); #comma between records
 	     $count++;
             &print_table($table);
         }
