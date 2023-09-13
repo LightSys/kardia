@@ -1560,8 +1560,6 @@ sub processdeps(){
 sub printIndices(){
 
     my ($table) = (@_);
-    my $jsonType = "";
-    my $default = "";
     my $count = 0;
     my $isClustered = 0;
     my @pkColumns=();
@@ -1666,51 +1664,7 @@ sub printIndices(){
                 my $trimmedIndex = trim($indexColumn);
                 print JSON "              {\n";
                 print JSON "                \"column\":{\n";
-                print JSON "                  \"name\":\"$trimmedIndex\"";
-
-                foreach $field (keys(%{$glob_field{$table}})) {
-                    # Go through each field in the table, find the correct column, check if there's a default value
-                    if ($field eq $trimmedIndex) {
-                        $default=$glob_field{$table}{$field}{default};
-                        $jsonType=$glob_field{$table}{$field}{type};
-                        break;
-                    }
-                }
-                my $string="";
-                $string = "        $field$tabstop$type";
-                $string = " $null" if ($null ne "");
-                $default =~ s/default//i;
-                $default =~ s/^ *//;
-                $default =~ s/ *$//;
-                if ($default ne "" ) {
-                    if ( $default =~ / / or $default=~ /\>|\*|Posted|level|Gift|UNKNOWN|Local|Warning|P|All/i) {
-                        $string = "$string  default \"$default\"";
-                    } else { 
-                        $string = "$string  default $default";
-                    }
-                }
-		# it is unclear why index can have a default value, but currentChangelog can have thm so must include. 
-                if ($default ne "") {
-                    if ($jsonType eq "integer" or $jsonType eq "int" or index($jsonType, "decimal") != -1) {
-                        # default value is float or int
-                        print JSON ",\n                  \"defaultValueNumeric\": $default\n";
-                    } elsif ($jsonType eq "bit") {
-                        # default value is boolean
-                        print JSON ",\n                  \"defaultValueBoolean\": false\n" if ($default == 0);
-                        print JSON ",\n                  \"defaultValueBoolean\": true\n" if ($default == 1);
-                    } elsif (index($jsonType, "char") != -1) {
-                        # default value is a char array or varchar array
-                        my @defaultArray = split("'", $default);
-                        my $charDefault = @defaultArray[1];
-                        print JSON ",\n                  \"defaultValue\": \"${charDefault}\"\n";
-                    } else {
-                        print "Default value found to be added to JSON, but not numeric, boolean or char array!\n";
-                        print "Default value: ${default}, Default type: ${jsonType}\n";
-                    }
-                } else {
-                    print JSON "\n"
-                }
-
+                print JSON "                  \"name\":\"$trimmedIndex\"\n";
                 print JSON "                }\n";
                 print JSON "              }";
                 if ($length > 1) {
