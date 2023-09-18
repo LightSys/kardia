@@ -6,21 +6,15 @@ update_descriptives_merge_catchup "system/query"
 
     sql = " declare collection tmp_gift_items scope application;
     
-	    -- Merge in 'catch up' giving.  dh1 is the larger catch up amount, and dh2 is
-	    -- the regular giving.
-
+	    -- Merge in 'catch up' giving.  
+	    -- dh1 is the larger catch up amount, and dh2 is the regular giving.
+	    
 	    -- Step One: Locate
-	    --print 'donghwanHwang'
-
-	    --select * from collection a_descriptives_hist;	
-		select :p_donor_partner_key,:a_fund, :a_ntl_gift from collection a_descriptives_hist;	
-		print 'BEFORE'
 	    update
+		-- identity refers to the collection that is going to be updated
 		identity collection a_descriptives_hist dh1,
 		collection a_descriptives_hist dh2
 	    set
-		--:a_merged_id = 999999
-		--:a_merged_id = :dh2:a_hist_id
 		:a_merged_id = isnull(:dh2:a_merged_id, :dh2:a_hist_id)
 	    where
 		(:parameters:fund is null or :parameters:fund = :dh2:a_fund) and
@@ -28,7 +22,7 @@ update_descriptives_merge_catchup "system/query"
 		:dh2:a_ledger_number = :dh1:a_ledger_number and
 		:dh2:a_fund = :dh1:a_fund and
 		:dh2:p_donor_partner_key = :dh1:p_donor_partner_key and
-		:dh1:a_amount <= 8 * :dh2:a_amount and -- catchup more than regular within reason
+		:dh1:a_amount <= 8 * :dh2:a_amount and -- catchup more than regular within reason, arbitrary number for analysis
 		(:dh1:a_amount / :dh2:a_amount) = round(:dh1:a_amount / :dh2:a_amount, 0) and -- even multiple of regular
 		round(:dh2:a_act_average_interval) <= round(isnull(:dh1:a_act_average_interval, 100)) and -- regular is more often than catchup
 		:dh2:a_count > :dh1:a_count and -- regular has more gifts than catchup
@@ -40,12 +34,8 @@ update_descriptives_merge_catchup "system/query"
                  --checks that the average giving stays similar after the merge would occur
 		(:dh1:a_total + :dh2:a_total - :dh2:a_amount) / round(datediff(day, condition(:dh1:a_first_gift < :dh2:a_first_gift, :dh1:a_first_gift, :dh2:a_first_gift), condition(:dh1:a_last_gift > :dh2:a_last_gift, :dh1:a_last_gift, :dh2:a_last_gift)) / 30.5) > 0.85 * isnull(:dh2:a_act_average_amount, :dh2:a_amount) and
        		(:dh1:a_total + :dh2:a_total - :dh2:a_amount) / round(datediff(day, condition(:dh1:a_first_gift < :dh2:a_first_gift, :dh1:a_first_gift, :dh2:a_first_gift), condition(:dh1:a_last_gift > :dh2:a_last_gift, :dh1:a_last_gift, :dh2:a_last_gift)) / 30.5) < 1.15 * isnull(:dh2:a_act_average_amount, :dh2:a_amount)
-	    ;
-	    print 'MERGE CATHCUOPCAHTCOUO'
-	    select :p_donor_partner_key, :a_fund, :a_hist_id, :a_merged_id  from collection a_descriptives_hist; 
-	    	
+	    ;	    	
 
-	    print 'FULLY TESTED'
 	    -- Step Two: Merge
 	    update
 		identity collection a_descriptives_hist dh2,

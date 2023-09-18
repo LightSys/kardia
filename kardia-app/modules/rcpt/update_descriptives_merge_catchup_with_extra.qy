@@ -40,7 +40,8 @@ update_descriptives_merge_catchup_with_extra "system/query"
                 --      how much is a part of regular giving
                 (:dh1:a_total + :dh2:a_total - :dh2:a_amount) / round(datediff(day, condition(:dh1:a_first_gift < :dh2:a_first_gift, :dh1:a_first_gift, :dh2:a_first_gift), condition(:dh1:a_last_gift > :dh2:a_last_gift, :dh1:a_last_gift, :dh2:a_last_gift)) / 30.5) > 0.85 * (condition(:dh1:a_count > :dh2:a_count, isnull(:dh1:a_act_average_amount, :dh1:a_amount), isnull(:dh2:a_act_average_amount, :dh2:a_amount))) and
                 (:dh1:a_total + :dh2:a_total - :dh2:a_amount) / round(datediff(day, condition(:dh1:a_first_gift < :dh2:a_first_gift, :dh1:a_first_gift, :dh2:a_first_gift), condition(:dh1:a_last_gift > :dh2:a_last_gift, :dh1:a_last_gift, :dh2:a_last_gift)) / 30.5) < 3.00 * (condition(:dh1:a_count > :dh2:a_count, isnull(:dh1:a_act_average_amount, :dh1:a_amount), isnull(:dh2:a_act_average_amount, :dh2:a_amount))) and
-                (select count(1) from collection tmp_gift_items where :donor = :dh1:p_donor_partner_key and :ledger = :dh1:a_ledger_number and :fund = :dh1:a_fund and :giftdate > dateadd(day, convert(integer, round(-0.5 * 30.5 * :dh2:a_act_average_interval)), :dh1:a_first_gift) and :giftdate < dateadd(day, convert(integer, round(.5 * 30.5 * :dh2:a_act_average_interval)), :dh1:a_first_gift)) = 1 --and -- only 1 gift within +/- half an interval
+                (select count(1) from collection tmp_gift_items where :donor = :dh1:p_donor_partner_key and :ledger = :dh1:a_ledger_number and :fund = :dh1:a_fund and :giftdate > dateadd(day, convert(integer, round(-0.5 * 30.5 * :dh2:a_act_average_interval)), :dh1:a_first_gift) and :giftdate < dateadd(day, convert(integer, round(.5 * 30.5 * :dh2:a_act_average_interval)), :dh1:a_first_gift)) = 1
+                -- check if only 1 gift within +/- half an interval of extra giving 
 		--((:dh1:a_amount / :dh2:a_amount) != round(:dh1:a_amount / :dh2:a_amount, 0) or :dh1:a_hist_id != 1) -- first history value could be a pay-in-advance gift
 	    ;
 
@@ -53,12 +54,17 @@ update_descriptives_merge_catchup_with_extra "system/query"
                 donor = :dh1:p_donor_partner_key,
                 merged_id = :dh1:a_hist_id,
                 regular_id = :dh2:a_hist_id,
+                --this catchup_amount logic is not fully functional.
+                --It either needs improvement on the logic or needs different method to check for catchup_amount inside extra giving.
+                --changing "<=" in front of "truncate(:dh1:a_amount / :dh2:a_amount))" to ">=" in order to improve the logic, merges few more rows.
+                --However, some interval values shifts greatly after changing the condition
+                -- needs more analysis on the datasets to improve the logic
 
-                -- The interval shift is to compensate for merging into a giving pattern
-                -- that is monthly, but due to a short timespan, the giving interval deviates
-                -- greatly from the more appropriate value (See sample donor 100400)
-                -- This also ensures that the catchup_amount won't cause a segment to go negative
+                --if the extra gift contain bigger or equal to gift amount expected in the time interval,
+                --it is considered catch_up gift and truncated as an catchup gift. 
+                --Else, if it is false, it is given a value of 0.
                 catchup_amount = condition(round((datediff(day, condition(:dh1:a_first_gift < :dh2:a_first_gift, :dh1:a_first_gift, :dh1:a_prev_end), condition(:dh1:a_first_gift < :dh2:a_first_gift, :dh1:a_next_start, :dh1:a_first_gift)) / 30.5) / ((round(:dh2:a_act_average_interval) + :dh2:a_act_average_interval) / 2) <= truncate(:dh1:a_amount / :dh2:a_amount)), round((datediff(day, condition(:dh1:a_first_gift < :dh2:a_first_gift, :dh1:a_first_gift, :dh1:a_prev_end), condition(:dh1:a_first_gift < :dh2:a_first_gift, :dh1:a_next_start, :dh1:a_first_gift)) / 30.5) / ((round(:dh2:a_act_average_interval) + :dh2:a_act_average_interval) / 2) <= truncate(:dh1:a_amount / :dh2:a_amount)), truncate(:dh1:a_amount / :dh2:a_amount)) * :dh2:a_amount,
+                --use this condition to filter catchup gift from extra giving to update the count for regular giving
                 count = condition(
                         catchup_amount = :dh1:a_amount,
                         :dh1:a_count,
@@ -75,8 +81,6 @@ update_descriptives_merge_catchup_with_extra "system/query"
 		:dh2:p_donor_partner_key = :dh1:p_donor_partner_key and
 		:dh1:a_merged_id = :dh2:a_hist_id
             ;
-        --print 'Start printing collection'
-        --select :merged_id, :regular_id, :catchup_amount from collection tmp_intermediate_vals;
 
 	    -- Step Three: Merge
 	    update
@@ -137,6 +141,7 @@ update_descriptives_merge_catchup_with_extra "system/query"
                 :dh1:a_amount = :dh1:a_amount - :t:catchup_amount,
                 :dh1:a_merged_id = null,
                 :dh1:a_is_extra = 1
+        --extra giving that has been merged already
 	    where
 		(:parameters:fund is null or :parameters:fund = :dh1:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :dh1:p_donor_partner_key) and
@@ -154,6 +159,7 @@ update_descriptives_merge_catchup_with_extra "system/query"
 		(:parameters:fund is null or :parameters:fund = :dh1:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :dh1:p_donor_partner_key) and
 		:dh1:a_is_extra and
+        --same as a_is_extra =2
                 :dh1:a_amount = 0
 	    ";
     }
