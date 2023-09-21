@@ -25,4 +25,6 @@ egvapi "application/http"
     cache_max_ttl = 86400000;
     cache_min_ttl = 3600000;
     request_content_type =  "application/xml";
+    expected_content_charset = "iso-8859-1";
+    override_content_charset = "true";
     }

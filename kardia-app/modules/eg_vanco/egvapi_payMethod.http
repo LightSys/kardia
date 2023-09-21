@@ -2,7 +2,7 @@ $Version=2$
 egvapi "application/http"
     {
     // Auth Params (mostly defaults):
-    "VancoWS.Auth.RequestType" "http/parameter" {type=string; source=none; usage=post; default="EFTTransactionFundHistory";}
+    "VancoWS.Auth.RequestType" "http/parameter" {type=string; source=none; usage=post; default="EFTGetPaymentMethod";}
     //Note: the ID is only hashed to provide a semi-unique value. It is not crucial for it to be totally unique, nor does it need to be secure
     "VancoWS.Auth.RequestID" "http/parameter" {type="string"; source="none"; usage="post"; default=runserver( (hash("md5", convert("string", getdate()))) );} 
     "VancoWS.Auth.RequestTime" "http/parameter" {type="string"; source="none"; usage="post"; default= runserver( (convert("string", getdate())) );} 
@@ -10,10 +10,8 @@ egvapi "application/http"
     "VancoWS.Auth.Version" "http/parameter" {type="string"; source="none"; usage="post"; default="2";} 
     
     // Request Params
-    // TODO: make this default to the current day's date if none is specified (that is the same as leaving out the tag)
-    "VancoWS.Request.RequestVars.FromDate"   "http/parameter" {type=string; source=param; usage=post;} 
-    "VancoWS.Request.RequestVars.ToDate" "http/parameter" {type=string; source=param; usage=post;} 
-    // TODO: have this default 
+    "VancoWS.Request.RequestVars.CustomerRef" "http/parameter" {type=string; source=param; usage=post;} 
+    "VancoWS.Request.RequestVars.PaymentMethodRef" "http/parameter" {type=string; source=param; usage=post;} 
     "VancoWS.Request.RequestVars.ClientID" "http/parameter" {type=string; source=none; usage=post; default=runserver( (select first(:a_config_value) from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'vanco_api_client') );} 
 
     // Connection information -- https://myvanco.vancopayments.com/cgi-bin/ws2.vps
@@ -25,7 +23,6 @@ egvapi "application/http"
     cache_max_ttl = 86400000;
     cache_min_ttl = 3600000;
     request_content_type =  "application/xml";
-    // the vanco api incorrectly reports it's character set. Make sure it gets overwritten
     expected_content_charset = "iso-8859-1";
     override_content_charset = "true";
     }
