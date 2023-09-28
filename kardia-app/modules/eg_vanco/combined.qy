@@ -22,7 +22,7 @@ myquery "system/query"
 		cx_path1=:__cx_path, *
 	    FROM 
 		SUBTREE EXPRESSION('/apps/kardia/modules/eg_vanco/egvapi_transFundHist.http?VancoWS.Auth.SessionID='
-		+:vancoKey:value+'&VancoWS.Request.RequestVars.FromDate=2020-08-30&VancoWS.Request.RequestVars.ToDate=2020-08-30')
+		+:vancoKey:value+'&VancoWS.Request.RequestVars.FromDate=2023-09-16&VancoWS.Request.RequestVars.ToDate=2023-09-24')
 	    ;
 
 	    -- run a join to combine transactions and funds into one line per fund gift. Joins based on path
@@ -48,108 +48,139 @@ myquery "system/query"
 		AND charindex(:t:cx_path1, :f:cx_path1) != 0
 		AND substring(:f:cx_path1, (char_length(:t:cx_path1) + 1), 1) = '/'	
 	    ;
-	    Select * from collection transactions;
---
---	    DECLARE COLLECTION custRefList SCOPE APPLICATION;
---	    INSERT
---		collection custRefList
---	    SELECT 
---		:CustomerRef
---	    FROM
---		COLLECTION transactions
---	    GROUP BY
---		:CustomerRef
---	    ;
---select * from collection custRefList group by :CustomerRef;
-	    -- now get the info on the customers
--- FIXME: This often creates duplicates
---	    DECLARE COLLECTION customers;
---
---	    INSERT 
---	        COLLECTION customers
---
---	    SELECT 
---	        *
---	    FROM 
---	        SUBTREE PAGED EXPRESSION('/apps/kardia/modules/eg_vanco/egvapi_custInfo.http?VancoWS.Auth.SessionID='
---		+:vancoKey:value+'&VancoWS.Request.RequestVars.CustomerRef='+
---		(select nth(:crl:CustomerRef, :cu:cx__page) from collection custRefList crl)) cu
---	    WHERE 
---		:CustomerRef IS NOT NULL
---	    ;
---select * from collection customers order by CustomerRef;
 
---print 'start'
--- FIXME: has the same repeating problem as the user info...
---	    DECLARE COLLECTION payMethods;
---	    INSERT 
---	        COLLECTION payMethods
---	    SELECT 
---	        :pm:CustomerRef, :pm:PaymentMethodRef, :pm:AccountType, :pm:CardType, :pm:AccountNumber, :pm:ErrorDescription
---	    FROM 
---	        SUBTREE PAGED EXPRESSION('/apps/kardia/modules/eg_vanco/egvapi_payMethod.http?VancoWS.Auth.SessionID='
---		+:vancoKey:value+'&VancoWS.Request.RequestVars.CustomerRef='+
---		(select nth(:crl:CustomerRef, :pm:cx__page) from collection custRefList crl)) pm
---	    WHERE 
---		:CustomerRef IS NOT NULL OR :ErrorDescription IS NOT NULL
---	     ;
---select :CustomerRef, :PaymentMethodRef, :ErrorDescription from collection payMethods;
---print 'finish'
---select :__cx_path, :CustomerRef, :PaymentMethodRef, :AccountType, :CardType, :AccountNumber, :ErrorDescription from collection payMethods;
+--Select query = 'trans', t_transRef = :TransactionRef, t_custRef = :CustomerRef, t_payRef = :PaymentMethodRef, c_custRef = null,
+-- p_custRef = null, p_payRef = null from COLLECTION transactions;
+
+	    DECLARE COLLECTION custRefList SCOPE APPLICATION;
+	    INSERT
+		collection custRefList
+	    SELECT 
+		:CustomerRef
+	    FROM
+		COLLECTION transactions
+	    GROUP BY
+		:CustomerRef
+	    ;
+
+	    -- now get the info on the customers
+	    DECLARE COLLECTION customers;
+	    INSERT 
+	        COLLECTION customers
+	    SELECT 
+	        *
+	    FROM 
+	        SUBTREE PAGED EXPRESSION('/apps/kardia/modules/eg_vanco/egvapi_custInfo.http?VancoWS.Auth.SessionID='
+		+:vancoKey:value+'&VancoWS.Request.RequestVars.CustomerRef='+
+		(select nth(:crl:CustomerRef, :cu:cx__page) from collection custRefList crl)) cu
+	    WHERE 
+		:CustomerRef IS NOT NULL
+	    ;
+
+--Select query = 'cust', t_transRef = null, t_custRef = :CustomerRef, t_payRef = null, c_custRef = :CustomerRef,
+-- p_custRef = null, p_payRef = null from COLLECTION customers;
+
+
+print 'start'
+	    DECLARE COLLECTION payMethods;
+	    INSERT 
+	        COLLECTION payMethods
+	    SELECT 
+	        :pm:CustomerRef, :pm:PaymentMethodRef, :pm:AccountType, :pm:CardType, :pm:AccountNumber, :pm:ErrorDescription
+	    FROM 
+	        SUBTREE PAGED EXPRESSION('/apps/kardia/modules/eg_vanco/egvapi_payMethod.http?VancoWS.Auth.SessionID='
+		+:vancoKey:value+'&VancoWS.Request.RequestVars.CustomerRef='+
+		(select nth(:crl:CustomerRef, :pm:cx__page) from collection custRefList crl)) pm
+	    WHERE 
+		:CustomerRef IS NOT NULL OR :ErrorDescription IS NOT NULL
+	     ;
+
+--Select query = 'pay', t_transRef = null, t_custRef = null, t_payRef = null, c_custRef = null,
+-- p_custRef = :CustomerRef, p_payRef = :PaymentMethodRef from COLLECTION payMethods;
+
+print 'finish'
 
 	    -- clear out global collections; no longer needed
---	    DELETE FROM
---		COLLECTION custRefList
---	    ;
+	    DELETE FROM
+		COLLECTION custRefList
+	    ;
 
---print 'before'
---	    -- finally, join all of the data together 
---	    SELECT
---		:t:CustomerRef,
---		:c:CustRef,
---		:p:CustomerRef,
---		:t:TransactionRef,
---		:p:TransactionRef
---		i_eg_desig_uuid = :t:FundID,
---		i_eg_trx_uuid = :t:TransactionRef,
---		i_eg_donor_uuid = :t:CustomerID,  -- CustomerID can be absent if the XML parse fails on the fund name
---		i_eg_account_uuid = :t:PaymentMethodRef, -- FIXME: cannot stay NULL
---		i_eg_donor_alt_id = :t:CustomerRef,
---		i_eg_status = condition((:t:CCStatus == 'P' AND char_length(:t:ReturnCode) <= 0), 'paid', condition((:t:CCStatus == 'P'), 
---			'returned', condition((char_length(:t:CCStatus) <= 0), 'paid', 'FIXME:ERROR'))), -- if null, was not credit card. Assume paid
---		i_eg_returned_status = :t:retunredCode, -- TODO: maybe written out reason...? It may get trunc though; only 16 chars
---		i_eg_donor_name = :c:CustomerName, -- of the form 'LNAME, FNAME?(and FNAME) ?(MI)'
---		i_eg_donor_surname = substring(:c:CustomerName, 1, charindex(',', :c:CustomerName) - 1),
---		i_eg_donor_middle_name = condition(charindex(' ', reverse(:c:CustomerName)) == 2, substring(reverse(:c:CustomerName), 1, 1), NULL),
---		i_eg_donor_given_name =  condition(charindex(' ', reverse(:c:CustomerName)) == 2, 
---			substring(:c:CustomerName, charindex(',', :c:CustomerName) + 2, char_length(:c:CustomerName) - charindex(',', :c:CustomerName) - 3), 
---			substring(:c:CustomerName, charindex(',', :c:CustomerName) + 2)),
---		i_eg_donor_addr1 = :c:CustomerAddr1,
---		i_eg_donor_addr2 = :c:CustomerAddr2,
---		i_eg_donor_city = :c:CustomerCity,
---		i_eg_donor_state = :c:CustomerState,
---		i_eg_donor_postal = :c:CustomerZip,
---		i_eg_donor_country = :c:CustomerCountry,
---		i_eg_donor_phone = :c:CustomerPhone,
---		i_eg_donor_email = :c:CustomerEmail,
---		i_eg_gift_amount = :t:FundAmount,
---		i_eg_gift_pmt_type = 'translate:'+:p:AccountType,
---		i_eg_gift_lastfour = substring(:AccountNumber, char_length(:AccountNumber) - 4),
---		-- TODO: figure out what all of the other dates mean
---		i_eg_gift_settlement_date = :t:SettlementDate,
---		i_eg_desig_name = :t:FundName,
---		i_eg_desig_notes = :t:FundNote,
---		i_eg_deposit_date = :t:DepositDate,
---		i_eg_deposit_gross_amt = :t:Amount
---		-- TODO: find out how to handle deposit amount v. gross deposit amount
---	    FROM
---		IDENTITY COLLECTION transactions t,
---		COLLECTION customers c,
---		COLLECTION payMethods p
---	    WHERE
---		:t:CustomerRef = :c:CustomerRef --AND :t:CustomerRef *= :p:CustomerRef AND :t:PaymentMethodRef *= :p:PaymentMethodRef
---	    ;
---print 'after'
+print 'before'
+	    -- finally, join all of the data together 
+	    SELECT
+--query = 'full',
+		-- debug values
+		t_transRef = :t:TransactionRef,
+		t_custRef = :t:CustomerRef,
+		c_custRef = :c:CustomerRef,
+		p_custRef = :p:CustomerRef,
+		t_payRef = :t:PaymentMethodRef,
+		p_payRef = :p:PaymentMethodRef,
+		-- actual values
+		i_eg_gift_uuid = NULL, -- TODO: need to generate one or something...? Myabe <transaction>-<index>?
+		i_eg_desig_uuid = :t:FundID,
+		i_eg_trx_uuid = :t:TransactionRef,
+		i_eg_donor_uuid = :t:CustomerID,  -- CustomerID can be absent if the XML parse fails on the fund name
+		i_eg_donor_alt_id = :t:CustomerRef,
+		ie_g_account_uuid = :t:PaymentMethodRef, -- FIXME: This is for one payment method associated with a donor; maybe wants something more generic...?
+		i_eg_status = condition((:t:CCStatus == 'P' AND char_length(:t:ReturnCode) <= 0), 'paid', condition((:t:CCStatus == 'P'), 
+			'returned', condition((char_length(:t:CCStatus) <= 0), 'paid', 'FIXME:ERROR'))), -- if null, was not credit card. Assume paid
+		i_eg_returned_status = :t:retunredCode, -- TODO: maybe written out reason...? It may get trunc though; only 16 chars
+		i_eg_donor_name = :c:CustomerName, -- of the form 'LNAME, FNAME(and FNAME)?( MI)?'
+		i_eg_donor_surname = substring(:c:CustomerName, 1, charindex(',', :c:CustomerName) - 1),
+		i_eg_donor_middle_name = condition(charindex(' ', reverse(:c:CustomerName)) == 2, substring(reverse(:c:CustomerName), 1, 1), NULL),
+		i_eg_donor_given_name =  condition(charindex(' ', reverse(:c:CustomerName)) == 2, 
+			substring(:c:CustomerName, charindex(',', :c:CustomerName) + 2, char_length(:c:CustomerName) - charindex(',', :c:CustomerName) - 3), 
+			substring(:c:CustomerName, charindex(',', :c:CustomerName) + 2)),
+		i_eg_donor_addr1 = :c:CustomerAddr1,
+		i_eg_donor_addr2 = :c:CustomerAddr2,
+		i_eg_donor_city = :c:CustomerCity,
+		i_eg_donor_state = :c:CustomerState,
+		i_eg_donor_postal = :c:CustomerZip,
+		i_eg_donor_country = :c:CustomerCountry,
+		i_eg_donor_phone = :c:CustomerPhone,
+		i_eg_donor_email = :c:CustomerEmail,
+		i_eg_gift_amount = :t:FundAmount,
+		i_eg_gift_pmt_type = condition(:p:AccountType == 'C' OR :p:AccountType == 'S', 'ACH', condition(upper(:p:CardType) == 'VISA', 'Visa',
+					condition(upper(:p:CardType) == 'MASTERCARD', 'MasterCard',
+					condition(upper(:p:CardType) == 'AMERICAN EXPRESS', 'Amex',
+					condition(upper(:p:CardType) == 'DISCOVER', 'Discover',
+					:p:CardType
+					))))),
+		i_eg_gift_interval = NULL, -- TODO: find out how to set this
+		-- TODO: figure out what all of the other dates mean
+		i_eg_gift_date = NULL, -- ProcessDate, ReturnDate?
+		i_eg_gift_trx_date = NULL,
+		i_eg_gift_settlement_date = :t:SettlementDate, 
+		i_eg_gift_lastfour = substring(:p:AccountNumber, char_length(:p:AccountNumber) - 3),
+		i_eg_gift_currency = 'USD',
+		i_eg_receipt_desired = NULL,
+		i_eg_anonymous = NULL,
+		i_eg_prayforme = NULL,
+		i_eg_desig_name = :t:FundName,
+		i_eg_desig_notes = :t:FundNote,
+		i_eg_net_amount = NULL, -- FIXME: is the price after fees, need to calculate?
+		i_eg_deposit_date = :t:DepositDate,
+		i_eg_deposit_status = NULL, -- status of what...?
+		i_eg_deposit_uuid = NULL,
+		i_eg_deposit_gross_amt = :t:Amount,
+		-- TODO: find out how to handle deposit amount v. gross deposit amount
+		i_eg_deposit_amt = NULL,
+		i_eg_donormap_future = NULL,
+		i_eg_fundmap_future = NULL,
+		i_eg_acctmap_future = NULL,
+		s_date_created = getdate(), -- FIXME: these functions don't work here...?
+		s_created_by = user_name(),
+		s_date_modified = getdate(),
+		s_modified_by = user_name()
+	    FROM
+		IDENTITY COLLECTION transactions t,
+		COLLECTION customers c,
+		COLLECTION payMethods p
+	    WHERE
+		:t:CustomerRef = :c:CustomerRef AND :t:CustomerRef *= :p:CustomerRef AND :t:PaymentMethodRef *= :p:PaymentMethodRef
+	    ;
+print 'after'
             ";
 	
     }
