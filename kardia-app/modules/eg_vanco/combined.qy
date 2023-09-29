@@ -22,7 +22,7 @@ myquery "system/query"
 		cx_path1=:__cx_path, *
 	    FROM 
 		SUBTREE EXPRESSION('/apps/kardia/modules/eg_vanco/egvapi_transFundHist.http?VancoWS.Auth.SessionID='
-		+:vancoKey:value+'&VancoWS.Request.RequestVars.FromDate=2023-09-16&VancoWS.Request.RequestVars.ToDate=2023-09-24')
+		+:vancoKey:value+'&VancoWS.Request.RequestVars.FromDate=2023-09-24&VancoWS.Request.RequestVars.ToDate=2023-09-24')
 	    ;
 
 	    -- run a join to combine transactions and funds into one line per fund gift. Joins based on path
@@ -30,10 +30,12 @@ myquery "system/query"
 	    INSERT 
 		COLLECTION transactions
 	    SELECT
+	    -- TODO: add back in the fees
 		:t:cx_path1, 
-		:t:TransactionRef, :t:CustomerID, :t:CustomerRef,
-		:t:PaymentMethodRef, :t:ProcessDate, :t:SettlementDate, :t:DepositDate, :t:CCAuthDesc, :t:CCStatus, :t:Amount,  
-		:f:FundID, :f:FundName, :f:FundAmount, :f:FundNote, :t:Credit, :t:ReturnDate, :t:ReturnCode, :t:ReturnReason
+		:t:TransactionRef, :t:CustomerID, :t:CustomerRef, :t:PaymentMethodRef, :t:ProcessDate, :t:SettlementDate,
+		:t:DepositDate, :t:CCAuthDesc, :t:CCStatus, :t:Amount, :t:TransactionFee, :f:FundID, :f:FundName, :f:FundAmount, 
+		:f:FundTransactionFee, :f:FundNote, :t:Credit, :t:ReturnDate, :t:ReturnCode, 
+		:t:ReturnReason
 	    FROM
 		IDENTITY COLLECTION dataQuery t,
 		COLLECTION dataQuery f
@@ -117,15 +119,15 @@ print 'before'
 		t_payRef = :t:PaymentMethodRef,
 		p_payRef = :p:PaymentMethodRef,
 		-- actual values
-		i_eg_gift_uuid = NULL, -- TODO: need to generate one or something...? Myabe <transaction>-<index>?
+		i_eg_gift_uuid = NULL, -- TODO: if reacurring, use that ID. Otherwise, set to transaction uuid
 		i_eg_desig_uuid = :t:FundID,
 		i_eg_trx_uuid = :t:TransactionRef,
 		i_eg_donor_uuid = :t:CustomerID,  -- CustomerID can be absent if the XML parse fails on the fund name
 		i_eg_donor_alt_id = :t:CustomerRef,
 		ie_g_account_uuid = :t:PaymentMethodRef, -- FIXME: This is for one payment method associated with a donor; maybe wants something more generic...?
 		i_eg_status = condition((:t:CCStatus == 'P' AND char_length(:t:ReturnCode) <= 0), 'paid', condition((:t:CCStatus == 'P'), 
-			'returned', condition((char_length(:t:CCStatus) <= 0), 'paid', 'FIXME:ERROR'))), -- if null, was not credit card. Assume paid
-		i_eg_returned_status = :t:retunredCode, -- TODO: maybe written out reason...? It may get trunc though; only 16 chars
+			'returned', condition((char_length(:t:CCStatus) <= 0), 'paid', 'returned'))), -- if null, was not credit card. Assume paid
+		i_eg_returned_status = condition(:t:CCStatus == 'E', 'Error processing transaction', condition(:t:CCStatus == 'F', 'Failed processing transaction', :t:retunredCode)),
 		i_eg_donor_name = :c:CustomerName, -- of the form 'LNAME, FNAME(and FNAME)?( MI)?'
 		i_eg_donor_surname = substring(:c:CustomerName, 1, charindex(',', :c:CustomerName) - 1),
 		i_eg_donor_middle_name = condition(charindex(' ', reverse(:c:CustomerName)) == 2, substring(reverse(:c:CustomerName), 1, 1), NULL),
@@ -141,6 +143,11 @@ print 'before'
 		i_eg_donor_phone = :c:CustomerPhone,
 		i_eg_donor_email = :c:CustomerEmail,
 		i_eg_gift_amount = :t:FundAmount,
+		i_eg_net_amount =  convert('double', :t:FundAmount) - convert('double', :t:FundTransactionFee), -- FIXME: the gft after fees
+		TEST_fundFee = :t:FundTransactionFee,
+		i_eg_deposit_gross_amt = :t:Amount,
+		i_eg_deposit_amt = convert('double', :t:Amount) - convert('double', :t:TransactionFee), -- FIXME: I assume this the net on teh full transaction
+		TEST_TranFee = :t:TransactionFee,
 		i_eg_gift_pmt_type = condition(:p:AccountType == 'C' OR :p:AccountType == 'S', 'ACH', condition(upper(:p:CardType) == 'VISA', 'Visa',
 					condition(upper(:p:CardType) == 'MASTERCARD', 'MasterCard',
 					condition(upper(:p:CardType) == 'AMERICAN EXPRESS', 'Amex',
@@ -149,8 +156,8 @@ print 'before'
 					))))),
 		i_eg_gift_interval = NULL, -- TODO: find out how to set this
 		-- TODO: figure out what all of the other dates mean
-		i_eg_gift_date = NULL, -- ProcessDate, ReturnDate?
-		i_eg_gift_trx_date = NULL,
+		i_eg_gift_date = :t:ProcessDate, -- TODO: if can get date a recurring gift was set up, use that instead
+		i_eg_gift_trx_date = :t:ProcessDate,
 		i_eg_gift_settlement_date = :t:SettlementDate, 
 		i_eg_gift_lastfour = substring(:p:AccountNumber, char_length(:p:AccountNumber) - 3),
 		i_eg_gift_currency = 'USD',
@@ -159,16 +166,13 @@ print 'before'
 		i_eg_prayforme = NULL,
 		i_eg_desig_name = :t:FundName,
 		i_eg_desig_notes = :t:FundNote,
-		i_eg_net_amount = NULL, -- FIXME: is the price after fees, need to calculate?
 		i_eg_deposit_date = :t:DepositDate,
 		i_eg_deposit_status = NULL, -- status of what...?
-		i_eg_deposit_uuid = NULL,
-		i_eg_deposit_gross_amt = :t:Amount,
+		i_eg_deposit_uuid = replace(:t:DepositDate, '-', NULL),
 		-- TODO: find out how to handle deposit amount v. gross deposit amount
-		i_eg_deposit_amt = NULL,
-		i_eg_donormap_future = NULL,
-		i_eg_fundmap_future = NULL,
-		i_eg_acctmap_future = NULL,
+		i_eg_donormap_future = 1, -- NOTE: the three futures can assume 1. Only set otherwise if a reason
+		i_eg_fundmap_future = 1,
+		i_eg_acctmap_future = 1,
 		s_date_created = getdate(), -- FIXME: these functions don't work here...?
 		s_created_by = user_name(),
 		s_date_modified = getdate(),

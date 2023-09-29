@@ -1,0 +1,102 @@
+$Version=2$
+plugin_base_config_ss "widget/component-decl"
+    {
+    width=828;
+    height=490;
+    title = "Vanco Payments";
+    description = "Configure electronic giving integration with Vanco's online giving service, so that donations can be easily imported into the Kardia receipting and finance system";
+    sequence = 1002;
+
+    vbox "widget/vbox"
+	{
+	x=0; y=0;
+	width=828; height=490;
+	spacing=7;
+
+	ledger_lbl "widget/label" { height=16; style=bold; text="Accounting Ledger Selection:"; }
+
+	ledger_osrc "widget/osrc"
+	    {
+	    sql = "select :name, label=:a_ledger_number + ' - ' + :a_ledger_desc, :a_ledger_number from /apps/kardia/data/Kardia_DB/a_ledger/rows";
+
+	    ledger_dd "widget/dropdown"
+		{
+		height=24; width=300;
+		mode=objectsource;
+		fieldname=label;
+		numdisplay=12;
+		}
+	    }
+
+	sep1 "widget/autolayoutspacer" { height=1; }
+
+	config_lbl "widget/label" { height=16; style=bold; text="Vanco Integration Configuration:"; }
+
+	config_osrc "widget/osrc"
+	    {
+	    a_ledger_number "widget/parameter" { type=string; }
+	    sql = "select * from object expression('/apps/kardia/modules/gl/accounting_config.qyp/' + :parameters:a_ledger_number)";
+
+	    config_link "widget/rule"
+		{
+		ruletype=osrc_relationship;
+		target=ledger_osrc;
+		key_1=a_ledger_number;
+		target_key_1=a_ledger_number;
+		}
+
+	    config_form "widget/form"
+		{
+		allow_query=no;
+
+		vp_label_0 "widget/label" { height=15; text="Select this checkbox to allow Kardia to import data from Vanco Payments using Kardia's Gift Import tool."; }
+		vp_enab "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="GiftImport_SS"; text="Enabled:"; ctl_type=checkbox; enab_hints "widget/hints" { style=notnull; } }
+
+		vp_label_1 "widget/label" { height=30; text="The Hostname, API ID, API Secret, and API Client are values that need to be obtained from Vanco. TODO: helpful hints on how to get/find these."; }
+		vp_host "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="VP_Site"; text="Hostname:"; width=500; ctl_type=editbox; }
+		vp_id "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="VP_Username"; text="API ID:"; width=300; ctl_type=editbox; }
+		vp_secret "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="VP_Secret"; text="API Secret:"; width=500; ctl_type=editbox; }
+		vp_client "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="VP_Client"; text="API Client ID:"; width=500; ctl_type=editbox; }
+		vp_label_2 "widget/label" { height=60; text="The Lookback controls how many days back Kardia looks at when it connects to SiteStacker to examine the online giving data for new and changed gift information.  Set this to at least a day longer than the number of days between gift imports. Be careful not to set the lookback to too long; the process will be slowed, and if more than 1000 transactions are found the api will refuse to send anything."; }
+
+		lb_settle_hbox "widget/hbox"
+		    {
+		    height=24; spacing=10;
+		    ss_lookback "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="VP_Lookback"; text="Lookback:"; width=200; ctl_type=editbox; }
+		    ss_settle "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="VP_MinSettlement"; text="Settlement (FIXME:  I dont think I need this?):"; width=200; ctl_type=editbox; }
+		    }
+
+		vp_label_3 "widget/label" { height=30; text="Import Filters: here you can control what gateway and currency data is imported into Kardia.  If this is left blank, transactions for all gateways and currencies will be imported, otherwise only those in the comma-separated lists below will be imported."; }
+		vp_procs "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="VP_Gateways"; text="Gateways:"; width=500; ctl_type=editbox; }
+		vp_currs "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="VP_Currencies"; text="Currencies:"; width=500; ctl_type=editbox; }
+
+		}
+	    }
+
+	ctls_hbox "widget/hbox"
+	    {
+	    height=24;
+	    align=center;
+	    spacing=10;
+
+	    save_btn "widget/textbutton"
+		{
+		height=24; width=130;
+		text = "Save";
+		enabled=runclient(:config_form:is_savable);
+
+		on_save "widget/connector" { event=Click; target=config_form; action=Save; }
+		}
+
+	    cancel_btn "widget/textbutton"
+		{
+		height=24; width=130;
+		text = "Cancel";
+		enabled=runclient(:config_form:is_discardable);
+
+		on_cancel "widget/connector" { event=Click; target=config_form; action=Discard; }
+		}
+	    }
+	}
+    }
+
