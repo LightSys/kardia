@@ -10,12 +10,24 @@ gift_entry "widget/component-decl"
     receipts_rpt "widget/parameter" { type=string; default=runserver(isnull( (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :this:ledger and :a_config_name = 'RcptReport'), "/apps/kardia/modules/rcpt/receipt_batch.rpt")); deploy_to_client=yes; }
     acks_rpt "widget/parameter" { type=string; default=runserver(isnull( (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :this:ledger and :a_config_name = 'RcptAckReport'), "/apps/kardia/modules/rcpt/receipt_batch.rpt")); deploy_to_client=yes; }
     nc_rpt "widget/parameter" { type=string; default=runserver(isnull( (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :this:ledger and :a_config_name = 'RcptNCReport'), "/apps/kardia/modules/rcpt/receipt_batch.rpt")); deploy_to_client=yes; }
-    use_scanner "widget/parameter" { type=integer; default=runserver(convert(integer, isnull( (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :this:ledger and :a_config_name = 'RcptEnabScanner'), "0"))); deploy_to_client=yes; }
+    use_scanner "widget/parameter" { type=integer; default=runserver(convert(integer, isnull( (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :this:ledger and :a_config_name = 'RcptEnabScanner'), "0")) and not :this:by_donor); deploy_to_client=yes; }
 
-    last_ckno "widget/variable" { type=string; }
-    last_pkey "widget/variable" { type=string; }
-    last_hash "widget/variable" { type=string; }
-    last_file "widget/variable" { type=string; }
+    last_ckno "widget/variable" { type=string; }    // Last check # scanned
+    last_pkey "widget/variable" { type=string; }    // Last donor partner key scanned
+    last_akey "widget/variable" { type=string; }    // Last acknowledgement partner key scanned
+    last_hash "widget/variable" { type=string; }    // Last acct/routing hash scanned
+    last_mighash "widget/variable" { type=string; }    // Last acct/routing migration hash scanned (for multiple donor lookup only)
+    last_file "widget/variable" { type=string; }    // Last check image filename scanned
+
+    canceled_last "widget/variable" { type=string; value=""; }
+
+    last_scanner "widget/variable" { type=string; value='Check Scanner'; }
+
+    doing_copy "widget/variable" { type=integer; value=0; }
+    doing_new_pledge "widget/variable" { type=integer; value=0; }
+    doing_automark "widget/variable" { type=integer; value=0; }
+
+    image_reason "widget/variable" { type=string; default=""; }
 
     LoadSidebar "widget/component-decl-action" { }
 
@@ -38,10 +50,19 @@ gift_entry "widget/component-decl"
 	ledger=runclient(:ledger:value);
 	}
 
+    ForgetScan "widget/component-decl-action" { }
+    on_forget_scan_1 "widget/connector" { event=ForgetScan; target=last_ckno; action=SetValue; Value=runclient(null); }
+    on_forget_scan_2 "widget/connector" { event=ForgetScan; target=last_pkey; action=SetValue; Value=runclient(null); }
+    on_forget_scan_3 "widget/connector" { event=ForgetScan; target=last_akey; action=SetValue; Value=runclient(null); }
+    on_forget_scan_4 "widget/connector" { event=ForgetScan; target=last_hash; action=SetValue; Value=runclient(null); }
+    on_forget_scan_5 "widget/connector" { event=ForgetScan; target=last_mighash; action=SetValue; Value=runclient(null); }
+    on_forget_scan_6 "widget/connector" { event=ForgetScan; target=last_file; action=SetValue; Value=runclient(null); }
+
+    // CTRL+n for Copy Gift selection from the Giving History list
     control_num_key_1 "widget/connector"
 	{
 	event=KeyDown;
-	event_condition=runclient(:Code >= 49 and :Code <= 57 and :Ctrl and (:Code - 48) >= :hist_osrc:cx__first_id and (:Code - 48) <= :hist_osrc:cx__last_id);
+	event_condition=runclient(:Code >= 49 and :Code <= 57 and :Ctrl and (:Code - 48) >= :hist_osrc:cx__first_id and (:Code - 48) <= :hist_osrc:cx__last_id and not :popover_matching_donors:is_visible);
 	target=hist_osrc;
 	action=FindObject;
 	ID=runclient(:Code - 48);
@@ -49,19 +70,47 @@ gift_entry "widget/component-decl"
     control_num_key_2 "widget/connector"
 	{
 	event=KeyDown;
-	event_condition=runclient(:Code >= 49 and :Code <= 57 and :Ctrl and (:Code - 48) >= :hist_osrc:cx__first_id and (:Code - 48) <= :hist_osrc:cx__last_id);
+	event_condition=runclient(:Code >= 49 and :Code <= 57 and :Ctrl and (:Code - 48) >= :hist_osrc:cx__first_id and (:Code - 48) <= :hist_osrc:cx__last_id and not :popover_matching_donors:is_visible);
 	target=hist_table;
 	action=ShowSelection;
 	}
     control_num_key_3 "widget/connector"
 	{
 	event=KeyDown;
-	event_condition=runclient(:Code >= 49 and :Code <= 57 and :Ctrl and (:Code - 48) >= :hist_osrc:cx__first_id and (:Code - 48) <= :hist_osrc:cx__last_id);
-	event_cancel=runclient(:Code >= 49 and :Code <= 57 and :Ctrl and (:Code - 48) >= :hist_osrc:cx__first_id and (:Code - 48) <= :hist_osrc:cx__last_id);
+	event_condition=runclient(:Code >= 49 and :Code <= 57 and :Ctrl and (:Code - 48) >= :hist_osrc:cx__first_id and (:Code - 48) <= :hist_osrc:cx__last_id and not :popover_matching_donors:is_visible);
+	event_cancel=runclient(:Code >= 49 and :Code <= 57 and :Ctrl and (:Code - 48) >= :hist_osrc:cx__first_id and (:Code - 48) <= :hist_osrc:cx__last_id and not :popover_matching_donors:is_visible);
 	target=copy_rcpt;
 	action=Click;
 	}
-    altn "widget/connector"
+
+    // CTRL+n for Donor selection from the scan account matching donors list
+    control_num_key_dnr_1 "widget/connector"
+	{
+	event=KeyDown;
+	event_condition=runclient(:Code >= 49 and :Code <= 57 and :Ctrl and (:Code - 48) >= :pmd_osrc:cx__first_id and (:Code - 48) <= :pmd_osrc:cx__last_id and :popover_matching_donors:is_visible);
+	target=pmd_osrc;
+	action=FindObject;
+	ID=runclient(:Code - 48);
+	}
+    control_num_key_dnr_2 "widget/connector"
+	{
+	event=KeyDown;
+	event_condition=runclient(:Code >= 49 and :Code <= 57 and :Ctrl and (:Code - 48) >= :pmd_osrc:cx__first_id and (:Code - 48) <= :pmd_osrc:cx__last_id and :popover_matching_donors:is_visible);
+	target=pmd_table;
+	action=ShowSelection;
+	}
+    control_num_key_dnr_3 "widget/connector"
+	{
+	event=KeyDown;
+	event_condition=runclient(:Code >= 49 and :Code <= 57 and :Ctrl and (:Code - 48) >= :pmd_osrc:cx__first_id and (:Code - 48) <= :pmd_osrc:cx__last_id and :popover_matching_donors:is_visible);
+	event_cancel=runclient(:Code >= 49 and :Code <= 57 and :Ctrl and (:Code - 48) >= :pmd_osrc:cx__first_id and (:Code - 48) <= :pmd_osrc:cx__last_id and :popover_matching_donors:is_visible);
+	event_delay=0.1;
+	target=use_donor_btn;
+	action=Click;
+	}
+
+    // CTRL+R for "New Receipt"
+    ctrl_r_pressed "widget/connector"
 	{
 	condition = runserver(:this:by_donor == 0);
 	event=KeyDown;
@@ -71,9 +120,87 @@ gift_entry "widget/component-decl"
 	action=Click;
 	}
 
-    doing_copy "widget/variable" { type=integer; value=0; }
-    doing_new_pledge "widget/variable" { type=integer; value=0; }
-    doing_automark "widget/variable" { type=integer; value=0; }
+    // check scanner, multiple donors found.
+    ScanMultipleDonors "widget/component-decl-action" { }
+    on_mul_donor_1 "widget/connector" { event=ScanMultipleDonors; target=last_ckno; action=SetValue; Value=runclient(:check_number); }
+    on_mul_donor_2 "widget/connector" { event=ScanMultipleDonors; target=last_hash; action=SetValue; Value=runclient(:hash); }
+    on_mul_donor_3 "widget/connector" { event=ScanMultipleDonors; target=last_mighash; action=SetValue; Value=runclient(:mighash); }
+    on_mul_donor_4 "widget/connector" { event=ScanMultipleDonors; target=last_file; action=SetValue; Value=runclient(:filename); }
+    on_mul_donor_5 "widget/connector" { event=ScanMultipleDonors; target=popover_matching_donors; action=Open; }
+    on_mul_donor_6 "widget/connector" { event=ScanMultipleDonors; target=pmd_osrc; action=QueryParam; check_number=runclient(:check_number); hash=runclient(:hash); mighash=runclient(:mighash); ledger=runclient(:ledger:value); }
+    on_mul_donor_7 "widget/connector"
+	{
+	event=ScanMultipleDonors;
+	event_condition=runclient((not :rcpt_form:is_discardable) and (not :desig_form:is_discardable) and (not :p_detail_form:is_discardable));
+	target=new_rcpt;
+	action=Click;
+	using_scanner=1;
+	}
+
+    // check scanner, one donor found.
+    ScanOneDonor "widget/component-decl-action" { }
+    on_one_donor_1 "widget/connector" { event=ScanOneDonor; target=last_ckno; action=SetValue; Value=runclient(:check_number); }
+    on_one_donor_2a "widget/connector" { event=ScanOneDonor; target=last_pkey; action=SetValue; Value=runclient(:partner_key); }
+    on_one_donor_2b "widget/connector" { event=ScanOneDonor; target=last_akey; action=SetValue; Value=runclient(:ack_key); }
+    on_one_donor_3 "widget/connector" { event=ScanOneDonor; target=last_hash; action=SetValue; Value=runclient(:hash); }
+    on_one_donor_4 "widget/connector" { event=ScanOneDonor; target=last_file; action=SetValue; Value=runclient(:filename); }
+    on_one_donor_5 "widget/connector"
+	{
+	event=ScanOneDonor;
+	event_condition=runclient((not :rcpt_form:is_discardable) and (not :desig_form:is_discardable) and (not :p_detail_form:is_discardable) and (isnull(:desig_form:a_account_hash, '') != :hash or :canceled_last:value = :hash));
+	target=new_rcpt;
+	action=Click;
+	using_scanner=1;
+	}
+    on_one_donor_6 "widget/connector"
+	{
+	event=ScanOneDonor;
+	event_condition=runclient(:rcpt_form:form_mode = 'New' and isnull(:f_rcpt_donorid:content, '') = '' and (not :desig_form:is_discardable) and (not :p_detail_form:is_discardable) and (isnull(:desig_form:a_account_hash, '') != :hash or :canceled_last:value = :hash));
+	target=f_rcpt_donorid;
+	action=SetValue;
+	Value=runclient(:partner_key);
+	Description=runclient(:partner_name);
+	}
+    on_one_donor_7 "widget/connector"
+	{
+	event=ScanOneDonor;
+	event_condition=runclient(:rcpt_form:form_mode = 'New' and isnull(:f_rcpt_ackid:content, '') = '' and (not :desig_form:is_discardable) and (not :p_detail_form:is_discardable) and :ack_key is not null and (isnull(:desig_form:a_account_hash, '') != :hash or :canceled_last:value = :hash));
+	target=f_rcpt_ackid;
+	action=SetValue;
+	Value=runclient(:ack_key);
+	Description=runclient(:ack_name);
+	}
+    on_one_donor_8 "widget/connector"
+	{
+	event=ScanOneDonor;
+	event_condition=runclient((not :rcpt_form:is_discardable) and (not :desig_form:is_discardable) and (not :p_detail_form:is_discardable) and isnull(:desig_form:a_account_hash, '') = :hash and :canceled_last:value != :hash);
+	target=desig_form;
+	action=New;
+	}
+    on_one_donor_9a "widget/connector"
+	{
+	event=ScanOneDonor;
+	event_condition=runclient(:desig_form:is_discardable and (:partner_key is null or :partner_key = :f_rcpt_donorid:content) and isnull(:ack_key, '') = isnull(:f_rcpt_ackid:content, ''));
+	target=item_hash;
+	action=SetValue;
+	Value=runclient(:hash);
+	}
+    on_one_donor_9b "widget/connector"
+	{
+	event=ScanOneDonor;
+	event_condition=runclient(:desig_form:is_discardable and (:partner_key is null or :partner_key = :f_rcpt_donorid:content) and isnull(:ack_key, '') = isnull(:f_rcpt_ackid:content, ''));
+	target=item_file;
+	action=SetValue;
+	Value=runclient(:filename);
+	}
+    on_one_donor_9c "widget/connector"
+	{
+	event=ScanOneDonor;
+	event_condition=runclient(:desig_form:is_discardable and (:partner_key is null or :partner_key = :f_rcpt_donorid:content) and isnull(:ack_key, '') = isnull(:f_rcpt_ackid:content, ''));
+	target=f_desig_recvdoc;
+	action=SetValue;
+	Value=runclient(:check_number);
+	}
 
     copy_gift "widget/component"
 	{
@@ -87,8 +214,10 @@ gift_entry "widget/component-decl"
 	on_copy_5 "widget/connector" { event=Copied; target=receipt; action=SetValue; Value=runclient(:a_receipt_number); }
 	on_copy_6 "widget/connector" { event=Copied; target=batch_osrc; action=Refresh; } 
 	on_copy_7 "widget/connector" { event=Copied; target=receipts_osrc; action=Refresh; find_object=runclient(:ledger:value + '|' + :batch:value + '|' + :a_gift_number); }
-	on_copy_8 "widget/connector" { event=Copied; target=doing_copy; action=SetValue; Value=0; }
+	//on_copy_8 "widget/connector" { event=Copied; target=doing_copy; action=SetValue; Value=0; }
 	on_copy_9 "widget/connector" { event=Copied; target=doing_automark; action=SetValue; Value=1; }
+	on_copy_10 "widget/connector" { condition=runserver(:this:use_scanner); event=Copied; target=scanner; action=UpdateUsed; }
+	on_copy_11 "widget/connector" { event=Copied; target=popover_view_check; action=Close; }
 	}
 
     prevrcpt_osrc "widget/osrc"
@@ -112,40 +241,6 @@ gift_entry "widget/component-decl"
 	    action=SetValue;
 	    Value=runclient(:prevrcpt_osrc:p_ack_partner_id);
 	    }
-	}
-
-    // Set scanned data (hash and filename) in the line items, only if these
-    // are currently unset *and* the check number matches.
-    //
-    set_scan_osrc "widget/osrc"
-	{
-	ss_ledger "widget/parameter" { type=string; param_name=ledger; default=runclient(:ledger:value); }
-	ss_ckno "widget/parameter" { type=string; param_name=checkno; default=runclient(:last_ckno:value); }
-	ss_file "widget/parameter" { type=string; param_name=file; default=runclient(:last_file:value); }
-	ss_hash "widget/parameter" { type=string; param_name=hash; default=runclient(:last_hash:value); }
-	ss_batch "widget/parameter" { type=integer; param_name=batch; default=runclient(:receipts_osrc:a_batch_number); }
-	ss_gift "widget/parameter" { type=integer; param_name=gift; default=runclient(:receipts_osrc:a_gift_number); }
-
-	autoquery=never;
-	readahead=2;
-	replicasize=2;
-
-	sql = "	update
-		    /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows
-		set
-		    :a_account_hash = :parameters:hash,
-		    :a_check_front_image = :parameters:file
-		where
-		    :a_ledger_number = :parameters:ledger and
-		    :a_batch_number = :parameters:batch and
-		    :a_gift_number = :parameters:gift and
-		    :a_recv_document_id = :parameters:checkno and
-		    :a_account_hash is null and
-		    :a_check_front_image is null and
-		    :a_posted = 0
-		";
-
-	on_set_scan_endquery "widget/connector" { event=EndQuery; target=line_items_osrc; action=Refresh; }
 	}
 
     config_osrc "widget/osrc"
@@ -296,6 +391,18 @@ gift_entry "widget/component-decl"
 			    action=FindObject;
 			    a_receipt_number = runclient(:receipt:value);
 			    }
+
+			copy_done_on_found "widget/connector"
+			    {
+			    event=Found;
+			    event_condition=runclient(:Name is not null);
+			    target=doing_copy;
+			    action=SetValue;
+			    Value=runclient(0);
+			    }
+
+			// If the user changes receipts, erase the cached data from the last check scan.
+			rcptchg_cn1 "widget/connector" { event=DataFocusChanged; event_condition=runclient(:Reason != 'create' and :doing_copy:value = 0); target=gift_entry; action=TriggerEvent; EventName=runclient('ForgetScan'); }
 					
 			receipts_tbl "widget/table"
 			    {
@@ -399,6 +506,7 @@ gift_entry "widget/component-decl"
 			    new_cn1 "widget/connector" { event=Click; event_condition=runclient(:desig_form:form_mode == 'New'); target=desig_form; action=Discard; }
 			    new_cn2 "widget/connector" { event=Click; target=rcpt_form; action=New; }
 			    new_cn3 "widget/connector" { event=Click; target=donor_osrc; action=Clear; }
+			    new_cn4 "widget/connector" { event=Click; event_condition=runclient(not isnull(:using_scanner, 0)); target=gift_entry; action=TriggerEvent; EventName=runclient('ForgetScan'); }
 			    }
 			}
 
@@ -408,7 +516,8 @@ gift_entry "widget/component-decl"
 			path="/apps/kardia/modules/base/section_label.cmp";
 			height=26;
 			fl_height=0;
-			text = runclient("Check Scanner");
+			text = runclient(:last_scanner:value);
+			//background = "/apps/kardia/images/bg/ls_green_gradient_dark.png";
 			}
 
 		    // When a check is "used", we do one of three things:
@@ -428,14 +537,82 @@ gift_entry "widget/component-decl"
 			path="/apps/kardia/modules/rcpt/check_scanner.cmp";
 			height=168;
 			ledger=runserver(:this:ledger);
+			batch=runserver(:this:batch);
 
-			// Save the scanner data
-			on_scan_1 "widget/connector" { event=Scanned; target=last_ckno; action=SetValue; Value=runclient(:check_number); }
-			on_scan_2 "widget/connector" { event=Scanned; target=last_pkey; action=SetValue; Value=runclient(:partner_key); }
-			on_scan_3 "widget/connector" { event=Scanned; target=last_hash; action=SetValue; Value=runclient(:hash); }
-			on_scan_4 "widget/connector" { event=Scanned; target=last_file; action=SetValue; Value=runclient(:filename); }
+			// Set title on connection
+			on_connect "widget/connector" { event=Connected; target=last_scanner; action=SetValue; Value=runclient(:Scanner); }
 
-			// Do we need to assign data in the *current* check?
+			// Open the popup when the data focus changes
+			on_focus_1 "widget/connector" { event=Selected; event_condition=runclient((:direct_click = 1 or :receipt is null or :receipt != :receipts_osrc:a_receipt_number or :filename != :line_items_osrc:a_check_front_image) and :filename is not null); target=popover_view_check; action=Open; }
+			on_focus_2 "widget/connector" { event=Selected; event_condition=runclient((:direct_click = 1 or :receipt is null or :receipt != :receipts_osrc:a_receipt_number or :filename != :line_items_osrc:a_check_front_image) and :filename is not null); target=check_image; action=LoadImage; Source=runclient(:filename); }
+			on_focus_3 "widget/connector" { event=Selected; event_condition=runclient((:direct_click = 1 or :receipt is null or :receipt != :receipts_osrc:a_receipt_number or :filename != :line_items_osrc:a_check_front_image) and :filename is not null); target=image_reason; action=SetValue; Value=runclient(condition(:receipt is not null, 'Gift Item for Receipt #' + :receipt, 'Scanned Check #' + :check_number)); }
+			on_focus_4 "widget/connector" { event=Selected; event_condition=runclient(:receipt is not null and (:receipt != :receipts_osrc:a_receipt_number)); target=receipts_osrc; action=FindObject; a_receipt_number=runclient(:receipt); }
+			on_focus_5 "widget/connector" { event=Selected; event_delay=0.1; event_condition=runclient(:receipt is not null and (:receipt != :receipts_osrc:a_receipt_number or :filename != :line_items_osrc:a_check_front_image)); target=line_items_osrc; action=FindObject; a_check_front_image=runclient(:filename); }
+
+			// Scanner wants to show an image
+			on_showimg_1 "widget/connector" { event=ShowImage; target=popover_view_check; action=Open; }
+			on_showimg_2 "widget/connector" { event=ShowImage; target=image_reason; action=SetValue; Value=runclient(:reason); }
+			on_showimg_3 "widget/connector" { event=ShowImage; target=check_image; action=LoadImage; Source=runclient(:Image); }
+
+			// Nothing matches, new account.
+			on_scan_none_1 "widget/connector"
+			    {
+			    event=Scanned;
+			    event_condition=runclient(:partner_key is null);
+			    target=gift_entry;
+			    action=TriggerEvent;
+			    EventName=runclient('ScanOneDonor');
+			    event_all_params=1;
+			    }
+			on_scan_none_2 "widget/connector"
+			    {
+			    event=NewCheck;
+			    event_condition=runclient(:Count == :Current and :Count > 0 and :partner_key is null);
+			    target=gift_entry;
+			    action=TriggerEvent;
+			    EventName=runclient('ScanOneDonor');
+			    event_all_params=1;
+			    }
+
+			// Automation: one donor matches
+			on_scan_one_1 "widget/connector"
+			    {
+			    event=NewCheck;
+			    event_condition=runclient(:Count == :Current and :partner_key is not null and :partner_key != 'MULTIPLE' and :ack_key is null);
+			    target=gift_entry;
+			    action=TriggerEvent;
+			    EventName=runclient('ScanOneDonor');
+			    event_all_params=1;
+			    }
+			on_scan_one_2 "widget/connector"
+			    {
+			    event=Scanned;
+			    event_condition=runclient(:partner_key is not null and :partner_key != 'MULTIPLE' and :ack_key is null);
+			    target=gift_entry;
+			    action=TriggerEvent;
+			    EventName=runclient('ScanOneDonor');
+			    event_all_params=1;
+			    }
+
+			// Automation: multiple donors match
+			on_scan_mul_1 "widget/connector"
+			    {
+			    event=NewCheck;
+			    event_condition=runclient(:Count == :Current and :partner_key is not null and (:partner_key = 'MULTIPLE' or :ack_key is not null));
+			    target=gift_entry;
+			    action=TriggerEvent;
+			    EventName=runclient('ScanMultipleDonors');
+			    event_all_params=1;
+			    }
+			on_scan_mul_2 "widget/connector"
+			    {
+			    event=Scanned;
+			    event_condition=runclient(:partner_key is not null and (:partner_key = 'MULTIPLE' or :ack_key is not null));
+			    target=gift_entry;
+			    action=TriggerEvent;
+			    EventName=runclient('ScanMultipleDonors');
+			    event_all_params=1;
+			    }
 			}
 		    }
 
@@ -744,6 +921,15 @@ gift_entry "widget/component-decl"
 			action = SetFocus;
 			}
 
+		    // Forget scanned data if user cancels out of receipt creation
+		    on_discard_rcpt_forget_scan "widget/connector" { event=Discard; target=gift_entry; action=TriggerEvent; EventName=runclient('ForgetScan'); }
+
+		    // Hide popover donor list if user cancels
+		    on_discard_hide_donorlist "widget/connector" { event=Discard; target=popover_matching_donors; action=Close; }
+
+		    // Clear remembered cancel on desig
+		    on_discard_clear_canceled "widget/connector" { event=Discard; target=canceled_last; action=SetValue; Value=runclient(""); }
+
 		    rcpt_hbox "widget/hbox"
 			{
 			height=150;
@@ -794,7 +980,7 @@ gift_entry "widget/component-decl"
 
 				donor_hints "widget/hints" { style=strnull; }
 
-				on_donor_change "widget/connector"
+				on_donor_change_load_sidebar "widget/connector"
 				    {
 				    event=DataChange;
 				    event_condition=runclient(:doing_copy:value == 0 and not char_length(:f_rcpt_ackid:content) > 1);
@@ -802,6 +988,14 @@ gift_entry "widget/component-decl"
 				    action=TriggerEvent;
 				    EventName=runclient("LoadSidebar");
 				    Donor=runclient(:Value);
+				    }
+
+				on_donor_change_close_multidonor "widget/connector"
+				    {
+				    event=DataChange;
+				    event_condition=runclient(:popover_matching_donors:is_visible and char_length(:f_rcpt_donorid:content) > 1);
+				    target=popover_matching_donors;
+				    action=Close;
 				    }
 
 				on_donor_focus "widget/connector"
@@ -1198,6 +1392,13 @@ gift_entry "widget/component-decl"
 					:g:a_motivational_code,
 					:g:a_item_intent_code,
 					:g:a_comment,
+					:g:a_dn_gift_received_date,
+					:g:a_dn_gift_postmark_date,
+					:g:a_dn_gift_type,
+					:g:a_dn_receipt_number,
+					:g:p_dn_donor_partner_id,
+					:g:p_dn_ack_partner_id,
+					:g:p_dn_pass_partner_id,
 					:g:s_date_modified,
 					:g:s_modified_by,
 					:g:s_date_created,
@@ -1265,6 +1466,50 @@ gift_entry "widget/component-decl"
 					    :c:a_fund =* :g:a_fund and
 					    :c:a_ledger_number =* :g:a_ledger_number
 					");
+				}
+
+			    load_ck_img_on_change_1 "widget/connector"
+				{
+				event=DataFocusChanged;
+				event_condition=runclient(:popover_view_check:is_visible and substring(:image_reason:value,1,9) = 'Gift Item' and :line_items_osrc:a_check_front_image is not null);
+				target=check_image;
+				action=LoadImage;
+				Source=runclient(:line_items_osrc:a_check_front_image);
+				}
+			    load_ck_img_on_change_2 "widget/connector"
+				{
+				event=DataFocusChanged;
+				event_condition=runclient(:popover_view_check:is_visible and substring(:image_reason:value,1,9) = 'Gift Item' and :line_items_osrc:a_check_front_image is not null);
+				target=image_reason;
+				action=SetValue;
+				Value=runclient('Gift Item for Receipt #' + :receipts_osrc:a_receipt_number);
+				}
+			    close_ck_img_on_change_3 "widget/connector"
+				{
+				event=DataFocusChanged;
+				event_condition=runclient(:popover_view_check:is_visible and substring(:image_reason:value,1,9) = 'Gift Item' and :line_items_osrc:a_check_front_image is null);
+				target=popover_view_check;
+				action=Close;
+				}
+			    sync_scanner_on_change_4 "widget/connector"
+				{
+				condition=runserver(:this:use_scanner);
+				event=DataFocusChanged;
+				event_condition=runclient(:line_items_osrc:a_check_front_image is not null and :rcpt_form:form_prev_mode != 'New');
+				//event_confirm=runclient('4: ' + isnull(:rcpt_form:form_prev_mode, '-') + ' -> ' + isnull(:rcpt_form:form_mode, '-') + ', ' + isnull(:Reason, ''));
+				target=scanner;
+				action=FindReceipt;
+				receipt=runclient(:receipts_osrc:a_receipt_number);
+				filename=runclient(:line_items_osrc:a_check_front_image);
+				}
+			    sync_scanner_on_change_5 "widget/connector"
+				{
+				condition=runserver(:this:use_scanner);
+				event=DataFocusChanged;
+				event_condition=runclient(:line_items_osrc:a_check_front_image is null and :Reason = 'change');
+				//event_confirm=runclient('5: ' + isnull(:rcpt_form:form_prev_mode, '-') + ' -> ' + isnull(:rcpt_form:form_mode, '-') + ', ' + isnull(:Reason, ''));
+				target=scanner;
+				action=FindUnused;
 				}
 
 			    desig_table "widget/table"
@@ -1360,6 +1605,21 @@ gift_entry "widget/component-decl"
 						    do_automark=1;
 						    }
 
+						update_used_scanner_on_save "widget/connector"
+						    {
+						    condition=runserver(:this:use_scanner);
+						    event=DataSaved;
+						    target=scanner;
+						    action=UpdateUsed;
+						    }
+						update_used_scanner_on_delete "widget/connector"
+						    {
+						    condition=runserver(:this:use_scanner);
+						    event=DataDeleted;
+						    target=scanner;
+						    action=UpdateUsed;
+						    }
+
 						clear_af_types "widget/connector"
 						    {
 						    event=New;
@@ -1372,6 +1632,33 @@ gift_entry "widget/component-decl"
 						    target=f_desig_customtyp;
 						    action=SetValue;
 						    Value=runclient(null);
+						    }
+
+						set_ckno_from_scan "widget/connector"
+						    {
+						    event=New;
+						    //event_condition=runclient(:last_pkey:value is null or :last_pkey:value == :f_rcpt_donorid:value);
+						    target=f_desig_recvdoc;
+						    action=SetValue;
+						    Value=runclient(:last_ckno:value);
+						    }
+
+						set_hash_from_scan "widget/connector"
+						    {
+						    event=New;
+						    //event_condition=runclient(:last_pkey:value is null or :last_pkey:value == :f_rcpt_donorid:value);
+						    target=item_hash;
+						    action=SetValue;
+						    Value=runclient(:last_hash:value);
+						    }
+
+						set_file_from_scan "widget/connector"
+						    {
+						    event=New;
+						    //event_condition=runclient(:last_pkey:value is null or :last_pkey:value == :f_rcpt_donorid:value);
+						    target=item_file;
+						    action=SetValue;
+						    Value=runclient(:last_file:value);
 						    }
 
 						// Experimental - block the save if we don't have an amount and a valid
@@ -1416,6 +1703,25 @@ gift_entry "widget/component-decl"
 						    //event_cancel=runclient(:desig_form:form_mode == 'View'); // it is View because Discard just made it do that
 						    target = desig_form;
 						    action = Discard;
+						    }
+
+						// Hide the check image window when desig form transitions from New to View.
+						hide_check_image_on_new_done "widget/connector"
+						    {
+						    event=View;
+						    event_condition=runclient(:desig_form:form_prev_mode = 'New');
+						    target=popover_view_check;
+						    action=Close;
+						    }
+
+						// Remember that the user canceled out of this
+						remember_desig_discard "widget/connector"
+						    {
+						    event=Discard;
+						    event_condition=runclient(:desig_form:a_account_hash is not null);
+						    target=canceled_last;
+						    action=SetValue;
+						    Value=runclient(:desig_form:a_account_hash);
 						    }
 
 						desig_vbox2 "widget/vbox"
@@ -1711,10 +2017,87 @@ gift_entry "widget/component-decl"
 							ci_link "widget/label"
 							    {
 							    widget_class=link;
-							    width=160;
+							    width=50;
 							    y=3;
 							    align=left;
-							    value=runclient(replace(:line_items_osrc:a_check_front_image, "/apps/kardia/files/rcpt/", ""));
+							    value=runclient(condition(char_length(:item_file:value) > 4, 'View...', '(none)'));
+
+							    on_ci_click_1 "widget/connector"
+								{
+								event=Click;
+								event_condition=runclient(char_length(:item_file:value) > 4);
+								target=popover_view_check;
+								action=Open;
+								}
+							    on_ci_click_2 "widget/connector"
+								{
+								event=Click;
+								event_condition=runclient(char_length(:item_file:value) > 4);
+								target=check_image;
+								action=LoadImage;
+								Source=runclient(:item_file:value);
+								}
+							    on_ci_click_3 "widget/connector"
+								{
+								event=Click;
+								event_condition=runclient(char_length(:item_file:value) > 4);
+								target=image_reason;
+								action=SetValue;
+								Value=runclient('Gift Item for Receipt #' + :receipts_osrc:a_receipt_number);
+								}
+							    }
+
+							ci_del_link "widget/label"
+							    {
+							    widget_class=link;
+							    width=50;
+							    y=3;
+							    align=left;
+							    value=runclient(condition(char_length(:item_file:value) > 4 and not (:rcpt_form:a_posted == 1), '(delete)', ''));
+
+							    on_cid_click_1 "widget/connector"
+								{
+								event=Click;
+								event_condition=runclient(char_length(:item_file:value) > 4 and not (:rcpt_form:a_posted == 1));
+								target=item_hash;
+								action=SetValue;
+								Value=runclient(null);
+								}
+							    on_cid_click_2 "widget/connector"
+								{
+								event=Click;
+								event_condition=runclient(char_length(:item_file:value) > 4 and not (:rcpt_form:a_posted == 1));
+								target=item_file;
+								action=SetValue;
+								Value=runclient(null);
+								}
+							    }
+
+							ci_unassoc_link "widget/label"
+							    {
+							    widget_class=link;
+							    width=50;
+							    y=3;
+							    align=left;
+							    value=runclient(condition(char_length(:item_hash:value) > 4, '(unassoc)', ''));
+
+							    on_ciu_click_1 "widget/connector"
+								{
+								event=Click;
+								event_condition=runclient(char_length(:item_hash:value) > 4 and not (:rcpt_form:a_posted == 1));
+								target=item_hash;
+								action=SetValue;
+								Value=runclient(null);
+								}
+							    on_ciu_click_2 "widget/connector"
+								{
+								event=Click;
+								event_condition=runclient(char_length(:item_hash:value) > 4 and (:rcpt_form:a_posted == 1));
+								event_confirm=runclient("Remove the association between this line item and the check's account/routing numbers?");
+								target=line_items_osrc;
+								action=Modify;
+								a_account_hash=runclient(null);
+								}
 							    }
 							}
 
@@ -2086,273 +2469,304 @@ gift_entry "widget/component-decl"
 
 	    manage_vbox "widget/vbox"
 		{
-		x=5; y=5;
-		width=185;
-		height=672;
+		x=0; y=0;
+		width=195;
+		height=682;
 		spacing=10;
 
-		managelbl "widget/component"
+		dinfo_pane "widget/pane"
 		    {
-		    path="/apps/kardia/modules/base/section_header.cmp";
-		    //background = "/apps/kardia/images/bg/ls_blue_gradient_light.png";
-		    height=26;
-		    fl_height=0;
-		    text = runclient(isnull(condition(char_length(:f_rcpt_donorid:value) <= 1, "", condition(:manage_osrc:partner = :f_rcpt_donorid:value and :manage_osrc:partner = :donor_osrc:p_partner_key, :donor_osrc:nm, condition(:manage_osrc:partner = :f_rcpt_ackid:value and :manage_osrc:partner = :donor_osrc:ackpartner, :donor_osrc:acknm, null))), condition(:rcpt_form:form_mode == 'View', :receipts_osrc:viewnameff, "")));
-		    custom_new=1;
-		    allow_save=0;
-		    allow_cancel=0;
+		    height = 276;
+		    style = flat;
+		    //bgcolor = runclient(condition(isnull(:f_rcpt_donorid:value, '') != '' and ((:desig_form:form_mode = 'NoData' or :desig_form:form_mode = 'New')) and (:rcpt_form:form_mode == 'New' or :rcpt_form:form_mode == 'Modify' or :rcpt_form:form_mode = 'View') and :line_items_osrc:a_ledger_number is null and isnull(:receipts_osrc:a_posted, 0) = 0, '#ffff80', '#f8f8f8'));
 
-		    on_add "widget/connector" { event=New; target=popover_add_item; action=Open; IsModal=1; PointAt=managelbl; PointSide=runclient('top'); }
-		    }
-
-		manage_osrc "widget/osrc"
-		    {
-		    mo_partner "widget/parameter" { param_name=partner; type=string; }
-		    mo_ledger "widget/parameter" { param_name=ledger; type=string; }
-		    sql = " select
-				*,
-				edit = '/apps/kardia/images/icons/tango-edit.svg'
-			    from
-				expression('/apps/kardia/modules/rcpt/donor_data.qy?partner=' + :parameters:partner + '&ledger=' + :parameters:ledger)
-			    ";
-		    replicasize=20;
-		    readahead=20;
-
-		    manage_link "widget/rule"
+		    dinfo_vbox "widget/vbox"
 			{
-			condition=0;
-			ruletype=osrc_relationship;
-			target=receipts_osrc;
-			key_1=partner;
-			target_key_1=p_donor_partner_id;
-			key_2=ledger;
-			target_key_2=a_ledger_number;
-			}
+			x=5; y=5;
+			width = 185;
+			height = 266;
+			spacing = 10;
 
-		    manage_table "widget/table"
-			{
-			height=230;
-			overlap_scrollbar=yes;
-			demand_scrollbar=yes;
-			show_selection=no;
-			rowheight=null;
-			cellvspacing=4;
-			inner_padding=2;
-			row_border_radius=6;
-			colsep=0;
-			titlebar=no;
-			row_shadow_radius=2;
-			row_shadow_offset=1;
-			row_shadow_color="#a0a0a0";
-			row_shadow_angle=135;
-			nodata_message="";
-
-			t_info "widget/table-column" { title="Donor"; fieldname=data; width=164; style=bold; caption_fieldname=name; }
-			t_edit "widget/table-column" { title="Edit"; fieldname=edit; width=26; image_maxwidth=20; image_maxheight=20; type=image; }
-
-			click_partner "widget/connector"
+			managelbl "widget/component"
 			    {
-			    event = Click;
-			    event_condition = runclient(:Column == 'edit' and :name == 'Name');
-			    target=popover_partner;
-			    action=Open;
-			    PointAt=manage_table;
-			    PointSide=runclient("right");
-			    IsModal=1;
+			    path="/apps/kardia/modules/base/section_header.cmp";
+			    //background = "/apps/kardia/images/bg/ls_blue_gradient_light.png";
+			    height=26;
+			    fl_height=0;
+			    text = runclient(isnull(condition(char_length(:f_rcpt_donorid:value) <= 1, "", condition(:manage_osrc:partner = :f_rcpt_donorid:value and :manage_osrc:partner = :donor_osrc:p_partner_key, :donor_osrc:nm, condition(:manage_osrc:partner = :f_rcpt_ackid:value and :manage_osrc:partner = :donor_osrc:ackpartner, :donor_osrc:acknm, null))), condition(:rcpt_form:form_mode == 'View', :receipts_osrc:viewnameff, "")));
+			    custom_new=1;
+			    allow_save=0;
+			    allow_cancel=0;
+
+			    on_add "widget/connector" { event=New; target=popover_add_item; action=Open; IsModal=1; PointAt=managelbl; PointSide=runclient('top'); }
 			    }
 
-			click_address "widget/connector"
+			manage_osrc "widget/osrc"
 			    {
-			    event = Click;
-			    event_condition = runclient(:Column == 'edit' and right(:name, 7) == 'Address');
-			    target=popover_address;
-			    action=Open;
-			    PointAt=manage_table;
-			    PointSide=runclient("right");
-			    IsModal=1;
-			    }
+			    mo_partner "widget/parameter" { param_name=partner; type=string; }
+			    mo_ledger "widget/parameter" { param_name=ledger; type=string; }
+			    sql = " select
+					*,
+					edit = '/apps/kardia/images/icons/tango-edit.svg'
+				    from
+					expression('/apps/kardia/modules/rcpt/donor_data.qy?partner=' + :parameters:partner + '&ledger=' + :parameters:ledger)
+				    ";
+			    replicasize=20;
+			    readahead=20;
 
-			click_donor "widget/connector"
-			    {
-			    event = Click;
-			    event_condition = runclient(:Column == 'edit' and :name == 'Donor Prefs');
-			    target=popover_donorinfo;
-			    action=Open;
-			    PointAt=manage_table;
-			    PointSide=runclient("right");
-			    IsModal=1;
-			    }
-
-			click_contact "widget/connector"
-			    {
-			    event = Click;
-			    event_condition = runclient(:Column == 'edit' and right(:name, 7) != 'Address' and :name != 'Name' and :name != 'Donor Prefs');
-			    target=popover_contact;
-			    action=Open;
-			    PointAt=manage_table;
-			    PointSide=runclient("right");
-			    IsModal=1;
-			    }
-			}
-		    }
-
-		histlbl "widget/component"
-		    {
-		    path="/apps/kardia/modules/base/section_label.cmp";
-		    //background = "/apps/kardia/images/bg/ls_blue_gradient_light.png";
-		    height=26;
-		    fl_height=0;
-		    text = runclient("Giving History");
-		    }
-
-		hist_osrc "widget/osrc"
-		    {
-		    hist_partner "widget/parameter" { param_name=partner; type=string; }
-		    hist_ackpartner "widget/parameter" { param_name=ackpartner; type=string; }
-		    hist_ledger "widget/parameter" { param_name=ledger; type=string; }
-		    hist_rcptno "widget/parameter" { param_name=receipt; type=integer; }
-		    sql = " declare object partnerinfo;
-
-			    select 
-				:partnerinfo:partner = :parameters:partner,
-				:partnerinfo:ackpartner = :parameters:ackpartner
-			    ;
-
-			    select
-				:partnerinfo:partner = :p_donor_partner_id,
-				:partnerinfo:ackpartner = :p_ack_partner_id
-			    from
-				/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g
-			    where
-				:g:a_receipt_number = :parameters:receipt and
-				:parameters:receipt is not null
-			    ;
-		    
-			    select
-				*,
-				rowid = :cx__rowid
-			    from
-				expression('/apps/kardia/modules/rcpt/giving_history.qy?partner=' + isnull(:partnerinfo:partner, '') + '&ledger=' + :parameters:ledger + '&ackpartner=' + isnull(:partnerinfo:ackpartner, ''))
-			    limit
-				15
-			    ";
-		    replicasize=50;
-		    readahead=50;
-
-		    hist_link_manual "widget/connector"
-			{
-			condition=0;
-			source=receipts_osrc;
-			event=DataFocusChanged;
-			action=QueryParam;
-			partner=runclient(:receipts_osrc:p_donor_partner_id);
-			ledger=runclient(:receipts_osrc:a_ledger_number);
-			}
-
-		    hist_link "widget/rule"
-			{
-			condition=0;
-			ruletype=osrc_relationship;
-			target=receipts_osrc;
-			key_1=partner;
-			target_key_1=p_donor_partner_id;
-			key_2=ledger;
-			target_key_2=a_ledger_number;
-			}
-
-		    hist_table "widget/table"
-			{
-			height=354;
-			overlap_scrollbar=yes;
-			demand_scrollbar=yes;
-			show_selection=yes;
-			initial_selection=no;
-			rowheight=null;
-			cellvspacing=4;
-			inner_padding=2;
-			row_border_radius=6;
-			colsep=0;
-			titlebar=no;
-			row_shadow_radius=2;
-			row_shadow_offset=1;
-			row_shadow_color="#a0a0a0";
-			row_shadow_angle=135;
-			nodata_message="no history matches";
-
-			gift_detail "widget/table-row-detail"
-			    {
-			    height=49;
-
-			    gift_detail_label "widget/label"
+			    manage_link "widget/rule"
 				{
-				x=17; y=5;
-				width=240; height=43;
-				font_size=9;
-				textcolor=white;
-
-				value=runclient('Admin Notes: ' + :hist_osrc:comment + '\nGift Type: ' + :hist_osrc:gift_type + '\nDonor: ' + :hist_osrc:donortxt + isnull('\nAck.: ' + :hist_osrc:ackdonortxt, ''));
+				condition=0;
+				ruletype=osrc_relationship;
+				target=receipts_osrc;
+				key_1=partner;
+				target_key_1=p_donor_partner_id;
+				key_2=ledger;
+				target_key_2=a_ledger_number;
 				}
-			    }
 
-			copy_data "widget/table-row-detail"
-			    {
-			    height=30;
-			    display_for=runclient(((:desig_form:form_mode = 'NoData' or :desig_form:form_mode = 'New')) and (:rcpt_form:form_mode == 'New' or :rcpt_form:form_mode == 'Modify' or :rcpt_form:form_mode = 'View') and :line_items_osrc:a_ledger_number is null and isnull(:receipts_osrc:a_posted, 0) = 0);
-
-			    copy_data_ctls_hbox "widget/hbox"
+			    manage_table "widget/table"
 				{
-				x=10; y=5;
-				width=165; height=24;
-				align=center; spacing=10;
+				height=230;
+				overlap_scrollbar=yes;
+				demand_scrollbar=yes;
+				show_selection=no;
+				rowheight=null;
+				cellvspacing=4;
+				inner_padding=2;
+				row_border_radius=6;
+				colsep=0;
+				titlebar=no;
+				row_shadow_radius=2;
+				row_shadow_offset=1;
+				row_shadow_color="#a0a0a0";
+				row_shadow_angle=135;
+				nodata_message="";
 
-				copy_rcpt "widget/textbutton"
+				t_info "widget/table-column" { title="Donor"; fieldname=data; width=164; style=bold; caption_fieldname=name; }
+				t_edit "widget/table-column" { title="Edit"; fieldname=edit; width=26; image_maxwidth=20; image_maxheight=20; type=image; }
+
+				click_partner "widget/connector"
 				    {
-				    height=24;
-				    width=130;
-				    text = "<< Copy Gift";
+				    event = Click;
+				    event_condition = runclient(:Column == 'edit' and :name == 'Name');
+				    target=popover_partner;
+				    action=Open;
+				    PointAt=manage_table;
+				    PointSide=runclient("right");
+				    IsModal=1;
+				    }
 
-				    enabled = runclient(((:desig_form:form_mode = 'NoData' or :desig_form:form_mode = 'New')) and (:rcpt_form:form_mode == 'New' or :rcpt_form:form_mode == 'Modify' or :rcpt_form:form_mode = 'View') and :line_items_osrc:a_ledger_number is null and isnull(:receipts_osrc:a_posted, 0) = 0);
+				click_address "widget/connector"
+				    {
+				    event = Click;
+				    event_condition = runclient(:Column == 'edit' and right(:name, 7) == 'Address');
+				    target=popover_address;
+				    action=Open;
+				    PointAt=manage_table;
+				    PointSide=runclient("right");
+				    IsModal=1;
+				    }
 
-				    copy_open_pad1 "widget/connector"
-					{
-					event = Click;
-					target = popover_ask_desig_detail;
-					action = Open;
-					IsModal = 1;
-					}
+				click_donor "widget/connector"
+				    {
+				    event = Click;
+				    event_condition = runclient(:Column == 'edit' and :name == 'Donor Prefs');
+				    target=popover_donorinfo;
+				    action=Open;
+				    PointAt=manage_table;
+				    PointSide=runclient("right");
+				    IsModal=1;
+				    }
 
-				    //copy_r_cn "widget/connector" { event=Click; target=rcpt_form; action=Delete; }
+				click_contact "widget/connector"
+				    {
+				    event = Click;
+				    event_condition = runclient(:Column == 'edit' and right(:name, 7) != 'Address' and :name != 'Name' and :name != 'Donor Prefs');
+				    target=popover_contact;
+				    action=Open;
+				    PointAt=manage_table;
+				    PointSide=runclient("right");
+				    IsModal=1;
 				    }
 				}
 			    }
+			}
+		    }
 
-			ht_num "widget/table-column"
+		hist_pane "widget/pane"
+		    {
+		    height = 400;
+		    style = flat;
+		    border_radius=12;
+		    bgcolor = runclient(condition(isnull(:f_rcpt_donorid:value, '') != '' and ((:desig_form:form_mode = 'NoData' or :desig_form:form_mode = 'New')) and (:rcpt_form:form_mode == 'New' or :rcpt_form:form_mode == 'Modify' or :rcpt_form:form_mode = 'View') and :line_items_osrc:a_ledger_number is null and isnull(:receipts_osrc:a_posted, 0) = 0, '#ffff80', '#f8f8f8'));
+
+		    hist_vbox "widget/vbox"
+			{
+			x=5; y=5;
+			width = 185;
+			height = 390;
+			spacing = 10;
+
+			histlbl "widget/component"
 			    {
-			    title="";
-			    value=runclient(condition(:hist_osrc:rowid <= 8, '' + (:hist_osrc:rowid + 1) + ') ', ''));
-			    width=13;
-			    style=bold;
+			    path="/apps/kardia/modules/base/section_label.cmp";
+			    //background = "/apps/kardia/images/bg/ls_blue_gradient_light.png";
+			    height=26;
+			    fl_height=0;
+			    text = runclient("Giving History");
 			    }
-			ht_info "widget/table-column"
+
+			hist_osrc "widget/osrc"
 			    {
-			    title="Date";
-			    value=runclient(:hist_osrc:date);
-			    width=107;
-			    style=bold;
-			    caption_value=runclient(:hist_osrc:itemdesig);
-			    }
-			ht_amt "widget/table-column"
-			    {
-			    require_one_endorsement="kardia:gift_manage","kardia:gift_entry","kardia:gift_amt";
-			    endorsement_context=runserver("kardia:ledger:" + :this:ledger + ":");
-			    title="Amount";
-			    fieldname="amount";
-			    width=70;
-			    align=right; 
-			    style=bold;
-			    wrap=yes;
-			    caption_value=runclient(:hist_osrc:itemamt);
-			    caption_align=right;
+			    hist_partner "widget/parameter" { param_name=partner; type=string; }
+			    hist_ackpartner "widget/parameter" { param_name=ackpartner; type=string; }
+			    hist_ledger "widget/parameter" { param_name=ledger; type=string; }
+			    hist_rcptno "widget/parameter" { param_name=receipt; type=integer; }
+			    sql = " declare object partnerinfo;
+
+				    select 
+					:partnerinfo:partner = :parameters:partner,
+					:partnerinfo:ackpartner = :parameters:ackpartner
+				    ;
+
+				    select
+					:partnerinfo:partner = :p_donor_partner_id,
+					:partnerinfo:ackpartner = :p_ack_partner_id
+				    from
+					/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g
+				    where
+					:g:a_receipt_number = :parameters:receipt and
+					:parameters:receipt is not null
+				    ;
+			    
+				    select
+					*,
+					rowid = :cx__rowid
+				    from
+					expression('/apps/kardia/modules/rcpt/giving_history.qy?partner=' + isnull(:partnerinfo:partner, '') + '&ledger=' + :parameters:ledger + '&ackpartner=' + isnull(:partnerinfo:ackpartner, ''))
+				    limit
+					15
+				    ";
+			    replicasize=50;
+			    readahead=50;
+
+			    hist_link_manual "widget/connector"
+				{
+				condition=0;
+				source=receipts_osrc;
+				event=DataFocusChanged;
+				action=QueryParam;
+				partner=runclient(:receipts_osrc:p_donor_partner_id);
+				ledger=runclient(:receipts_osrc:a_ledger_number);
+				}
+
+			    hist_link "widget/rule"
+				{
+				condition=0;
+				ruletype=osrc_relationship;
+				target=receipts_osrc;
+				key_1=partner;
+				target_key_1=p_donor_partner_id;
+				key_2=ledger;
+				target_key_2=a_ledger_number;
+				}
+
+			    hist_table "widget/table"
+				{
+				height=354;
+				overlap_scrollbar=yes;
+				demand_scrollbar=yes;
+				show_selection=yes;
+				initial_selection=no;
+				rowheight=null;
+				cellvspacing=4;
+				inner_padding=2;
+				row_border_radius=6;
+				colsep=0;
+				titlebar=no;
+				row_shadow_radius=2;
+				row_shadow_offset=1;
+				row_shadow_color="#a0a0a0";
+				row_shadow_angle=135;
+				nodata_message="no history matches";
+
+				gift_detail "widget/table-row-detail"
+				    {
+				    height=49;
+
+				    gift_detail_label "widget/label"
+					{
+					x=17; y=5;
+					width=240; height=43;
+					font_size=9;
+					textcolor=white;
+
+					value=runclient('Admin Notes: ' + :hist_osrc:comment + '\nGift Type: ' + :hist_osrc:gift_type + '\nDonor: ' + :hist_osrc:donortxt + isnull('\nAck.: ' + :hist_osrc:ackdonortxt, ''));
+					}
+				    }
+
+				copy_data "widget/table-row-detail"
+				    {
+				    height=30;
+				    display_for=runclient(((:desig_form:form_mode = 'NoData' or :desig_form:form_mode = 'New')) and (:rcpt_form:form_mode == 'New' or :rcpt_form:form_mode == 'Modify' or :rcpt_form:form_mode = 'View') and :line_items_osrc:a_ledger_number is null and isnull(:receipts_osrc:a_posted, 0) = 0);
+
+				    copy_data_ctls_hbox "widget/hbox"
+					{
+					x=10; y=5;
+					width=165; height=24;
+					align=center; spacing=10;
+
+					copy_rcpt "widget/textbutton"
+					    {
+					    height=24;
+					    width=130;
+					    text = "<< Copy Gift";
+
+					    enabled = runclient(((:desig_form:form_mode = 'NoData' or :desig_form:form_mode = 'New')) and (:rcpt_form:form_mode == 'New' or :rcpt_form:form_mode == 'Modify' or :rcpt_form:form_mode = 'View') and :line_items_osrc:a_ledger_number is null and isnull(:receipts_osrc:a_posted, 0) = 0);
+
+					    copy_open_pad1 "widget/connector"
+						{
+						event = Click;
+						target = popover_ask_desig_detail;
+						action = Open;
+						IsModal = 1;
+						}
+
+					    //copy_r_cn "widget/connector" { event=Click; target=rcpt_form; action=Delete; }
+					    }
+					}
+				    }
+
+				ht_num "widget/table-column"
+				    {
+				    title="";
+				    value=runclient(condition(:hist_osrc:rowid <= 8, '' + (:hist_osrc:rowid + 1) + ') ', ''));
+				    width=13;
+				    style=bold;
+				    }
+				ht_info "widget/table-column"
+				    {
+				    title="Date";
+				    value=runclient(:hist_osrc:date);
+				    width=107;
+				    style=bold;
+				    caption_value=runclient(:hist_osrc:itemdesig);
+				    }
+				ht_amt "widget/table-column"
+				    {
+				    require_one_endorsement="kardia:gift_manage","kardia:gift_entry","kardia:gift_amt";
+				    endorsement_context=runserver("kardia:ledger:" + :this:ledger + ":");
+				    title="Amount";
+				    fieldname="amount";
+				    width=70;
+				    align=right; 
+				    style=bold;
+				    wrap=yes;
+				    caption_value=runclient(:hist_osrc:itemamt);
+				    caption_align=right;
+				    }
+				}
 			    }
 			}
 		    }
@@ -2375,6 +2789,13 @@ gift_entry "widget/component-decl"
     item_glposted "widget/variable" { form=desig_form; fieldname=a_posted_to_gl; dgp_hints "widget/hints" { default=runclient(0); } }
     item_hash "widget/variable" { form=desig_form; fieldname=a_account_hash; }
     item_file "widget/variable" { form=desig_form; fieldname=a_check_front_image; }
+    item_dn_donor "widget/variable" { form=desig_form; fieldname=p_dn_donor_partner_id; idd_hints "widget/hints" { default=runclient(:rcpt_form:p_donor_partner_id); } }
+    item_dn_ack "widget/variable" { form=desig_form; fieldname=p_dn_ack_partner_id; ida_hints "widget/hints" { default=runclient(:rcpt_form:p_ack_partner_id); } }
+    item_dn_pass "widget/variable" { form=desig_form; fieldname=p_dn_pass_partner_id; idp_hints "widget/hints" { default=runclient(:rcpt_form:p_pass_partner_id); } }
+    item_dn_gtype "widget/variable" { form=desig_form; fieldname=a_dn_gift_type; idg_hints "widget/hints" { default=runclient(:rcpt_form:a_gift_type); } }
+    item_dn_rcvd "widget/variable" { form=desig_form; fieldname=a_dn_gift_received_date; idgr_hints "widget/hints" { default=runclient(:rcpt_form:a_gift_received_date); } }
+    item_dn_post "widget/variable" { form=desig_form; fieldname=a_dn_gift_postmark_date; idgp_hints "widget/hints" { default=runclient(:rcpt_form:a_gift_postmark_date); } }
+    item_dn_rcpt "widget/variable" { form=desig_form; fieldname=a_dn_receipt_number; idrc_hints "widget/hints" { default=runclient(:rcpt_form:a_receipt_number); } }
 
     nextrcpt "widget/component"
 	{
@@ -2992,9 +3413,10 @@ gift_entry "widget/component-decl"
 	shadow_angle=135;
 
 	copy_open_pad2 "widget/connector" { event = Open; target = f_pad_ckno; action = SetFocus; }
-	copy_open_pad3 "widget/connector" { event = Open; target = f_pad_donor; action = SetValue; Value=runclient(:hist_osrc:donortxt); }
-	copy_open_pad4 "widget/connector" { event = Open; target = f_pad_ack; action = SetValue; Value=runclient(isnull(:hist_osrc:ackdonortxt, '')); }
-	copy_open_pad5 "widget/connector" { event = Open; target = f_pad_amount; action = SetValue; Value=runclient(:hist_osrc:amount); }
+	copy_open_pad3 "widget/connector" { event = Open; target = f_pad_ckno; action = SetValue; Value=runclient(:last_ckno:value); }
+	copy_open_pad4 "widget/connector" { event = Open; target = f_pad_donor; action = SetValue; Value=runclient(:hist_osrc:donortxt); }
+	copy_open_pad5 "widget/connector" { event = Open; target = f_pad_ack; action = SetValue; Value=runclient(isnull(:hist_osrc:ackdonortxt, '')); }
+	copy_open_pad6 "widget/connector" { event = Open; target = f_pad_amount; action = SetValue; Value=runclient(:hist_osrc:amount); }
 
 	pad_vbox "widget/vbox"
 	    {
@@ -3063,6 +3485,8 @@ gift_entry "widget/component-decl"
 			new_viadonor = runclient(:f_rcpt_viaid:content);
 			new_checkno = runclient(:f_pad_ckno:content);
 			new_comment = runclient(:f_pad_comm:content);
+			new_filename = runclient(:last_file:value);
+			new_hash = runclient(:last_hash:value);
 			}
 
 		    do_copy2 "widget/connector" { event=Click; target=pad_form; action=Discard; }
@@ -3082,25 +3506,196 @@ gift_entry "widget/component-decl"
 
     popover_view_check "widget/childwindow"
 	{
-	width=560; height=240;
-	x=210; y=220;
+	width=572; height=216;
+	x=202; y=462;
 	titlebar=no;
 	visible=no;
 	border_style=solid;
 	border_color="#f8f8f8";
 	background=null;
-	bgcolor="#f8f8f8";
+	bgcolor="#e0e0e0";
 	border_radius=12;
 	shadow_radius=4;
 	shadow_offset=2;
 	shadow_color="#808080";
 	shadow_angle=135;
 
-	check_image "widget/image"
+	pvc_vbox "widget/vbox"
 	    {
-	    height=238;
-	    width=558;
-	    source=runclient(isnull(:last_file:value, "/apps/kardia/images/bg/light_bgnd.jpg"));
+	    x=5; y=5;
+	    width=560;
+	    height=198;
+	    spacing=5;
+
+	    pvc_lbl "widget/component"
+		{
+		path="/apps/kardia/modules/base/section_label.cmp";
+		//background = "/apps/kardia/images/bg/ls_green_gradient_dark.png";
+		height=26;
+		close=1;
+		fl_height=0;
+		text = runclient("Check Image" + isnull(", " + :image_reason:value, "") + ":");
+
+		on_pvc_close "widget/connector" { event=Close; target=popover_view_check; action=Close; }
+		}
+
+	    check_image "widget/image"
+		{
+		height=172;
+		//source=runclient(isnull(:last_file:value, "/apps/kardia/images/bg/light_bgnd.jpg"));
+		source=runclient("/apps/kardia/images/bg/light_bgnd.jpg");
+		}
+	    }
+	}
+
+    popover_matching_donors "widget/childwindow"
+	{
+	width=572; height=260;
+	x=202; y=197;
+	titlebar=no;
+	visible=no;
+	border_style=solid;
+	border_color="#f8f8f8";
+	background=null;
+	bgcolor="#ffff80";
+	border_radius=12;
+	shadow_radius=4;
+	shadow_offset=2;
+	shadow_color="#808080";
+	shadow_angle=135;
+
+	pmd_vbox "widget/vbox"
+	    {
+	    x=5; y=5;
+	    width=560;
+	    height=248;
+	    spacing=5;
+
+	    pmd_lbl "widget/component"
+		{
+		path="/apps/kardia/modules/base/section_label.cmp";
+		//background = "/apps/kardia/images/bg/ls_green_gradient_dark.png";
+		height=26;
+		fl_height=0;
+		close=1;
+		text = runclient("Matching Donors:");
+
+		on_pmd_close "widget/connector" { event=Close; target=popover_matching_donors; action=Close; }
+		}
+
+	    pmd_osrc "widget/osrc"
+		{
+		pmd_o_ledger "widget/parameter" { param_name=ledger; type=string; default=runclient(:ledger:value); }
+		pmd_o_hash "widget/parameter" { param_name=hash; type=string; }
+		pmd_o_mighash "widget/parameter" { param_name=mighash; type=string; }
+		pmd_o_ckno "widget/parameter" { param_name=check_number; type=string; }
+
+		sql = "	select
+			    :cx__rowid,
+			    partner_key = :pd:p_partner_key,
+			    partner_name = condition(convert(string, char_length(ltrim(rtrim(isnull(:pd:p_org_name, ''))))) == 0, :pd:p_given_name + ' ' + :pd:p_surname, :pd:p_org_name),
+			    partner_addr = (select :pl:p_city + ', ' + :pl:p_state_province + ' ' + :pl:p_postal_code from /apps/kardia/data/Kardia_DB/p_location/rows pl where :pd:p_partner_key *= :pl:p_partner_key order by charindex(:pl:p_record_status_code, 'OIQA') desc limit 1),
+			    ack_key = :pa:p_partner_key,
+			    ack_name = condition(convert(string, char_length(ltrim(rtrim(isnull(:pa:p_org_name, ''))))) == 0, :pa:p_given_name + ' ' + :pa:p_surname, :pa:p_org_name),
+			    ack_addr = (select :pl:p_city + ', ' + :pl:p_state_province + ' ' + :pl:p_postal_code from /apps/kardia/data/Kardia_DB/p_location/rows pl where :pa:p_partner_key *= :pl:p_partner_key order by charindex(:pl:p_record_status_code, 'OIQA') desc limit 1),
+			    gift_cnt = count(1),
+			    latest = dateformat(max(isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date)), 'dd-MMM-yyyy'),
+			    prev_checks = sum(:i:a_recv_document_id + ', ') - ', ',
+			    ckno_dist = min(abs(convert(integer, :i:a_recv_document_id) - convert(integer, :parameters:check_number)))
+			from
+			    /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i,
+			    /apps/kardia/data/Kardia_DB/p_partner/rows pd,
+			    /apps/kardia/data/Kardia_DB/p_partner/rows pa
+			where
+			    :pd:p_partner_key = :i:p_dn_donor_partner_id and
+			    :pa:p_partner_key =* :i:p_dn_ack_partner_id and
+			    :i:a_ledger_number = :parameters:ledger and
+			    --:i:a_posted = 1 and
+			    (:i:a_account_hash = :parameters:hash or :i:a_account_hash = :parameters:mighash)
+			group by
+			    :i:p_dn_donor_partner_id,
+			    :i:p_dn_ack_partner_id
+			order by
+			    min(abs(convert(integer, :i:a_recv_document_id) - convert(integer, :parameters:check_number)))
+			having
+			    :partner_key is not null
+			";
+		replicasize=100;
+		readahead=100;
+		autoquery=never;
+
+		pmd_table "widget/table"
+		    {
+		    height=217;
+		    overlap_scrollbar=yes;
+		    demand_scrollbar=yes;
+		    show_selection=yes;
+		    initial_selection=no;
+		    rowheight=null;
+		    cellvspacing=4;
+		    inner_padding=2;
+		    row_border_radius=6;
+		    colsep=0;
+		    titlebar=no;
+		    row_shadow_radius=2;
+		    row_shadow_offset=1;
+		    row_shadow_color="#a0a0a0";
+		    row_shadow_angle=135;
+		    nodata_message="no donor matches";
+
+		    pmd_t_id "widget/table-column"
+			{
+			title="";
+			width=16;
+			style=bold;
+			value=runclient(condition(:pmd_osrc:cx__rowid <= 8, '' + (:pmd_osrc:cx__rowid + 1) + ') ', ''));
+			}
+		    pmd_t_donoraddr "widget/table-column"
+			{
+			title="Donor";
+			value=runclient(condition(:pmd_osrc:ack_name is not null, :pmd_osrc:ack_name + ' (' + :pmd_osrc:ack_key + ') via ', '') + :pmd_osrc:partner_name + ' (' + :pmd_osrc:partner_key + '), ' + :pmd_osrc:partner_addr);
+			style=bold;
+			caption_value=runclient('' + :pmd_osrc:gift_cnt + ' gift' + condition(:pmd_osrc:gift_cnt == 1, '', 's') + ', most recent ' + :pmd_osrc:latest + ', check number' + condition(:pmd_osrc:gift_cnt == 1, '', 's') + ' ' + :pmd_osrc:prev_checks);
+			wrap=no;
+			width=540;
+			}
+
+		    use_donor "widget/table-row-detail"
+			{
+			height=30;
+
+			use_donor_ctls_hbox "widget/hbox"
+			    {
+			    x=10; y=5;
+			    width=550; height=24;
+			    align=center; spacing=10;
+
+			    use_donor_btn "widget/textbutton"
+				{
+				height=24;
+				width=130;
+				text = "Select Donor";
+
+				on_use_donor_1 "widget/connector"
+				    {
+				    event=Click;
+				    target=gift_entry;
+				    action=TriggerEvent;
+				    EventName=runclient('ScanOneDonor');
+				    partner_key=runclient(:pmd_osrc:partner_key);
+				    ack_key=runclient(:pmd_osrc:ack_key);
+				    hash=runclient(:last_hash:value);
+				    check_number=runclient(:last_ckno:value);
+				    filename=runclient(:last_file:value);
+				    }
+
+				on_use_donor_2 "widget/connector" { event=Click; target=popover_matching_donors; action=Close; }
+				}
+			    }
+			}
+		    }
+		}
 	    }
 	}
     }
+

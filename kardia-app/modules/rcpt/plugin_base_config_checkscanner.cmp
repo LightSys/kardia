@@ -1,0 +1,91 @@
+$Version=2$
+plugin_base_config_rcpt "widget/component-decl"
+    {
+    width=828;
+    height=490;
+    title = "Check Scanner";
+    description = "Configure check scanner options";
+    sequence = 670;
+
+    vbox "widget/vbox"
+	{
+	x=0; y=0;
+	width=828; height=490;
+	spacing=7;
+
+	ledger_lbl "widget/label" { height=16; style=bold; text="Accounting Ledger Selection:"; }
+
+	ledger_osrc "widget/osrc"
+	    {
+	    sql = "select :name, label=:a_ledger_number + ' - ' + :a_ledger_desc, :a_ledger_number from /apps/kardia/data/Kardia_DB/a_ledger/rows";
+
+	    ledger_dd "widget/dropdown"
+		{
+		height=24; width=300;
+		mode=objectsource;
+		fieldname=label;
+		numdisplay=12;
+		}
+	    }
+
+	sep1 "widget/autolayoutspacer" { height=1; }
+
+	config_osrc "widget/osrc"
+	    {
+	    a_ledger_number "widget/parameter" { type=string; }
+	    sql = "select * from object expression('/apps/kardia/modules/gl/accounting_config.qyp/' + :parameters:a_ledger_number)";
+
+	    config_link "widget/rule"
+		{
+		ruletype=osrc_relationship;
+		target=ledger_osrc;
+		key_1=a_ledger_number;
+		target_key_1=a_ledger_number;
+		}
+
+	    config_form "widget/form"
+		{
+		allow_query=no;
+
+		rcpt_lbl "widget/label" { height=16; style=bold; text="Check Scanner Options:"; }
+
+		rcpt_ckscan "widget/component" { path="/sys/cmp/smart_field.cmp"; x=24; height=24; field="RcptEnabScanner"; text="Enable Check Scanner Integration"; width=300; label_width=150; ctl_type=checkboxleft; ckscan_hints "widget/hints" { style=notnull; } }
+		rcpt_redact "widget/component" { path="/sys/cmp/smart_field.cmp"; x=24; height=24; field="RcptScanRedact"; text="Redact MICR line when storing check images"; width=300; label_width=150; ctl_type=checkboxleft; redact_hints "widget/hints" { style=notnull; } }
+
+		rcpt_lbl2 "widget/label" { height=16; style=bold; text="Check Account/Routing Hash Key:"; }
+		rcpt_lbl2_detail "widget/label" { height=60; text="Kardia does not record the actual account/routing numbers on checks, but stores an irreversible encryption of those values.  This is the secret key that makes those hashes unique for your system, and the complexity of the hash (higher complexities may be slow on older servers).  Changing either of these will cause Kardia to lose the account/routing associations that are used to speed up gift entry.  If this is blank, Kardia will create a key and complexity for you (recommended)."; }
+		rcpt_key "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="RcptCkScanKey"; text="Acct/Routing Hash Key:"; width=750; label_width=150; ctl_type=editbox; }
+		rcpt_cpx "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="RcptCkScanCpx"; text="Hash Complexity:"; width=300; label_width=150; ctl_type=dropdown; sql="select label='Very Low', value='1'; select label='Low', value='6'; select label='Medium', value='7'; select label='High (default)', value='8'; select label='Very High', value='20'"; numdisplay=6; }
+		rcpt_lbl2_detail2 "widget/label" { height=45; text="The 'Migration' Key and Complexity are not used for hashing new data, but instead are used for looking up older data.  If you ever need to migrate from less secure to more secure hash settings, place your old key and complexity in these migration settings so that Kardia can still look up previously-hashed data.  Once enough time has gone by that you don't need Kardia to remember that older data, you can delete these settings."; }
+		rcpt_mkey "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="RcptCkScanMKey"; text="Migration Hash Key:"; width=750; label_width=150; ctl_type=editbox; }
+		rcpt_mcpx "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="RcptCkScanMCpx"; text="Migration Complexity:"; width=300; label_width=150; ctl_type=dropdown; sql="select label='Very Low', value='1'; select label='Low', value='6'; select label='Medium', value='7'; select label='High (default)', value='8'; select label='Very High', value='20'"; numdisplay=6; }
+		}
+	    }
+
+	ctls_hbox "widget/hbox"
+	    {
+	    height=24;
+	    align=center;
+	    spacing=10;
+
+	    save_btn "widget/textbutton"
+		{
+		height=24; width=130;
+		text = "Save";
+		enabled=runclient(:config_form:is_savable);
+
+		on_save "widget/connector" { event=Click; target=config_form; action=Save; }
+		}
+
+	    cancel_btn "widget/textbutton"
+		{
+		height=24; width=130;
+		text = "Cancel";
+		enabled=runclient(:config_form:is_discardable);
+
+		on_cancel "widget/connector" { event=Click; target=config_form; action=Discard; }
+		}
+	    }
+	}
+    }
+

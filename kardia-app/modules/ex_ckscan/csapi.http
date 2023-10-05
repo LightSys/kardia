@@ -13,6 +13,10 @@ csapi "application/http"
     // Profile: only sent in a POST request body (connect command).
     profile "http/parameter" { type=string; source=none; usage=post; default=runserver( (select :s_scanner_id_on_server from /apps/kardia/data/Kardia_DB/s_document_scanner/rows where :s_scanner_id = :parameters:scannerid) ); }
 
+    // Redaction: black out the MICR area of the check.
+    ledger "http/parameter" { type=string; source=param; usage=none; }
+    redacted "http/parameter" { type=string; source=none; usage=url; default=runserver( isnull( (select condition(:a_config_value = '1', 'true', 'false') from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :parameters:ledger and :a_config_name = 'RcptScanRedact'), 'false') ); }
+
     // Connection information
     server = runserver( (select :s_scanner_host from /apps/kardia/data/Kardia_DB/s_document_scanner/rows where :s_scanner_id = :parameters:scannerid) );
     port = runserver( (select convert(string, :s_scanner_port) from /apps/kardia/data/Kardia_DB/s_document_scanner/rows where :s_scanner_id = :parameters:scannerid) );

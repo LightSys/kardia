@@ -39,6 +39,8 @@ copy_gift "widget/component-decl"
 	new_viadonor "widget/parameter"		{ param_name=new_viadonor; type=string; style=strnull; }
 	new_checkno "widget/parameter"		{ param_name=new_checkno; type=string; style=strnull; }
 	new_comment "widget/parameter"		{ param_name=new_comment; type=string; style=strnull; }
+	new_filename "widget/parameter"		{ param_name=new_filename; type=string; style=strnull; }
+	new_hash "widget/parameter"		{ param_name=new_hash; type=string; style=strnull; }
 
 	replicasize=2; readahead=2; autoquery=never;
 	
@@ -147,6 +149,8 @@ copy_gift "widget/component-decl"
 		    :i:a_non_tax_deductible,
 		    :i:a_motivational_code,
 		    a_comment = isnull(:parameters:new_comment, :i:a_comment),
+		    a_account_hash = :parameters:new_hash,
+		    a_check_front_image = :parameters:new_filename,
 		    p_dn_donor_partner_id = :g:p_donor_partner_id,
 		    p_dn_ack_partner_id = :g:p_ack_partner_id,
 		    p_dn_pass_partner_id = :g:p_pass_partner_id,

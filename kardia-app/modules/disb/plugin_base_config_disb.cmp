@@ -55,11 +55,11 @@ plugin_base_config_disb "widget/component-decl"
 		disb_cfund "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="DisbCashFund"; text="Asset Fund:"; width=300; label_width=150; ctl_type=editbox; }
 		disb_label_2 "widget/label" { height=30; text="Asset GL accounts: these are the GL accounts (such as bank accounts) that are used for disbursements.  Enter a comma-separated list of valid GL accounts in the 'Asset Account List'."; }
 		disb_cacct "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="DisbCashAcct"; text="Default Asset Account:"; width=300; label_width=150; ctl_type=editbox; }
-		disb_caccts "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="DisbCashAccts"; text="Asset Account List:"; width=300; label_width=150; ctl_type=editbox; da_hints "widget/hints" { badchars=" "; } }
+		disb_caccts "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="DisbCashAccts"; text="Asset Account List:"; width=450; label_width=150; ctl_type=editbox; da_hints "widget/hints" { badchars=" "; } }
+		disb_eacct "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="DisbExpAcct"; text="Default Expense Account:"; width=300; label_width=150; ctl_type=editbox; }
 
 
 		disb_label_3 "widget/label" { height=15; text="Options: select the options below that apply to your disbursements."; }
-		disb_eacct "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="DisbExpAcct"; text="Default Expense Account:"; width=300; label_width=150; ctl_type=editbox; }
 		disb_approve "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="DisbApprovals"; text="Disb. Approvals:"; width=300; label_width=150; ctl_type=dropdown; sql = "select label='No', value='N'; select label='Yes', value='Y'"; dav_hints "widget/hints" { style=notnull; } }
 		disb_recon "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="DisbRecon"; text="Disb. Reconciliation:"; width=300; label_width=150; ctl_type=dropdown; sql = "select label='No', value='N'; select label='Yes', value='Y'"; dr_hints "widget/hints" { style=notnull; } }
 		disb_autonum "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="DisbAutoNumber"; text="Check Auto-Numbering:"; width=300; label_width=150; ctl_type=dropdown; sql = "select label='No', value='N'; select label='Yes', value='Y'"; dan_hints "widget/hints" { style=notnull; } }

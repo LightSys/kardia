@@ -9,6 +9,12 @@ check_scanner "widget/component-decl"
     // Parameters
     //
     ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; deploy_to_client=yes; }
+    batch "widget/parameter" { type=integer; default=null; deploy_to_client=yes; }
+
+    // Know when a new check is added
+    //
+    prev_cnt "widget/variable" { type=integer; default=0; }
+    prev_used "widget/variable" { type=integer; default=0; }
 
     // Action NextCheck: retrieve the next check from the check scanner.
     //
@@ -16,12 +22,58 @@ check_scanner "widget/component-decl"
     on_NextCheck "widget/connector"
 	{
 	event=NextCheck;
-	target=scan_osrc;
-	action=QueryParam;
+	target=browse_scan_osrc;
+	action=Refresh;
 	}
 
-    // Event Scanned: invoked when a new check is available
+    // Action FindReceipt: jump to a certain receipt # and line item # in the check list
+    //
+    FindReceipt "widget/component-decl-action" { }
+    on_FindReceipt "widget/connector"
+	{
+	event=FindReceipt;
+	event_condition=runclient(:receipt != :browse_scan_osrc:receipt or :check_number != :browse_scan_osrc:check_number);
+	target=browse_scan_osrc;
+	action=FindObject;
+	receipt=runclient(:receipt);
+	filename=runclient(:filename);
+	}
+
+    // Action FindUnused: jump to the next scanned check that is unused.
+    //
+    FindUnused "widget/component-decl-action" { }
+    on_FindUnused "widget/connector"
+	{
+	event=FindUnused;
+	target=browse_scan_osrc;
+	action=FindObject;
+	used=runclient(0);
+	}
+
+    // Action UpdateUsed: rescan the Used setting on the current check.
+    //
+    UpdateUsed "widget/component-decl-action" { }
+    on_UpdateUsed "widget/connector"
+	{
+	event=UpdateUsed;
+	target=browse_scan_osrc;
+	action=Refresh;
+	}
+
+    // Event NewCheck: invoked when a new check is added to the queue.
+    NewCheck "widget/component-decl-event" { }
+
+    // Event Scanned: invoked when user clicks Use
     Scanned "widget/component-decl-event" { }
+
+    // Event Selected: invoked when the data focus on the control changes.
+    Selected "widget/component-decl-event" { }
+
+    // Event ShowImage: invoked when there is some other need to display a check image.
+    ShowImage "widget/component-decl-event" { }
+
+    // Event Connected: fires when connected to a check scanner.
+    Connected "widget/component-decl-event" { }
 
     // We use a "tab control" here to overlay multiple "pages", but we omit
     // the "tabs" since switching is done entirely programmatically.
@@ -164,7 +216,7 @@ check_scanner "widget/component-decl"
 		}
 	    }
 
-	// This page shows when the user is actively connect to a check
+	// This page shows when the user is actively connected to a check
 	// scanner.  This also displays the scanned check, check number, and
 	// the donor name.
 	//
@@ -177,20 +229,158 @@ check_scanner "widget/component-decl"
 		x=0; y=0; width=185; height=168;
 		spacing=5;
 
-		scan_name_lbl "widget/label" { height=15; style=bold; align=center; value=runclient(:conn_osrc:desc); }
+		scan_hdr_hbox "widget/hbox"
+		    {
+		    height=18;
+		    spacing=1;
+
+		    btnFirst "widget/imagebutton"
+			{
+			width=18;
+			height=18;
+			image="/sys/images/ico16aa.gif";
+			pointimage="/sys/images/ico16ab.gif";
+			clickimage="/sys/images/ico16ac.gif";
+			disabledimage="/sys/images/ico16ad.gif";
+			tooltip = runserver("First Check");
+			enabled = runclient(:browse_scan_osrc:cx__current_id > 1);
+			cnFirst "widget/connector" { event="Click"; target=browse_scan_osrc; action="First"; }
+			}
+
+		    btnBack "widget/imagebutton"
+			{
+			width=18;
+			height=18;
+			image="/sys/images/ico16ba.gif";
+			pointimage="/sys/images/ico16bb.gif";
+			clickimage="/sys/images/ico16bc.gif";
+			disabledimage="/sys/images/ico16bd.gif";
+			tooltip = runserver("Previous Check");
+			enabled = runclient(:browse_scan_osrc:cx__current_id > 1);
+			cnBack "widget/connector" { event="Click"; target=browse_scan_osrc; action="Prev"; }
+			}
+
+		    scan_name_lbl "widget/label"
+			{
+			width = 71;
+			style=bold;
+			align=center;
+			value=runclient(condition(:browse_scan_osrc:cx__final_id > 0, isnull('Ck. ' + :browse_scan_osrc:cx__current_id + '/' + :browse_scan_osrc:cx__final_id, 'No Checks'), 'No Checks'));
+			}
+
+		    btnNext "widget/imagebutton"
+			{
+			width=18;
+			height=18;
+			image="/sys/images/ico16ca.gif";
+			pointimage="/sys/images/ico16cb.gif";
+			clickimage="/sys/images/ico16cc.gif";
+			disabledimage="/sys/images/ico16cd.gif";
+			tooltip = runserver("Next Check");
+			enabled = runclient(:browse_scan_osrc:cx__current_id < :browse_scan_osrc:cx__final_id);
+			cnNext "widget/connector" { event="Click"; target=browse_scan_osrc; action="Next"; }
+			}
+
+		    btnLast "widget/imagebutton"
+			{
+			width=18;
+			height=18;
+			image="/sys/images/ico16da.gif";
+			pointimage="/sys/images/ico16db.gif";
+			clickimage="/sys/images/ico16dc.gif";
+			disabledimage="/sys/images/ico16dd.gif";
+			tooltip = runserver("Last Check");
+			enabled = runclient(:browse_scan_osrc:cx__current_id < :browse_scan_osrc:cx__final_id);
+			cnLast "widget/connector" { event="Click"; target=browse_scan_osrc; action="Last"; }
+			}
+
+		    btnFind "widget/imagebutton"
+			{
+			width=18;
+			height=18;
+			image="/sys/images/ico21a.gif";
+			pointimage="/sys/images/ico21b.gif";
+			clickimage="/sys/images/ico21c.gif";
+			disabledimage="/sys/images/ico21d.gif";
+			tooltip = runserver("Find Next Unused");
+			enabled = runclient(:browse_scan_osrc:used is not null);
+			cnFind "widget/connector" { event="Click"; target=browse_scan_osrc; action="FindObject"; used=runclient(0); }
+			}
+
+		    btnDelete "widget/imagebutton"
+			{
+			width=18;
+			height=18;
+			image="/sys/images/ico24a.gif";
+			pointimage="/sys/images/ico24b.gif";
+			clickimage="/sys/images/ico24c.gif";
+			disabledimage="/sys/images/ico24d.gif";
+			tooltip = runserver("Delete this Scanned Check");
+			enabled = runclient(:browse_scan_osrc:used = 0);
+			cnDelete "widget/connector" { event="Click"; target=browse_scan_form; action="Delete"; }
+			}
+		    }
 
 		img "widget/image"
 		    {
 		    height=76;
-		    source=runclient(isnull(:scan_osrc:filename, "/apps/kardia/images/bg/light_bgnd.jpg"));
+		    source=runclient(isnull(:browse_scan_osrc:filename, "/apps/kardia/images/bg/light_bgnd.jpg"));
+
+		    click_img "widget/connector"
+			{
+			event=Click;
+			target=check_scanner;
+			action=Selected;
+			direct_click = 1;
+			check_number = runclient(:browse_scan_osrc:check_number);
+			partner_key = runclient(:browse_scan_osrc:partner_key);
+			partner_name = runclient(:browse_scan_osrc:partner_name);
+			ack_key = runclient(:browse_scan_osrc:ack_key);
+			ack_name = runclient(:browse_scan_osrc:ack_name);
+			hash = runclient(:browse_scan_osrc:hash);
+			mighash = runclient(:browse_scan_osrc:mighash);
+			filename = runclient(:browse_scan_osrc:filename);
+			receipt = runclient(:browse_scan_osrc:receipt);
+			}
 		    }
 
-		plbl "widget/label"
+		cklabel_hbox "widget/hbox"
 		    {
-		    height=38;
+		    height=16;
+		    spacing=2;
+
+		    ck_used "widget/image"
+			{
+			width=16;
+			height=16;
+			source=runclient(condition(:browse_scan_osrc:used is null, "/sys/images/trans_1.gif", condition(:browse_scan_osrc:used > 0, "/sys/images/green_check.gif", "/sys/images/dotted_check.gif")));
+			}
+
+		    cklabel "widget/label"
+			{
+			width=165;
+			value=runclient(isnull('#' + :browse_scan_osrc:check_number + ' ' + isnull(:browse_scan_osrc:partner_name, '(unknown)'), ''));
+			allow_break=0;
+			overflow_ellipsis=1;
+			}
+		    }
+
+		ckwarn_label "widget/label"
+		    {
+		    widget_class=link;
+		    height=16;
 		    align=center;
-		    //value=runclient(isnull('#' + :scan_osrc:check_number + ' ', '') + isnull('R' + :scan_osrc:routing_number + ' ', '') + isnull('A' + :scan_osrc:account_number + ' ', '') + isnull(:scan_osrc:partner_name, ''));
-		    value=runclient(isnull('#' + :scan_osrc:check_number + ' ', '') + isnull(:scan_osrc:partner_name, ''));
+		    value = runclient(	condition(:browse_scan_osrc:previous_cnt > 0,
+						'(Scanned twice? ' + condition(:browse_scan_osrc:previous_batch == :batch:value, 'This Batch', 'Batch #' + :browse_scan_osrc:previous_batch) + ')',
+						condition(:browse_scan_osrc:unused_cnt > 0,
+							'(' + :browse_scan_osrc:unused_cnt + ' unused check' + condition(:browse_scan_osrc:unused_cnt = 1, '', 's') + ')',
+							''
+						)
+					)
+				);
+		    fgcolor=runclient(condition(:browse_scan_osrc:previous_cnt > 0 or (:browse_scan_osrc:unused_cnt > 0 and :browse_scan_osrc:used = 1), 'red', 'black'));
+
+		    on_ckwarn_click "widget/connector" { event=Click; event_condition=runclient(:browse_scan_osrc:previous_img is not null); target=check_scanner; action=ShowImage; Image=runclient(:browse_scan_osrc:previous_img); reason=runclient('Possible Duplicate Check'); }
 		    }
 
 		btn_hbox "widget/hbox"
@@ -218,23 +408,27 @@ check_scanner "widget/component-decl"
 			height=24;
 			width=90;
 			text = "Use >>";
-			enabled = runclient(:scan_osrc:check_number is not null);
+			enabled = runclient(:browse_scan_osrc:filename is not null and isnull(:browse_scan_osrc:used, 0) = 0);
 
 			on_use_1 "widget/connector"
 			    {
 			    event=Click;
 			    target=check_scanner;
 			    action=Scanned;
-			    check_number = runclient(:scan_osrc:check_number);
-			    partner_key = runclient(:scan_osrc:partner_key);
-			    partner_name = runclient(:scan_osrc:partner_name);
-			    hash = runclient(:scan_osrc:hash);
-			    filename = runclient(:scan_osrc:filename);
+			    check_number = runclient(:browse_scan_osrc:check_number);
+			    partner_key = runclient(:browse_scan_osrc:partner_key);
+			    partner_name = runclient(:browse_scan_osrc:partner_name);
+			    ack_key = runclient(:browse_scan_osrc:ack_key);
+			    ack_name = runclient(:browse_scan_osrc:ack_name);
+			    hash = runclient(:browse_scan_osrc:hash);
+			    mighash = runclient(:browse_scan_osrc:mighash);
+			    filename = runclient(:browse_scan_osrc:filename);
 			    }
 
 			on_use_2 "widget/connector"
 			    {
 			    event=Click;
+			    event_delay=0.1;
 			    target=check_scanner;
 			    action=TriggerEvent;
 			    EventName=runclient('NextCheck');
@@ -249,13 +443,15 @@ check_scanner "widget/component-decl"
     //
     disconn_osrc "widget/osrc"
 	{
+	d_ledger "widget/parameter" { param_name=ledger; type=string; default=runclient(:ledger:value); }
 	sql = "	declare object scaninfo scope application;
+		declare collection scanned_checks scope application;
 	
 		-- Disconnect from scanner
 		select
 		    :scaninfo:connected = :connected
 		from
-		    object expression ('/apps/kardia/modules/' + :scaninfo:module + '/' + :scaninfo:api + '/' + :scaninfo:got_scanner + '/disconnect/' + :scaninfo:conn_id)
+		    object expression ('/apps/kardia/modules/' + :scaninfo:module + '/' + :scaninfo:api + '/' + :scaninfo:got_scanner + '/disconnect/' + :scaninfo:conn_id + '?ledger=' + :parameters:ledger)
 		where
 		    :scaninfo:got_scanner is not null
 		;
@@ -276,6 +472,9 @@ check_scanner "widget/component-decl"
 		select
 		    :scaninfo:got_scanner = null
 		;
+
+		-- Remove scanned checks list
+		delete collection scanned_checks;
 
 		-- Return to caller
 		select
@@ -305,6 +504,14 @@ check_scanner "widget/component-decl"
 	    TabIndex=1;
 	    }
 
+	on_disconnected_3 "widget/connector"
+	    {
+	    event=EndQuery;
+	    event_condition=runclient(:disconn_osrc:got_scanner is null);
+	    target=conn_osrc;
+	    action=Clear;
+	    }
+
 	on_notdisconnected "widget/connector"
 	    {
 	    event=EndQuery;
@@ -320,8 +527,11 @@ check_scanner "widget/component-decl"
     conn_osrc "widget/osrc"
 	{
 	c_scanner_id "widget/parameter" { param_name=scanner_id; type=integer; }
+	c_ledger "widget/parameter" { param_name=ledger; type=string; default=runclient(:ledger:value); }
+	c_batch "widget/parameter" { param_name=batch; type=integer; default=runclient(:batch:value); }
 
 	sql = "	declare object scaninfo scope application;
+		declare collection scanned_checks scope application;
 
 		-- Get previous user info
 		select
@@ -377,7 +587,7 @@ check_scanner "widget/component-decl"
 		    :scaninfo:connected = isnull(:connected, 0),
 		    :scaninfo:conn_id = isnull(:id, 0)
 		from
-		    object expression ('/apps/kardia/modules/' + :scaninfo:module + '/' + :scaninfo:api + '/' + :scaninfo:got_scanner + '/connect')
+		    object expression ('/apps/kardia/modules/' + :scaninfo:module + '/' + :scaninfo:api + '/' + :scaninfo:got_scanner + '/connect?ledger=' + :parameters:ledger)
 		where
 		    :scaninfo:got_scanner is not null
 		;
@@ -392,6 +602,52 @@ check_scanner "widget/component-decl"
 		    :s_scanner_id = :scaninfo:got_scanner and
 		    isnull(:scaninfo:connected, 0) = 0 and
 		    :scaninfo:got_scanner is not null
+		;
+
+		-- Preload the scanned_checks list from the existing batch data (for viewing/editing an existing batch)
+		insert
+		    collection scanned_checks
+		select
+		    id = (select isnull(max(:id), 0) + 1 from collection scanned_checks),
+		    account_number = null,
+		    routing_number = null,
+		    check_number = :i:a_recv_document_id,
+		    partner_key = :g:p_donor_partner_id,
+		    partner_name = condition( convert(string, char_length(ltrim(rtrim(isnull(:p:p_org_name, ''))))) == 0, :p:p_given_name + ' ' + :p:p_surname, :p:p_org_name),
+		    partner_cnt = 1,
+		    ack_key = :g:p_ack_partner_id,
+		    ack_name = condition( convert(string, char_length(ltrim(rtrim(isnull(:pa:p_org_name, ''))))) == 0, :pa:p_given_name + ' ' + :pa:p_surname, :pa:p_org_name),
+		    hash = :i:a_account_hash,
+		    filename = :i:a_check_front_image,
+		    used = 1,
+		    receipt = :g:a_receipt_number,
+		    previous_img = null,
+		    previous_batch = null,
+		    previous_cnt = 0,
+		    just_scanned = 0
+		from
+		    /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i,
+		    /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g,
+		    /apps/kardia/data/Kardia_DB/p_partner/rows p,
+		    /apps/kardia/data/Kardia_DB/p_partner/rows pa
+		where
+		    :scaninfo:connected and
+		    :p:p_partner_key = :g:p_donor_partner_id and
+		    :pa:p_partner_key =* :g:p_ack_partner_id and
+		    :i:a_check_front_image is not null and
+		    :i:a_ledger_number = :parameters:ledger and
+		    :i:a_batch_number = :parameters:batch and
+		    :g:a_ledger_number = :i:a_ledger_number and
+		    :g:a_batch_number = :i:a_batch_number and
+		    :g:a_gift_number = :i:a_gift_number
+		order by
+		    :i:a_gift_number,
+		    :i:a_split_number
+		on duplicate
+		    :receipt,
+		    :filename
+		update set
+		    0 = 0
 		;
 
 		-- Return status to the caller
@@ -423,6 +679,23 @@ check_scanner "widget/component-decl"
 	    action=QueryParam;
 	    }
 
+	on_connected_3 "widget/connector"
+	    {
+	    event=EndQuery;
+	    event_condition=runclient(:conn_osrc:got_scanner == :sl_osrc:s_scanner_id);
+	    target=browse_scan_osrc;
+	    action=Refresh;
+	    }
+
+	on_connected_4 "widget/connector"
+	    {
+	    event=EndQuery;
+	    event_condition=runclient(:conn_osrc:got_scanner == :sl_osrc:s_scanner_id);
+	    target=check_scanner;
+	    action=Connected;
+	    Scanner=runclient(:conn_osrc:desc);
+	    }
+
 	on_notconnected "widget/connector"
 	    {
 	    condition=0;
@@ -439,8 +712,10 @@ check_scanner "widget/component-decl"
     scan_osrc "widget/osrc"
 	{
 	so_ledger "widget/parameter" { param_name=ledger; type=string; default=runclient(:ledger:value); }
+	so_batch "widget/parameter" { param_name=batch; type=integer; default=runclient(:batch:value); }
 
 	sql = "	declare object scaninfo scope application;
+		declare collection scanned_checks scope application;
 
 		-- Get hash key
 		select
@@ -452,30 +727,150 @@ check_scanner "widget/component-decl"
 		    :a_config_name = 'RcptCkScanKey'
 		;
 
-		-- Scan a check
+		-- Generate a hash key if we don't have a suitable one.
+		insert
+		    /apps/kardia/data/Kardia_DB/a_config/rows
 		select
-		    :scaninfo:account_number = replace(replace(:account_number, ' ', ''), 'O', ''),
-		    :scaninfo:routing_number = replace(replace(:routing_number, ' ', ''), 'T', ''),
-		    :scaninfo:check_number = convert(string, convert(integer, lztrim(replace(replace(:check_number, ' ', ''), 'O', '')))),
-		    :scaninfo:image = :image,
-		    :scaninfo:image_content_type = :image_content_type
+		    a_ledger_number = :parameters:ledger,
+		    a_config_name = 'RcptCkScanKey',
+		    a_config_value = hash('sha256', '' + rand() + rand() + rand()),
+		    s_date_created = getdate(),
+		    s_created_by = user_name(),
+		    s_date_modified = getdate(),
+		    s_modified_by = user_name()
+		where
+		    char_length(isnull(:scaninfo:hashkey, '')) < 8
+		on duplicate
+		    :a_ledger_number,
+		    :a_config_name
+		update set
+		    :a_config_value = hash('sha256', '' + rand() + rand() + rand()),
+		    :s_date_modified = getdate(),
+		    :s_modified_by = user_name()
+		;
+
+		-- Get the possibly updated hash key
+		select
+		    :scaninfo:hashkey = isnull(first(:a_config_value), '')
 		from
-		    object expression ('/apps/kardia/modules/' + :scaninfo:module + '/' + :scaninfo:api + '/' + :scaninfo:got_scanner + '/scan/' + :scaninfo:conn_id)
+		    /apps/kardia/data/Kardia_DB/a_config/rows
+		where
+		    :a_ledger_number = :parameters:ledger and
+		    :a_config_name = 'RcptCkScanKey'
+		;
+
+		-- Get argon thread complexity, default = 8
+		select
+		    :scaninfo:threads = isnull(convert(integer, first(:a_config_value)), 8),
+		    :scaninfo:configthreads = isnull(first(:a_config_value), '')
+		from
+		    /apps/kardia/data/Kardia_DB/a_config/rows
+		where
+		    :a_ledger_number = :parameters:ledger and
+		    :a_config_name = 'RcptCkScanCpx'
+		;
+
+		-- Update the argon thread complexity if needed.
+		insert
+		    /apps/kardia/data/Kardia_DB/a_config/rows
+		select
+		    a_ledger_number = :parameters:ledger,
+		    a_config_name = 'RcptCkScanCpx',
+		    a_config_value = convert(string, :scaninfo:threads),
+		    s_date_created = getdate(),
+		    s_created_by = user_name(),
+		    s_date_modified = getdate(),
+		    s_modified_by = user_name()
+		where
+		    char_length(isnull(:scaninfo:configthreads, '')) < 1
+		on duplicate
+		    :a_ledger_number,
+		    :a_config_name
+		update set
+		    :a_config_value = convert(string, :scaninfo:threads),
+		    :s_date_modified = getdate() IF MODIFIED,
+		    :s_modified_by = user_name() IF MODIFIED
+		;
+
+		-- Get migration hash key and complexity
+		select
+		    :scaninfo:mighashkey = isnull(first(:a_config_value), '')
+		from
+		    /apps/kardia/data/Kardia_DB/a_config/rows
+		where
+		    :a_ledger_number = :parameters:ledger and
+		    :a_config_name = 'RcptCkScanMKey'
 		;
 		select
-		    :scaninfo:hash = hmac('sha256', '' + lztrim(:scaninfo:account_number) + '|' + :scaninfo:routing_number, :scaninfo:hashkey)
+		    :scaninfo:migthreads = isnull(convert(integer, first(:a_config_value)), 8),
+		    :scaninfo:configmigthreads = isnull(first(:a_config_value), '')
+		from
+		    /apps/kardia/data/Kardia_DB/a_config/rows
+		where
+		    :a_ledger_number = :parameters:ledger and
+		    :a_config_name = 'RcptCkScanMCpx'
+		;
+
+		-- Determine other argon2id() parameters
+		select
+		    :scaninfo:timecpx = :scaninfo:threads + 2,
+		    :scaninfo:memcpx = condition(:scaninfo:threads >= 8, 65536, :scaninfo:threads * 8192),
+		    :scaninfo:threads = condition(:scaninfo:threads >= 8, 8, :scaninfo:threads),
+		    :scaninfo:migtimecpx = :scaninfo:migthreads + 2,
+		    :scaninfo:migmemcpx = condition(:scaninfo:migthreads >= 8, 65536, :scaninfo:migthreads * 8192),
+		    :scaninfo:migthreads = condition(:scaninfo:migthreads >= 8, 8, :scaninfo:migthreads)
+		;
+
+		-- Scan a check
+		select
+		    :scaninfo:account_number = replace(replace(first(:account_number), ' ', ''), 'O', ''),
+		    :scaninfo:routing_number = replace(replace(first(:routing_number), ' ', ''), 'T', ''),
+		    --:scaninfo:check_number = convert(string, convert(integer, lztrim(replace(replace(first(:check_number), ' ', ''), 'O', '')))),
+		    :scaninfo:check_number = lztrim(replace(replace(first(:check_number), ' ', ''), 'O', '')),
+		    :scaninfo:image = first(:image),
+		    :scaninfo:image_content_type = first(:image_content_type),
+		    :scaninfo:hash = null,
+		    :scaninfo:mighash = null,
+		    :scaninfo:lastfile = null,
+		    :scaninfo:lastdir = null
+		from
+		    object expression ('/apps/kardia/modules/' + :scaninfo:module + '/' + :scaninfo:api + '/' + :scaninfo:got_scanner + '/scan/' + :scaninfo:conn_id + '?ledger=' + :parameters:ledger)
+		;
+
+		-- Hash the account and routing numbers using Argon2id for donor lookups.
+		select
+		    :scaninfo:hash = argon2id('' + lztrim(:scaninfo:account_number) + '|' + :scaninfo:routing_number, :scaninfo:hashkey, :scaninfo:timecpx, :scaninfo:memcpx, :scaninfo:threads),
+		    :scaninfo:mighash = condition(char_length(:scaninfo:mighashkey) > 0, argon2id('' + lztrim(:scaninfo:account_number) + '|' + :scaninfo:routing_number, :scaninfo:mighashkey, :scaninfo:migtimecpx, :scaninfo:migmemcpx, :scaninfo:migthreads), 'NONE')
 		;
 
 		-- Filename
 		select
-		    :scaninfo:lastfile = 'check-' + convert(string,convert(integer,rand()*1000000)) + convert(string,convert(integer,rand()*1000000)) + '.png'
+		    :scaninfo:lastfile = 'checkscan-' + substring(hash('sha256', '' + rand() + rand()), 1, 16) + '.png'
+		where
+		    :scaninfo:image_content_type is not null
+		;
+		select
+		    :scaninfo:lastdir = substring(:scaninfo:lastfile, 11, 2)
 		where
 		    :scaninfo:image_content_type is not null
 		;
 
+		-- Subdirectory to organize the files
+		insert
+		    type 'system/directory' /apps/kardia/files/rcpt
+		select
+		    name = :scaninfo:lastdir
+		where
+		    :scaninfo:lastdir is not null
+		on duplicate
+		    :name
+		update set
+		    0 = 0
+		;
+
 		-- Write it to a file
 		insert
-		    /apps/kardia/files/rcpt
+		    expression ('/apps/kardia/files/rcpt/' + :scaninfo:lastdir)
 		select
 		    name = :scaninfo:lastfile,
 		    objcontent = from_base64(:scaninfo:image)
@@ -486,15 +881,19 @@ check_scanner "widget/component-decl"
 		-- Lookup donor information, if available.
 		select
 		    :scaninfo:partner_key = first(:p:p_partner_key),
-		    :scaninfo:partner_name = first(condition( convert(string, char_length(ltrim(rtrim(isnull(:p:p_org_name, ''))))) == 0, :p:p_given_name + ' ' + :p:p_surname, :p:p_org_name))
+		    :scaninfo:partner_name = first(condition( convert(string, char_length(ltrim(rtrim(isnull(:p:p_org_name, ''))))) == 0, :p:p_given_name + ' ' + :p:p_surname, :p:p_org_name)),
+		    :scaninfo:ack_key = first(:pa:p_partner_key),
+		    :scaninfo:ack_name = first(condition( convert(string, char_length(ltrim(rtrim(isnull(:pa:p_org_name, ''))))) == 0, :pa:p_given_name + ' ' + :pa:p_surname, :pa:p_org_name))
 		from
 		    /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i,
-		    /apps/kardia/data/Kardia_DB/p_partner/rows p
+		    /apps/kardia/data/Kardia_DB/p_partner/rows p,
+		    /apps/kardia/data/Kardia_DB/p_partner/rows pa
 		where
 		    :p:p_partner_key = :i:p_dn_donor_partner_id and
+		    :pa:p_partner_key =* :i:p_dn_ack_partner_id and
 		    :i:a_ledger_number = :parameters:ledger and
 		    --:i:a_posted = 1 and
-		    :i:a_account_hash = :scaninfo:hash
+		    (:i:a_account_hash = :scaninfo:hash or :i:a_account_hash = :scaninfo:mighash)
 		order by
 		    :i:a_dn_gift_received_date desc
 		;
@@ -506,36 +905,221 @@ check_scanner "widget/component-decl"
 		    /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i
 		where
 		    :i:a_ledger_number = :parameters:ledger and
-		    :i:a_posted = 1 and
-		    :i:a_account_hash = :scaninfo:hash
+		    --:i:a_posted = 1 and
+		    (:i:a_account_hash = :scaninfo:hash or :i:a_account_hash = :scaninfo:mighash)
 		group by
-		    :i:p_dn_donor_partner_id
+		    :i:p_dn_donor_partner_id,
+		    :i:p_dn_ack_partner_id
 		;
 
-		-- Return the scanned data to the caller
+		-- Update partner ID/name in case we have multiple donors matching
 		select
+		    :scaninfo:partner_key = condition(:scaninfo:partner_cnt > 1, 'MULTIPLE', :scaninfo:partner_key),
+		    :scaninfo:partner_name = condition(:scaninfo:partner_cnt > 1, 'MULTIPLE', :scaninfo:partner_name),
+		    :scaninfo:ack_key = condition(:scaninfo:partner_cnt > 1, 'MULTIPLE', :scaninfo:ack_key),
+		    :scaninfo:ack_name = condition(:scaninfo:partner_cnt > 1, 'MULTIPLE', :scaninfo:ack_name)
+		;
+
+		-- Was a check with this hash and ckno scanned before?
+		select
+		    :scaninfo:previous_img = first(:a_check_front_image),
+		    :scaninfo:previous_batch = first(:a_batch_number),
+		    :scaninfo:previous_cnt = count(1)
+		from
+		    /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i
+		where
+		    :i:a_recv_document_id = :scaninfo:check_number and
+		    --:i:a_posted = 1 and
+		    (:i:a_account_hash = :scaninfo:hash or :i:a_account_hash = :scaninfo:mighash) and
+		    :i:a_check_front_image is not null
+		;
+
+		-- Mark other checks as not just scanned (for automation)
+		update
+		    collection scanned_checks
+		set
+		    :just_scanned = 0
+		where
+		    :scaninfo:lastdir is not null and :scaninfo:image_content_type is not null
+		;
+
+		-- Add an entry to scanned_checks
+		insert
+		    collection scanned_checks
+		select
+		    id = (select isnull(max(:id), 0) + 1 from collection scanned_checks),
 		    :scaninfo:account_number,
 		    :scaninfo:routing_number,
 		    :scaninfo:check_number,
 		    :scaninfo:partner_key,
 		    :scaninfo:partner_name,
 		    :scaninfo:partner_cnt,
+		    :scaninfo:ack_key,
+		    :scaninfo:ack_name,
 		    :scaninfo:hash,
-		    filename = '/apps/kardia/files/rcpt/' + :scaninfo:lastfile
+		    :scaninfo:mighash,
+		    :scaninfo:previous_img,
+		    :scaninfo:previous_batch,
+		    :scaninfo:previous_cnt,
+		    just_scanned = 1,
+		    used = 0,
+		    receipt = convert(string, null),
+		    filename = '/apps/kardia/files/rcpt/' + :scaninfo:lastdir + '/' + :scaninfo:lastfile
+		where
+		    :scaninfo:lastdir is not null and :scaninfo:image_content_type is not null
+		;
 
+		-- Update for which checks are used
+		update
+		    identity collection scanned_checks sc
+		set
+		    :sc:used = (select condition(count(1) > 0, 1, 0) from /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i where :i:a_account_hash = :sc:hash and :i:a_recv_document_id = :sc:check_number and :i:a_batch_number = :parameters:batch and :i:a_ledger_number = :parameters:ledger), -- and :i:a_posted = 1
+		    :sc:receipt = convert(string, (select :i:a_dn_receipt_number from /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i where :i:a_account_hash = :sc:hash and :i:a_recv_document_id = :sc:check_number and :i:a_batch_number = :parameters:batch and :i:a_ledger_number = :parameters:ledger limit 1)) -- and :i:a_posted = 1
+		;
+
+		-- Return the scanned data to the caller
+		select
+		    *
+		from
+		    collection scanned_checks
+		order by
+		    :id asc
 		";
 	autoquery=never;
-	readahead=2;
-	replicasize=2;
+	readahead=400;
+	replicasize=400;
 	indicates_activity=no;
 
 	on_scanned_1 "widget/connector"
 	    {
-	    condition = 0;
 	    event=EndQuery;
 	    event_delay=0.1;
 	    event_condition=runclient(:conn_osrc:got_scanner == :sl_osrc:s_scanner_id);
-	    action=QueryParam;
+	    action=Refresh;
+	    }
+	on_scanned_2 "widget/connector"
+	    {
+	    event=EndQuery;
+	    event_condition=runclient(:conn_osrc:got_scanner == :sl_osrc:s_scanner_id);
+	    target=browse_scan_osrc;
+	    action=Refresh;
+	    }
+	}
+
+    browse_scan_osrc "widget/osrc"
+	{
+	bs_ledger "widget/parameter" { param_name=ledger; type=string; default=runclient(:ledger:value); }
+	bs_batch "widget/parameter" { param_name=batch; type=integer; default=runclient(:batch:value); }
+
+	sql = "	declare collection scanned_checks scope application;
+
+		-- Update for which checks are used
+		update
+		    identity collection scanned_checks sc
+		set
+		    :sc:used = (select condition(count(1) > 0, 1, 0) from /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i where :i:a_check_front_image = :sc:filename and :i:a_batch_number = :parameters:batch and :i:a_ledger_number = :parameters:ledger), -- and :i:a_posted = 1
+		    :sc:receipt = convert(string, (select :i:a_dn_receipt_number from /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i where :i:a_check_front_image = :sc:filename and :i:a_batch_number = :parameters:batch and :i:a_ledger_number = :parameters:ledger limit 1)) -- and :i:a_posted = 1
+		;
+
+		-- Return the data set to the caller to be browsed
+		select
+		    *,
+		    kludge = 1,
+		    unused_cnt = (select count(1) from collection scanned_checks sc2 where :sc2:used = 0)
+		from
+		    collection scanned_checks sc1
+		order by
+		    :sc1:id asc
+		";
+	autoquery=never;
+	readahead=400;
+	replicasize=400;
+	indicates_activity = no;
+
+	browse_scan_form "widget/form"
+	    {
+	    //allow_modify = runclient(:browse_scan_form:used = 0);
+	    }
+
+	on_focus_change "widget/connector"
+	    {
+	    event=DataFocusChanged;
+	    event_condition=runclient(:Refresh == 0 or :browse_scan_form:form_prev_mode == 'NoData');
+	    target=check_scanner;
+	    action=Selected;
+	    direct_click = 0;
+	    check_number = runclient(:browse_scan_osrc:check_number);
+	    partner_key = runclient(:browse_scan_osrc:partner_key);
+	    partner_name = runclient(:browse_scan_osrc:partner_name);
+	    ack_key = runclient(:browse_scan_osrc:ack_key);
+	    ack_name = runclient(:browse_scan_osrc:ack_name);
+	    hash = runclient(:browse_scan_osrc:hash);
+	    mighash = runclient(:browse_scan_osrc:mighash);
+	    filename = runclient(:browse_scan_osrc:filename);
+	    receipt = runclient(:browse_scan_osrc:receipt);
+	    }
+
+	on_new_check_added "widget/connector"
+	    {
+	    event=Found;
+	    event_condition=runclient(:kludge = 1 and :browse_scan_osrc:just_scanned = 1); //:browse_scan_osrc:cx__final_id != :prev_cnt:value and not isnull(:browse_scan_osrc:used,0));
+	    //event_condition=runclient(:just_scanned = 1); //:browse_scan_osrc:cx__final_id != :prev_cnt:value and not isnull(:browse_scan_osrc:used,0));
+	    //event_confirm=runclient('Found: ' + isnull(:used + ', ' + :browse_scan_osrc:just_scanned + ', ' + :browse_scan_osrc:name, ''));
+	    target=check_scanner;
+	    action=NewCheck;
+	    Count=runclient(:browse_scan_osrc:cx__final_id);
+	    PrevCount=runclient(:prev_cnt:value);
+	    Current=runclient(:browse_scan_osrc:cx__current_id);
+	    check_number = runclient(:browse_scan_osrc:check_number);
+	    partner_key = runclient(:browse_scan_osrc:partner_key);
+	    partner_name = runclient(:browse_scan_osrc:partner_name);
+	    ack_key = runclient(:browse_scan_osrc:ack_key);
+	    ack_name = runclient(:browse_scan_osrc:ack_name);
+	    hash = runclient(:browse_scan_osrc:hash);
+	    mighash = runclient(:browse_scan_osrc:mighash);
+	    filename = runclient(:browse_scan_osrc:filename);
+	    }
+
+	find_latest_unused_on_refresh "widget/connector"
+	    {
+	    event=EndQuery;
+	    event_condition=runclient(:browse_scan_osrc:cx__final_id != :prev_cnt:value);
+	    //event_confirm=runclient('EndQuery: ' + isnull(:browse_scan_osrc:just_scanned + ', ' + :browse_scan_osrc:name, ''));
+	    //event_condition=runclient(:Refresh == 1 and :browse_scan_osrc:used = 1 and ((:browse_scan_osrc:cx__final_id != :prev_cnt:value) or (:prev_used:value = 0)));
+	    action=FindObject;
+	    used=runclient(0);
+	    kludge=runclient(1); // so we can tell that the FindObject originated here.
+	    //just_scanned=runclient(1);
+	    }
+
+	update_cnt "widget/connector"
+	    {
+	    event=EndQuery;
+	    target=prev_cnt;
+	    action=SetValue;
+	    Value=runclient(:browse_scan_osrc:cx__final_id);
+	    }
+	update_used "widget/connector"
+	    {
+	    event=EndQuery;
+	    target=prev_used;
+	    action=SetValue;
+	    Value=runclient(:browse_scan_osrc:used);
+	    }
+
+	del_update_cnt "widget/connector"
+	    {
+	    event=Deleted;
+	    target=prev_cnt;
+	    action=SetValue;
+	    Value=runclient(:browse_scan_osrc:cx__final_id);
+	    }
+	del_update_used "widget/connector"
+	    {
+	    event=Deleted;
+	    target=prev_used;
+	    action=SetValue;
+	    Value=runclient(:browse_scan_osrc:used);
 	    }
 	}
     }
