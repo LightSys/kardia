@@ -18,46 +18,50 @@ check_scanner "widget/component-decl"
 
     // Action NextCheck: retrieve the next check from the check scanner.
     //
-    NextCheck "widget/component-decl-action" { }
-    on_NextCheck "widget/connector"
+    NextCheck "widget/component-decl-action"
 	{
-	event=NextCheck;
-	target=browse_scan_osrc;
-	action=Refresh;
+	on_NextCheck "widget/connector"
+	    {
+	    target=browse_scan_osrc;
+	    action=Refresh;
+	    }
 	}
 
     // Action FindReceipt: jump to a certain receipt # and line item # in the check list
     //
-    FindReceipt "widget/component-decl-action" { }
-    on_FindReceipt "widget/connector"
+    FindReceipt "widget/component-decl-action"
 	{
-	event=FindReceipt;
-	event_condition=runclient(:receipt != :browse_scan_osrc:receipt or :check_number != :browse_scan_osrc:check_number);
-	target=browse_scan_osrc;
-	action=FindObject;
-	receipt=runclient(:receipt);
-	filename=runclient(:filename);
+	on_FindReceipt "widget/connector"
+	    {
+	    event_condition=runclient(:receipt != :browse_scan_osrc:receipt or :check_number != :browse_scan_osrc:check_number);
+	    target=browse_scan_osrc;
+	    action=FindObject;
+	    receipt=runclient(:receipt);
+	    filename=runclient(:filename);
+	    }
 	}
 
     // Action FindUnused: jump to the next scanned check that is unused.
     //
-    FindUnused "widget/component-decl-action" { }
-    on_FindUnused "widget/connector"
+    FindUnused "widget/component-decl-action"
 	{
-	event=FindUnused;
-	target=browse_scan_osrc;
-	action=FindObject;
-	used=runclient(0);
+	on_FindUnused "widget/connector"
+	    {
+	    target=browse_scan_osrc;
+	    action=FindObject;
+	    used=runclient(0);
+	    }
 	}
 
     // Action UpdateUsed: rescan the Used setting on the current check.
     //
-    UpdateUsed "widget/component-decl-action" { }
-    on_UpdateUsed "widget/connector"
+    UpdateUsed "widget/component-decl-action"
 	{
-	event=UpdateUsed;
-	target=browse_scan_osrc;
-	action=Refresh;
+	on_UpdateUsed "widget/connector"
+	    {
+	    target=browse_scan_osrc;
+	    action=Refresh;
+	    }
 	}
 
     // Event NewCheck: invoked when a new check is added to the queue.
@@ -430,8 +434,7 @@ check_scanner "widget/component-decl"
 			    event=Click;
 			    event_delay=0.1;
 			    target=check_scanner;
-			    action=TriggerEvent;
-			    EventName=runclient('NextCheck');
+			    action=NextCheck;
 			    }
 			}
 		    }

@@ -29,34 +29,114 @@ gift_entry "widget/component-decl"
 
     image_reason "widget/variable" { type=string; default=""; }
 
-    LoadSidebar "widget/component-decl-action" { }
-
-    on_sidebar1 "widget/connector"
+    // Called when we need to refresh/reload the donor info and history sidebar
+    LoadSidebar "widget/component-decl-action"
 	{
-	event=LoadSidebar;
-	target=manage_osrc;
-	action=QueryParam;
-	partner=runclient(:Donor);
-	ledger=runclient(:ledger:value);
+	on_sidebar1 "widget/connector"
+	    {
+	    target=manage_osrc;
+	    action=QueryParam;
+	    partner=runclient(:Donor);
+	    ledger=runclient(:ledger:value);
+	    }
+	on_sidebar2 "widget/connector"
+	    {
+	    target=hist_osrc;
+	    action=QueryParam;
+	    partner=runclient(:f_rcpt_donorid:content);
+	    ackpartner=runclient(:f_rcpt_ackid:content);
+	    ledger=runclient(:ledger:value);
+	    }
 	}
 
-    on_sidebar2 "widget/connector"
+    // Called when we need to forget data from the last check scan.
+    ForgetScan "widget/component-decl-action"
 	{
-	event=LoadSidebar;
-	target=hist_osrc;
-	action=QueryParam;
-	partner=runclient(:f_rcpt_donorid:content);
-	ackpartner=runclient(:f_rcpt_ackid:content);
-	ledger=runclient(:ledger:value);
+	on_forget_scan_1 "widget/connector" { target=last_ckno; action=SetValue; Value=runclient(null); }
+	on_forget_scan_2 "widget/connector" { target=last_pkey; action=SetValue; Value=runclient(null); }
+	on_forget_scan_3 "widget/connector" { target=last_akey; action=SetValue; Value=runclient(null); }
+	on_forget_scan_4 "widget/connector" { target=last_hash; action=SetValue; Value=runclient(null); }
+	on_forget_scan_5 "widget/connector" { target=last_mighash; action=SetValue; Value=runclient(null); }
+	on_forget_scan_6 "widget/connector" { target=last_file; action=SetValue; Value=runclient(null); }
 	}
 
-    ForgetScan "widget/component-decl-action" { }
-    on_forget_scan_1 "widget/connector" { event=ForgetScan; target=last_ckno; action=SetValue; Value=runclient(null); }
-    on_forget_scan_2 "widget/connector" { event=ForgetScan; target=last_pkey; action=SetValue; Value=runclient(null); }
-    on_forget_scan_3 "widget/connector" { event=ForgetScan; target=last_akey; action=SetValue; Value=runclient(null); }
-    on_forget_scan_4 "widget/connector" { event=ForgetScan; target=last_hash; action=SetValue; Value=runclient(null); }
-    on_forget_scan_5 "widget/connector" { event=ForgetScan; target=last_mighash; action=SetValue; Value=runclient(null); }
-    on_forget_scan_6 "widget/connector" { event=ForgetScan; target=last_file; action=SetValue; Value=runclient(null); }
+    // check scanner, multiple donors found.
+    ScanMultipleDonors "widget/component-decl-action"
+	{
+	on_mul_donor_1 "widget/connector" { target=last_ckno; action=SetValue; Value=runclient(:check_number); }
+	on_mul_donor_2 "widget/connector" { target=last_hash; action=SetValue; Value=runclient(:hash); }
+	on_mul_donor_3 "widget/connector" { target=last_mighash; action=SetValue; Value=runclient(:mighash); }
+	on_mul_donor_4 "widget/connector" { target=last_file; action=SetValue; Value=runclient(:filename); }
+	on_mul_donor_5 "widget/connector" { target=popover_matching_donors; action=Open; }
+	on_mul_donor_6 "widget/connector" { target=pmd_osrc; action=QueryParam; check_number=runclient(:check_number); hash=runclient(:hash); mighash=runclient(:mighash); ledger=runclient(:ledger:value); }
+	on_mul_donor_7 "widget/connector"
+	    {
+	    event_condition=runclient((not :rcpt_form:is_discardable) and (not :desig_form:is_discardable) and (not :p_detail_form:is_discardable));
+	    target=new_rcpt;
+	    action=Click;
+	    using_scanner=1;
+	    }
+	}
+
+    // check scanner, one donor found.
+    ScanOneDonor "widget/component-decl-action"
+	{
+	on_one_donor_1 "widget/connector" { target=last_ckno; action=SetValue; Value=runclient(:check_number); }
+	on_one_donor_2a "widget/connector" { target=last_pkey; action=SetValue; Value=runclient(:partner_key); }
+	on_one_donor_2b "widget/connector" { target=last_akey; action=SetValue; Value=runclient(:ack_key); }
+	on_one_donor_3 "widget/connector" { target=last_hash; action=SetValue; Value=runclient(:hash); }
+	on_one_donor_4 "widget/connector" { target=last_file; action=SetValue; Value=runclient(:filename); }
+	on_one_donor_5 "widget/connector"
+	    {
+	    event_condition=runclient((not :rcpt_form:is_discardable) and (not :desig_form:is_discardable) and (not :p_detail_form:is_discardable) and (isnull(:desig_form:a_account_hash, '') != :hash or :canceled_last:value = :hash));
+	    target=new_rcpt;
+	    action=Click;
+	    using_scanner=1;
+	    }
+	on_one_donor_6 "widget/connector"
+	    {
+	    event_condition=runclient(:rcpt_form:form_mode = 'New' and isnull(:f_rcpt_donorid:content, '') = '' and (not :desig_form:is_discardable) and (not :p_detail_form:is_discardable) and (isnull(:desig_form:a_account_hash, '') != :hash or :canceled_last:value = :hash));
+	    target=f_rcpt_donorid;
+	    action=SetValue;
+	    Value=runclient(:partner_key);
+	    Description=runclient(:partner_name);
+	    }
+	on_one_donor_7 "widget/connector"
+	    {
+	    event_condition=runclient(:rcpt_form:form_mode = 'New' and isnull(:f_rcpt_ackid:content, '') = '' and (not :desig_form:is_discardable) and (not :p_detail_form:is_discardable) and :ack_key is not null and (isnull(:desig_form:a_account_hash, '') != :hash or :canceled_last:value = :hash));
+	    target=f_rcpt_ackid;
+	    action=SetValue;
+	    Value=runclient(:ack_key);
+	    Description=runclient(:ack_name);
+	    }
+	on_one_donor_8 "widget/connector"
+	    {
+	    event_condition=runclient((not :rcpt_form:is_discardable) and (not :desig_form:is_discardable) and (not :p_detail_form:is_discardable) and isnull(:desig_form:a_account_hash, '') = :hash and :canceled_last:value != :hash);
+	    target=desig_form;
+	    action=New;
+	    }
+	on_one_donor_9a "widget/connector"
+	    {
+	    event_condition=runclient(:desig_form:is_discardable and (:partner_key is null or :partner_key = :f_rcpt_donorid:content) and isnull(:ack_key, '') = isnull(:f_rcpt_ackid:content, ''));
+	    target=item_hash;
+	    action=SetValue;
+	    Value=runclient(:hash);
+	    }
+	on_one_donor_9b "widget/connector"
+	    {
+	    event_condition=runclient(:desig_form:is_discardable and (:partner_key is null or :partner_key = :f_rcpt_donorid:content) and isnull(:ack_key, '') = isnull(:f_rcpt_ackid:content, ''));
+	    target=item_file;
+	    action=SetValue;
+	    Value=runclient(:filename);
+	    }
+	on_one_donor_9c "widget/connector"
+	    {
+	    event_condition=runclient(:desig_form:is_discardable and (:partner_key is null or :partner_key = :f_rcpt_donorid:content) and isnull(:ack_key, '') = isnull(:f_rcpt_ackid:content, ''));
+	    target=f_desig_recvdoc;
+	    action=SetValue;
+	    Value=runclient(:check_number);
+	    }
+	}
 
     // CTRL+n for Copy Gift selection from the Giving History list
     control_num_key_1 "widget/connector"
@@ -118,88 +198,6 @@ gift_entry "widget/component-decl"
 	event_cancel=runclient(:Ctrl and :Code = 82);
 	target=new_rcpt;
 	action=Click;
-	}
-
-    // check scanner, multiple donors found.
-    ScanMultipleDonors "widget/component-decl-action" { }
-    on_mul_donor_1 "widget/connector" { event=ScanMultipleDonors; target=last_ckno; action=SetValue; Value=runclient(:check_number); }
-    on_mul_donor_2 "widget/connector" { event=ScanMultipleDonors; target=last_hash; action=SetValue; Value=runclient(:hash); }
-    on_mul_donor_3 "widget/connector" { event=ScanMultipleDonors; target=last_mighash; action=SetValue; Value=runclient(:mighash); }
-    on_mul_donor_4 "widget/connector" { event=ScanMultipleDonors; target=last_file; action=SetValue; Value=runclient(:filename); }
-    on_mul_donor_5 "widget/connector" { event=ScanMultipleDonors; target=popover_matching_donors; action=Open; }
-    on_mul_donor_6 "widget/connector" { event=ScanMultipleDonors; target=pmd_osrc; action=QueryParam; check_number=runclient(:check_number); hash=runclient(:hash); mighash=runclient(:mighash); ledger=runclient(:ledger:value); }
-    on_mul_donor_7 "widget/connector"
-	{
-	event=ScanMultipleDonors;
-	event_condition=runclient((not :rcpt_form:is_discardable) and (not :desig_form:is_discardable) and (not :p_detail_form:is_discardable));
-	target=new_rcpt;
-	action=Click;
-	using_scanner=1;
-	}
-
-    // check scanner, one donor found.
-    ScanOneDonor "widget/component-decl-action" { }
-    on_one_donor_1 "widget/connector" { event=ScanOneDonor; target=last_ckno; action=SetValue; Value=runclient(:check_number); }
-    on_one_donor_2a "widget/connector" { event=ScanOneDonor; target=last_pkey; action=SetValue; Value=runclient(:partner_key); }
-    on_one_donor_2b "widget/connector" { event=ScanOneDonor; target=last_akey; action=SetValue; Value=runclient(:ack_key); }
-    on_one_donor_3 "widget/connector" { event=ScanOneDonor; target=last_hash; action=SetValue; Value=runclient(:hash); }
-    on_one_donor_4 "widget/connector" { event=ScanOneDonor; target=last_file; action=SetValue; Value=runclient(:filename); }
-    on_one_donor_5 "widget/connector"
-	{
-	event=ScanOneDonor;
-	event_condition=runclient((not :rcpt_form:is_discardable) and (not :desig_form:is_discardable) and (not :p_detail_form:is_discardable) and (isnull(:desig_form:a_account_hash, '') != :hash or :canceled_last:value = :hash));
-	target=new_rcpt;
-	action=Click;
-	using_scanner=1;
-	}
-    on_one_donor_6 "widget/connector"
-	{
-	event=ScanOneDonor;
-	event_condition=runclient(:rcpt_form:form_mode = 'New' and isnull(:f_rcpt_donorid:content, '') = '' and (not :desig_form:is_discardable) and (not :p_detail_form:is_discardable) and (isnull(:desig_form:a_account_hash, '') != :hash or :canceled_last:value = :hash));
-	target=f_rcpt_donorid;
-	action=SetValue;
-	Value=runclient(:partner_key);
-	Description=runclient(:partner_name);
-	}
-    on_one_donor_7 "widget/connector"
-	{
-	event=ScanOneDonor;
-	event_condition=runclient(:rcpt_form:form_mode = 'New' and isnull(:f_rcpt_ackid:content, '') = '' and (not :desig_form:is_discardable) and (not :p_detail_form:is_discardable) and :ack_key is not null and (isnull(:desig_form:a_account_hash, '') != :hash or :canceled_last:value = :hash));
-	target=f_rcpt_ackid;
-	action=SetValue;
-	Value=runclient(:ack_key);
-	Description=runclient(:ack_name);
-	}
-    on_one_donor_8 "widget/connector"
-	{
-	event=ScanOneDonor;
-	event_condition=runclient((not :rcpt_form:is_discardable) and (not :desig_form:is_discardable) and (not :p_detail_form:is_discardable) and isnull(:desig_form:a_account_hash, '') = :hash and :canceled_last:value != :hash);
-	target=desig_form;
-	action=New;
-	}
-    on_one_donor_9a "widget/connector"
-	{
-	event=ScanOneDonor;
-	event_condition=runclient(:desig_form:is_discardable and (:partner_key is null or :partner_key = :f_rcpt_donorid:content) and isnull(:ack_key, '') = isnull(:f_rcpt_ackid:content, ''));
-	target=item_hash;
-	action=SetValue;
-	Value=runclient(:hash);
-	}
-    on_one_donor_9b "widget/connector"
-	{
-	event=ScanOneDonor;
-	event_condition=runclient(:desig_form:is_discardable and (:partner_key is null or :partner_key = :f_rcpt_donorid:content) and isnull(:ack_key, '') = isnull(:f_rcpt_ackid:content, ''));
-	target=item_file;
-	action=SetValue;
-	Value=runclient(:filename);
-	}
-    on_one_donor_9c "widget/connector"
-	{
-	event=ScanOneDonor;
-	event_condition=runclient(:desig_form:is_discardable and (:partner_key is null or :partner_key = :f_rcpt_donorid:content) and isnull(:ack_key, '') = isnull(:f_rcpt_ackid:content, ''));
-	target=f_desig_recvdoc;
-	action=SetValue;
-	Value=runclient(:check_number);
 	}
 
     copy_gift "widget/component"
@@ -402,7 +400,7 @@ gift_entry "widget/component-decl"
 			    }
 
 			// If the user changes receipts, erase the cached data from the last check scan.
-			rcptchg_cn1 "widget/connector" { event=DataFocusChanged; event_condition=runclient(:Reason != 'create' and :doing_copy:value = 0); target=gift_entry; action=TriggerEvent; EventName=runclient('ForgetScan'); }
+			rcptchg_cn1 "widget/connector" { event=DataFocusChanged; event_condition=runclient(:Reason != 'create' and :doing_copy:value = 0); target=gift_entry; action=ForgetScan; }
 					
 			receipts_tbl "widget/table"
 			    {
@@ -506,7 +504,7 @@ gift_entry "widget/component-decl"
 			    new_cn1 "widget/connector" { event=Click; event_condition=runclient(:desig_form:form_mode == 'New'); target=desig_form; action=Discard; }
 			    new_cn2 "widget/connector" { event=Click; target=rcpt_form; action=New; }
 			    new_cn3 "widget/connector" { event=Click; target=donor_osrc; action=Clear; }
-			    new_cn4 "widget/connector" { event=Click; event_condition=runclient(not isnull(:using_scanner, 0)); target=gift_entry; action=TriggerEvent; EventName=runclient('ForgetScan'); }
+			    new_cn4 "widget/connector" { event=Click; event_condition=runclient(not isnull(:using_scanner, 0)); target=gift_entry; action=ForgetScan; }
 			    }
 			}
 
@@ -560,8 +558,7 @@ gift_entry "widget/component-decl"
 			    event=Scanned;
 			    event_condition=runclient(:partner_key is null);
 			    target=gift_entry;
-			    action=TriggerEvent;
-			    EventName=runclient('ScanOneDonor');
+			    action=ScanOneDonor;
 			    event_all_params=1;
 			    }
 			on_scan_none_2 "widget/connector"
@@ -569,8 +566,7 @@ gift_entry "widget/component-decl"
 			    event=NewCheck;
 			    event_condition=runclient(:Count == :Current and :Count > 0 and :partner_key is null);
 			    target=gift_entry;
-			    action=TriggerEvent;
-			    EventName=runclient('ScanOneDonor');
+			    action=ScanOneDonor;
 			    event_all_params=1;
 			    }
 
@@ -580,8 +576,7 @@ gift_entry "widget/component-decl"
 			    event=NewCheck;
 			    event_condition=runclient(:Count == :Current and :partner_key is not null and :partner_key != 'MULTIPLE' and :ack_key is null);
 			    target=gift_entry;
-			    action=TriggerEvent;
-			    EventName=runclient('ScanOneDonor');
+			    action=ScanOneDonor;
 			    event_all_params=1;
 			    }
 			on_scan_one_2 "widget/connector"
@@ -589,8 +584,7 @@ gift_entry "widget/component-decl"
 			    event=Scanned;
 			    event_condition=runclient(:partner_key is not null and :partner_key != 'MULTIPLE' and :ack_key is null);
 			    target=gift_entry;
-			    action=TriggerEvent;
-			    EventName=runclient('ScanOneDonor');
+			    action=ScanOneDonor;
 			    event_all_params=1;
 			    }
 
@@ -600,8 +594,7 @@ gift_entry "widget/component-decl"
 			    event=NewCheck;
 			    event_condition=runclient(:Count == :Current and :partner_key is not null and (:partner_key = 'MULTIPLE' or :ack_key is not null));
 			    target=gift_entry;
-			    action=TriggerEvent;
-			    EventName=runclient('ScanMultipleDonors');
+			    action=ScanMultipleDonors;
 			    event_all_params=1;
 			    }
 			on_scan_mul_2 "widget/connector"
@@ -609,8 +602,7 @@ gift_entry "widget/component-decl"
 			    event=Scanned;
 			    event_condition=runclient(:partner_key is not null and (:partner_key = 'MULTIPLE' or :ack_key is not null));
 			    target=gift_entry;
-			    action=TriggerEvent;
-			    EventName=runclient('ScanMultipleDonors');
+			    action=ScanMultipleDonors;
 			    event_all_params=1;
 			    }
 			}
@@ -870,8 +862,7 @@ gift_entry "widget/component-decl"
 			event=View;
 			event_condition=runclient(:manage_osrc:partner != isnull(:receipts_osrc:p_ack_partner_id, :receipts_osrc:p_donor_partner_id));
 			target=gift_entry;
-			action=TriggerEvent;
-			EventName=runclient("LoadSidebar");
+			action=LoadSidebar;
 			Donor=runclient(isnull(:receipts_osrc:p_ack_partner_id, :receipts_osrc:p_donor_partner_id));
 			}
 
@@ -922,7 +913,7 @@ gift_entry "widget/component-decl"
 			}
 
 		    // Forget scanned data if user cancels out of receipt creation
-		    on_discard_rcpt_forget_scan "widget/connector" { event=Discard; target=gift_entry; action=TriggerEvent; EventName=runclient('ForgetScan'); }
+		    on_discard_rcpt_forget_scan "widget/connector" { event=Discard; target=gift_entry; action=ForgetScan; }
 
 		    // Hide popover donor list if user cancels
 		    on_discard_hide_donorlist "widget/connector" { event=Discard; target=popover_matching_donors; action=Close; }
@@ -985,8 +976,7 @@ gift_entry "widget/component-decl"
 				    event=DataChange;
 				    event_condition=runclient(:doing_copy:value == 0 and not char_length(:f_rcpt_ackid:content) > 1);
 				    target=gift_entry;
-				    action=TriggerEvent;
-				    EventName=runclient("LoadSidebar");
+				    action=LoadSidebar;
 				    Donor=runclient(:Value);
 				    }
 
@@ -1003,8 +993,7 @@ gift_entry "widget/component-decl"
 				    event=GetFocus;
 				    event_condition=runclient(:doing_copy:value == 0 and char_length(:f_rcpt_donorid:content) > 1 and :manage_osrc:partner != :f_rcpt_donorid:content);
 				    target=gift_entry;
-				    action=TriggerEvent;
-				    EventName=runclient("LoadSidebar");
+				    action=LoadSidebar;
 				    Donor=runclient(:f_rcpt_donorid:content);
 				    }
 
@@ -1013,8 +1002,7 @@ gift_entry "widget/component-decl"
 				    event=MouseDown;
 				    event_condition=runclient(:doing_copy:value == 0 and char_length(:f_rcpt_ackid:content) > 1 and :manage_osrc:partner != :f_rcpt_donorid:content and :rcpt_form:form_mode == 'View');
 				    target=gift_entry;
-				    action=TriggerEvent;
-				    EventName=runclient("LoadSidebar");
+				    action=LoadSidebar;
 				    Donor=runclient(:f_rcpt_donorid:content);
 				    }
 				}
@@ -1036,8 +1024,7 @@ gift_entry "widget/component-decl"
 				    event=DataChange;
 				    event_condition=runclient(:doing_copy:value == 0);
 				    target=gift_entry;
-				    action=TriggerEvent;
-				    EventName=runclient("LoadSidebar");
+				    action=LoadSidebar;
 				    Donor=runclient(isnull(:Value, :f_rcpt_donorid:content));
 				    }
 
@@ -1046,8 +1033,7 @@ gift_entry "widget/component-decl"
 				    event=GetFocus;
 				    event_condition=runclient(:doing_copy:value == 0 and char_length(:f_rcpt_ackid:content) > 1 and :manage_osrc:partner != :f_rcpt_ackid:content);
 				    target=gift_entry;
-				    action=TriggerEvent;
-				    EventName=runclient("LoadSidebar");
+				    action=LoadSidebar;
 				    Donor=runclient(:f_rcpt_ackid:content);
 				    }
 
@@ -1056,8 +1042,7 @@ gift_entry "widget/component-decl"
 				    event=MouseDown;
 				    event_condition=runclient(:doing_copy:value == 0 and char_length(:f_rcpt_ackid:content) > 1 and :manage_osrc:partner != :f_rcpt_ackid:content and :rcpt_form:form_mode == 'View');
 				    target=gift_entry;
-				    action=TriggerEvent;
-				    EventName=runclient("LoadSidebar");
+				    action=LoadSidebar;
 				    Donor=runclient(:f_rcpt_ackid:content);
 				    }
 				}
@@ -3680,8 +3665,7 @@ gift_entry "widget/component-decl"
 				    {
 				    event=Click;
 				    target=gift_entry;
-				    action=TriggerEvent;
-				    EventName=runclient('ScanOneDonor');
+				    action=ScanOneDonor;
 				    partner_key=runclient(:pmd_osrc:partner_key);
 				    ack_key=runclient(:pmd_osrc:ack_key);
 				    hash=runclient(:last_hash:value);
