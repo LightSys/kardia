@@ -1,20 +1,17 @@
 $Version=2$
 egvapi "application/http"
     {
-    // TODO: any params we end up needing will have to be usage="post"
-    // set this to be the login endpoint for now
-
     // Auth Params (mostly defaults):
-    "VancoWS.Auth.RequestType" "http/parameter" {type="string"; source="none"; usage="post"; default="Login";}
+    "VancoWS.Auth.RequestType" "http/parameter" {type=string; source=none; usage=post; default="EFTCurrentTransactions";}
     //Note: the ID is only hashed to provide a semi-unique value. It is not crucial for it to be totally unique, nor does it need to be secure
     "VancoWS.Auth.RequestID" "http/parameter" {type="string"; source="none"; usage="post"; default=runserver( (hash("md5", convert("string", getdate()))) );} 
     "VancoWS.Auth.RequestTime" "http/parameter" {type="string"; source="none"; usage="post"; default= runserver( (convert("string", getdate())) );} 
-    "VancoWS.Auth.Version" "http/parameter" {type="string"; source="none"; usage="post"; default="3";} 
+    "VancoWS.Auth.SessionID" "http/parameter" {type="string"; source="param"; usage="post"; default="";}
+    "VancoWS.Auth.Version" "http/parameter" {type="string"; source="none"; usage="post"; default="2";} 
     
-    // Request Params (username and password)
-    "VancoWS.Request.RequestVars.UserID"   "http/parameter" {type=string; source=none; usage=post; default=runserver( (select first(:a_config_value) from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'VP_Username') );} 
-    "VancoWS.Request.RequestVars.Password" "http/parameter" {type=string; source=none; usage=post; default=runserver( (select first(:a_config_value) from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'VP_Secret') );} 
-
+    // Request Params
+    "VancoWS.Request.RequestVars.CustomerRef" "http/parameter" {type=string; source=param; usage=post;} 
+    "VancoWS.Request.RequestVars.ClientID" "http/parameter" {type=string; source=none; usage=post; default=runserver( (select first(:a_config_value) from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'VP_Client') );} 
 
     // Connection information -- https://myvanco.vancopayments.com/cgi-bin/ws2.vps
     server = "myvanco.vancopayments.com";

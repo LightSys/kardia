@@ -50,9 +50,9 @@ plugin_base_config_ss "widget/component-decl"
 		allow_query=no;
 
 		vp_label_0 "widget/label" { height=15; text="Select this checkbox to allow Kardia to import data from Vanco Payments using Kardia's Gift Import tool."; }
-		vp_enab "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="GiftImport_SS"; text="Enabled:"; ctl_type=checkbox; enab_hints "widget/hints" { style=notnull; } }
+		vp_enab "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="GiftImport_VP"; text="Enabled:"; ctl_type=checkbox; enab_hints "widget/hints" { style=notnull; } }
 
-		vp_label_1 "widget/label" { height=30; text="The Hostname, API ID, API Secret, and API Client are values that need to be obtained from Vanco. TODO: helpful hints on how to get/find these."; }
+		vp_label_1 "widget/label" { height=30; text="The Hostname, API ID, API Secret, and API Client are values that need to be obtained from Vanco. TODO: hints on how to get/find these."; }
 		vp_host "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="VP_Site"; text="Hostname:"; width=500; ctl_type=editbox; }
 		vp_id "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="VP_Username"; text="API ID:"; width=300; ctl_type=editbox; }
 		vp_secret "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="VP_Secret"; text="API Secret:"; width=500; ctl_type=editbox; }
