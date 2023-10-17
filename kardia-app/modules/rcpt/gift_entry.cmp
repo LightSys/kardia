@@ -76,6 +76,13 @@ gift_entry "widget/component-decl"
 	    action=Click;
 	    using_scanner=1;
 	    }
+	on_mul_donor_8 "widget/connector"
+	    {
+	    event_condition=runclient(:rcpt_form:form_mode = 'New' and (not :desig_form:is_discardable) and (not :p_detail_form:is_discardable));
+	    target=f_rcpt_gifttype;
+	    action=SetValue;
+	    Value=runclient('K');
+	    }
 	}
 
     // check scanner, one donor found.
@@ -93,7 +100,7 @@ gift_entry "widget/component-decl"
 	    action=Click;
 	    using_scanner=1;
 	    }
-	on_one_donor_6 "widget/connector"
+	on_one_donor_6a "widget/connector"
 	    {
 	    event_condition=runclient(:rcpt_form:form_mode = 'New' and isnull(:f_rcpt_donorid:content, '') = '' and (not :desig_form:is_discardable) and (not :p_detail_form:is_discardable) and (isnull(:desig_form:a_account_hash, '') != :hash or :canceled_last:value = :hash));
 	    target=f_rcpt_donorid;
@@ -101,13 +108,20 @@ gift_entry "widget/component-decl"
 	    Value=runclient(:partner_key);
 	    Description=runclient(:partner_name);
 	    }
-	on_one_donor_7 "widget/connector"
+	on_one_donor_6b "widget/connector"
 	    {
 	    event_condition=runclient(:rcpt_form:form_mode = 'New' and isnull(:f_rcpt_ackid:content, '') = '' and (not :desig_form:is_discardable) and (not :p_detail_form:is_discardable) and :ack_key is not null and (isnull(:desig_form:a_account_hash, '') != :hash or :canceled_last:value = :hash));
 	    target=f_rcpt_ackid;
 	    action=SetValue;
 	    Value=runclient(:ack_key);
 	    Description=runclient(:ack_name);
+	    }
+	on_one_donor_7 "widget/connector"
+	    {
+	    event_condition=runclient(:rcpt_form:form_mode = 'New' and (not :desig_form:is_discardable) and (not :p_detail_form:is_discardable));
+	    target=f_rcpt_gifttype;
+	    action=SetValue;
+	    Value=runclient('K');
 	    }
 	on_one_donor_8 "widget/connector"
 	    {
@@ -540,6 +554,9 @@ gift_entry "widget/component-decl"
 			// Set title on connection
 			on_connect "widget/connector" { event=Connected; target=last_scanner; action=SetValue; Value=runclient(:Scanner); }
 
+			// Set title on disconnect
+			on_disconnect "widget/connector" { event=Disconnected; target=last_scanner; action=SetValue; Value=runclient('Check Scanner'); }
+
 			// Open the popup when the data focus changes
 			on_focus_1 "widget/connector" { event=Selected; event_condition=runclient((:direct_click = 1 or :receipt is null or :receipt != :receipts_osrc:a_receipt_number or :filename != :line_items_osrc:a_check_front_image) and :filename is not null); target=popover_view_check; action=Open; }
 			on_focus_2 "widget/connector" { event=Selected; event_condition=runclient((:direct_click = 1 or :receipt is null or :receipt != :receipts_osrc:a_receipt_number or :filename != :line_items_osrc:a_check_front_image) and :filename is not null); target=check_image; action=LoadImage; Source=runclient(:filename); }
@@ -835,6 +852,7 @@ gift_entry "widget/component-decl"
 		    text = runclient(condition(:rcpt_form:form_mode == 'New', "** NEW RECEIPT **", condition(:rcpt_form:form_mode == 'Modify', 'MODIFYING -- ', '') + condition(:gift_entry:by_donor, "Batch #" + :receipts_osrc:a_batch_number + ", ", "") + "Receipt #" + :receipts_osrc:a_receipt_number + condition(has_endorsement('kardia:gift_amt','kardia:ledger:' + :gift_entry:ledger) ,', Total ' + :receipts_osrc:a_amount, '') + condition(:receipts_osrc:a_posted, '   ** POSTED **', '')));
 		    form = rcpt_form;
 		    object_name = "Receipt";
+		    allow_edit = 1;
 		    }
 
 
@@ -1345,10 +1363,11 @@ gift_entry "widget/component-decl"
 			    path="/apps/kardia/modules/base/section_header.cmp";
 			    height=26;
 			    fl_height=0;
-			    text = runclient(condition(:rcpt_form:form_mode == 'New', "Designations", condition(:desig_form:form_mode == 'New', '**NEW** Designation', 'Designations')));
+			    text = runclient(condition(:rcpt_form:form_mode == 'New', "Designations", condition(:desig_form:form_mode == 'New', '**NEW** Designation', condition(:desig_form:form_mode == 'Modify', 'MODIFYING Designation', 'Designations'))));
 			    form = desig_form;
 			    allow_new=1;
 			    allow_delete=1;
+			    allow_edit = 1;
 			    object_name = "Designation";
 			    }
 
@@ -2156,6 +2175,7 @@ gift_entry "widget/component-decl"
 			    form = p_detail_form;
 			    allow_new = 1;
 			    allow_delete = 0;
+			    allow_edit = 1;
 			    object_name = "Pledge/Intent";
 			    }
 

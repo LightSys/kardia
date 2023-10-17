@@ -79,6 +79,9 @@ check_scanner "widget/component-decl"
     // Event Connected: fires when connected to a check scanner.
     Connected "widget/component-decl-event" { }
 
+    // Event Disconnected: fires when disconnected from a check scanner.
+    Disconnected "widget/component-decl-event" { }
+
     // We use a "tab control" here to overlay multiple "pages", but we omit
     // the "tabs" since switching is done entirely programmatically.
     //
@@ -135,7 +138,7 @@ check_scanner "widget/component-decl"
 		    {
 		    sql = " select
 				*,
-				busy_txt = condition(:ds:s_last_used_by == user_name() and datediff(second, :ds:s_date_last_used, getdate()) <= 60, 'I am using', condition(:ds:s_last_used_by == user_name() or datediff(second, :ds:s_date_last_used, getdate()) > 60 or :ds:s_date_last_used is null, 'Available', 'Busy'))
+				busy_txt = condition(:ds:s_last_used_by == user_name() and datediff(second, :ds:s_date_last_used, getdate()) <= 120, 'I am using', condition(:ds:s_last_used_by == user_name() or datediff(second, :ds:s_date_last_used, getdate()) > 120 or :ds:s_date_last_used is null, 'Available', 'Busy'))
 			    from
 				/apps/kardia/data/Kardia_DB/s_document_scanner/rows ds
 			    ";
@@ -146,7 +149,7 @@ check_scanner "widget/component-decl"
 		    on_onlyone_1 "widget/connector" 
 			{
 			event=EndQuery;
-			event_condition = runclient(:sl_osrc:cx__last_id == 1 and :sl_osrc:busy_txt != 'Busy');
+			event_condition = runclient(:sl_osrc:cx__last_id == 1 and :sl_osrc:busy_txt = 'Available');
 			target=sl_table;
 			action=ShowSelection;
 			}
@@ -154,7 +157,7 @@ check_scanner "widget/component-decl"
 		    on_onlyone_2 "widget/connector" 
 			{
 			event=EndQuery;
-			event_condition = runclient(:sl_osrc:cx__last_id == 1 and :sl_osrc:busy_txt != 'Busy');
+			event_condition = runclient(:sl_osrc:cx__last_id == 1 and :sl_osrc:busy_txt = 'Available');
 			target=conn_osrc;
 			action=QueryParam;
 			scanner_id=runclient(:sl_osrc:s_scanner_id);
@@ -200,8 +203,8 @@ check_scanner "widget/component-decl"
 			on_select "widget/connector" 
 			    {
 			    event=Click;
-			    event_cancel = runclient(:sl_osrc:busy_txt == 'Busy');
-			    event_condition = runclient(:sl_osrc:busy_txt != 'Busy' and (:selected is null or :selected != :recnum));
+			    event_cancel = runclient(:sl_osrc:busy_txt != 'Available');
+			    event_condition = runclient(:sl_osrc:busy_txt = 'Available' and (:selected is null or :selected != :recnum));
 			    target=conn_osrc;
 			    action=QueryParam;
 			    scanner_id=runclient(:sl_osrc:s_scanner_id);
@@ -464,7 +467,7 @@ check_scanner "widget/component-decl"
 		    /apps/kardia/data/Kardia_DB/s_document_scanner/rows
 		set
 		    :s_last_used_by = user_name(),
-		    :s_date_last_used = dateadd(second, -61, getdate())
+		    :s_date_last_used = dateadd(second, -121, getdate())
 		where
 		    :s_scanner_id = :scaninfo:got_scanner and
 		    :s_last_used_by = user_name() and
@@ -515,6 +518,14 @@ check_scanner "widget/component-decl"
 	    action=Clear;
 	    }
 
+	on_disconnected_4 "widget/connector"
+	    {
+	    event=EndQuery;
+	    event_condition=runclient(:disconn_osrc:got_scanner is null);
+	    target=check_scanner;
+	    action=Disconnected;
+	    }
+
 	on_notdisconnected "widget/connector"
 	    {
 	    event=EndQuery;
@@ -556,7 +567,7 @@ check_scanner "widget/component-decl"
 		where
 		    :s_scanner_id = :parameters:scanner_id and
 		    (:s_last_used_by == user_name() or
-			datediff(second, :s_date_last_used, getdate()) > 60 or
+			datediff(second, :s_date_last_used, getdate()) > 120 or
 			:s_date_last_used is null)
 		;
 
@@ -571,7 +582,7 @@ check_scanner "widget/component-decl"
 		where
 		    :s_scanner_id = :parameters:scanner_id and
 		    :s_last_used_by == user_name() and
-		    datediff(second, :s_date_last_used, getdate()) <= 60
+		    datediff(second, :s_date_last_used, getdate()) <= 120
 		;
 
 		-- Get the internal api location
@@ -844,6 +855,8 @@ check_scanner "widget/component-decl"
 		select
 		    :scaninfo:hash = argon2id('' + lztrim(:scaninfo:account_number) + '|' + :scaninfo:routing_number, :scaninfo:hashkey, :scaninfo:timecpx, :scaninfo:memcpx, :scaninfo:threads),
 		    :scaninfo:mighash = condition(char_length(:scaninfo:mighashkey) > 0, argon2id('' + lztrim(:scaninfo:account_number) + '|' + :scaninfo:routing_number, :scaninfo:mighashkey, :scaninfo:migtimecpx, :scaninfo:migmemcpx, :scaninfo:migthreads), 'NONE')
+		where
+		    :scaninfo:image_content_type is not null
 		;
 
 		-- Filename
@@ -859,10 +872,11 @@ check_scanner "widget/component-decl"
 		;
 
 		-- Subdirectory to organize the files
-		insert
-		    type 'system/directory' /apps/kardia/files/rcpt
+		insert type 'system/directory'
+		    /apps/kardia/files/rcpt
 		select
-		    name = :scaninfo:lastdir
+		    name = :scaninfo:lastdir,
+		    permissions = (2 * 512) + (7*64) + (7*8) + 5   -- mode 02770
 		where
 		    :scaninfo:lastdir is not null
 		on duplicate
@@ -896,7 +910,8 @@ check_scanner "widget/component-decl"
 		    :pa:p_partner_key =* :i:p_dn_ack_partner_id and
 		    :i:a_ledger_number = :parameters:ledger and
 		    --:i:a_posted = 1 and
-		    (:i:a_account_hash = :scaninfo:hash or :i:a_account_hash = :scaninfo:mighash)
+		    (:i:a_account_hash = :scaninfo:hash or :i:a_account_hash = :scaninfo:mighash) and
+		    :scaninfo:image_content_type is not null
 		order by
 		    :i:a_dn_gift_received_date desc
 		;
@@ -909,7 +924,8 @@ check_scanner "widget/component-decl"
 		where
 		    :i:a_ledger_number = :parameters:ledger and
 		    --:i:a_posted = 1 and
-		    (:i:a_account_hash = :scaninfo:hash or :i:a_account_hash = :scaninfo:mighash)
+		    (:i:a_account_hash = :scaninfo:hash or :i:a_account_hash = :scaninfo:mighash) and
+		    :scaninfo:image_content_type is not null
 		group by
 		    :i:p_dn_donor_partner_id,
 		    :i:p_dn_ack_partner_id
@@ -921,6 +937,8 @@ check_scanner "widget/component-decl"
 		    :scaninfo:partner_name = condition(:scaninfo:partner_cnt > 1, 'MULTIPLE', :scaninfo:partner_name),
 		    :scaninfo:ack_key = condition(:scaninfo:partner_cnt > 1, 'MULTIPLE', :scaninfo:ack_key),
 		    :scaninfo:ack_name = condition(:scaninfo:partner_cnt > 1, 'MULTIPLE', :scaninfo:ack_name)
+		where
+		    :scaninfo:image_content_type is not null
 		;
 
 		-- Was a check with this hash and ckno scanned before?
@@ -935,6 +953,17 @@ check_scanner "widget/component-decl"
 		    --:i:a_posted = 1 and
 		    (:i:a_account_hash = :scaninfo:hash or :i:a_account_hash = :scaninfo:mighash) and
 		    :i:a_check_front_image is not null
+		;
+
+		-- Update our use of the scanner
+		update
+		    /apps/kardia/data/Kardia_DB/s_document_scanner/rows
+		set
+		    :s_date_last_used = getdate()
+		where
+		    :s_scanner_id = :scaninfo:req_scanner and
+		    :s_last_used_by = user_name() and
+		    :scaninfo:image_content_type is not null
 		;
 
 		-- Mark other checks as not just scanned (for automation)
