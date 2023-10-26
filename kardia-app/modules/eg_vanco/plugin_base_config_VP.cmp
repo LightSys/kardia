@@ -63,13 +63,7 @@ plugin_base_config_ss "widget/component-decl"
 		    {
 		    height=24; spacing=10;
 		    ss_lookback "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="VP_Lookback"; text="Lookback:"; width=200; ctl_type=editbox; }
-		    ss_settle "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="VP_MinSettlement"; text="Settlement (FIXME:  I dont think I need this?):"; width=200; ctl_type=editbox; }
 		    }
-
-		vp_label_3 "widget/label" { height=30; text="Import Filters: here you can control what gateway and currency data is imported into Kardia.  If this is left blank, transactions for all gateways and currencies will be imported, otherwise only those in the comma-separated lists below will be imported."; }
-		vp_procs "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="VP_Gateways"; text="Gateways:"; width=500; ctl_type=editbox; }
-		vp_currs "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="VP_Currencies"; text="Currencies:"; width=500; ctl_type=editbox; }
-
 		}
 	    }
 
