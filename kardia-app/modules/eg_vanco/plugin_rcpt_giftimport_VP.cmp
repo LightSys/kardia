@@ -3,12 +3,10 @@ plugin_rcpt_giftimport_EGS "widget/component-decl"
     {
     // In the future this will be an actual visual config tool,
     // but for now we just use it to supply the infrastructure.
-    //
     description = "Vanco Payments Electronic Giving via XML / POST API";
     tag = "VP";
     sql = "		i_eg_service = 'VP',
 			i_eg_processor = 'Vanco Payments',
----------------- WARNING: everything below this line needs checked to be sure I need it/is properly done ----------------
 			i_eg_gift_currency = 'USD',
 			i_eg_receipt_desired = null,
 			i_eg_anonymous = null,
