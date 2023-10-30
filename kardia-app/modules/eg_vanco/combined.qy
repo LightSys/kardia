@@ -190,7 +190,7 @@ myquery "system/query"
 		-- actual values
 		i_eg_gift_uuid = condition(:o:Frequency IS NOT NULL, :o:TransactionRef, :t:TransactionRef), -- TODO: currently, :t:TransactionRef = :o:TransactionRef. Simplify if this doesn't change
 		i_eg_desig_uuid = :t:FundID,
-		i_eg_trx_uuid = :t:TransactionRef,
+		i_eg_trx_uuid = :t:TransactionRef+'-'+dateformat(getdate(), 'yyyy-MM-dd'),
 		i_eg_donor_uuid = :t:CustomerID,  
 		i_eg_donor_alt_id = :t:CustomerRef,
 		i_eg_account_uuid = :t:PaymentMethodRef,
