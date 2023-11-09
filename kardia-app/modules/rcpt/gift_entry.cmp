@@ -11,6 +11,7 @@ gift_entry "widget/component-decl"
     acks_rpt "widget/parameter" { type=string; default=runserver(isnull( (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :this:ledger and :a_config_name = 'RcptAckReport'), "/apps/kardia/modules/rcpt/receipt_batch.rpt")); deploy_to_client=yes; }
     nc_rpt "widget/parameter" { type=string; default=runserver(isnull( (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :this:ledger and :a_config_name = 'RcptNCReport'), "/apps/kardia/modules/rcpt/receipt_batch.rpt")); deploy_to_client=yes; }
     use_scanner "widget/parameter" { type=integer; default=runserver(convert(integer, isnull( (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :this:ledger and :a_config_name = 'RcptEnabScanner'), "0")) and not :this:by_donor); deploy_to_client=yes; }
+    stretch_cks "widget/parameter" { type=integer; default=runserver(convert(integer, isnull( (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :this:ledger and :a_config_name = 'RcptStretchCks'), "0"))); deploy_to_client=yes; }
 
     last_ckno "widget/variable" { type=string; }    // Last check # scanned
     last_pkey "widget/variable" { type=string; }    // Last donor partner key scanned
@@ -560,9 +561,10 @@ gift_entry "widget/component-decl"
 			// Open the popup when the data focus changes
 			on_focus_1 "widget/connector" { event=Selected; event_condition=runclient((:direct_click = 1 or :receipt is null or :receipt != :receipts_osrc:a_receipt_number or :filename != :line_items_osrc:a_check_front_image) and :filename is not null); target=popover_view_check; action=Open; }
 			on_focus_2 "widget/connector" { event=Selected; event_condition=runclient((:direct_click = 1 or :receipt is null or :receipt != :receipts_osrc:a_receipt_number or :filename != :line_items_osrc:a_check_front_image) and :filename is not null); target=check_image; action=LoadImage; Source=runclient(:filename); }
-			on_focus_3 "widget/connector" { event=Selected; event_condition=runclient((:direct_click = 1 or :receipt is null or :receipt != :receipts_osrc:a_receipt_number or :filename != :line_items_osrc:a_check_front_image) and :filename is not null); target=image_reason; action=SetValue; Value=runclient(condition(:receipt is not null, 'Gift Item for Receipt #' + :receipt, 'Scanned Check #' + :check_number)); }
+			on_focus_3 "widget/connector" { event=Selected; event_condition=runclient((:direct_click = 1 or :receipt is null or :receipt != :receipts_osrc:a_receipt_number or :filename != :line_items_osrc:a_check_front_image) and :filename is not null); target=image_reason; action=SetValue; Value=runclient(condition(:receipt is not null, 'Gift Item for Receipt #' + :receipt, 'Scanned Check' + isnull(' #' + :check_number, ''))); }
 			on_focus_4 "widget/connector" { event=Selected; event_condition=runclient(:receipt is not null and (:receipt != :receipts_osrc:a_receipt_number)); target=receipts_osrc; action=FindObject; a_receipt_number=runclient(:receipt); }
 			on_focus_5 "widget/connector" { event=Selected; event_delay=0.1; event_condition=runclient(:receipt is not null and (:receipt != :receipts_osrc:a_receipt_number or :filename != :line_items_osrc:a_check_front_image)); target=line_items_osrc; action=FindObject; a_check_front_image=runclient(:filename); }
+			on_focus_6 "widget/connector" { event=Selected; event_condition=runclient(:filename is null and substring(:image_reason:value, 1, 13) = 'Scanned Check'); target=popover_view_check; action=Close; }
 
 			// Scanner wants to show an image
 			on_showimg_1 "widget/connector" { event=ShowImage; target=popover_view_check; action=Open; }
@@ -1422,8 +1424,8 @@ gift_entry "widget/component-decl"
 					:g:a_split_number asc
 				    ";
 			    baseobj = "/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows";
-			    replicasize = 20;
-			    readahead = 20;
+			    replicasize = 50;
+			    readahead = 50;
 			    autoquery = never;
 
 			    item_rcpt_link "widget/rule"
@@ -3549,6 +3551,7 @@ gift_entry "widget/component-decl"
 		height=172;
 		//source=runclient(isnull(:last_file:value, "/apps/kardia/images/bg/light_bgnd.jpg"));
 		source=runclient("/apps/kardia/images/bg/light_bgnd.jpg");
+		aspect=runserver(condition(:this:stretch_cks, "stretch", "preserve"));
 		}
 	    }
 	}
