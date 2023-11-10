@@ -655,6 +655,7 @@ gift_import "widget/component-decl"
 			autoquery = onfirstreveal;
 			readahead = 2;
 			replicasize = 2;
+			indicates_activity = no;
 
 			summary_form "widget/form"
 			    {
