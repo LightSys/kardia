@@ -54,7 +54,7 @@ plugin_base_config_gl "widget/component-decl"
 		per_yfmt "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="GLPeriodFmt"; text="Month Period Format:"; width=300; label_width=150; ctl_type=editbox; }
 
 		per_label_2 "widget/label" { height=30; text="Starting period: this is the first month of the accounting year.  If you have a calendar (January - December) fiscal year, use January as your starting month."; }
-		per_start_dd "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="GLPeriodStart"; text="Starting Period:"; width=300; label_width=150; ctl_type=dropdown; sql="select label=:full_name + ' (' + (:id + 1) + ')', value=:id + 1 from /apps/kardia/data/Months.csv/rows"; }
+		per_start_dd "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="GLPeriodStart"; text="Starting Period:"; width=300; label_width=150; ctl_type=dropdown; numdisplay=13; sql="select label=:full_name + ' (' + (:id + 1) + ')', value=:id + 1 from /apps/kardia/data/Months.csv/rows"; }
 
 		per_label_3 "widget/label" { height=30; text="Auto generate: select this option if you would like Kardia to automatically generate the monthly periods when you create a new accounting year (otherwise you must manually create the monthly periods)."; }
 		per_auto "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="GLPeriodAuto"; text="Auto Generate Months:"; width=300; label_width=150; ctl_type=checkbox; auto_hints "widget/hints" { style=notnull; } }

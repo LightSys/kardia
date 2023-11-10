@@ -1,0 +1,56 @@
+$Version=2$
+csapi "application/http"
+    {
+    // Headers
+    Authorization "http/parameter" { type=string; source=none; usage=header; default=runserver("Bearer " + (select :s_scanner_auth_token from /apps/kardia/data/Kardia_DB/s_document_scanner/rows where :s_scanner_id = :parameters:scannerid) ); }
+    Accept "http/parameter" { type=string; source=none; usage=header; default=runserver("application/json"); }
+
+    // Path parameters
+    scannerid "http/parameter" { type=integer; source=path; usage=none; pathpart=1; }
+    command "http/parameter" { type=string; source=path; usage=none; pathpart=2; }
+    connection "http/parameter" { type=integer; source=path; usage=none; pathpart=3; }
+
+    // Profile: only sent in a POST request body (connect command).
+    profile "http/parameter" { type=string; source=none; usage=post; default=runserver( (select :s_scanner_id_on_server from /apps/kardia/data/Kardia_DB/s_document_scanner/rows where :s_scanner_id = :parameters:scannerid) ); }
+
+    // Redaction: black out the MICR area of the check.
+    ledger "http/parameter" { type=string; source=param; usage=none; }
+    redacted "http/parameter" { type=string; source=none; usage=url; default=runserver( isnull( (select condition(:a_config_value = '1', 'true', 'false') from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :parameters:ledger and :a_config_name = 'RcptScanRedact'), 'false') ); }
+
+    // Connection information
+    server = runserver( (select :s_scanner_host from /apps/kardia/data/Kardia_DB/s_document_scanner/rows where :s_scanner_id = :parameters:scannerid) );
+    port = runserver( (select convert(string, :s_scanner_port) from /apps/kardia/data/Kardia_DB/s_document_scanner/rows where :s_scanner_id = :parameters:scannerid) );
+    path = runserver(
+		    condition(:parameters:command == 'connect',
+			    // Connect: GET /connect/{profilename}
+			    "/connections",
+			    condition(:parameters:command == 'disconnect',
+				    // Disconnect: GET /disconnect
+				    "/connections/" + :parameters:connection,
+				    condition(:parameters:command == 'scan',
+					    // Scan: GET /check_data
+					    "/connections/" + :parameters:connection + "/check",
+					    // Default action is to disconnect
+					    "/connections/" + :parameters:connection 
+				    )
+			    )
+		    )
+	    );
+    protocol = "http";
+    request_content_type="application/json";
+    method = runserver(
+		condition(:parameters:command == 'connect',
+			'POST',
+			condition(:parameters:command == 'disconnect',
+				'DELETE',
+				condition(:parameters:command == 'scan',
+					'GET',
+					'DELETE'
+				)
+			)
+		)
+	    );
+    allowsubdirs = 0;
+    cache_max_ttl = 86400000;
+    cache_min_ttl = 3600000;
+    }

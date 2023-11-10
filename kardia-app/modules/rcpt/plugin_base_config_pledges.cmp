@@ -5,7 +5,7 @@ plugin_base_config_pledges "widget/component-decl"
     height=490;
     title = "Pledges & Intents";
     description = "Configure options for managing pledges, faith-promises, intents, and online recurring gifts";
-    sequence = 600;
+    sequence = 690;
 
     vbox "widget/vbox"
 	{
