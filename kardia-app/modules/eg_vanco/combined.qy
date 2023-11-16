@@ -53,7 +53,7 @@ myquery "system/query"
 			'not-a-date')) dq
 		
 	    where
-		:dq:TransactionRef IS NOT NULL OR :dq:FundID IS NOT NULL
+		:dq:TransactionRef IS NOT NULL OR :dq:FundID IS NOT NULL OR :dq:TransactionCount = 0
 	    ;
 
 	    -- run a join to combine transactions and funds into one line per fund gift. Joins based on transaction group 
@@ -194,14 +194,19 @@ myquery "system/query"
 		i_eg_donor_uuid = :t:CustomerID,  
 		i_eg_donor_alt_id = :t:CustomerRef,
 		i_eg_account_uuid = :t:PaymentMethodRef,
-
-		i_eg_status = condition((:t:CCStatus == 'P' AND char_length(:t:ReturnCode) <= 0), 'paid', 
-			condition((:t:CCStatus == 'P'), 'returned', 
-			condition((char_length(:t:CCStatus) <= 0), 'paid', 'returned'))), -- if null, was not credit card. Assume paid
-		i_eg_returned_status = condition(:t:CCStatus == 'E', 'Error processing transaction', 
-			condition(:t:CCStatus == 'F', 'Failed processing transaction', :t:retunredCode)),
-
-		i_eg_donor_name = :c:CustomerName, -- of the form 'LNAME, FNAME(and FNAME)?( MI)?'
+		-- set status to pending if the deposit date is in the future
+		i_eg_status = condition((:t:CCStatus == 'P' AND char_length(:t:ReturnCode) <= 0) OR (char_length(:t:CCStatus) <= 0), 
+				condition(datediff('day', getdate(), convert('datetime', 
+					condition((select first(:a_config_value) from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'VP_UseDepo') == '1',
+					:t:DepositDate, :t:SettlementDate)
+				)) <= 0, 'paid', 'pending'), -- make sure date is valid (FIXME: condition based on config for WHAT date to use)
+			'returned'), -- either return code exists or CCStatus was E or F. Either way, mark as a return 
+		i_eg_returned_status = condition(:t:CCStatus == 'E', 'Error', 
+			condition(:t:CCStatus == 'F', 'Failed', :t:retunredCode)),
+		-- convert from 'LNAME, FNAME(and FNAME)?( MI)?' to 'FNAME(and FNAME)?( MI)? LNAME'
+		i_eg_donor_name = condition(charindex(',', :c:CustomerName) == 0, :c:CustomerName, -- if no comma, likely an org.
+			substring(:c:CustomerName, charindex(',', :c:CustomerName) + 2)+' '+
+			substring(:c:CustomerName, 1, charindex(',', :c:CustomerName) - 1)),
 		i_eg_donor_given_name =  condition(charindex(',', :c:CustomerName) == 0, NULL,
 			condition(charindex(' ', reverse(:c:CustomerName)) == 2,
 				substring(:c:CustomerName, charindex(',', :c:CustomerName) + 2, 

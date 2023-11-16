@@ -71,6 +71,30 @@ gift_import "widget/component-decl"
 			:i_eg_acctmap_confidence = condition((select :e2:a_account_code from /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e2 where upper(:e1:i_eg_desig_name) = upper(:e2:i_eg_desig_name) and :e1:a_ledger_number = :e2:a_ledger_number and :e1:a_fund = :e2:a_fund and :e2:i_eg_acctmap_future = 1 and :e2:i_eg_acctmap_confidence = 2 and :e2:a_account_code is not null order by :e2:i_eg_gift_trx_date desc) is null, null, 2)
 		where
 			:a_account_code is null and char_length(rtrim(:i_eg_trx_uuid)) > 1
+		;		
+		
+		-- update the case on names, address, and email for new imports (if enabled)
+		update 
+			/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows gifts 
+		set
+			:i_eg_donor_name = mixed(:i_eg_donor_name,'and,Mc*'),
+			:i_eg_donor_given_name = mixed(:i_eg_donor_given_name,'and,Mc*'),
+			:i_eg_donor_surname = mixed(:i_eg_donor_surname),
+			:i_eg_donor_middle_name = mixed(:i_eg_donor_middle_name),
+			:i_eg_donor_prefix = mixed(:i_eg_donor_prefix),
+			:i_eg_donor_suffix = mixed(:i_eg_donor_suffix),
+			:i_eg_donor_addr1 = mixed(:i_eg_donor_addr1),
+			:i_eg_donor_addr2 = mixed(:i_eg_donor_addr2),
+			:i_eg_donor_addr3 = mixed(:i_eg_donor_addr3),
+			:i_eg_donor_city = mixed(:i_eg_donor_city),
+			:i_eg_donor_state = upper(:i_eg_donor_state),
+			:i_eg_donor_email = lower(:i_eg_donor_email)
+		where 
+			(select first(:a_config_value) from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name='RcptCaseCorrect') = '1'
+			AND datepart('day', :s_date_created) = datepart('day',getdate()) 
+			AND datepart('month', :s_date_created) = datepart('month',getdate()) 
+			AND datepart('year', :s_date_created) = datepart('year',getdate())
+		;
 		");
 	autoquery = never;
 	readahead = 2;
