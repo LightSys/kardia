@@ -13,6 +13,7 @@ section_header "widget/component-decl"
     allow_delete "widget/parameter" { type=integer; default=0; }
     allow_save "widget/parameter" { type=integer; default=1; }
     allow_cancel "widget/parameter" { type=integer; default=1; }
+    allow_edit "widget/parameter" { type=integer; default=0; }
 
     New "widget/component-decl-event" { }
 
@@ -32,7 +33,7 @@ section_header "widget/component-decl"
 	lbl "widget/label"
 	    {
 	    x=4;y=1;
-	    width=runserver(300 - 4 - 22*(condition(:this:allow_new,1,0) + condition(:this:allow_delete,1,0) + condition(:this:allow_save,1,0) + condition(:this:allow_cancel,1,0) + condition(:this:custom_new,1,0)));
+	    width=runserver(300 - 4 - 22*(condition(:this:allow_new,1,0) + condition(:this:allow_delete,1,0) + condition(:this:allow_save,1,0) + condition(:this:allow_cancel,1,0) + condition(:this:custom_new,1,0) + condition(:this:allow_edit,1,0)));
 	    height=18;
 	    widget_class="label";
 	    fl_width=100;
@@ -46,13 +47,21 @@ section_header "widget/component-decl"
 
 	lbl_hbox "widget/hbox"
 	    {
-	    x=runserver(300 - 12 - 22*(condition(:this:allow_new,1,0) + condition(:this:allow_delete,1,0) + condition(:this:allow_save,1,0) + condition(:this:allow_cancel,1,0) + condition(:this:custom_new,1,0)) + 10);
+	    x=runserver(300 - 12 - 22*(condition(:this:allow_new,1,0) + condition(:this:allow_delete,1,0) + condition(:this:allow_save,1,0) + condition(:this:allow_cancel,1,0) + condition(:this:custom_new,1,0) + condition(:this:allow_edit,1,0)) + 10);
 	    y=2;
-	    width=runserver(22*(condition(:this:allow_new,1,0) + condition(:this:allow_delete,1,0) + condition(:this:allow_save,1,0) + condition(:this:allow_cancel,1,0) + condition(:this:custom_new,1,0)));
+	    width=runserver(22*(condition(:this:allow_new,1,0) + condition(:this:allow_delete,1,0) + condition(:this:allow_save,1,0) + condition(:this:allow_cancel,1,0) + condition(:this:custom_new,1,0) + condition(:this:allow_edit,1,0)));
 	    height=18;
 	    spacing=4; cellsize=18;
 	    align=right;
 
+	    edit "widget/component"
+		{
+		condition = runserver(:this:allow_edit != 0);
+		width=18; height=18; fl_width=0;
+		path = "/sys/cmp/edit_btn.cmp";
+		form = form;
+		object_name = runserver(:this:object_name);
+		}
 	    customnew "widget/component"
 		{
 		condition = runserver(:this:custom_new != 0);

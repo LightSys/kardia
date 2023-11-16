@@ -1,0 +1,10 @@
+$Version=2$
+kardia_modinfo "system/structure"
+    {
+    module_name = "Check Scanner Integration";
+    module_abbrev = "Check Scanner Integration";
+    module_description = "This module provides integration with the DiscipleMakers check scanner web service";
+    module_sequence = null;
+    module_context = 'kardia';
+    module_endorsement = null;
+    }

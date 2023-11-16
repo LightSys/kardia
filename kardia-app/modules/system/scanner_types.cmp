@@ -1,0 +1,141 @@
+$Version=2$
+scanner_types "widget/component-decl"
+    {
+    // Manage document scanners
+    width=780; height=480;
+
+    scan_type_vbox "widget/vbox"
+	{
+	x=0; y=0; width=780; height=480;
+	spacing=10;
+
+	scan_type_hdr "widget/component"
+	    {
+	    path="/apps/kardia/modules/base/section_label.cmp";
+	    height=24;
+	    text="Manage Document Scanners:";
+	    }
+
+	scan_type_osrc "widget/osrc"
+	    {
+	    sql = " select
+			*
+		    from
+			/apps/kardia/data/Kardia_DB/s_document_scanner/rows
+		    ";
+	    baseobj = "/apps/kardia/data/Kardia_DB/s_document_scanner/rows";
+	    replicasize=50;
+	    readahead=50;
+
+	    scan_type_table "widget/table"
+		{
+		height=412;
+		titlebar=yes;
+		colsep=0;
+		overlap_scrollbar=yes;
+		demand_scrollbar=yes;
+		initial_selection = no;
+		rowheight=null;
+		cellvspacing=4;
+		inner_padding=2;
+		row_border_radius=6;
+		row_shadow_radius=2;
+		row_shadow_offset=1;
+		row_shadow_color="#a0a0a0";
+		row_shadow_angle=135;
+
+		st_id "widget/table-column" { title="ID"; width=40; fieldname=s_scanner_id; }
+		st_desc "widget/table-column" { title="Description"; width=200; fieldname=s_scanner_desc; }
+		st_host "widget/table-column" { title="Host"; width=120; fieldname=s_scanner_host; }
+		st_port "widget/table-column" { title="Port"; width=60; fieldname=s_scanner_port; }
+		st_srvid "widget/table-column" { title="ID on Host"; width=120; fieldname=s_scanner_id_on_server; }
+		st_user "widget/table-column" { title="User"; width=80; fieldname=s_scanner_auth_user; }
+		st_tokn "widget/table-column" { title="Token"; width=200; fieldname=s_scanner_auth_token; }
+
+		scan_type_detail "widget/table-row-detail"
+		    {
+		    width=780; height=226;
+		    show_on_new=1;
+
+		    scan_type_detail_pane "widget/pane"
+			{
+			x=8; y=5; width=762; height=216;
+			style=flat;
+			bgcolor="#f8f8f8";
+			border_radius=4;
+
+			scan_type_detail_vbox "widget/vbox"
+			    {
+			    x=10; y=10; width=440; height=196;
+			    spacing=5;
+			    cellsize=20;
+
+			    scan_type_form "widget/form"
+				{
+				sd_active "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=label; field=s_scanner_id; width=300; text="Scanner ID:"; }
+				sd_desc "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_scanner_desc; width=300; text="Description:"; }
+				sd_type "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=dropdown; field=s_scanner_type; width=400; text="Scanner Type:"; sql="select :scanner_type_desc, :scanner_type from object wildcard '/apps/kardia/modules/*/plugin_system_scan_*.struct'"; sd_t_hints "widget/hints" { style=notnull; } }
+				sd_host "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_scanner_host; width=300; text="Host:"; }
+				sd_port "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_scanner_port; width=180; text="Port:"; }
+				sd_srvid "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_scanner_id_on_server; width=180; text="ID on Host:"; }
+				sd_user "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_scanner_auth_user; width=300; text="User:"; }
+				sd_tokn "widget/component" { path="/sys/cmp/smart_field.cmp"; field=s_scanner_auth_token; width=600; text="Token:"; }
+
+				scan_type_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
+				}
+			    }
+
+			scan_type_ctls_vbox "widget/vbox"
+			    {
+			    x=620; y=10; width=130; height=130;
+			    spacing=8;
+
+			    save_btn "widget/textbutton"
+				{
+				width=130;
+				height=24;
+				text="Save";
+				enabled=runclient(:scan_type_form:is_savable and char_length(:sd_type:value) > 0);
+				on_save "widget/connector" { event=Click; target=scan_type_form; action=Save; }
+				}
+
+			    discard_btn "widget/textbutton"
+				{
+				width=130;
+				height=24;
+				text="Cancel";
+				enabled=runclient(:scan_type_form:is_discardable);
+				on_discard "widget/connector" { event=Click; target=scan_type_form; action=Discard; }
+				}
+
+			    delete_btn "widget/textbutton"
+				{
+				width=130;
+				height=24;
+				text="Delete";
+				enabled=runclient(:scan_type_form:is_editable);
+				on_delete "widget/connector" { event=Click; target=scan_type_form; action=Delete; }
+				}
+			    }
+			}
+		    }
+		}
+	    }
+
+	ctls_hbox "widget/hbox"
+	    {
+	    height=24;
+	    align=right;
+
+	    new_ctl "widget/textbutton"
+		{
+		width=130;
+		height=24;
+		text="New Scanner";
+		enabled=runclient(:scan_type_form:is_newable);
+
+		on_new "widget/connector" { event=Click; target=scan_type_form; action=New; }
+		}
+	    }
+	}
+    }

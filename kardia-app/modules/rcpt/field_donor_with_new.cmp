@@ -12,6 +12,8 @@ field_donor_with_new "widget/component-decl"
 
     form "widget/parameter" { type=object; find_container="widget/form"; }
 
+    New "widget/component-decl-event" { }
+
     expose_events_for = partner_key;
     expose_actions_for = partner_key;
     expose_properties_for = partner_key;
@@ -49,7 +51,14 @@ field_donor_with_new "widget/component-decl"
 	    y=2;
 	    text="New";
 
-	    addnew_cn "widget/connector"
+	    addnew_cn_1 "widget/connector"
+		{
+		event=Click;
+		target=field_donor_with_new;
+		action=New;
+		}
+
+	    addnew_cn_2 "widget/connector"
 		{
 		event=Click;
 		target=field_donor_with_new;

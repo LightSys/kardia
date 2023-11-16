@@ -8,6 +8,7 @@ gift_import "widget/page"
     background="/apps/kardia/images/bg/light_bgnd.jpg";
     require_one_endorsement="kardia:gift_entry";
     endorsement_context=runserver("kardia:ledger:" + :this:ledger + ":");
+    max_requests=9;
 
     ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
     period "widget/parameter" { type=string; default=null; }

@@ -1,0 +1,7 @@
+$Version=2$
+plugin_system_scan_ckscan "system/structure"
+    {
+    scanner_type = "CHK";
+    scanner_type_desc = "Check Scanner via DM check-reader server";
+    scanner_api = "csapi.http";
+    }

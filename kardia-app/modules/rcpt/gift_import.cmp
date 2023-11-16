@@ -679,6 +679,7 @@ gift_import "widget/component-decl"
 			autoquery = onfirstreveal;
 			readahead = 2;
 			replicasize = 2;
+			indicates_activity = no;
 
 			summary_form "widget/form"
 			    {
@@ -821,8 +822,8 @@ gift_import "widget/component-decl"
 				    :eg:i_eg_deposit_date desc,
 				    isnull(:eg:i_eg_deposit_uuid, -1)
 			    ");
-		    replicasize=50;
-		    readahead=50;
+		    replicasize=200;
+		    readahead=200;
 		    autoquery=oneachreveal;
 
 		    dep_import_pane "widget/pane"
