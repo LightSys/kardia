@@ -98,6 +98,10 @@ journal_entry "widget/component-decl"
 
 	trx_form "widget/form"
 	    {
+	    allow_modify = runclient(isnull(:trx_osrc:a_posted, 0) == 0);
+	    allow_new = runclient(isnull(:trx_osrc:a_posted, 0) == 0);
+	    allow_query = runclient(isnull(:trx_osrc:a_posted, 0) == 0);
+
 	    trx_ctls "widget/component"
 		{
 		x=5;y=30;width=770;height=26;
