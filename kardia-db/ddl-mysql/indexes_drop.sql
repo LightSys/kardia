@@ -920,6 +920,7 @@ alter table a_subtrx_gift_item drop index a_gifttrxi_donor_idx;
 /* drop index a_subtrx_gift_item.a_gifttrxi_fund_clustered_idx */ 
 /* go */
 alter table a_subtrx_gift_item drop index a_gifttrxi_gift_idx;
+alter table a_subtrx_gift_item drop index a_gifttrxi_hash_idx;
 alter table a_subtrx_gift_item drop index a_gifttrxi_mcode_idx;
 alter table a_subtrx_gift_item drop index a_gifttrxi_pass_idx;
 alter table a_subtrx_gift_item drop index a_gifttrxi_rcpt_idx;

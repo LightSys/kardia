@@ -1,0 +1,95 @@
+$Version=2$
+plugin_base_config_eg "widget/component-decl"
+    {
+    width=828;
+    height=490;
+    title = "Online Giving";
+    description = "Configure general options for online giving.  To set up integration with an online giving service, see the service-specific configuration tab.";
+    sequence = 680;
+
+    vbox "widget/vbox"
+	{
+	x=0; y=0;
+	width=828; height=490;
+	spacing=7;
+
+	ledger_lbl "widget/label" { height=16; style=bold; text="Accounting Ledger Selection:"; }
+
+	ledger_osrc "widget/osrc"
+	    {
+	    sql = "select :name, label=:a_ledger_number + ' - ' + :a_ledger_desc, :a_ledger_number from /apps/kardia/data/Kardia_DB/a_ledger/rows";
+
+	    ledger_dd "widget/dropdown"
+		{
+		height=24; width=300;
+		mode=objectsource;
+		fieldname=label;
+		numdisplay=12;
+		}
+	    }
+
+	sep1 "widget/autolayoutspacer" { height=1; }
+
+	config_osrc "widget/osrc"
+	    {
+	    a_ledger_number "widget/parameter" { type=string; }
+	    sql = "select * from object expression('/apps/kardia/modules/gl/accounting_config.qyp/' + :parameters:a_ledger_number)";
+
+	    config_link "widget/rule"
+		{
+		ruletype=osrc_relationship;
+		target=ledger_osrc;
+		key_1=a_ledger_number;
+		target_key_1=a_ledger_number;
+		}
+
+	    config_form "widget/form"
+		{
+		allow_query=no;
+
+		eg_lbl "widget/label" { height=16; style=bold; text="Online Giving Configuration:"; }
+
+		eg_label_1 "widget/label" { height=30; text="Fees Posting: below, enter the fund and account that online giving transaction fees should be posted to.  If you want to post transaction fees to the funds the gifts were designated to, enter an asterisk (*) in the fund box below.  Note that not all services provide transaction fee data."; }
+		//rcpt_post_cc "widget/component" { height=24; path="/apps/kardia/modules/base/editbox_tree.cmp"; text="Asset Fund:"; tooltip="Fund for cash side of GL batch"; label_width=100; popup_source = runclient("/apps/kardia/modules/gl/funds.qyt/" + :ledger_osrc:a_ledger_number + "/"); popup_text="Select Fund:"; width=250; empty_desc = "asset fund"; field="RcptCashFund"; }
+		//rcpt_post_acct "widget/component" { height=24; path="/apps/kardia/modules/base/editbox_tree.cmp"; text="Asset Account:"; tooltip="Cash GL Account for Deposit"; label_width=100; popup_source = runclient("/apps/kardia/modules/gl/accounts.qyt/" + :ledger_osrc:a_ledger_number + "/"); popup_text="Select Account:"; width=250; empty_desc = "GL account"; field="RcptCashAcct"; }
+		eg_feebox "widget/hbox"
+		    {
+		    height=24; spacing=10;
+		    eg_feefund "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="EgFeesFund"; text="Transaction Fees Fund:"; width=300; label_width=150; ctl_type=editbox; }
+		    eg_feeacct "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="EgFeesAcct"; text="Transaction Fees Acct:"; width=300; label_width=150; ctl_type=editbox; }
+		    }
+		eg_label_2 "widget/label" { height=30; text="Gift Dates: you can configure Kardia to use the transaction date, the settlement date, or the deposit date as the 'gift received date' when importing online gifts.  Some giving services may not provide all of these dates."; }
+		eg_date "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="EgGiftDate"; text="Gift Received Date:"; width=450; label_width=150; ctl_type=dropdown; sql="select label='Transaction Date', value='T'; select label='Settlement Date', value='S'; select label='Deposit Date', value='D'"; numdisplay=6; }
+		eg_label_3 "widget/label" { height=30; text="Donor-Paid Transaction Fees: if you want to combine donor-paid transaction fees with the actual gift instead of importing them to their own fund, check the box below and enter the name or number of the designation your service uses for donor-paid fees."; }
+		eg_donorpaid "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="EgDonorFee"; text="Donor-Paid Fees:"; width=450; label_width=150; ctl_type=dropdown; sql="select label='Post as Separate Designation', value='S'; select label='Post to Gift Designation', value='C'"; numdisplay=6; }
+		eg_donorpaiddesig "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="EgFeesDesig"; text="Online Fees Designation:"; width=450; label_width=150; ctl_type=editbox; }
+		}
+	    }
+
+	ctls_hbox "widget/hbox"
+	    {
+	    height=24;
+	    align=center;
+	    spacing=10;
+
+	    save_btn "widget/textbutton"
+		{
+		height=24; width=130;
+		text = "Save";
+		enabled=runclient(:config_form:is_savable);
+
+		on_save "widget/connector" { event=Click; target=config_form; action=Save; }
+		}
+
+	    cancel_btn "widget/textbutton"
+		{
+		height=24; width=130;
+		text = "Cancel";
+		enabled=runclient(:config_form:is_discardable);
+
+		on_cancel "widget/connector" { event=Click; target=config_form; action=Discard; }
+		}
+	    }
+	}
+    }
+

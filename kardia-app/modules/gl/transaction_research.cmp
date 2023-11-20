@@ -278,6 +278,7 @@ transaction_research "widget/component-decl"
 			text="Year:";
 			ctl_type=dropdown;
 			label_width=70;
+			numdisplay=12;
 			sql="select '' + datepart(year,:a_start_date), datepart(year, :a_start_date) from /apps/kardia/data/Kardia_DB/a_period/rows p group by datepart(year, :a_start_date) desc order by :a_start_date desc"; 
 			}
 		    f_batch "widget/component"
@@ -362,6 +363,7 @@ transaction_research "widget/component-decl"
 			text="Origin:";
 			ctl_type=dropdown;
 			label_width=70;
+			numdisplay=12;
 			sql="select 'Cash Disbursements', 'CD'; select 'Cash Receipts', 'CR'; select 'Deposits', 'DE'; select 'Electronic Giving', 'EG'; select 'Journal Entry', 'GL'; select 'Opening Balances', 'OB'; select 'Payroll', 'PP'"; 
 			}
 
@@ -373,6 +375,7 @@ transaction_research "widget/component-decl"
 			text="Filter:";
 			ctl_type=dropdown;
 			label_width=70;
+			numdisplay=12;
 			sql=runserver("select 'Hide IXA (" + (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'GLIfaAcct' and :a_ledger_number = :this:ledger) + ")', 'I'; select 'Hide Assets+Liabs', 'Q'; select 'Hide Interfund/WithinFund', 'X'"); 
 			}
 
@@ -384,6 +387,7 @@ transaction_research "widget/component-decl"
 			text="Summarize:";
 			ctl_type=dropdown;
 			label_width=70;
+			numdisplay=12;
 			sql="select 'By Batch','B'; select 'By Period','P'; select 'By Fund','F'; select 'By Account','A'; select 'By Origin','O'"; 
 			}
 

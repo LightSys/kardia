@@ -194,7 +194,7 @@ batches "widget/component-decl"
 			width = 172;
 			height = 40;
 			text = runclient(condition(:batch_osrc:glpost == 1, "View", "Make/Edit") + " Journal Entries");
-			enabled = runclient(:new_batch_form:is_editable and :periods_osrc:a_status == 'O');
+			//enabled = runclient(:new_batch_form:is_editable and :periods_osrc:a_status == 'O');
 
 			edit_cn "widget/connector"
 			    {
@@ -225,12 +225,13 @@ batches "widget/component-decl"
 			{
 			width = 172;
 			height = 40;
-			text = "Post Batch";
-			enabled = runclient(not (:new_batch_form:glpost == 1) and :new_batch_form:glrec > 0 and :new_batch_form:is_editable);
+			text = runclient(condition(not (:new_batch_form:glpost == 1) or :new_batch_form:a_origin != 'GL', "Post Batch", "Request Un-Posting"));
+			enabled = runclient(:new_batch_form:glrec > 0 and :new_batch_form:is_editable and :new_batch_form:a_origin = 'GL');
 
 			post_batch_cn "widget/connector"
 			    {
 			    event = Click;
+			    event_condition = runclient(not (:new_batch_form:glpost == 1) and :new_batch_form:glrec > 0 and :new_batch_form:is_editable);
 			    target = batches;
 			    action = Launch;
 			    Source = runclient("/apps/kardia/modules/gl/new_post_batch.app");
@@ -239,6 +240,15 @@ batches "widget/component-decl"
 			    Height=600;
 			    ledger=runclient(:batch_osrc:a_ledger_number);
 			    batch=runclient(:batch_osrc:a_batch_number);
+			    }
+
+			unpost_batch_cn "widget/connector"
+			    {
+			    event = Click;
+			    event_condition = runclient((:new_batch_form:glpost == 1) and :new_batch_form:glrec > 0 and :new_batch_form:is_editable);
+			    target=unpostgl_win;
+			    action=Open;
+			    IsModal=1;
 			    }
 			}
 
@@ -303,6 +313,62 @@ batches "widget/component-decl"
 		    path = runserver(:plugin_tabs:path);
 		    periods_osrc = periods_osrc;
 		    ledger = runserver(:this:ledger);
+		    }
+		}
+	    }
+	}
+
+    unpost_req_cmp "widget/component"
+	{
+	path = "/apps/kardia/modules/gl/unpost_req_gl.cmp";
+	}
+
+    unpostgl_win "widget/childwindow"
+	{
+	style=dialog;
+	titlebar=no;
+	toplevel=yes;
+	width=480; height=232;
+	x=150; y=174;
+	visible=no;
+	border_radius=8;
+
+	unpost_vbox "widget/vbox"
+	    {
+	    width=458; height=152; x=10; y=10;
+	    spacing=10;
+
+	    unpost_lbl "widget/label" { height=24; font_size=16; value=runclient("Request Unposting of Batch " + :batch_osrc:a_batch_number + ":"); align=center; style=bold; }
+	    unpost_sep "widget/pane" { height=2; style=lowered; }
+	    //sp4 "widget/autolayoutspacer" { height=8; }
+
+	    unpost_desc "widget/label" { height=50; style=italic; text="Unposting a batch is a privileged operation; you can request here that this batch be unposted, but another user who also has GL management privileges will need to approve the request"; }
+
+	    unpost_comment "widget/component" { height=50; path="/sys/cmp/smart_field.cmp"; ctl_type=textarea; text="Comments:"; }
+
+	    sp4 "widget/autolayoutspacer" { height=2; }
+
+	    unpost_btns "widget/hbox"
+		{
+		height=24;
+		spacing=8;
+		align=center;
+
+		unpost_req "widget/textbutton"
+		    {
+		    height=24; width=150;
+		    text="Request Unposting";
+
+		    on_unpost_request_1 "widget/connector" { event=Click; target=unpost_req_cmp; action=RequestUnposting; ledger=runclient(:ledger:value); batch=runclient(:batch_osrc:a_batch_number); comment=runclient(:unpost_comment:value); }
+		    on_unpost_request_2 "widget/connector" { event=Click; target=unpostgl_win; action=Close; }
+		    }
+
+		unpost_cancel "widget/textbutton"
+		    {
+		    height=24; width=150;
+		    text="Cancel";
+
+		    on_unpost_cancel "widget/connector" { event=Click; target=unpostgl_win; action=Close; }
 		    }
 		}
 	    }

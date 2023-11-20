@@ -3,8 +3,8 @@ plugin_base_config_rcpt "widget/component-decl"
     {
     width=828;
     height=490;
-    title = "Receipting";
-    description = "Configure receipting options";
+    title = "Receipting / Deposits";
+    description = "Configure options for both Receipting and for Deposits";
     sequence = 600;
 
     vbox "widget/vbox"
@@ -78,6 +78,16 @@ plugin_base_config_rcpt "widget/component-decl"
 
 		rcpt_label_4 "widget/label" { height=15; text="Gift received date: This controls whether the 'received date' field on the gift entry form is disabled (read only) or not."; }
 		rcpt_disrcv "widget/component" { path="/sys/cmp/smart_field.cmp"; x=24; height=24; field="RcptDisabRcvdDt"; text="Disable Received Date in Gift Entry"; width=300; label_width=150; ctl_type=checkboxleft; rcvd_hints "widget/hints" { style=notnull; } }
+
+		dep_lbl "widget/label" { height=16; style=bold; text="Deposits Configuration:"; }
+		dep_label_1 "widget/label" { height=45; text="There are three options for the Deposits journal in Kardia.  If you use a cash account for Receipting Asset Account, above, the deposits journal can either be ignored or just be informational if you enter that same account for Deposit From and To below.  If you use an 'undeposted funds' account above, enter the matching account below for 'Deposit From' and enter your cash account in 'Deposit To'."; }
+		dep_ahbox "widget/hbox"
+		    {
+		    height=24; spacing=10;
+		    dep_fromacct "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="RcptDepFrom"; text="Deposit From Acct:"; width=300; label_width=150; ctl_type=editbox; }
+		    dep_toacct "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="RcptDepTo"; text="Deposit To Acct:"; width=300; label_width=150; ctl_type=editbox; }
+		    }
+
 		}
 	    }
 
