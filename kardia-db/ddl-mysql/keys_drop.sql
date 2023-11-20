@@ -994,6 +994,10 @@ alter table a_subtrx_gift_item
 	drop index a_gifttrxi_datetype_idx;
 
 
+alter table a_subtrx_gift_item
+	drop index a_gifttrxi_hash_idx;
+
+
 alter table a_subtrx_gift_intent
 	drop primary key;
 
@@ -1124,10 +1128,6 @@ alter table i_eg_gift_import
 
 alter table i_eg_gift_import
 	drop index i_eg_kfund_idx;
-
-
-alter table i_eg_gift_import
-	drop index i_eg_efund_idx;
 
 
 alter table i_eg_gift_import

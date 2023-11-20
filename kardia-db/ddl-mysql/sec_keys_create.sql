@@ -277,6 +277,9 @@ alter table a_subtrx_gift_item
 alter table a_subtrx_gift_item
 	add constraint a_gifttrxi_datetype_idx unique  (a_dn_gift_received_date, a_dn_gift_postmark_date, a_dn_gift_type, a_ledger_number, a_batch_number, a_gift_number, a_split_number);
 
+alter table a_subtrx_gift_item
+	add constraint a_gifttrxi_hash_idx unique  (a_account_hash, a_check_front_image, a_check_back_image, a_ledger_number, a_batch_number, a_gift_number, a_split_number);
+
 alter table a_motivational_code
 	add constraint a_motiv_code_list unique  (m_list_code, a_ledger_number, a_motivational_code);
 
@@ -305,13 +308,10 @@ alter table i_eg_gift_import
 	add constraint i_eg_kdonor_idx unique  (p_donor_partner_key, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid);
 
 alter table i_eg_gift_import
-	add constraint i_eg_edonor_idx unique  (i_eg_donor_uuid, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid);
+	add constraint i_eg_edonor_idx unique  (i_eg_donor_uuid, i_eg_donor_alt_id, i_eg_donormap_future, i_eg_donormap_confidence, p_donor_partner_key, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid);
 
 alter table i_eg_gift_import
 	add constraint i_eg_kfund_idx unique  (a_fund, a_account_code, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid);
-
-alter table i_eg_gift_import
-	add constraint i_eg_efund_idx unique  (i_eg_desig_name, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid);
 
 alter table i_eg_gift_import
 	add constraint i_eg_egift_idx unique  (i_eg_gift_uuid, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid);

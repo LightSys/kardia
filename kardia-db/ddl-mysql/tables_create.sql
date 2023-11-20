@@ -1979,6 +1979,10 @@ create table a_fund_analysis_attr (
         a_attr_code                           char(8)  not null,       /* analysis attribute code (alphanumeric allowed) --  */
         a_ledger_number                       char(10)  not null,      /* ledger number that uses this attribute --  */
         a_fund                                char(20)  not null,      /* fund --  */
+        a_hist_id                             int  default 0  not null,
+                                                                      /* auto-incrementing ID for the history of this analysis attribute value. 0 for the current value, 1, 2, 3, etc., for previous values. --  */
+        a_start_date                          datetime  null,          /* starting validity date for this value, null if no starting date (used in conjunction with a_hist_id and a_end_date) --  */
+        a_end_date                            datetime  null,          /* ending validity date for this value, null if no ending date, i.e. if this item is current (used in conjunction with a_hist_id and a_end_date) --  */
         a_value                               varchar(255)  null,      /* analysis attribute value --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
@@ -1995,6 +1999,10 @@ create table a_acct_analysis_attr (
         a_attr_code                           char(8)  not null,       /* analysis attribute code (alphanumeric allowed) --  */
         a_ledger_number                       char(10)  not null,      /* ledger number that uses this attribute --  */
         a_account_code                        char(16)  not null,      /* GL account code --  */
+        a_hist_id                             int  default 0  not null,
+                                                                      /* auto-incrementing ID for the history of this analysis attribute value. 0 for the current value, 1, 2, 3, etc., for previous values. --  */
+        a_start_date                          datetime  null,          /* starting validity date for this value, null if no starting date (used in conjunction with a_hist_id and a_end_date) --  */
+        a_end_date                            datetime  null,          /* ending validity date for this value, null if no ending date, i.e. if this item is current (used in conjunction with a_hist_id and a_end_date) --  */
         a_value                               varchar(255)  null,      /* analysis attribute value --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */

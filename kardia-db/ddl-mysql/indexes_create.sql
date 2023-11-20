@@ -605,12 +605,12 @@ create  index r_ps_modfile_idx on r_saved_paramset (r_module, r_file, r_paramset
 
 
 /* a_fund_analysis_attr */
-/* create  index a_fund_an_attr_pk on a_fund_analysis_attr (a_ledger_number, a_attr_code, a_fund)*/ 
+/* create  index a_fund_an_attr_pk on a_fund_analysis_attr (a_ledger_number, a_attr_code, a_fund, a_hist_id)*/ 
 /* go */
 
 
 /* a_acct_analysis_attr */
-/* create  index a_acct_an_attr_pk on a_acct_analysis_attr (a_ledger_number, a_attr_code, a_account_code)*/ 
+/* create  index a_acct_an_attr_pk on a_acct_analysis_attr (a_ledger_number, a_attr_code, a_account_code, a_hist_id)*/ 
 /* go */
 
 
@@ -920,6 +920,7 @@ create  index a_gifttrxi_donor_idx on a_subtrx_gift_item (p_dn_donor_partner_id,
 /* create  index a_gifttrxi_fund_clustered_idx on a_subtrx_gift_item (a_fund, a_account_code, a_ledger_number, a_batch_number, a_gift_number, a_split_number)*/ 
 /* go */
 create  index a_gifttrxi_gift_idx on a_subtrx_gift_item (a_gift_number, a_ledger_number, a_batch_number, a_split_number);
+create  index a_gifttrxi_hash_idx on a_subtrx_gift_item (a_account_hash, a_check_front_image, a_check_back_image, a_ledger_number, a_batch_number, a_gift_number, a_split_number);
 create  index a_gifttrxi_mcode_idx on a_subtrx_gift_item (a_motivational_code, a_ledger_number, a_batch_number, a_gift_number, a_split_number);
 create  index a_gifttrxi_pass_idx on a_subtrx_gift_item (p_dn_pass_partner_id, a_ledger_number, a_batch_number, a_gift_number, a_split_number);
 create  index a_gifttrxi_rcpt_idx on a_subtrx_gift_item (a_dn_receipt_number, a_ledger_number, a_batch_number, a_gift_number, a_split_number);
@@ -1064,8 +1065,8 @@ create  index a_subtrx_cxf_journal_idx on a_subtrx_cashxfer (a_journal_number, a
 
 /* i_eg_gift_import */
 create  index i_eg_edeposit_idx on i_eg_gift_import (i_eg_deposit_uuid, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid);
-create  index i_eg_edonor_idx on i_eg_gift_import (i_eg_donor_uuid, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid);
-create  index i_eg_efund_idx on i_eg_gift_import (i_eg_desig_name, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid);
+create  index i_eg_edonor_idx on i_eg_gift_import (i_eg_donor_uuid, i_eg_donor_alt_id, i_eg_donormap_future, i_eg_donormap_confidence, p_donor_partner_key, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid);
+create  index i_eg_efund_idx on i_eg_gift_import (i_eg_desig_name, a_ledger_number, i_eg_fundmap_future, i_eg_fundmap_confidence, a_fund, i_eg_trx_uuid, i_eg_desig_uuid);
 create  index i_eg_egift_idx on i_eg_gift_import (i_eg_gift_uuid, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid);
 /* create  index i_eg_gift_import_pk on i_eg_gift_import (a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid)*/ 
 /* go */

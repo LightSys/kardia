@@ -305,10 +305,10 @@ alter table a_analysis_attr_value
 	add constraint a_an_attr_val_pk primary key  (a_ledger_number, a_attr_code, a_value);
 
 alter table a_fund_analysis_attr
-	add constraint a_fund_an_attr_pk primary key  (a_ledger_number, a_attr_code, a_fund);
+	add constraint a_fund_an_attr_pk primary key  (a_ledger_number, a_attr_code, a_fund, a_hist_id);
 
 alter table a_acct_analysis_attr
-	add constraint a_acct_an_attr_pk primary key  (a_ledger_number, a_attr_code, a_account_code);
+	add constraint a_acct_an_attr_pk primary key  (a_ledger_number, a_attr_code, a_account_code, a_hist_id);
 
 alter table a_fund
 	add constraint a_fund_pk primary key  (a_fund, a_ledger_number);
