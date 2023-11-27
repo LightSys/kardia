@@ -52,16 +52,16 @@ plugin_base_config_ss "widget/component-decl"
 		vp_label_0 "widget/label" { height=15; text="Select this checkbox to allow Kardia to import data from Vanco Payments using Kardia's Gift Import tool."; }
 		vp_enab "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="GiftImport_VP"; text="Enabled:"; ctl_type=checkbox; enab_hints "widget/hints" { style=notnull; } }
 
-		vp_label_1 "widget/label" { height=30; text="The Hostname, API ID, API Secret, and API Client are values that need to be obtained from Vanco. TODO: hints on how to get/find these."; }
+		vp_label_1 "widget/label" { height=30; text="The Hostname, API ID, API Secret, and API Client are values that need to be obtained from Vanco."; }
 		vp_host "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="VP_Site"; text="Hostname:"; width=500; ctl_type=editbox; }
 		vp_id "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="VP_Username"; text="API ID:"; width=300; ctl_type=editbox; }
 		vp_secret "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="VP_Secret"; text="API Secret:"; width=500; ctl_type=editbox; }
 		vp_client "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="VP_Client"; text="API Client ID:"; width=500; ctl_type=editbox; }
-		vp_label_2 "widget/label" { height=60; text="The Lookback controls how many days back Kardia looks at when it connects to SiteStacker to examine the online giving data for new and changed gift information.  Set this to at least a day longer than the number of days between gift imports. Be careful not to set the lookback to too long; the process will be slowed, and if more than 1000 transactions are found the api will refuse to send anything."; }
+		vp_label_2 "widget/label" { height=60; text="The Lookback controls how many days back Kardia looks at when it connects to Vanco to examine the online giving data for new and changed gift information.  Set this to at least a day longer than the number of days between gift imports. Be careful not to set the lookback to too long; the process will be slowed."; }
 
 		lb_settle_hbox "widget/hbox" { height=24; spacing=10; ss_lookback "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="VP_Lookback"; text="Lookback:"; width=200; ctl_type=editbox; } }
 		
-		vp_label_3 "widget/label" { height=15; text="Enable this to use deposit date rather than transaction date to determine when to mark transactions as pending instead of paid"; }
+		vp_label_3 "widget/label" { height=15; text="Enable this to use deposit date rather than settlment date to determine when to mark transactions as pending instead of paid"; }
 		vp_use_deposit "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="VP_UseDepo"; text="Use Deposit Date:"; ctl_type=checkbox; vp_enab_hints "widget/hints" { style=notnull; } }
 		
 		}

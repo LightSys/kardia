@@ -199,7 +199,7 @@ myquery "system/query"
 				condition(datediff('day', getdate(), convert('datetime', 
 					condition((select first(:a_config_value) from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'VP_UseDepo') == '1',
 					:t:DepositDate, :t:SettlementDate)
-				)) <= 0, 'paid', 'pending'), -- make sure date is valid (FIXME: condition based on config for WHAT date to use)
+				)) <= 0, 'paid', 'pending'),
 			'returned'), -- either return code exists or CCStatus was E or F. Either way, mark as a return 
 		i_eg_returned_status = condition(:t:CCStatus == 'E', 'Error', 
 			condition(:t:CCStatus == 'F', 'Failed', :t:retunredCode)),
