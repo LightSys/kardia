@@ -48,6 +48,8 @@ new_partner "widget/page"
 	set_postal=runserver(:this:set_postal);
 	set_country_code=runserver(:this:set_country_code);
 	set_email=runserver(:this:set_email);
-	set_phone=runserver(:this:set_phone);
+	//FIXME: if the country is CA it fails to get the +1 prefix added...
+	set_phone=runserver(condition(:this:set_country_code = "US" OR :this:set_country_code = "CA", substring(:this:set_phone, char_length(:this:set_phone) - 6,3) + "-" + substring(:this:set_phone, char_length(:this:set_phone) - 3), :this:set_phone));      // set the subscriber number based on country (or all if unsuported)
+	set_phone_area=runserver(condition(:this:set_country_code = "US" OR :this:set_country_code = "CA", substring(:this:set_phone, char_length(:this:set_phone) - 9,3), NULL)); // set the area code based on country code (or blank if unsuported)
 	}
     }

@@ -34,6 +34,7 @@ new_partner "widget/component-decl"
     set_country_code "widget/parameter" { type=string; deploy_to_client=yes; }
     set_email "widget/parameter" { type=string; deploy_to_client=yes; }
     set_phone "widget/parameter" { type=string; deploy_to_client=yes; }
+    set_phone_area "widget/parameter" { type=string; deploy_to_client=yes; }
 
     set_focus "widget/connector"
 	{
@@ -53,7 +54,8 @@ new_partner "widget/component-decl"
     set_country_code_cn "widget/connector" { event=LoadComplete; event_condition=runclient(:new_partner:set_country_code is not null); target=new_location_form; action=SetValue; Field=runclient("p_country_code"); Value=runclient(:new_partner:set_country_code); }
     set_email_cn "widget/connector" { event=LoadComplete; event_condition=runclient(:new_partner:set_email is not null); target=new_email_form; action=SetValue; Field=runclient("p_contact_data"); Value=runclient(:new_partner:set_email); }
     set_phone_cn "widget/connector" { event=LoadComplete; event_condition=runclient(:new_partner:set_phone is not null); target=new_phone_form; action=SetValue; Field=runclient("p_contact_data"); Value=runclient(:new_partner:set_phone); }
-    set_phone_country_cn "widget/connector" { event=LoadComplete; event_condition=runclient(:new_partner:set_phone is not null and :new_partner:set_country_code = 'US'); target=new_phone_form; action=SetValue; Field=runclient("p_phone_country"); Value=runclient(1); }
+    set_phone_area_cn "widget/connector" { event=LoadComplete; event_condition=runclient(:new_partner:set_phone is not null); target=new_phone_form; action=SetValue; Field=runclient("p_phone_area_city"); Value=runclient(:new_partner:set_phone_area); }
+    set_phone_country_cn "widget/connector" { event=LoadComplete; event_condition=runclient(:new_partner:set_phone is not null and :new_partner:set_country_code = 'US' or :new_partner:set_country_code = 'CA'); target=new_phone_form; action=SetValue; Field=runclient("p_phone_country"); Value=runclient(1); }
 
     set_donor_cn "widget/connector"
 	{

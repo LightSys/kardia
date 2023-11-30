@@ -513,7 +513,7 @@ gift_import "widget/component-decl"
 						set_state_province = runclient(:gift_import_osrc:i_eg_donor_state);
 						set_postal = runclient(:gift_import_osrc:i_eg_donor_postal);
 						set_country_code = runclient(:gift_import_osrc:import_country_code);
-						set_phone = runclient(:gift_import_osrc:i_eg_donor_phone);
+						set_phone = runclient(replace(replace(replace(replace(replace(:gift_import_osrc:i_eg_donor_phone, "+", NULL), "-", NULL), "(", NULL), ")", NULL), " ", NULL));
 						set_email = runclient(:gift_import_osrc:i_eg_donor_email);
 						}
 					    }
