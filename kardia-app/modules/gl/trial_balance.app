@@ -86,6 +86,7 @@ trial_balance "widget/page"
 	    f_unposted "widget/component" { x=10; width=400; height=24; path="/sys/cmp/smart_field.cmp"; field="unposted"; ctl_type='checkboxleft'; text="Include unposted transactions"; form=rpt_form; label_width=120; }
 	    //f_pagesep "widget/component" { x=10; width=400; height=24; path="/sys/cmp/smart_field.cmp"; field="pagesep"; ctl_type='checkboxleft'; text="Show funds on separate page(s)"; form=rpt_form; label_width=120; }
 	    f_summchart "widget/component" { x=10; width=400; height=24; path="/sys/cmp/smart_field.cmp"; field="summchart"; ctl_type='checkboxleft'; text="Include a ledger-wide GL Account summary"; form=rpt_form; label_width=120; }
+	    f_bymonth "widget/component" { x=10; width=400; height=24; path="/sys/cmp/smart_field.cmp"; field="bymonth"; ctl_type='checkboxleft'; text="Break out changes by accounting period"; form=rpt_form; label_width=120; }
 	    //f_rollsubs "widget/component" { x=10; width=400; height=24; path="/sys/cmp/smart_field.cmp"; field="rollsubs"; ctl_type='checkboxleft'; text="Roll-up subsidiary funds with their main funds"; form=rpt_form; label_width=120; }
 	    f_level "widget/component" { width=350; height=24; path="/sys/cmp/smart_field.cmp"; field='report_level'; ctl_type=dropdown; text='Detail Level:'; sql=runserver("select '' + :a_reporting_level + ' - ' + :a_level_rpt_desc, :a_reporting_level from /apps/kardia/data/Kardia_DB/a_reporting_level/rows where :a_ledger_number = " + quote(:this:ledger)); form=rpt_form; label_width=120; }
 	    f_docfmt "widget/component"
@@ -100,7 +101,7 @@ trial_balance "widget/page"
 		label_width=120;
 		}
 
-	    sep2 "widget/autolayoutspacer" { height=120; }
+	    sep2 "widget/autolayoutspacer" { height=92; }
 	    pn_sep2 "widget/pane" { height=2; style=lowered; }
 
 	    ctls_hbox "widget/hbox"
@@ -113,7 +114,8 @@ trial_balance "widget/page"
 		    text="Print";
 		    //enabled = runclient(char_length(:f_year:content) > 0);
 		    //rpt_print_cn "widget/connector" { event="Click"; target="rpt_form"; action="Submit"; Target=runclient("trial_balance"); NewPage=runclient(1); Source=runclient("/apps/kardia/modules/gl/batch_balance.rpt"); Width=runclient(800); Height=runclient(600); }
-		    rpt_print_cn "widget/connector" { event="Click"; target="rpt_form"; action="Submit"; Target=runclient("trial_balance"); NewPage=runclient(1); Source=runclient("/apps/kardia/modules/gl/trial_balance.rpt"); Width=runclient(800); Height=runclient(600); }
+		    rpt_print_cn "widget/connector" { event="Click"; event_condition=runclient(isnull(:f_bymonth:value, 0) = 0); target="rpt_form"; action="Submit"; Target=runclient("trial_balance"); NewPage=runclient(1); Source=runclient("/apps/kardia/modules/gl/trial_balance.rpt"); Width=runclient(800); Height=runclient(600); }
+		    rpt_print_bymonth_cn "widget/connector" { event="Click"; event_condition=runclient(isnull(:f_bymonth:value, 0) = 1); target="rpt_form"; action="Submit"; Target=runclient("trial_balance"); NewPage=runclient(1); Source=runclient("/apps/kardia/modules/gl/trial_balance_months.rpt"); Width=runclient(800); Height=runclient(600); }
 		    }
 		rpt_cancel "widget/textbutton"
 		    {
