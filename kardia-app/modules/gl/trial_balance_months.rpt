@@ -50,13 +50,32 @@ trial_balance_months "system/report"
     p11_qy "report/query" { sql="select a_period = max(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = :this:ledger and :a_period < :p10_qy:a_period and :a_period >= :this:ref_period and :a_summary_only = 0 order by :a_period desc limit 1"; }
     p12_qy "report/query" { sql="select a_period = max(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = :this:ledger and :a_period < :p11_qy:a_period and :a_period >= :this:ref_period and :a_summary_only = 0 order by :a_period desc limit 1"; }
 
-    accts_qy "report/query"
+    funds_qy "report/query"
 	{
 	sql = runserver("
 		select
 			:c:a_fund,
 			:c:a_fund_desc,
 			:c:a_bal_fund,
+			:c:a_ledger_number,
+			:c:a_is_posting
+		from
+			/apps/kardia/data/Kardia_DB/a_fund/rows c
+		where
+			:c:a_ledger_number = :this:ledger
+			" + condition(:this:fund is null, '', ' and :c:a_bal_fund = :this:fund') + "
+		order by
+			:c:a_bal_fund,
+			:c:a_fund
+		");
+
+	bal_fund_agg "report/aggregate" { compute="last(:a_bal_fund)"; reset=0; }
+	}
+
+    accts_qy "report/query"
+	{
+	sql = runserver("
+		select
 			:a:a_account_code,
 			:tt:a_account_category,
 			:a:a_acct_desc,
@@ -90,19 +109,15 @@ trial_balance_months "system/report"
 			p12 = sum(condition(:tt:a_period = :p12_qy:a_period and :tt:a_transaction_type != 'B', :tt:a_amount, null))
 		from
 			/apps/kardia/data/Kardia_DB/a_transaction/rows tt,
-			/apps/kardia/data/Kardia_DB/a_fund/rows c,
 			/apps/kardia/data/Kardia_DB/a_account/rows a
 		where
-			:tt:a_ledger_number = :this:ledger and
-			:tt:a_fund = :c:a_fund and
+			:tt:a_ledger_number = :funds_qy:a_ledger_number and
+			:tt:a_fund = :funds_qy:a_fund and
 			:tt:a_account_code = :a:a_account_code and
 			(:tt:a_period <= :this:end_period and :tt:a_period >= :period_qy:first_period) and
-			:c:a_ledger_number = :this:ledger and
 			:a:a_ledger_number = :this:ledger
 			" + condition(:this:unposted, "", "and :tt:a_posted = 1") + "
-			" + condition(:this:fund is null, '', ' and :c:a_bal_fund = :this:fund') + "
 		group by
-			:tt:a_fund,
 			:tt:a_account_code
 			" + condition(:this:control, ",:tt:a_account_category", "") + "
 		having
@@ -145,8 +160,6 @@ trial_balance_months "system/report"
 
 	all_sum_b "report/aggregate" { compute="sum(:bbal)"; reset=0; }
 	all_sum_c "report/aggregate" { compute="sum(:cbal)"; reset=0; }
-
-	bal_fund_agg "report/aggregate" { compute="last(:a_bal_fund)"; reset=0; }
 
 	ifxfr_sum_b "report/aggregate" { compute="sum(:bbal)"; where=":a_account_code == '1900'"; reset=0; }
 	ifxfr_sum_c "report/aggregate" { compute="sum(:cbal)"; where=":a_account_code == '1900'"; reset=0; }
@@ -285,7 +298,7 @@ trial_balance_months "system/report"
 	    columns=16;
 	    widths = 5,5,7,6,6,6,6,6,6,6,6,6,6,6,6,7;
 	    colsep=0.6;
-	    source=accts_qy;
+	    source=funds_qy,accts_qy;
 	    topborder=0.3;
 	    bottomborder=0.3;
 	    nullformat="";
@@ -338,7 +351,7 @@ trial_balance_months "system/report"
 		margintop=0.15;
 		bgcolor = runserver(condition((:accts_qy:rowid / 2) * 2 == :accts_qy:rowid, '#f0f0f0', null));
 
-		d_cc "report/table-cell" { value=runserver(:accts_qy:a_fund); align=left; }
+		d_cc "report/table-cell" { value=runserver(:funds_qy:a_fund); align=left; }
 		d_acct "report/table-cell" { value=runserver(condition(:this:control, "" + :accts_qy:a_account_category + "-", "") + :accts_qy:a_account_code); align=left; }
 		d_bbal "report/table-cell" { value=runserver(:accts_qy:bbal); align=right; }
 		d_chg_p12 "report/table-cell" { value=runserver((:accts_qy:p12)); align=right; }
@@ -359,13 +372,13 @@ trial_balance_months "system/report"
 	    tbl_sum_fund "report/table-row"
 		{
 		summary=yes;
-		summarize_for = runserver(:accts_qy:a_bal_fund);
+		summarize_for = runserver(:funds_qy:a_bal_fund);
 		font=courier;
 		fontsize=6;
 		topborder=0.05;
 		//bottomborder=0.05;
 		marginbottom=1.0;
-		s_cc "report/table-cell" { value=runserver(:accts_qy:bal_fund_agg); align=left; style=bold; }
+		s_cc "report/table-cell" { value=runserver(:funds_qy:bal_fund_agg); align=left; style=bold; }
 		s_acct "report/table-cell" { value='TOTAL >>'; align=left; style=bold; }
 		s_bbal "report/table-cell" { value=runserver(:accts_qy:bbal_sum); align=right; style=bold; }
 		s_chg_p12 "report/table-cell" { value=runserver((:accts_qy:sum_p12)); align=right; style=bold; }
