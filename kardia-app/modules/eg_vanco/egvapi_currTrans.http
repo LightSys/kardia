@@ -14,7 +14,7 @@ egvapi "application/http"
     "VancoWS.Request.RequestVars.ClientID" "http/parameter" {type=string; source=none; usage=post; default=runserver( (select first(:a_config_value) from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'VP_Client') );} 
 
     // Connection information -- https://myvanco.vancopayments.com/cgi-bin/ws2.vps
-    server = "myvanco.vancopayments.com";
+    server = runserver( (select first(:a_config_value) from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'VP_Site') );
     path = "/cgi-bin/ws2.vps";
     protocol = "https";
     method = POST;
