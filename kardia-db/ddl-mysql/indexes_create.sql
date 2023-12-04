@@ -1076,6 +1076,7 @@ create  index i_eg_kdonor_idx on i_eg_gift_import (p_donor_partner_key, a_ledger
 create  index i_eg_kfeebatch_idx on i_eg_gift_import (a_batch_number_fees, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid);
 create  index i_eg_kfund_idx on i_eg_gift_import (a_fund, a_account_code, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid);
 create  index i_eg_kgiftbatch_idx on i_eg_gift_import (a_batch_number, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid);
+create  index i_eg_stats_idx on i_eg_gift_import (i_eg_gift_trx_date, i_eg_status, i_eg_donormap_confidence, i_eg_fundmap_confidence, i_eg_acctmap_confidence, a_batch_number, i_eg_gift_amount, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid);
 
 
 /* i_eg_gift_trx_fees */

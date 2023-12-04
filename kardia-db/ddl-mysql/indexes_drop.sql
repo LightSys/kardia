@@ -1076,6 +1076,7 @@ alter table i_eg_gift_import drop index i_eg_kdonor_idx;
 alter table i_eg_gift_import drop index i_eg_kfeebatch_idx;
 alter table i_eg_gift_import drop index i_eg_kfund_idx;
 alter table i_eg_gift_import drop index i_eg_kgiftbatch_idx;
+alter table i_eg_gift_import drop index i_eg_stats_idx;
 
 
 /* i_eg_gift_trx_fees */

@@ -328,6 +328,9 @@ alter table i_eg_gift_import
 alter table i_eg_gift_import
 	add constraint i_eg_kdepbatch_idx unique  (a_batch_number_deposit, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid);
 
+alter table i_eg_gift_import
+	add constraint i_eg_stats_idx unique  (i_eg_gift_trx_date, i_eg_status, i_eg_donormap_confidence, i_eg_fundmap_confidence, i_eg_acctmap_confidence, a_batch_number, i_eg_gift_amount, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid);
+
 alter table c_chat
 	add constraint c_public_idx unique  (c_public, c_chat_id);
 
