@@ -243,7 +243,7 @@ myquery "system/query"
 					condition(upper(:p:CardType) == 'DISCOVER', 'Discover',
 					:p:CardType
 					))))),
-		i_eg_gift_interval = isnull(upper(:o:FrequencyType), ''), -- Monthly, quaterly, and annual all line up.
+		i_eg_gift_interval = isnull(upper(:o:FrequencyType), NULL), -- Monthly, quaterly, and annual all line up.
 		i_eg_gift_date = convert('datetime', :t:ProcessDate),
 		i_eg_gift_trx_date = convert('datetime', :t:ProcessDate),
 		i_eg_gift_settlement_date = convert('datetime', :t:SettlementDate), 
@@ -259,7 +259,7 @@ myquery "system/query"
 		:t:CustomerRef = :c:CustomerRef 
 		AND :t:CustomerRef *= :p:CustomerRef 
 		AND :t:PaymentMethodRef *= :p:PaymentMethodRef
-		AND :t:TransactionRef *= :o:TransactionRef -- TODO: double check that these are always the same
+		AND :t:TransactionRef *= :o:TransactionRef
 		AND :t:FundAmount *= :o:Amount
 		AND upper(:t:FundName) *= upper(:o:FundName)
 	    ;

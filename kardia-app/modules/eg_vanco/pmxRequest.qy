@@ -1,0 +1,114 @@
+
+$Version=2$
+myquery "system/query"
+    {
+    sql = "
+
+	    -- get the login info. Gets new session every time so there is no need to worry about expired keys
+	    DECLARE OBJECT vancoKey;
+	    SELECT 
+	        :vancoKey:value = :SessionID,
+		:vancoKey:lookback = 4, --convert( 'integer', (
+		--    select first(:a_config_value)
+		--    from /apps/kardia/data/Kardia_DB/a_config/rows
+		--    where :a_config_name = 'VP_Lookback'
+		--    )),
+		:vancoKey:fromDate = dateformat(
+		    dateadd('day', 
+			-1 * convert( 'integer', (
+			    select first(:a_config_value)
+			    from /apps/kardia/data/Kardia_DB/a_config/rows
+			    where :a_config_name = 'VP_Lookback'
+			    )),
+			convert('datetime', getdate())
+		    ),
+		    'yyyy-MM-dd'),
+		:vancoKey:toDate = '2023-12-10' --dateformat(getdate(), 'yyyy-MM-dd') --'2020-08-16', 'yyyy-MM-dd')
+            FROM
+                SUBTREE EXPRESSION(
+		    '/apps/kardia/modules/eg_vanco/egvapi_pmx.http?VancoWS.Auth.RequestType=Login'
+		    +'&VancoWS.Request.RequestVars.UserID='
+		    +isnull((select first(:a_config_value) from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'VP_PMX_Username'),'')
+		    +'&VancoWS.Request.RequestVars.Password='
+		    +isnull((select first(:a_config_value) from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'VP_PMX_Secret'),'')
+		    )
+            ;
+
+	    
+	    -- get the fund histories
+	    DECLARE COLLECTION dataQuery;
+	    INSERT 
+		COLLECTION dataQuery
+	    SELECT 
+		-- use the path to set the dense_rank. Use all for transactions, and everthing before /Funds/Fund in funds
+		:TransactionRef,
+		cx_path=:__cx_path,  :dq:TransactionCount, -- include for debug
+		:TransactionRef, :ReceivedAccount, :AssignedAccount, :PayerFirstName, 
+		:CustomerID, :CustomerRef, :PaymentMethodRef, :ProcessDate, :SettlementDate, :PayerMidName, :PayerLastName, 
+		:PayerAddress1, :PayerAddress2, :PayerCity, :PayerState, :PayerZip, :GrossAmount, :GroupID, :AlwaysAssign,
+		:MatchName, :BillerID, :ReturnCode, :ReturnReason, :ReturnDate, :Status
+	    FROM 
+		SUBTREE PAGED EXPRESSION(
+		    '/apps/kardia/modules/eg_vanco/egvapi_pmx.http?'
+		    +'VancoWS.Auth.RequestType=PMXTransactionHistory'
+		    +'&VancoWS.Auth.SessionID='+:vancoKey:value
+		    +'&VancoWS.Auth.RequestID='+(hash('md5', convert('string', dateformat(getdate(), 'yyyy-MM-dd HH:mm:ss')))+'-'+convert('string',:dq:cx__page))
+		    +'&VancoWS.Request.RequestVars.ClientID='
+		    +(select first(:a_config_value) from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'VP_Client')
+		    +'&VancoWS.Request.RequestVars.FromDate='
+		    +dateformat(dateadd('day', -1*(:dq:cx__page - 1), :vancoKey:toDate), 'yyyy-MM-dd')
+		    +'&VancoWS.Request.RequestVars.ToDate='
+		    +condition(:dq:cx__page <= :vancoKey:lookback + 1, 
+			dateformat(dateadd('day', -1*(:dq:cx__page - 1), :vancoKey:toDate), 'yyyy-MM-dd'),
+			'not-a-date')) dq
+	    where
+		:dq:TransactionRef IS NOT NULL OR :dq:TransactionCount = 0
+	    ;
+
+	    -- format into final table
+	    SELECT
+		i_eg_gift_uuid = :TransactionRef,
+		i_eg_desig_uuid = :GroupID,
+		i_eg_trx_uuid = :TransactionRef+'-'+dateformat(getdate(), 'yyyy-MM-dd'),
+		i_eg_donor_uuid = :AssignedAccount,  
+		i_eg_donor_alt_id = :AssignedAccount, -- TODO: might leave this blank? Is duplicated in most vanco transactions anyway...
+		i_eg_account_uuid = NULL,
+		i_eg_status = condition(:Status == 'A' OR :Status IS NULL, 
+			condition(datediff('day', getdate(), convert('datetime', :SettlementDate)) <= 0, 'paid', 'pending'),
+			condition(:Status == 'P', 'pending', 'returned')),
+		i_eg_returned_status = condition(:Status == 'R', 'Rejected', condition(:Status == 'T', 'Returned', NULL)),
+		i_eg_donor_name = isnull(:PayerFirstName,'')+isnull(' '+:PayerMidName,'')+isnull(' '+:PayerLastName, ''),
+		i_eg_donor_given_name = :PayerFirstName,
+		i_eg_donor_surname = :PayerLastName,
+		i_eg_donor_middle_name = :PayerMidName,
+		i_eg_donor_addr1 = :PayerAddress1,
+		i_eg_donor_addr2 = :PayerAddress2,
+		i_eg_donor_city = :PayerCity,
+		i_eg_donor_state = :PayerState,
+		i_eg_donor_postal = :PayerZip,
+		i_eg_donor_country = 'US',
+		i_eg_donor_phone = NULL,
+		i_eg_donor_email = NULL,
+		i_eg_gift_amount = convert('money', :GrossAmount),
+		i_eg_net_amount = convert('money', :GrossAmount),
+		i_eg_deposit_gross_amt = convert('money', :GrossAmount),
+		i_eg_deposit_amt = convert('money', :GrossAmount),
+		i_eg_deposit_date = condition(char_length(:SettlementDate)<1, NULL, convert('datetime', :SettlementDate)),
+		i_eg_deposit_status = NULL, -- TODO: what is this the status of
+		i_eg_deposit_uuid = condition(char_length(:SettlementDate) < 1, NULL, replace(:SettlementDate, '-', NULL)),
+		i_eg_gift_pmt_type = 'ACH',
+		i_eg_gift_interval = NULL,
+		i_eg_gift_date = convert('datetime', :ProcessDate),
+		i_eg_gift_trx_date = convert('datetime', :ProcessDate),
+		i_eg_gift_settlement_date = convert('datetime', :SettlementDate), 
+		i_eg_gift_lastfour = NULL,
+		i_eg_desig_name = :GroupID, -- FIXME: do I leave this blank instead to emphasize it probably needs redone...?
+		i_eg_desig_notes = NULL
+	    FROM
+		IDENTITY COLLECTION dataQuery
+	    WHERE
+		:TransactionRef IS NOT NULL -- weed out any entries from empty days
+	    ;
+            ";
+	
+    }
