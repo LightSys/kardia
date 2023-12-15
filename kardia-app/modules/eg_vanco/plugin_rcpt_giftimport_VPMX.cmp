@@ -1,0 +1,88 @@
+$Version=2$
+plugin_rcpt_giftimport_EGS "widget/component-decl"
+    {
+    // In the future this will be an actual visual config tool,
+    // but for now we just use it to supply the infrastructure.
+    description = "Vanco Payments Bill Pay via XML / POST API";
+    tag = "VPMX";
+    sql = "		i_eg_service = 'VPMX',
+			i_eg_processor = 'Vanco Payments PXM',
+			i_eg_gift_currency = 'USD',
+			i_eg_receipt_desired = null,
+			i_eg_anonymous = null,
+			i_eg_prayforme = null,
+			i_eg_acctmap_future = 1,
+			i_eg_fundmap_future = 1,
+			i_eg_donormap_future = 1,
+			s_date_created = getdate(),
+			s_created_by = user_name(),
+			s_date_modified = getdate(),
+			s_modified_by = user_name(),
+
+			:p:i_eg_gift_uuid,
+			:p:i_eg_desig_uuid,
+			:p:i_eg_trx_uuid,
+			:p:i_eg_donor_uuid,
+			:p:i_eg_donor_alt_id,
+			:p:i_eg_account_uuid,
+
+			:p:i_eg_status,
+			:p:i_eg_returned_status,
+
+			:p:i_eg_donor_name,
+			:p:i_eg_donor_given_name,
+			:p:i_eg_donor_surname,
+			:p:i_eg_donor_middle_name,
+			i_eg_donor_prefix = NULL,
+			i_eg_donor_suffix = NULL,
+			:p:i_eg_donor_addr1,
+			:p:i_eg_donor_addr2,
+			i_eg_donor_addr3 = NULL,
+			:p:i_eg_donor_city,
+			:p:i_eg_donor_state,
+			:p:i_eg_donor_postal,
+			:p:i_eg_donor_country,
+			:p:i_eg_donor_phone,
+			:p:i_eg_donor_email,
+
+			:p:i_eg_gift_amount,
+			:p:i_eg_net_amount,
+			:p:i_eg_deposit_gross_amt,
+			:p:i_eg_deposit_amt,
+			:p:i_eg_deposit_date,
+			:p:i_eg_deposit_status,
+			:p:i_eg_deposit_uuid,
+			:p:i_eg_gift_pmt_type,
+			:p:i_eg_gift_interval,
+			:p:i_eg_gift_date,
+			:p:i_eg_gift_trx_date,
+			:p:i_eg_gift_settlement_date,
+			:p:i_eg_gift_lastfour,
+			:p:i_eg_desig_name,
+			:p:i_eg_desig_notes
+			
+		from
+			/apps/kardia/modules/eg_vanco/pmxRequest.qy p
+		";
+
+    upsert_sql="on duplicate
+			:a_ledger_number, :i_eg_trx_uuid, :i_eg_desig_uuid
+		update set
+			:i_eg_deposit_date = :p:i_eg_deposit_date,
+			:i_eg_deposit_uuid = :p:i_eg_deposit_uuid,
+			:i_eg_deposit_gross_amt = :p:i_eg_deposit_gross_amt,
+			:i_eg_deposit_amt = :p:i_eg_deposit_amt,
+			:i_eg_net_amount = :p:i_eg_net_amount,
+			:i_eg_desig_notes = :p:i_eg_desig_notes,
+			:i_eg_status = :p:i_eg_status,
+			:i_eg_returned_status = :p:i_eg_returned_status,
+			:i_eg_gift_settlement_date = :p:i_eg_gift_settlement_date,
+			:s_date_modified = getdate() IF MODIFIED,
+			:s_modified_by = user_name() IF MODIFIED
+		";
+
+    postprocess_sql="
+		print 'Done!'
+		";
+			
+    }

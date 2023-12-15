@@ -190,7 +190,7 @@ myquery "system/query"
 		-- actual values
 		i_eg_gift_uuid = condition(:o:Frequency IS NOT NULL, :o:TransactionRef, :t:TransactionRef), -- TODO: currently, :t:TransactionRef = :o:TransactionRef. Simplify if this doesn't change
 		i_eg_desig_uuid = :t:FundID,
-		i_eg_trx_uuid = :t:TransactionRef+'-'+dateformat(getdate(), 'yyyy-MM-dd'),
+		i_eg_trx_uuid = :t:TransactionRef+'-'+dateformat(convert('datetime', :t:ProcessDate), 'yyyy-MM-dd'),
 		i_eg_donor_uuid = :t:CustomerID,  
 		i_eg_donor_alt_id = :t:CustomerRef,
 		i_eg_account_uuid = :t:PaymentMethodRef,
@@ -243,7 +243,7 @@ myquery "system/query"
 					condition(upper(:p:CardType) == 'DISCOVER', 'Discover',
 					:p:CardType
 					))))),
-		i_eg_gift_interval = isnull(upper(:o:FrequencyType), NULL), -- Monthly, quaterly, and annual all line up.
+		i_eg_gift_interval = isnull(upper(:o:FrequencyType), ''), -- Monthly, quaterly, and annual all line up.
 		i_eg_gift_date = convert('datetime', :t:ProcessDate),
 		i_eg_gift_trx_date = convert('datetime', :t:ProcessDate),
 		i_eg_gift_settlement_date = convert('datetime', :t:SettlementDate), 

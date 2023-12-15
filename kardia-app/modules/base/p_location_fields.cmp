@@ -36,7 +36,12 @@ p_location_fields "widget/component-decl"
 
 	    p_location_type_cmp "widget/component" { width=200; path="/sys/cmp/smart_field.cmp"; field=p_location_type; text="Location Type:"; ctl_type="dropdown"; tooltip="H=home, W=work, S=school, V=vacation"; sql="select :text, :tag from /apps/kardia/data/Kardia_DB/_p_location_type/rows"; form=form; loc_type_hints "widget/hints" { default=runclient('H'); style=notnull; } }
 	    p_in_care_of_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_in_care_of; text="In Care Of:"; ctl_type="editbox"; tooltip="In Care Of Whom?";  form=form; }
-	    p_address_1_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_address_1; text="Addr Line 1:"; ctl_type="editbox"; tooltip="Address Line 1";  form=form; on_addr1_change "widget/connector" { event=DataChange; target=address_1; action=SetValue; Value=runclient(:Value); } }
+	    p_address_1_cmp "widget/component" 
+		{
+		path="/sys/cmp/smart_field.cmp"; field=p_address_1; text="Addr Line 1:"; ctl_type="editbox"; tooltip="Address Line 1";  form=form; 
+		on_addr1_change "widget/connector" { event=DataChange; target=address_1; action=SetValue; Value=runclient(:Value); }
+		on_addr1_paste "widget/connector" {event=DataChange; target=p_address_1_cmp; action=SetValue; event_confirm="Potentially parseable address detected. Attempt parse?"; event_condition=0;}
+		}
 	    p_address_2_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_address_2; text="Addr Line 2:"; ctl_type="editbox"; tooltip="Address Line 2";  form=form; }
 	    p_address_3_cmp "widget/component" { path="/sys/cmp/smart_field.cmp"; field=p_address_3; text="Addr Line 3:"; ctl_type="editbox"; tooltip="Address Line 3";  form=form; }
 	    p_city_state_hbox "widget/hbox"

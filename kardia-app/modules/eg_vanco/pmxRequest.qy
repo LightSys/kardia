@@ -8,11 +8,11 @@ myquery "system/query"
 	    DECLARE OBJECT vancoKey;
 	    SELECT 
 	        :vancoKey:value = :SessionID,
-		:vancoKey:lookback = 4, --convert( 'integer', (
-		--    select first(:a_config_value)
-		--    from /apps/kardia/data/Kardia_DB/a_config/rows
-		--    where :a_config_name = 'VP_Lookback'
-		--    )),
+		:vancoKey:lookback = convert( 'integer', (
+		    select first(:a_config_value)
+		    from /apps/kardia/data/Kardia_DB/a_config/rows
+		    where :a_config_name = 'VP_Lookback'
+		    )),
 		:vancoKey:fromDate = dateformat(
 		    dateadd('day', 
 			-1 * convert( 'integer', (
@@ -69,7 +69,7 @@ myquery "system/query"
 	    SELECT
 		i_eg_gift_uuid = :TransactionRef,
 		i_eg_desig_uuid = :GroupID,
-		i_eg_trx_uuid = :TransactionRef+'-'+dateformat(getdate(), 'yyyy-MM-dd'),
+		i_eg_trx_uuid = :TransactionRef+'-'+dateformat(convert('datetime', :ProcessDate), 'yyyy-MM-dd'),
 		i_eg_donor_uuid = :AssignedAccount,  
 		i_eg_donor_alt_id = :AssignedAccount, -- TODO: might leave this blank? Is duplicated in most vanco transactions anyway...
 		i_eg_account_uuid = NULL,
@@ -97,7 +97,7 @@ myquery "system/query"
 		i_eg_deposit_status = NULL, -- TODO: what is this the status of
 		i_eg_deposit_uuid = condition(char_length(:SettlementDate) < 1, NULL, replace(:SettlementDate, '-', NULL)),
 		i_eg_gift_pmt_type = 'ACH',
-		i_eg_gift_interval = NULL,
+		i_eg_gift_interval = '',
 		i_eg_gift_date = convert('datetime', :ProcessDate),
 		i_eg_gift_trx_date = convert('datetime', :ProcessDate),
 		i_eg_gift_settlement_date = convert('datetime', :SettlementDate), 
