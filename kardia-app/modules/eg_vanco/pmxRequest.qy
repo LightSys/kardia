@@ -23,7 +23,7 @@ myquery "system/query"
 			convert('datetime', getdate())
 		    ),
 		    'yyyy-MM-dd'),
-		:vancoKey:toDate = '2023-12-10' --dateformat(getdate(), 'yyyy-MM-dd') --'2020-08-16', 'yyyy-MM-dd')
+		:vancoKey:toDate = dateformat(getdate(), 'yyyy-MM-dd')
             FROM
                 SUBTREE EXPRESSION(
 		    '/apps/kardia/modules/eg_vanco/egvapi_pmx.http?VancoWS.Auth.RequestType=Login'
