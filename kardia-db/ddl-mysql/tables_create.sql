@@ -3682,51 +3682,67 @@ create table a_subtrx_cashxfer (
 
 create table i_eg_gift_import (
         a_ledger_number                       char(10)  not null,      /* ledger number for this gift. --  */
-        i_eg_gift_uuid                        char(36)  not null,      /* UUID for the gift record (xml:gift-id) --  */
+        i_eg_gift_uuid                        char(36)  not null,      /* UUID for the gift record --  */
         i_eg_desig_uuid                       varchar(36)  not null,   /* ID of designation that the donor chose --  */
-        i_eg_trx_uuid                         char(36)  not null,      /* UUID for the transaction record (xml:txn-id) --  */
-        i_eg_donor_uuid                       char(36)  not null,      /* UUID for the donor (xml:giver-id) --  */
+        i_eg_line_item                        integer  not null,       /* unique ID for the gift item (in case there is more than one line item to the same designation) --  */
+        i_eg_trx_uuid                         char(36)  not null,      /* UUID for the transaction record --  */
+        i_eg_donor_uuid                       char(36)  not null,      /* UUID for the donor --  */
         i_eg_donor_alt_id                     char(36)  null,          /* alternate ID for the donor --  */
         i_eg_account_uuid                     varchar(36)  null,       /* ID of donation account that the donor used --  */
         i_eg_service                          varchar(16)  null,       /* Service ID (e.g. EG, EGS, SS) from Kardia online giving service plugin --  */
-        i_eg_status                           varchar(16)  not null,   /* processing status (paid, pending, returned) (xml:status) --  */
-        i_eg_returned_status                  varchar(16)  null,       /* Reason for a return (xml:returned-status) --  */
-        i_eg_processor                        varchar(80)  not null,   /* Name of payment processor (xml:processor) --  */
-        i_eg_donor_name                       varchar(80)  not null,   /* Name (given name and surname) of the donor (xml:name) --  */
+        i_eg_status                           varchar(16)  not null,   /* processing status (paid, pending, returned) --  */
+        i_eg_returned_status                  varchar(16)  null,       /* Reason for a return --  */
+        i_eg_processor                        varchar(80)  not null,   /* Name of payment processor --  */
+        i_eg_donor_name                       varchar(80)  not null,   /* Name (given name and surname) of the donor --  */
         i_eg_donor_given_name                 varchar(80)  null,       /* given name of the donor --  */
         i_eg_donor_surname                    varchar(80)  null,       /* surname of the donor --  */
         i_eg_donor_middle_name                varchar(80)  null,       /* middle name of the donor --  */
         i_eg_donor_prefix                     varchar(80)  null,       /* prefix/title of donor --  */
         i_eg_donor_suffix                     varchar(80)  null,       /* suffix (jr/sr/etc) of donor --  */
-        i_eg_donor_addr1                      varchar(80)  null,       /* Address line 1 of donor. (xml:address-line-1) --  */
-        i_eg_donor_addr2                      varchar(80)  null,       /* Address line 2 of donor. (xml:address-line-2) --  */
+        i_eg_donor_address                    varchar(160)  null,      /* Unparsed address of donor (for future use) --  */
+        i_eg_donor_addr1                      varchar(80)  null,       /* Address line 1 of donor. --  */
+        i_eg_donor_addr2                      varchar(80)  null,       /* Address line 2 of donor. --  */
         i_eg_donor_addr3                      varchar(80)  null,       /* Address line 3 of donor. --  */
-        i_eg_donor_city                       varchar(80)  null,       /* City of donor. (xml:city) --  */
-        i_eg_donor_state                      varchar(80)  null,       /* State of donor. (xml:state) --  */
-        i_eg_donor_postal                     varchar(80)  null,       /* Postal Code of donor. (xml:postal) --  */
-        i_eg_donor_country                    varchar(80)  null,       /* Country of donor. (xml:country) --  */
-        i_eg_donor_phone                      varchar(80)  null,       /* Phone number of donor. (xml:phone) --  */
-        i_eg_donor_email                      varchar(80)  null,       /* Email address of donor. (xml:email) --  */
+        i_eg_donor_city                       varchar(80)  null,       /* City of donor. --  */
+        i_eg_donor_state                      varchar(80)  null,       /* State of donor. --  */
+        i_eg_donor_postal                     varchar(80)  null,       /* Postal Code of donor. --  */
+        i_eg_donor_country                    varchar(80)  null,       /* Country of donor. --  */
+        i_eg_donor_phone                      varchar(80)  null,       /* Phone number of donor. (unparsed) --  */
+        i_eg_donor_phone_country              varchar(10)  null,       /* Country code in phone number --  */
+        i_eg_donor_phone_area                 varchar(10)  null,       /* Area (second level) code in phone number --  */
+        i_eg_donor_phone_line                 varchar(20)  null,       /* Line number (remaining parts) in phone number --  */
+        i_eg_donor_phone_ext                  varchar(20)  null,       /* Extension number in phone number (for future use) --  */
+        i_eg_donor_email                      varchar(80)  null,       /* Email address of donor. --  */
         i_eg_gift_amount                      decimal(14,4)  not null,
-                                                                      /* amount of gift (xml:amount) --  */
+                                                                      /* amount of gift (in our local currency) --  */
+        i_eg_gift_currency_foreign_amt        decimal(14,4)  null,     /* amount of the gift in the foreign currency --  */
         i_eg_gift_currency                    varchar(16)  null,       /* currency of gift (e.g. USD, CAD, etc) --  */
-        i_eg_gift_pmt_type                    varchar(16)  null,       /* Payment type (xml:payment-type) --  */
-        i_eg_gift_lastfour                    char(4)  null,           /* Last four digits of account number (xml:last-four) --  */
-        i_eg_gift_interval                    varchar(16)  not null,   /* Recurring gift interval (xml:recurring-interval) --  */
-        i_eg_gift_date                        datetime  not null,      /* Date of gift (xml:given-on) --  */
-        i_eg_gift_trx_date                    datetime  null,          /* Date of transaction (xml:txn-date) --  */
-        i_eg_gift_settlement_date             datetime  null,          /* Date of payment settlement (xml:settlement-date) --  */
+        i_eg_gift_currency_date               datetime  null,          /* date of exchange rate conversion for a foreign currency gift --  */
+        i_eg_gift_currency_exch_rate          double  null,            /* currency exchange rate on the exchange date for a foreign currency gift --  */
+        i_eg_gift_pmt_type                    varchar(16)  null,       /* Payment type --  */
+        i_eg_gift_lastfour                    char(4)  null,           /* Last four digits of account number --  */
+        i_eg_gift_interval                    varchar(16)  not null,   /* Recurring gift interval --  */
+        i_eg_gift_start_date                  datetime  null,          /* Starting date of recurring gift --  */
+        i_eg_gift_end_date                    datetime  null,          /* Ending date of recurring gift --  */
+        i_eg_gift_count                       integer  null,           /* Number of gifts to be given in a recurring gift schedule --  */
+        i_eg_gift_date                        datetime  not null,      /* Date of gift --  */
+        i_eg_gift_trx_date                    datetime  null,          /* Date of transaction --  */
+        i_eg_gift_settlement_date             datetime  null,          /* Date of payment settlement --  */
         i_eg_receipt_desired                  varchar(255)  null,      /* The "Send My Receipt:" field --  */
         i_eg_anonymous                        varchar(255)  null,      /* The "Anonymous Gift:" field --  */
         i_eg_prayforme                        varchar(255)  null,      /* The "May We Pray For You?" field --  */
-        i_eg_desig_name                       varchar(80)  not null,   /* Gift designation/purpose (xml:designation) --  */
-        i_eg_desig_notes                      varchar(255)  null,      /* Notes provided by donor (xml:notes) --  */
-        i_eg_net_amount                       decimal(14,4)  null,     /* Net gift (less fees for this transaction) (xml:net) --  */
-        i_eg_deposit_date                     datetime  null,          /* Date that this gift was deposited into the ministry's account (xml:deposit-date) --  */
-        i_eg_deposit_uuid                     char(36)  null,          /* ID of the deposit. (xml:deposit-id) --  */
+        i_eg_desig_name                       varchar(80)  not null,   /* Gift designation/purpose --  */
+        i_eg_desig_notes                      varchar(255)  null,      /* Notes provided by donor --  */
+        i_eg_net_amount                       decimal(14,4)  null,     /* Net gift (less fees for this transaction) --  */
+        i_eg_deposit_date                     datetime  null,          /* Date that this gift was deposited into the ministry's account --  */
+        i_eg_deposit_uuid                     char(36)  null,          /* ID of the deposit. --  */
+        i_eg_contra_deposit_uuid              char(36)  null,          /* ID of a contra-deposit, if applicable --  */
         i_eg_deposit_status                   char(16)  null,          /* status of the deposit --  */
-        i_eg_deposit_gross_amt                decimal(14,4)  null,     /* gross amount of the deposit before fees (xml:deposit-gross) --  */
-        i_eg_deposit_amt                      decimal(14,4)  null,     /* net amount of the deposit (xml:deposit-net) --  */
+        i_eg_deposit_gross_amt                decimal(14,4)  null,     /* gross amount of the deposit before fees --  */
+        i_eg_deposit_amt                      decimal(14,4)  null,     /* net amount of the deposit --  */
+        i_eg_is_modified                      integer  null,           /* Set to 1 to indicate that this line item was derived or modified and does not exactly match upstream giving service data. --  */
+        i_eg_is_donorfee                      integer  null,           /* Set to 1 to indicate that this line item is a donor-paid admin fee and thus may need special treatment later. --  */
+        i_eg_postprocess                      varchar(255)  null,      /* Postprocessing module control flags --  */
         p_donor_partner_key                   char(10)  null,          /* Kardia partner key assigned by import process --  */
         i_eg_donormap_confidence              integer  null,           /* Confidence of mapping: 0=low, 1=medium, 2=high --  */
         i_eg_donormap_future                  integer  null,           /* Future applicability of donor mapping: 0=low, 1=medium, 2=high --  */
