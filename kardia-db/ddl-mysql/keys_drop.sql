@@ -1150,6 +1150,10 @@ alter table i_eg_gift_import
 	drop index i_eg_kdepbatch_idx;
 
 
+alter table i_eg_gift_import
+	drop index i_eg_stats_idx;
+
+
 alter table i_eg_gift_trx_fees
 	drop primary key;
 

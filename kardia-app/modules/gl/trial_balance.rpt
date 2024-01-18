@@ -36,13 +36,30 @@ trial_balance "system/report"
 	sql = "select :p:a_period_desc, first_period = min(:p2:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows p, /apps/kardia/data/Kardia_DB/a_period/rows p2 where :p:a_period = :this:end_period and :p:a_ledger_number = :this:ledger and :p2:a_parent_period = :p:a_parent_period and :p2:a_ledger_number = :this:ledger";
 	}
 
-    accts_qy "report/query"
+    funds_qy "report/query"
 	{
 	sql = runserver("
 		select
 			:c:a_fund,
 			:c:a_fund_desc,
 			:c:a_bal_fund,
+			:c:a_ledger_number,
+			:c:a_is_posting
+		from
+			/apps/kardia/data/Kardia_DB/a_fund/rows c
+		where
+			:c:a_ledger_number = :this:ledger
+			" + condition(:this:fund is null, '', ' and :c:a_bal_fund = :this:fund') + "
+		order by
+			:c:a_bal_fund,
+			:c:a_fund
+		");
+	}
+
+    accts_qy "report/query"
+	{
+	sql = runserver("
+		select
 			:a:a_account_code,
 			:tt:a_account_category,
 			:a:a_acct_desc,
@@ -52,19 +69,15 @@ trial_balance "system/report"
 			showzero = :this:showzero
 		from
 			/apps/kardia/data/Kardia_DB/a_transaction/rows tt,
-			/apps/kardia/data/Kardia_DB/a_fund/rows c,
 			/apps/kardia/data/Kardia_DB/a_account/rows a
 		where
-			:tt:a_ledger_number = :this:ledger and
-			:tt:a_fund = :c:a_fund and
+			:tt:a_ledger_number = :funds_qy:a_ledger_number and
+			:tt:a_fund = :funds_qy:a_fund and
 			:tt:a_account_code = :a:a_account_code and
 			(:tt:a_period <= :this:end_period and :tt:a_period >= :period_qy:first_period) and
-			:c:a_ledger_number = :this:ledger and
 			:a:a_ledger_number = :this:ledger
 			" + condition(:this:unposted, "", "and :tt:a_posted = 1") + "
-			" + condition(:this:fund is null, '', ' and :c:a_bal_fund = :this:fund') + "
 		group by
-			:tt:a_fund,
 			:tt:a_account_code
 			" + condition(:this:control, ",:tt:a_account_category", "") + "
 		having
@@ -169,7 +182,7 @@ trial_balance "system/report"
 	    columns=6;
 	    widths=5.5,5.5,39,9,9,9;
 	    colsep=0.8;
-	    source=accts_qy;
+	    source=funds_qy, accts_qy;
 	    topborder=0.3;
 	    bottomborder=0.3;
 	    nullformat="-";
@@ -198,9 +211,9 @@ trial_balance "system/report"
 		margintop=0.15;
 		bgcolor = runserver(condition((:accts_qy:rowid / 2) * 2 == :accts_qy:rowid, '#f0f0f0', null));
 
-		d_cc "report/table-cell" { value=runserver(:accts_qy:a_fund); align=left; }
+		d_cc "report/table-cell" { value=runserver(:funds_qy:a_fund); align=left; }
 		d_acct "report/table-cell" { value=runserver(condition(:this:control, "" + :accts_qy:a_account_category + "-", "") + :accts_qy:a_account_code); align=left; }
-		d_desc "report/table-cell" { font=helvetica; value=runserver(:accts_qy:a_fund_desc + " (" + :accts_qy:a_acct_desc + ")"); align=left; }
+		d_desc "report/table-cell" { font=helvetica; value=runserver(:funds_qy:a_fund_desc + " (" + :accts_qy:a_acct_desc + ")"); align=left; }
 		d_bbal "report/table-cell" { value=runserver(:accts_qy:bbal); align=right; }
 		d_chg "report/table-cell" { value=runserver((:accts_qy:cbal - :accts_qy:bbal)); align=right; }
 		d_cur "report/table-cell" { value=runserver(:accts_qy:cbal); align=right; }
@@ -209,7 +222,7 @@ trial_balance "system/report"
 	    tbl_sum "report/table-row"
 		{
 		summary=yes;
-		summarize_for = runserver(:accts_qy:a_bal_fund);
+		summarize_for = runserver(:funds_qy:a_bal_fund);
 		font=courier;
 		fontsize=8;
 		topborder=0.05;
