@@ -81,6 +81,8 @@ myquery "system/query"
 		i_eg_donor_given_name = :PayerFirstName,
 		i_eg_donor_surname = :PayerLastName,
 		i_eg_donor_middle_name = :PayerMidName,
+		i_eg_donor_address = :PayerAddress1+condition(char_length(:PayerAddress2) < 1, '', ' '+:PayerAddress2)+' '+:PayerCity+' '
+			+:PayerState+' '+:PayerZip+' US',
 		i_eg_donor_addr1 = :PayerAddress1,
 		i_eg_donor_addr2 = :PayerAddress2,
 		i_eg_donor_city = :PayerCity,
@@ -98,6 +100,9 @@ myquery "system/query"
 		i_eg_deposit_uuid = condition(char_length(:SettlementDate) < 1, NULL, replace(:SettlementDate, '-', NULL)),
 		i_eg_gift_pmt_type = 'ACH',
 		i_eg_gift_interval = '',
+		i_eg_gift_start_date = NULL,
+		i_eg_gift_end_date = NULL,
+		i_eg_gift_count = NULL,
 		i_eg_gift_date = convert('datetime', :ProcessDate),
 		i_eg_gift_trx_date = convert('datetime', :ProcessDate),
 		i_eg_gift_settlement_date = convert('datetime', :SettlementDate), 

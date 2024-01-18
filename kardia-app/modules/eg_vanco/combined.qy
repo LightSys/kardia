@@ -217,6 +217,8 @@ myquery "system/query"
 		i_eg_donor_middle_name = condition(charindex(',', :c:CustomerName) == 0, NULL,
 			condition(charindex(' ', reverse(:c:CustomerName)) == 2, 
 				substring(reverse(:c:CustomerName), 1, 1), NULL)),
+		i_eg_donor_address = :c:CustomerAddr1+condition(char_length(:c:CustomerAddr2) < 1, '', ' '+:c:CustomerAddr2)+' '+:c:CustomerCity+' '
+			+:c:CustomerState+' '+:c:CustomerZip+' '+:c:CustomerCountry,
 		i_eg_donor_addr1 = :c:CustomerAddr1,
 		i_eg_donor_addr2 = condition(char_length(:c:CustomerAddr2) < 1, NULL, :c:CustomerAddr2),
 		i_eg_donor_city = :c:CustomerCity,
@@ -244,6 +246,9 @@ myquery "system/query"
 					:p:CardType
 					))))),
 		i_eg_gift_interval = isnull(upper(:o:FrequencyType), ''), -- Monthly, quaterly, and annual all line up.
+		i_eg_gift_start_date = condition(char_length(:o:StartDate) > 1, convert('datetime', :o:StartDate), NULL),
+		i_eg_gift_end_date = condition(char_length(:o:EndDate) > 1, convert('datetime', :o:EndDate), NULL),
+		i_eg_gift_count = NULL,
 		i_eg_gift_date = convert('datetime', :t:ProcessDate),
 		i_eg_gift_trx_date = convert('datetime', :t:ProcessDate),
 		i_eg_gift_settlement_date = convert('datetime', :t:SettlementDate), 
