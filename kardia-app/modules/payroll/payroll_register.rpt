@@ -65,11 +65,12 @@ payroll_register "system/report"
 			:y:a_ledger_number,
 			:y:a_payroll_group_id,
 			:y:a_payroll_id,
-			:y:a_payee_name
+			a_payee_name = condition(char_length(:y:a_payee_name) > 1, :y:a_payee_name, :p:p_surname + ', ' + :p:p_given_name)
 		FROM
 			/apps/kardia/data/Kardia_DB/a_payroll_item_type/rows t,
 			/apps/kardia/data/Kardia_DB/a_payroll/rows y,
-			/apps/kardia/data/Kardia_DB/a_payroll_item/rows i
+			/apps/kardia/data/Kardia_DB/a_payroll_item/rows i,
+			/apps/kardia/data/Kardia_DB/p_partner/rows p
 		WHERE
 			:t:a_payroll_item_class_code = 'N' and
 			:t:a_ledger_number = :this:ledger and
@@ -79,7 +80,8 @@ payroll_register "system/report"
 			:y:a_ledger_number = :this:ledger and
 			:y:a_payroll_group_id = :this:groupid and
 			:i:a_payroll_item_type_code = :t:a_payroll_item_type_code and
-			:i:a_period = :period_qy:a_payroll_period
+			:i:a_period = :period_qy:a_payroll_period and
+			:p:p_partner_key = :y:p_payee_partner_key
 		ORDER BY
 			substring(:y:a_payee_name, charindex(' ', :y:a_payee_name) + 1, 99)
 		";
