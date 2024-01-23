@@ -9,7 +9,7 @@ generic_report "widget/component-decl"
     ledger "widget/parameter" { type=string; default=null; }
 
     report_title "widget/parameter" { type=string; default="Report"; }
-    mlist_tab "widget/parameter" { type=integer; default=0; }
+    mlist_tab "widget/parameter" { type=integer; default=0; deploy_to_client=yes; }
     custom_page "widget/parameter" { type=string; default=null; }
     report_path "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
     report_path_sep_csv "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
@@ -582,7 +582,7 @@ generic_report "widget/component-decl"
 		    {
 		    event="Click";
 		    event_condition=runclient(not (:format_fields:value = 'sep_csv'));
-		    event_confirm=runclient(condition(char_length(:f_list_code:value) > 0, "Add report results to mailing list " + :f_list_code:value + "?", null));
+		    event_confirm=runclient(condition(:mlist_tab:value and char_length(:f_list_code:value) > 0, "Add report results to mailing list " + :f_list_code:value + "?", null));
 		    target="report_form";
 		    action="Submit";
 		    Target=runclient("generic_report");
@@ -633,7 +633,7 @@ generic_report "widget/component-decl"
 		y=2;
 		align=right;
 		style=bold;
-		value=runclient(condition(char_length(:f_list_code:value) > 0, 'Adding To List: ' + :f_list_code:value, ''));
+		value=runclient(condition(:mlist_tab:value and char_length(:f_list_code:value) > 0, 'Adding To List: ' + :f_list_code:value, ''));
 		}
 	    }
 	}

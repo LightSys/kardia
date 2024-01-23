@@ -1,0 +1,17 @@
+$Version=2$
+import_postprocess "system/query"
+    {
+    ledger "query/parameter" { type=string; style=strnull; }
+
+    sql = "	declare collection postproc scope application;
+
+		select
+		    *
+		from
+		    collection postproc pp,
+		    wildcard expression ('/apps/kardia/modules/*/plugin_rcpt_importprocess_*.qy?ledger=' + :pp:ledger)
+		where
+		    :pp:mods is not null and
+		    (:parameters:ledger is null or :parameters:ledger = :pp:ledger)
+	    ";
+    }

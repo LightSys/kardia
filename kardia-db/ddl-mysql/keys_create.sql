@@ -533,7 +533,7 @@ alter table a_subtrx_cashxfer
 	add constraint a_subtrx_cxf_fund_clustered_idx unique  (a_fund, a_source_cash_acct, a_ledger_number, a_batch_number, a_journal_number);
 
 alter table i_eg_gift_import
-	add constraint i_eg_gift_import_pk primary key  (a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid);
+	add constraint i_eg_gift_import_pk primary key  (a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid, i_eg_line_item);
 
 alter table i_eg_gift_trx_fees
 	add constraint i_eg_gift_trx_fees_pk primary key  (a_ledger_number, i_eg_fees_id);
