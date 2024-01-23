@@ -1,0 +1,205 @@
+$Version=2$
+plugin_rcpt_importprocess_100match "system/query"
+    {
+    module_sequence=100;
+    module_letter='M';
+    module_code='Match';
+
+    ledger "query/parameter" { type=string; }
+
+    sql = "	-- Try to set donor key correlation based on prior data
+		--
+		update
+			/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e1
+		set
+			:p_donor_partner_key = (
+				select
+				    :e2:p_donor_partner_key
+				from
+				    /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e2
+				where
+				    (:e1:i_eg_donor_uuid = :e2:i_eg_donor_uuid or isnull(:e1:i_eg_donor_alt_id, 'NOTEXIST1') = isnull(:e2:i_eg_donor_alt_id, 'NOTEXIST2')) and
+				    :e2:i_eg_donormap_future = 1 and
+				    :e2:i_eg_donormap_confidence = 2 and
+				    :e2:p_donor_partner_key is not null
+				order by
+				    :e2:i_eg_gift_trx_date desc
+			),
+			:i_eg_donormap_confidence = condition(
+				(   select
+					:e2:p_donor_partner_key
+				    from
+					/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e2
+				    where
+					(:e1:i_eg_donor_uuid = :e2:i_eg_donor_uuid or isnull(:e1:i_eg_donor_alt_id, 'NOTEXIST1') = isnull(:e2:i_eg_donor_alt_id, 'NOTEXIST2')) and
+					:e2:i_eg_donormap_future = 1 and
+					:e2:i_eg_donormap_confidence = 2 and
+					:e2:p_donor_partner_key is not null
+				    order by
+					:e2:i_eg_gift_trx_date desc
+				) is null,
+				null,
+				2
+			)
+		where
+			substring(:i_eg_postprocess, 1, 1) = 'M' and
+			:p_donor_partner_key is null and
+			char_length(rtrim(:i_eg_trx_uuid)) > 1 and
+			:i_eg_donor_uuid != '0' and
+			:a_ledger_number = :parameters:ledger
+		;
+
+		-- Try to make the designation assignment based on prior data
+		--
+		update
+			/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e1
+		set
+			:a_fund = (
+				select
+				    :e2:a_fund
+				from 
+				    /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e2
+				where
+				    upper(:e1:i_eg_desig_name) = upper(:e2:i_eg_desig_name) and
+				    :e1:a_ledger_number = :e2:a_ledger_number and
+				    :e2:i_eg_fundmap_future = 1 and
+				    :e2:i_eg_fundmap_confidence = 2 and
+				    :e2:a_fund is not null
+				order by
+				    :e2:i_eg_gift_trx_date desc
+			),
+			:i_eg_fundmap_confidence = condition(
+				(   select
+					:e2:a_fund
+				    from
+					/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e2
+				    where
+					upper(:e1:i_eg_desig_name) = upper(:e2:i_eg_desig_name) and
+					:e1:a_ledger_number = :e2:a_ledger_number and
+					:e2:i_eg_fundmap_future = 1 and
+					:e2:i_eg_fundmap_confidence = 2 and
+					:e2:a_fund is not null
+				    order by
+					:e2:i_eg_gift_trx_date desc
+				) is null,
+				null,
+				2
+			)
+		where
+			substring(:i_eg_postprocess, 1, 1) = 'M' and
+			:a_fund is null and
+			char_length(rtrim(:i_eg_trx_uuid)) > 1 and
+			:a_ledger_number = :parameters:ledger
+		;
+
+		-- Try to make the GL account code assignment based on prior data,
+		-- first checking both donor and fund match, and second checking
+		-- just fund match.
+		--
+		update
+			/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e1
+		set
+			:a_account_code = (
+				select
+				    :e2:a_account_code
+				from
+				    /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e2
+				where
+				    upper(:e1:i_eg_desig_name) = upper(:e2:i_eg_desig_name) and
+				    :e1:a_ledger_number = :e2:a_ledger_number and
+				    :e1:a_fund = :e2:a_fund and 
+				    :e2:i_eg_acctmap_future = 1 and 
+				    :e2:i_eg_acctmap_confidence = 2 and 
+				    (:e1:i_eg_donor_uuid = :e2:i_eg_donor_uuid or isnull(:e1:i_eg_donor_alt_id, 'NOTEXIST1') = isnull(:e2:i_eg_donor_alt_id, 'NOTEXIST2')) and
+				    :e2:a_account_code is not null
+				order by
+				    :e2:i_eg_gift_trx_date desc
+			),
+			:i_eg_acctmap_confidence = condition(
+				(
+				    select
+					:e2:a_account_code
+				    from
+					/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e2
+				    where
+					upper(:e1:i_eg_desig_name) = upper(:e2:i_eg_desig_name) and
+					:e1:a_ledger_number = :e2:a_ledger_number and
+					:e1:a_fund = :e2:a_fund and
+					:e2:i_eg_acctmap_future = 1 and
+					:e2:i_eg_acctmap_confidence = 2 and
+					(:e1:i_eg_donor_uuid = :e2:i_eg_donor_uuid or isnull(:e1:i_eg_donor_alt_id, 'NOTEXIST1') = isnull(:e2:i_eg_donor_alt_id, 'NOTEXIST2')) and
+					:e2:a_account_code is not null
+				    order by
+					:e2:i_eg_gift_trx_date desc
+				) is null,
+				null,
+				2
+			)
+		where
+			substring(:i_eg_postprocess, 1, 1) = 'M' and
+			:a_account_code is null and
+			char_length(rtrim(:i_eg_trx_uuid)) > 1 and
+			:a_ledger_number = :parameters:ledger
+		;
+
+		-- Now try to set account by just fund match.
+		--
+		update
+			/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e1
+		set
+			:a_account_code = (
+				select
+				    :e2:a_account_code
+				from
+				    /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e2
+				where
+				    upper(:e1:i_eg_desig_name) = upper(:e2:i_eg_desig_name) and
+				    :e1:a_ledger_number = :e2:a_ledger_number and
+				    :e1:a_fund = :e2:a_fund and
+				    :e2:i_eg_acctmap_future = 1 and
+				    :e2:i_eg_acctmap_confidence = 2 and
+				    :e2:a_account_code is not null
+				order by
+				    :e2:i_eg_gift_trx_date desc
+			),
+			:i_eg_acctmap_confidence = condition(
+				(
+				    select
+					:e2:a_account_code
+				    from
+					/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e2
+				    where
+					upper(:e1:i_eg_desig_name) = upper(:e2:i_eg_desig_name) and
+					:e1:a_ledger_number = :e2:a_ledger_number and 
+					:e1:a_fund = :e2:a_fund and
+					:e2:i_eg_acctmap_future = 1 and
+					:e2:i_eg_acctmap_confidence = 2 and
+					:e2:a_account_code is not null
+				    order by
+					:e2:i_eg_gift_trx_date desc
+				) is null,
+				null,
+				2
+			)
+		where
+			substring(:i_eg_postprocess, 1, 1) = 'M' and
+			:a_account_code is null and
+			char_length(rtrim(:i_eg_trx_uuid)) > 1 and
+			:a_ledger_number = :parameters:ledger
+		;
+
+		-- Mark these items complete.
+		--
+		update
+			/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e1
+		set
+			:i_eg_postprocess = condition(
+				:a_account_code is not null and :a_fund is not null and :p_donor_partner_key is not null,
+				substring(:i_eg_postprocess, 2, 99),
+				substring(:i_eg_postprocess, 2, 99) + 'M'
+			)
+		where
+			substring(:i_eg_postprocess, 1, 1) = 'M' and
+			:a_ledger_number = :parameters:ledger
+	    ";
+    }

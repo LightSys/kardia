@@ -1,0 +1,31 @@
+$Version=2$
+prepare_postprocess "system/query"
+    {
+    ledger "query/parameter" { type=string; style=strnull; }
+
+    sql = "	declare collection postproc scope application;
+
+		delete collection postproc;
+
+		insert
+		    collection postproc
+		select
+		    ledger = :l:a_ledger_number,
+		    mods = sum(:m:module_letter)
+		from
+		    /apps/kardia/data/Kardia_DB/a_ledger/rows l,
+		    object wildcard '/apps/kardia/modules/*/plugin_rcpt_importprocess_*.qy?ls__type=system%2fstructure' m,
+		    /apps/kardia/data/Kardia_DB/a_config/rows c
+		where
+		    (:l:a_ledger_number = :parameters:ledger or :parameters:ledger is null) and
+		    :c:a_config_name = 'RcptImpMod' + :m:module_code and
+		    :c:a_ledger_number =* :l:a_ledger_number and
+		    :c:a_config_value = '1'
+		order by
+		    :l:a_ledger_number,
+		    :m:module_sequence
+		;
+
+		print 'Postprocessing: ' + (select isnull(sum(:ledger + ' ' + :mods + ' '), 'none') from collection postproc);
+	    ";
+    }
