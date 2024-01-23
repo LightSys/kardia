@@ -18,7 +18,7 @@ prepare_postprocess "system/query"
 		    /apps/kardia/data/Kardia_DB/a_config/rows c
 		where
 		    (:l:a_ledger_number = :parameters:ledger or :parameters:ledger is null) and
-		    :c:a_config_name = 'RcptImpMod' + :m:module_code and
+		    :c:a_config_name = 'EgImpMod' + :m:module_code and
 		    :c:a_ledger_number =* :l:a_ledger_number and
 		    :c:a_config_value = '1'
 		order by

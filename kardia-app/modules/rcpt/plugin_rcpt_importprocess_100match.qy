@@ -4,6 +4,9 @@ plugin_rcpt_importprocess_100match "system/query"
     module_sequence=100;
     module_letter='M';
     module_code='Match';
+    module_desc='Remember and Match Prior Designations, Donors, and GL Accounts';
+    // just an example of how to specify a module config component:
+    // module_config_cmp='/apps/kardia/modules/rcpt/field_donor_with_new.cmp';
 
     ledger "query/parameter" { type=string; }
 
