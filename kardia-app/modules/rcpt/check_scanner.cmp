@@ -67,6 +67,9 @@ check_scanner "widget/component-decl"
     // Event NewCheck: invoked when a new check is added to the queue.
     NewCheck "widget/component-decl-event" { }
 
+    // Event DeleteCheck: invoked when a check is removed from the queue.
+    DeleteCheck "widget/component-decl-event" { }
+
     // Event Scanned: invoked when user clicks Use
     Scanned "widget/component-decl-event" { }
 
@@ -1152,6 +1155,12 @@ check_scanner "widget/component-decl"
 	    target=prev_used;
 	    action=SetValue;
 	    Value=runclient(:browse_scan_osrc:used);
+	    }
+	del_send_event "widget/connector"
+	    {
+	    event=Deleted;
+	    target=check_scanner;
+	    action=DeleteCheck;
 	    }
 	}
     }

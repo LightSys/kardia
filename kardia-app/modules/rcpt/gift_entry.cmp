@@ -558,6 +558,9 @@ gift_entry "widget/component-decl"
 			// Set title on disconnect
 			on_disconnect "widget/connector" { event=Disconnected; target=last_scanner; action=SetValue; Value=runclient('Check Scanner'); }
 
+			// Cancel new on delete check from queue
+			on_deleted "widget/connector" { event=DeleteCheck; event_condition=runclient(:rcpt_form:form_mode == 'New' and :desig_form:form_mode != 'New'); target=rcpt_form; action=Discard; }
+
 			// Open the popup when the data focus changes
 			on_focus_1 "widget/connector" { event=Selected; event_condition=runclient((:direct_click = 1 or :receipt is null or :receipt != :receipts_osrc:a_receipt_number or :filename != :line_items_osrc:a_check_front_image) and :filename is not null); target=popover_view_check; action=Open; }
 			on_focus_2 "widget/connector" { event=Selected; event_condition=runclient((:direct_click = 1 or :receipt is null or :receipt != :receipts_osrc:a_receipt_number or :filename != :line_items_osrc:a_check_front_image) and :filename is not null); target=check_image; action=LoadImage; Source=runclient(:filename); }
