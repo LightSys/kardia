@@ -69,14 +69,10 @@ plugin_base_config_eg "widget/component-decl"
 
 		    import_config_cmp "widget/component" { condition=runserver(char_length(:import_plugins_rpt:module_config_cmp) > 1); path=runserver(:import_plugins_rpt:module_config_cmp); height=runserver(:import_plugins_rpt:height); }
 		    }
-		// TODO: this may need its own page... they really don't fit anymore...
-		eg_label_4 "widget/label" { height=30; text="Donor-Paid Transaction Fees: if you want to combine donor-paid transaction fees with the actual gift instead of importing them to their own fund, check the box below and enter the name or number of the designation your service uses for donor-paid fees."; }
-		eg_donorpaid "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="EgDonorFee"; text="Donor-Paid Fees:"; width=450; label_width=150; ctl_type=dropdown; sql="select label='Post as Separate Designation', value='S'; select label='Post to Gift Designation', value='C'"; numdisplay=6; }
-		eg_donorpaiddesig "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="EgFeesDesig"; text="Online Fees Designation:"; width=450; label_width=150; ctl_type=editbox; }
-		eg_label_5 "widget/label" { height=15; text="Enable case correction on imcomming data. This applies to donor names, addresses, and emails."; }
-		eg_caseCorr "widget/component" { path="/sys/cmp/smart_field.cmp"; x=24; height=24; field="EG_CaseCorrect"; text="Case Correction"; width=300; label_width=150; ctl_type=checkboxleft; rccc_hints "widget/hints" { style=notnull; } }
-		eg_label_6 "widget/label" { height=15; text="List exceptions to the mixed casing as a comma seperated list of words in thier desired casing. Use * for common prefixes/suffixes"; }
-		eg_label_7 "widget/label" { height=15; text="(Example: to make sure 'and' is always lowercase and ensure all names starting with 'Mc' are capitalized properly, use the following: and,Mc*)"; }
+		eg_label_4 "widget/label" { height=15; text="Set the designation that indicates a payment is a fee that needs split (when enabled above)"; }
+		eg_donorpaiddesig "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="EgFeesDesig"; text="Fee designation to split:"; width=450; label_width=150; ctl_type=editbox; }
+		eg_label_5 "widget/label" { height=15; text="List exceptions to mixed casing as a comma seperated list. Use * for common prefixes/suffixes"; }
+		eg_label_6 "widget/label" { height=15; text="(Example: to make 'and' lowercase and names starting with 'Mc' capitalize properly, use the following: and,Mc*)"; }
 		rcpt_ahbox "widget/hbox"
 		    {
 		    height=24; spacing=10;
