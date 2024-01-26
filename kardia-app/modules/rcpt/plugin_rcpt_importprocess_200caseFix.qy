@@ -1,5 +1,5 @@
 $Version=2$
-plugin_rcpt_importprocess_100match "system/query"
+plugin_rcpt_importprocess_200caseFix "system/query"
     {
     module_sequence=200;
     module_letter='C';
