@@ -9,6 +9,7 @@ de_batches "widget/component-decl"
     cash_cc "widget/parameter" { type=string; default=runserver( isnull( (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'RcptCashFund' and :a_ledger_number = :this:ledger), '')); deploy_to_client=yes; }
     cash_fromacct "widget/parameter" { type=string; default=runserver( isnull( (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'RcptDepFrom' and :a_ledger_number = :this:ledger), '')); deploy_to_client=yes; }
     cash_toacct "widget/parameter" { type=string; default=runserver( isnull( (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'RcptDepTo' and :a_ledger_number = :this:ledger), '')); deploy_to_client=yes; }
+    gotobatch "widget/parameter" { type=integer; deploy_to_client=yes; }
 
     post_de "widget/component"
 	{
@@ -82,6 +83,22 @@ de_batches "widget/component-decl"
 	    key_2 = a_period;
 	    target_key_2 = a_period;
 	    autoquery = true;
+	    }
+
+	preselect_one_batch "widget/connector"
+	    {
+	    event=EndQuery;
+	    event_condition=runclient(not (:gotobatch:value is null));
+	    action=FindObject;
+	    a_batch_number = runclient(:gotobatch:value);
+	    }
+	dont_preselect_batch_twice "widget/connector"
+	    {
+	    event=EndQuery;
+	    event_condition=runclient(not (:gotobatch:value is null));
+	    target=gotobatch;
+	    action=SetValue;
+	    Value=runclient(null);
 	    }
 
 	dep_form "widget/form" { }

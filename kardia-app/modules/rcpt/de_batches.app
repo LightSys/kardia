@@ -11,6 +11,7 @@ de_batches "widget/page"
 
     ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
     period "widget/parameter" { type=string; default=null; }
+    gotobatch "widget/parameter" { type=integer; default=null; }
 
     debatches_cmp "widget/component"
 	{
@@ -21,5 +22,6 @@ de_batches "widget/page"
 	embed = "/apps/kardia/modules/rcpt/de_batches.cmp";
 	ledger = runserver(:this:ledger);
 	period = runserver(:this:period);
+	gotobatch = runserver(:this:gotobatch);
 	}
     }
