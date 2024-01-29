@@ -36,9 +36,14 @@ transaction_report "system/report"
 	sql = "select * from /apps/kardia/data/Kardia_DB/a_ledger/rows l where :l:a_ledger_number = :this:ledger";
 	}
 
+    period_qy "report/query"
+	{
+	sql = "select parent = first(:a_parent_period) from /apps/kardia/data/Kardia_DB/a_period/rows p where :p:a_period = :this:startperiod and :p:a_ledger_number = :this:ledger";
+	}
+
     year_qy "report/query"
 	{
-	sql = "select *, year = datepart(year, :a_start_date) from /apps/kardia/data/Kardia_DB/a_period/rows p where :p:a_period = :this:year_period and :p:a_ledger_number = :this:ledger";
+	sql = "select *, year = datepart(year, :a_start_date) from /apps/kardia/data/Kardia_DB/a_period/rows p where :p:a_period = isnull(:this:year_period, :period_qy:parent) and :p:a_ledger_number = :this:ledger";
 	}
 
     fund_qy "report/query"
@@ -153,7 +158,7 @@ transaction_report "system/report"
 
     ledger_form "report/form"
 	{
-	source = ledger_qy, year_qy, acct_qy, fund_qy;
+	source = ledger_qy, period_qy, year_qy, acct_qy, fund_qy;
 
 	rpt_title "report/area"
 	    {
