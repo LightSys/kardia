@@ -1,0 +1,586 @@
+$Version=2$
+donor_sidebar "widget/component-decl"
+    {
+    width=185;
+    height=266;
+
+    expose_properties_for=manage_osrc;
+
+    title_text "widget/parameter" { type=string; style=strnull; deploy_to_client=yes; }
+
+    no_donor_rec "widget/parameter" { type=integer; deploy_to_client=yes; }
+
+    DonorChanged "widget/component-decl-event" { }
+
+    ShowPartner "widget/component-decl-action"
+	{
+	on_show "widget/connector"
+	    {
+	    target=manage_osrc;
+	    action=QueryParam;
+	    ledger=runclient(:ledger);
+	    partner=runclient(:partner);
+	    }
+	}
+
+    dinfo_vbox "widget/vbox"
+	{
+	x=0; y=0;
+	width = 185;
+	height = 266;
+	spacing = 10;
+
+	managelbl "widget/component"
+	    {
+	    path="/apps/kardia/modules/base/section_header.cmp";
+	    //background = "/apps/kardia/images/bg/ls_blue_gradient_light.png";
+	    height=26;
+	    fl_height=0;
+	    text = runclient(isnull(:title_text:value, 'Donor Info'));
+	    custom_new=1;
+	    allow_save=0;
+	    allow_cancel=0;
+
+	    on_add "widget/connector" { event=New; target=popover_add_item; action=Open; IsModal=1; PointAt=managelbl; PointSide=runclient('top'); }
+	    }
+
+	manage_osrc "widget/osrc"
+	    {
+	    mo_partner "widget/parameter" { param_name=partner; type=string; }
+	    mo_ledger "widget/parameter" { param_name=ledger; type=string; }
+	    sql = " select
+			*,
+			edit = '/apps/kardia/images/icons/tango-edit.svg'
+		    from
+			expression('/apps/kardia/modules/rcpt/donor_data.qy?partner=' + :parameters:partner + '&ledger=' + :parameters:ledger)
+		    ";
+	    replicasize=20;
+	    readahead=20;
+
+	    manage_table "widget/table"
+		{
+		height=230;
+		overlap_scrollbar=yes;
+		demand_scrollbar=yes;
+		show_selection=no;
+		rowheight=null;
+		cellvspacing=4;
+		inner_padding=2;
+		row_border_radius=6;
+		colsep=0;
+		titlebar=no;
+		row_shadow_radius=2;
+		row_shadow_offset=1;
+		row_shadow_color="#a0a0a0";
+		row_shadow_angle=135;
+		nodata_message="";
+
+		t_info "widget/table-column" { title="Donor"; fieldname=data; width=164; style=bold; caption_fieldname=name; }
+		t_edit "widget/table-column" { title="Edit"; fieldname=edit; width=26; image_maxwidth=20; image_maxheight=20; type=image; }
+
+		click_partner "widget/connector"
+		    {
+		    event = Click;
+		    event_condition = runclient(:Column == 'edit' and :name == 'Name');
+		    target=popover_partner;
+		    action=Open;
+		    PointAt=manage_table;
+		    PointSide=runclient("right");
+		    IsModal=1;
+		    }
+
+		click_address "widget/connector"
+		    {
+		    event = Click;
+		    event_condition = runclient(:Column == 'edit' and right(:name, 7) == 'Address');
+		    target=popover_address;
+		    action=Open;
+		    PointAt=manage_table;
+		    PointSide=runclient("right");
+		    IsModal=1;
+		    }
+
+		click_donor "widget/connector"
+		    {
+		    event = Click;
+		    event_condition = runclient(:Column == 'edit' and :name == 'Donor Prefs');
+		    target=popover_donorinfo;
+		    action=Open;
+		    PointAt=manage_table;
+		    PointSide=runclient("right");
+		    IsModal=1;
+		    }
+
+		click_contact "widget/connector"
+		    {
+		    event = Click;
+		    event_condition = runclient(:Column == 'edit' and right(:name, 7) != 'Address' and :name != 'Name' and :name != 'Donor Prefs');
+		    target=popover_contact;
+		    action=Open;
+		    PointAt=manage_table;
+		    PointSide=runclient("right");
+		    IsModal=1;
+		    }
+		}
+	    }
+	}
+
+    popover_add_item "widget/childwindow"
+	{
+	width=170; height=170;
+	x=415; y=265;
+	style=dialog;
+	modal=yes;
+	fl_y=0;
+	titlebar=no;
+	visible=no;
+	toplevel=yes;
+	border_style=solid;
+	border_color="#f8f8f8";
+	background=null;
+	bgcolor="#f8f8f8";
+	border_radius=12;
+	shadow_radius=4;
+	shadow_offset=2;
+	shadow_color="#808080";
+	shadow_angle=135;
+
+	add_item_vbox "widget/vbox"
+	    {
+	    x=10; y=10; width=135; height=130;
+	    spacing=10;
+
+	    add_item_pane "widget/pane"
+		{
+		height=112;
+		width=150;
+		style=bordered;
+		border_color="#c0c0c0";
+		border_radius=10;
+		
+		add_item_btn_vbox "widget/vbox"
+		    {
+		    x=9; y=9;
+		    height=92;
+		    width=130;
+		    spacing=10;
+
+		    add_address "widget/textbutton"
+			{
+			text = "New Address";
+			width=130; height=24;
+
+			on_addaddressinfo1 "widget/connector"
+			    {
+			    event=Click;
+			    target=address_form;
+			    action=New;
+			    }
+			on_addaddressinfo2 "widget/connector"
+			    {
+			    event=Click;
+			    target=popover_address;
+			    action=Open;
+			    PointAt=add_address;
+			    PointSide=runclient("right");
+			    IsModal=1;
+			    }
+			}
+		    add_contact "widget/textbutton"
+			{
+			text = "New Contact";
+			width=130; height=24;
+
+			on_addcontactinfo1 "widget/connector"
+			    {
+			    event=Click;
+			    target=contact_form;
+			    action=New;
+			    }
+			on_addcontactinfo2 "widget/connector"
+			    {
+			    event=Click;
+			    target=popover_contact;
+			    action=Open;
+			    PointAt=add_contact;
+			    PointSide=runclient("right");
+			    IsModal=1;
+			    }
+			}
+		    add_donorinfo "widget/textbutton"
+			{
+			text = "New Donor Pref";
+			enabled=runclient(:no_donor_rec:value);
+			width=130; height=24;
+
+			on_adddonorinfo "widget/connector"
+			    {
+			    event=Click;
+			    target=popover_donorinfo;
+			    action=Open;
+			    PointAt=add_donorinfo;
+			    PointSide=runclient("right");
+			    IsModal=1;
+			    }
+			}
+		    }
+		}
+	    cancel_add "widget/textbutton"
+		{
+		text = "Close";
+		width=130; height=24;
+		x=10;
+		on_cancel_add "widget/connector" { event=Click; target=popover_add_item; action=Close; }
+		}
+	    }
+	}
+
+    popover_partner "widget/childwindow"
+	{
+	width=600; height=240;
+	x=200; y=100;
+	fl_y=0;
+	titlebar=no;
+	visible=no;
+	toplevel=yes;
+	border_style=solid;
+	border_color="#f8f8f8";
+	background=null;
+	bgcolor="#f8f8f8";
+	border_radius=12;
+	shadow_radius=4;
+	shadow_offset=2;
+	shadow_color="#808080";
+	shadow_angle=135;
+
+	onclose_close_itemlist "widget/connector" { event=Close; target=popover_add_item; action=Close; event_delay=0.05; }
+
+	partner_osrc "widget/osrc"
+	    {
+	    sql = "select * from /apps/kardia/data/Kardia_DB/p_partner/rows";
+
+	    partner_link "widget/rule"
+		{
+		ruletype=osrc_relationship;
+		target=manage_osrc;
+		revealed_only=yes;
+		key_1=p_partner_key;
+		target_key_1=key;
+		}
+
+	    partner_form "widget/form"
+		{
+		on_form_discard "widget/connector" { event=Discard; target=popover_partner; action=Close; }
+		on_form_save1 "widget/connector" { event=DataSaved; target=popover_partner; action=Close; }
+		on_form_save2 "widget/connector" { event=DataSaved; target=manage_osrc; action=RefreshObject; }
+		on_form_save3 "widget/connector" { event=DataSaved; target=donor_sidebar; action=DonorChanged; }
+
+		partner_vbox "widget/vbox"
+		    {
+		    x=20; y=15; width=560; height=200;
+		    spacing=15;
+
+		    partner_title "widget/label" { height=16; font_size=16; style=bold; align=center; text="Update Donor"; }
+
+		    partner_fields "widget/component" { height=140; path="/apps/kardia/modules/base/p_partner_fields.cmp"; }
+
+		    partner_ctls_hbox "widget/hbox"
+			{
+			height=24;
+			spacing=10;
+			align=center;
+
+			partner_save "widget/textbutton"
+			    {
+			    width=130; height=24;
+			    text="Save";
+			    enabled=runclient(:partner_form:is_savable);
+
+			    on_save1 "widget/connector" { event=Click; target=partner_form; action=Save; }
+			    }
+
+			partner_cancel "widget/textbutton"
+			    {
+			    width=130; height=24;
+			    text=runclient(condition(:partner_form:is_discardable, "Cancel", "Close"));
+
+			    on_cancel1 "widget/connector" { event=Click; target=partner_form; action=Discard; }
+			    on_cancel2 "widget/connector" { event=Click; target=popover_partner; action=Close; }
+			    }
+			}
+		    }
+		}
+	    }
+	}
+
+    popover_address "widget/childwindow"
+	{
+	width=600; height=288;
+	x=200; y=100;
+	fl_y=0;
+	titlebar=no;
+	visible=no;
+	toplevel=yes;
+	border_style=solid;
+	border_color="#f8f8f8";
+	background=null;
+	bgcolor="#f8f8f8";
+	border_radius=12;
+	shadow_radius=4;
+	shadow_offset=2;
+	shadow_color="#808080";
+	shadow_angle=135;
+
+	onclose_close_itemlist2 "widget/connector" { event=Close; target=popover_add_item; action=Close; event_delay=0.05; }
+
+	address_osrc "widget/osrc"
+	    {
+	    sql = "select * from /apps/kardia/data/Kardia_DB/p_location/rows";
+	    baseobj = "/apps/kardia/data/Kardia_DB/p_location/rows";
+
+	    address_link "widget/rule"
+		{
+		ruletype=osrc_relationship;
+		target=manage_osrc;
+		revealed_only=yes;
+		key_1=name;
+		target_key_1=key;
+		key_2=p_partner_key;
+		target_key_2=partner;
+		}
+
+	    address_form "widget/form"
+		{
+		confirm_discard=no;
+
+		on_aform_discard "widget/connector" { event=Discard; target=popover_address; action=Close; }
+		on_aform_save1 "widget/connector" { event=DataSaved; target=popover_address; action=Close; }
+		on_aform_save2 "widget/connector" { event=DataSaved; target=manage_osrc; action=Refresh; }
+		on_aform_save4 "widget/connector" { event=DataSaved; target=donor_sidebar; action=DonorChanged; }
+
+		address_vbox "widget/vbox"
+		    {
+		    x=20; y=15; width=560; height=248;
+		    spacing=15;
+
+		    address_title "widget/label" { height=16; font_size=16; style=bold; align=center; text="Update Address"; }
+
+		    address_fields "widget/component" { height=188; path="/apps/kardia/modules/base/p_location_fields.cmp"; }
+
+		    address_ctls_hbox "widget/hbox"
+			{
+			height=24;
+			spacing=10;
+			align=center;
+
+			address_save "widget/textbutton"
+			    {
+			    width=130; height=24;
+			    text="Save";
+			    enabled=runclient(:address_form:is_savable);
+
+			    on_asave1 "widget/connector" { event=Click; target=address_form; action=Save; }
+			    }
+
+			address_cancel "widget/textbutton"
+			    {
+			    width=130; height=24;
+			    text=runclient(condition(:address_form:is_discardable, "Cancel", "Close"));
+
+			    on_acancel1 "widget/connector" { event=Click; target=address_form; action=Discard; }
+			    on_acancel2 "widget/connector" { event=Click; target=popover_address; action=Close; }
+			    }
+			}
+		    }
+		}
+	    }
+	}
+
+    popover_contact "widget/childwindow"
+	{
+	width=600; height=173;
+	x=200; y=100;
+	fl_y=0;
+	titlebar=no;
+	visible=no;
+	toplevel=yes;
+	border_style=solid;
+	border_color="#f8f8f8";
+	background=null;
+	bgcolor="#f8f8f8";
+	border_radius=12;
+	shadow_radius=4;
+	shadow_offset=2;
+	shadow_color="#808080";
+	shadow_angle=135;
+
+	onclose_close_itemlist3 "widget/connector" { event=Close; target=popover_add_item; action=Close; event_delay=0.05; }
+
+	autoload_locations "widget/connector"
+	    {
+	    event=Open;
+	    target=contact_fields;
+	    action=SetLocationItems;
+	    SQL=runclient("
+		    select 
+			label = :p_location_type + ': ' + isnull(:p_city + ', ','') + isnull(:p_state_province,'') + ' (' + rtrim(isnull(:p_address_1 + ' ','') + isnull(:p_address_2 + ' ','') + isnull(:p_address_3,'')) + ')',
+			value = :p_location_id
+		    from
+			/apps/kardia/data/Kardia_DB/p_location/rows where :p_revision_id = 0 and :p_partner_key = " + quote(:manage_osrc:partner) + "
+		    ;
+		    select
+			label = :tag + ': (' + :text + ', no address)',
+			value = :tag
+		    from
+			/apps/kardia/data/Kardia_DB/_p_location_type/rows
+		    ");
+	    }
+
+	contact_osrc "widget/osrc"
+	    {
+	    sql = "select * from /apps/kardia/data/Kardia_DB/p_contact_info/rows";
+	    baseobj = "/apps/kardia/data/Kardia_DB/p_contact_info/rows";
+
+	    contact_link "widget/rule"
+		{
+		ruletype=osrc_relationship;
+		target=manage_osrc;
+		revealed_only=yes;
+		key_1=name;
+		target_key_1=key;
+		key_2=p_partner_key;
+		target_key_2=partner;
+		}
+
+	    contact_form "widget/form"
+		{
+		confirm_discard=no;
+
+		on_cform_discard "widget/connector" { event=Discard; target=popover_contact; action=Close; }
+		on_cform_save1 "widget/connector" { event=DataSaved; target=popover_contact; action=Close; }
+		on_cform_save2 "widget/connector" { event=DataSaved; target=manage_osrc; action=Refresh; }
+		on_cform_save3 "widget/connector" { event=DataSaved; target=donor_sidebar; action=DonorChanged; }
+
+		contact_vbox "widget/vbox"
+		    {
+		    x=20; y=15; width=560; height=133;
+		    spacing=15;
+
+		    contact_title "widget/label" { height=16; font_size=16; style=bold; align=center; text="Update Contact Info"; }
+
+		    contact_fields "widget/component" { height=73; path="/apps/kardia/modules/base/p_contact_info_fields.cmp"; }
+
+		    contact_ctls_hbox "widget/hbox"
+			{
+			height=24;
+			spacing=10;
+			align=center;
+
+			contact_save "widget/textbutton"
+			    {
+			    width=130; height=24;
+			    text="Save";
+			    enabled=runclient(:contact_form:is_savable);
+
+			    on_csave1 "widget/connector" { event=Click; target=contact_form; action=Save; }
+			    }
+
+			contact_cancel "widget/textbutton"
+			    {
+			    width=130; height=24;
+			    text=runclient(condition(:contact_form:is_discardable, "Cancel", "Close"));
+
+			    on_ccancel1 "widget/connector" { event=Click; target=contact_form; action=Discard; }
+			    on_ccancel2 "widget/connector" { event=Click; target=popover_contact; action=Close; }
+			    }
+			}
+		    }
+		}
+	    }
+	}
+
+    popover_donorinfo "widget/childwindow"
+	{
+	width=600; height=144;
+	x=200; y=100;
+	fl_y=0;
+	titlebar=no;
+	visible=no;
+	toplevel=yes;
+	border_style=solid;
+	border_color="#f8f8f8";
+	background=null;
+	bgcolor="#f8f8f8";
+	border_radius=12;
+	shadow_radius=4;
+	shadow_offset=2;
+	shadow_color="#808080";
+	shadow_angle=135;
+
+	onclose_close_itemlist4 "widget/connector" { event=Close; target=popover_add_item; action=Close; event_delay=0.05; }
+
+	donorinfo_osrc "widget/osrc"
+	    {
+	    sql = "select * from /apps/kardia/data/Kardia_DB/p_donor/rows";
+	    baseobj = "/apps/kardia/data/Kardia_DB/p_donor/rows";
+
+	    donorinfo_link "widget/rule"
+		{
+		ruletype=osrc_relationship;
+		target=manage_osrc;
+		revealed_only=yes;
+		key_1=name;
+		target_key_1=key;
+		key_2=p_partner_key;
+		target_key_2=partner;
+		}
+
+	    donorinfo_form "widget/form"
+		{
+		on_dform_discard "widget/connector" { event=Discard; target=popover_donorinfo; action=Close; }
+		on_dform_save1 "widget/connector" { event=DataSaved; target=popover_donorinfo; action=Close; }
+		on_dform_save2 "widget/connector" { event=DataSaved; target=manage_osrc; action=Refresh; }
+		on_dform_save3 "widget/connector" { event=DataSaved; target=donor_sidebar; action=DonorChanged; }
+
+		donorinfo_vbox "widget/vbox"
+		    {
+		    x=20; y=15; width=560; height=104;
+		    spacing=15;
+
+		    donorinfo_title "widget/label" { height=16; font_size=16; style=bold; align=center; text="Update Donor Preferences"; }
+
+		    donorinfo_fields "widget/component" { height=44; path="/apps/kardia/modules/rcpt/p_donor_fields.cmp"; }
+
+		    donorinfo_ctls_hbox "widget/hbox"
+			{
+			height=24;
+			spacing=10;
+			align=center;
+
+			donorinfo_save "widget/textbutton"
+			    {
+			    width=130; height=24;
+			    text="Save";
+			    enabled=runclient(:donorinfo_form:is_savable);
+
+			    on_dsave1 "widget/connector" { event=Click; target=donorinfo_form; action=Save; }
+			    }
+
+			donorinfo_cancel "widget/textbutton"
+			    {
+			    width=130; height=24;
+			    text=runclient(condition(:donorinfo_form:is_discardable, "Cancel", "Close"));
+
+			    on_dcancel1 "widget/connector" { event=Click; target=donorinfo_form; action=Discard; }
+			    on_dcancel2 "widget/connector" { event=Click; target=popover_donorinfo; action=Close; }
+			    }
+			}
+
+		    donorinfo_ledger "widget/variable" { type=string; fieldname=a_gl_ledger_number; dil_hints "widget/hints" { default=runclient(:ledger:value); } }
+		    donorinfo_allow "widget/variable" { type=integer; fieldname=p_allow_contributions; dac_hints "widget/hints" { default=runclient(1); } }
+		    donorinfo_org "widget/variable" { type=integer; fieldname=p_org_name_first; don_hints "widget/hints" { default=runclient(0); } }
+		    }
+		}
+	    }
+	}
+    }
