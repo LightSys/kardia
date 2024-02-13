@@ -57,7 +57,7 @@ plugin_base_config_eg "widget/component-decl"
 		    }
 		eg_lable_2 "widget/label" { height=15; text="Set the designation that indicates a payment needs to be split into multiple transactions"; }
 		eg_donorsplitdesig "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="EgSplitDesig"; text="Designation UUID to split:"; width=450; label_width=150; ctl_type=editbox; }
-		eg_label_3 "widget/label" { height=15; text="Set the designation that indicates a payment is a fee that needs split (when enabled above) (NOTE: currently unused)"; }
+		eg_label_3 "widget/label" { height=15; text="Set the designation that indicates a payment is a fee that needs split"; }
 		eg_donorpaiddesig "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="EgFeesDesig"; text="Fee designation to split:"; width=450; label_width=150; ctl_type=editbox; }
 		eg_label_4 "widget/label" { height=15; text="List exceptions to mixed casing as a comma seperated list. Use * for common prefixes/suffixes"; }
 		eg_label_5 "widget/label" { height=15; text="(Example: to make 'and' lowercase and names starting with 'Mc' capitalize properly, use the following: and,Mc*)"; }

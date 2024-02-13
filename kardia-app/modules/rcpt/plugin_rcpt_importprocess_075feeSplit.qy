@@ -1,0 +1,105 @@
+$Version=2$
+plugin_rcpt_importprocess_050splitTrx "system/query"
+    {
+    module_sequence=50; // want to run before matching
+    module_letter='F';
+    module_code='Fee';
+    module_desc='Split donations made to cover transaction fees to other gifts in the transaction';
+
+    ledger "query/parameter" { type=string; }
+    sql = "
+	-- when have a donation to cover transaction fees, just split it across all of the fees that happened with it
+	-- code: F for fee
+	-- NOTE: TODO: this must run after any modules that might create a transaction that needs handled here (e.g. the split import process)
+	-- TOOD: add randomness but repeatable
+	-- get the designation that indicates the transaction is a fee
+	DECLARE OBJECT feeDesig;
+		SELECT
+		    :feeDesig:value = 
+			(
+			select first(:a_config_value)
+			from /apps/kardia/data/Kardia_DB/a_config/rows
+			where :a_config_name = 'EgFeesDesig'
+			)
+		;
+
+	-- get all of the fees and the transactions that go with them
+	-- make sure has the F (on the 9999, that is. Needs to see full picture with related)
+	DECLARE COLLECTION feeSets;
+	INSERT INTO
+	    COLLECTION feeSets
+	SELECT 
+	    :t:i_eg_trx_uuid, :t:i_eg_desig_uuid, :t:i_eg_gift_amount, 
+	    :t:i_eg_net_amount, :t:i_eg_deposit_gross_amt, :t:i_eg_deposit_amt,
+	    :t:a_ledger_number, :t:i_eg_line_item, 
+	    fee_trx = :f:i_eg_trx_uuid, fee_desig = :f:i_eg_desig_uuid, 
+	    fee_grs = :f:i_eg_gift_amount, 
+	    fee_net = :f:i_eg_net_amount,
+	    count = (SELECT count(1)
+		FROM /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows i
+		WHERE :i:i_eg_trx_uuid = :t:i_eg_trx_uuid AND :i:i_eg_desig_uuid != :feeDesig:value
+		),
+	    index = row_number(:t:i_eg_trx_uuid)
+	FROM 
+	    IDENTITY /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows f,
+	    /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows t
+	WHERE 
+	    :f:i_eg_desig_uuid = :feeDesig:value
+	    AND :t:i_eg_trx_uuid = :f:i_eg_trx_uuid
+	    AND :t:i_eg_desig_uuid != :feeDesig:value
+	    AND substring(:f:i_eg_postprocess, 1, 1) = 'F'
+	    AND :f:i_eg_deposit_amt IS NOT NULL
+	    AND :f:i_eg_net_amount IS NOT NULL
+	;
+
+	-- update the values in the actual tables (must update even if no F; upsert reverts changes otherwise)
+	UPDATE
+	    IDENTITY /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows i,
+	    COLLECTION feeSets f
+	SET
+	    -- gross does not update, so need to only run if marked
+	    :i:i_eg_gift_amount = condition(
+		substring(:i_eg_postprocess, 1, 1) = 'F',
+	    	:i:i_eg_gift_amount + truncate(:f:fee_grs/:f:count, 2) + condition(
+			(:f:fee_grs - truncate(:f:fee_grs/:f:count, 2) * :f:count) * 100 >= :f:index,
+			0.01, 
+			0.00),
+		:i:i_eg_gift_amount),
+	    -- net amount gets overwritten by update, so always needs to run again
+	    :i:i_eg_net_amount = :i:i_eg_net_amount + truncate(:f:fee_net/:f:count, 2) + condition(
+		(:f:fee_net - truncate(:f:fee_net/:f:count, 2) * :f:count) * 100 >= :f:index,
+		0.01, 0.00)
+	WHERE 
+	    :i:i_eg_trx_uuid = :f:i_eg_trx_uuid 
+	    AND :i:a_ledger_number = :f:a_ledger_number
+	    AND :i:i_eg_desig_uuid = :f:i_eg_desig_uuid
+	    AND :i:i_eg_line_item = :f:i_eg_line_item
+	;
+	
+
+	-- delete the 'cover fees' entries that are in the list of updated transactions
+	DELETE FROM
+	    IDENTITY /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows i,
+	    COLLECTION feeSets f
+	WHERE 
+	    :i:i_eg_trx_uuid = :f:i_eg_trx_uuid 
+	    AND :i:a_ledger_number = :f:a_ledger_number
+	    AND :i:i_eg_line_item = :f:i_eg_line_item
+	    AND substring(:i:i_eg_postprocess, 1, 1) = 'F'
+	    AND :i:i_eg_desig_uuid = :feeDesig:value
+	    AND :f:index = 1 -- only want one result regardless of how many were paired with the 'cover fee' gift
+	;
+
+	 -- remove the F if could have run, and move to back if waiting on net amounts
+	update
+	    /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows
+	set
+	    :i_eg_postprocess = condition((:i_eg_deposit_amt IS NOT NULL AND :i_eg_net_amount IS NOT NULL),
+		substring(:i_eg_postprocess, 2),
+		substring(:i_eg_postprocess, 2) + 'F'
+		)
+	where
+	    substring(:i_eg_postprocess, 1, 1) = 'F'
+	
+    ";
+    }

@@ -69,7 +69,7 @@ plugin_rcpt_giftimport_EGS "widget/component-decl"
 		";
 
     upsert_sql="on duplicate
-			:a_ledger_number, :i_eg_trx_uuid, :i_eg_desig_uuid, :i_eg_line_item
+			:a_ledger_number, :i_eg_trx_uuid, :i_eg_desig_uuid
 		update set
 			:i_eg_deposit_date = :c:i_eg_deposit_date,
 			:i_eg_deposit_uuid = :c:i_eg_deposit_uuid,
