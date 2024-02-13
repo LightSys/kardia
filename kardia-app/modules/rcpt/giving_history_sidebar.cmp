@@ -1,0 +1,198 @@
+$Version=2$
+giving_history_sidebar "widget/component-decl"
+    {
+    width=185;
+    height=390;
+
+    ledger "widget/parameter" { type=string; deploy_to_client=yes; }
+    show_copy "widget/parameter" { type=integer; default=0; }
+    enable_copy "widget/parameter" { type=integer; deploy_to_client=yes; }
+
+    expose_properties_for=hist_osrc;
+
+    Copy "widget/component-decl-event" { }
+
+    Query "widget/component-decl-action"
+	{
+	on_query "widget/connector"
+	    {
+	    target=hist_osrc;
+	    action=QueryParam;
+	    event_all_params=1;
+	    }
+	}
+
+    FindObject "widget/component-decl-action"
+	{
+	on_findobj "widget/connector"
+	    {
+	    target=hist_osrc;
+	    action=FindObject;
+	    event_all_params=1;
+	    }
+	}
+
+    ShowSelection "widget/component-decl-action"
+	{
+	on_showsel "widget/connector"
+	    {
+	    target=hist_table;
+	    action=ShowSelection;
+	    }
+	}
+
+    CopyReceipt "widget/component-decl-action"
+	{
+	on_copyreceipt "widget/connector"
+	    {
+	    target=hist_copy_rcpt;
+	    action=Click;
+	    }
+	}
+    
+    hist_vbox "widget/vbox"
+	{
+	x=0; y=0;
+	width = 185;
+	height = 390;
+	spacing = 10;
+
+	hist_lbl "widget/component"
+	    {
+	    path="/apps/kardia/modules/base/section_label.cmp";
+	    height=26;
+	    fl_height=0;
+	    text = runclient("Giving History");
+	    }
+
+	hist_osrc "widget/osrc"
+	    {
+	    hist_partner "widget/parameter" { param_name=partner; type=string; }
+	    hist_ackpartner "widget/parameter" { param_name=ackpartner; type=string; }
+	    hist_ledger "widget/parameter" { param_name=ledger; type=string; }
+	    hist_rcptno "widget/parameter" { param_name=receipt; type=integer; }
+
+	    sql = " declare object partnerinfo;
+
+		    select 
+			:partnerinfo:partner = :parameters:partner,
+			:partnerinfo:ackpartner = :parameters:ackpartner
+		    ;
+
+		    select
+			:partnerinfo:partner = :p_donor_partner_id,
+			:partnerinfo:ackpartner = :p_ack_partner_id
+		    from
+			/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g
+		    where
+			:g:a_receipt_number = :parameters:receipt and
+			:parameters:receipt is not null
+		    ;
+	    
+		    select
+			*,
+			rowid = :cx__rowid
+		    from
+			expression('/apps/kardia/modules/rcpt/giving_history.qy?partner=' + isnull(:partnerinfo:partner, '') + '&ledger=' + :parameters:ledger + '&ackpartner=' + isnull(:partnerinfo:ackpartner, ''))
+		    limit
+			15
+		    ";
+	    replicasize=50;
+	    readahead=50;
+
+	    hist_table "widget/table"
+		{
+		height=354;
+		overlap_scrollbar=yes;
+		demand_scrollbar=yes;
+		show_selection=yes;
+		initial_selection=no;
+		rowheight=null;
+		cellvspacing=4;
+		inner_padding=2;
+		row_border_radius=6;
+		colsep=0;
+		titlebar=no;
+		row_shadow_radius=2;
+		row_shadow_offset=1;
+		row_shadow_color="#a0a0a0";
+		row_shadow_angle=135;
+		nodata_message="no history matches";
+
+		hist_gift_detail "widget/table-row-detail"
+		    {
+		    height=49;
+
+		    hist_gift_detail_label "widget/label"
+			{
+			x=17; y=5;
+			width=240; height=43;
+			font_size=9;
+			textcolor=white;
+
+			value=runclient('Admin Notes: ' + :hist_osrc:comment + '\nGift Type: ' + :hist_osrc:gift_type + '\nDonor: ' + :hist_osrc:donortxt + isnull('\nAck.: ' + :hist_osrc:ackdonortxt, ''));
+			}
+		    }
+
+		hist_copy_data "widget/table-row-detail"
+		    {
+		    condition=runserver(:this:show_copy);
+		    height=30;
+		    display_for=runclient(:enable_copy:value);
+
+		    hist_copy_data_ctls_hbox "widget/hbox"
+			{
+			x=10; y=5;
+			width=165; height=24;
+			align=center; spacing=10;
+
+			hist_copy_rcpt "widget/textbutton"
+			    {
+			    height=24;
+			    width=130;
+			    text = "<< Copy Gift";
+
+			    enabled = runclient(:enable_copy:value);
+
+			    hist_copy_open_pad1 "widget/connector"
+				{
+				event = Click;
+				target = giving_history_sidebar;
+				action = Copy;
+				}
+			    }
+			}
+		    }
+
+		hist_t_num "widget/table-column"
+		    {
+		    title="";
+		    value=runclient(condition(:hist_osrc:rowid <= 8, '' + (:hist_osrc:rowid + 1) + ') ', ''));
+		    width=13;
+		    style=bold;
+		    }
+		hist_t_info "widget/table-column"
+		    {
+		    title="Date";
+		    value=runclient(:hist_osrc:date);
+		    width=107;
+		    style=bold;
+		    caption_value=runclient(:hist_osrc:itemdesig);
+		    }
+		hist_t_amt "widget/table-column"
+		    {
+		    require_one_endorsement="kardia:gift_manage","kardia:gift_entry","kardia:gift_amt";
+		    endorsement_context=runserver("kardia:ledger:" + :this:ledger + ":");
+		    title="Amount";
+		    fieldname="amount";
+		    width=70;
+		    align=right; 
+		    style=bold;
+		    wrap=yes;
+		    caption_value=runclient(:hist_osrc:itemamt);
+		    caption_align=right;
+		    }
+		}
+	    }
+	}
+    }

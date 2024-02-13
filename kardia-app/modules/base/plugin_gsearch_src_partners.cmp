@@ -13,7 +13,11 @@ plugin_gsearch_partners "widget/component-decl"
 		s_type = 'PAR',
 		s_key = :p_partner_key,
 		s_label = condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
-		s_desc = isnull(condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname), ''),
+		s_desc = isnull(condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname) + ' ', '')
+			+ condition(char_length(:p:p_merged_with) > 1, '(merged) ', '')
+			+ condition(:p:p_status_code = 'O', '(obsolete) ', '')
+			+ condition(:p:p_status_code = 'D', '(deceased) ', '')
+			,
 		s_score = 100.0,
 		s_cri1 = condition(
 				(char_length(:info:cri1) > 1 and charindex(:info:cri1, condition(:info:lower1 > 0, lower(:p:p_given_name), :p:p_given_name)) > 0) or

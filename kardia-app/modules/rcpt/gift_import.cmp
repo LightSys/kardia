@@ -1,8 +1,8 @@
 $Version=2$
 gift_import "widget/component-decl"
     {
-    width=824;
-    height=580;
+    width=980;
+    height=680;
 
     // FIXME - deposit and fee posting logic requires that gifts be in gift
     // batches before the deposits or fees can be created.  This logic causes
@@ -12,6 +12,25 @@ gift_import "widget/component-decl"
     ledger "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
     period "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
     year_period "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
+
+    // Called when we need to refresh/reload the donor info and history sidebar
+    LoadSidebar "widget/component-decl-action"
+	{
+	on_sidebar1 "widget/connector"
+	    {
+	    target=manage_cmp;
+	    action=ShowPartner;
+	    partner=runclient(:Donor);
+	    ledger=runclient(:ledger:value);
+	    }
+	on_sidebar2 "widget/connector"
+	    {
+	    target=hist_cmp;
+	    action=Query;
+	    partner=runclient(:Donor);
+	    ledger=runclient(:ledger:value);
+	    }
+	}
 
     do_import_osrc "widget/osrc"
 	{
@@ -29,543 +48,779 @@ gift_import "widget/component-decl"
 	got_new_gifts2_cn "widget/connector" { event=EndQuery; target=gift_import_osrc; action=Refresh; }
 	}
 
+    do_split_osrc "widget/osrc"
+	{
+	spl_ledger "widget/parameter" { type=string; param_name=ledger; }
+	spl_trx "widget/parameter" { type=string; param_name=trx; }
+	spl_desig "widget/parameter" { type=string; param_name=desig; }
+	spl_line "widget/parameter" { type=integer; param_name=line; }
+	spl_amount "widget/parameter" { type=string; param_name=amount; }
+
+	sql = "	insert
+		    /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows
+		select
+		    *,
+		    i_eg_line_item = null,
+		    i_eg_net_amount = round(convert(money, :i_eg_net_amount * (convert(double, :parameters:amount) / convert(double, :i_eg_gift_amount))), 2),
+		    i_eg_gift_amount = convert(money, :parameters:amount)
+		from
+		    /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows
+		where
+		    :a_ledger_number = :parameters:ledger and
+		    :i_eg_trx_uuid = :parameters:trx and
+		    :i_eg_desig_uuid = :parameters:desig and
+		    :i_eg_line_item = :parameters:line
+		;
+
+		update
+		    /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows
+		set
+		    :i_eg_net_amount = :i_eg_net_amount - round(convert(money, :i_eg_net_amount * (convert(double, :parameters:amount) / convert(double, :i_eg_gift_amount))), 2),
+		    :i_eg_gift_amount = :i_eg_gift_amount - convert(money, :parameters:amount)
+		where
+		    :a_ledger_number = :parameters:ledger and
+		    :i_eg_trx_uuid = :parameters:trx and
+		    :i_eg_desig_uuid = :parameters:desig and
+		    :i_eg_line_item = :parameters:line
+		";
+	autoquery=never;
+	readahead=2;
+	replicasize=2;
+
+	on_split_done "widget/connector" { event=EndQuery; target=gift_import_osrc; action=Refresh; }
+	}
+
+    do_unsplit_osrc "widget/osrc"
+	{
+	uspl_ledger "widget/parameter" { type=string; param_name=ledger; }
+	uspl_trx "widget/parameter" { type=string; param_name=trx; }
+	uspl_desig "widget/parameter" { type=string; param_name=desig; }
+	uspl_line "widget/parameter" { type=integer; param_name=line; }
+	uspl_origline "widget/parameter" { type=integer; param_name=origline; }
+
+	sql = "	declare object info;
+
+		select
+		    :info:amt = :i_eg_gift_amount,
+		    :info:netamt = :i_eg_net_amount
+		from
+		    /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows
+		where
+		    :a_ledger_number = :parameters:ledger and
+		    :i_eg_trx_uuid = :parameters:trx and
+		    :i_eg_desig_uuid = :parameters:desig and
+		    :i_eg_line_item = :parameters:line
+		;
+
+		delete
+		    /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows
+		where
+		    :a_ledger_number = :parameters:ledger and
+		    :i_eg_trx_uuid = :parameters:trx and
+		    :i_eg_desig_uuid = :parameters:desig and
+		    :i_eg_line_item = :parameters:line
+		;
+
+		update
+		    /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows
+		set
+		    :i_eg_gift_amount = :i_eg_gift_amount + :info:amt,
+		    :i_eg_net_amount = :i_eg_net_amount + :info:netamt
+		where
+		    :a_ledger_number = :parameters:ledger and
+		    :i_eg_trx_uuid = :parameters:trx and
+		    :i_eg_desig_uuid = :parameters:desig and
+		    :i_eg_line_item = :parameters:origline
+		";
+	autoquery=never;
+	readahead=2;
+	replicasize=2;
+
+	on_unsplit_done "widget/connector" { event=EndQuery; target=gift_import_osrc; action=Refresh; }
+	}
+
     import_tab "widget/tab"
 	{
-	x=0; y=0; width=824; height=555;
-	background="/apps/kardia/images/bg/light_bgnd2.jpg";
-	inactive_background="/apps/kardia/images/bg/light_bgnd3.jpg";
+	x=0; y=0; width=980; height=655;
+	//background="/apps/kardia/images/bg/light_bgnd2.jpg";
+	//inactive_background="/apps/kardia/images/bg/light_bgnd3.jpg";
+	bgcolor="#f8f8f8";
+	inactive_bgcolor="#f0f0f0";
+	border_radius=6;
+	shadow_radius=4;
+	shadow_offset=2;
+	shadow_color="#808080";
+	shadow_angle=135;
 
 	gift_import_tabpage "widget/tabpage"
 	    {
 	    title="Import Gifts";
 
-	    gift_import_vbox "widget/vbox"
+	    gift_import_hbox "widget/hbox"
 		{
-		x=10; y=10; width=802; height=533;
+		x=10; y=10; width=958; height=633;
 		spacing=10;
-		cellsize=20;
 
-		//hdr "widget/component" { path="/apps/kardia/modules/base/section_label.cmp"; text="Import Gifts from Electronic Giving Services..."; height=20; }
-
-		ctls_hbox "widget/hbox"
+		gift_import_vbox "widget/vbox"
 		    {
-		    spacing=4;
-		    height=20;
+		    width=754;
+		    spacing=10;
+		    cellsize=20;
 
-		    search_label "widget/label" { align=right; y=2; width=70; text="Search:"; }
+		    //hdr "widget/component" { path="/apps/kardia/modules/base/section_label.cmp"; text="Import Gifts from Electronic Giving Services..."; height=20; }
 
-		    search_eb "widget/editbox"
+		    ctls_hbox "widget/hbox"
 			{
-			width=150;
+			spacing=4;
+			height=20;
 
-			do_search "widget/connector"
+			search_label "widget/label" { align=right; y=2; width=70; text="Search:"; }
+
+			search_eb "widget/editbox"
 			    {
-			    event=ReturnPressed;
-			    target=gift_import_osrc;
-			    action=QueryText;
-			    cx__case_insensitive=1;
-			    //use_having=1;
-			    objname=runclient("eg");
-			    field_list="*i_eg_donor_name*,*i_eg_desig_name*,*i_eg_desig_notes*,p_donor_partner_key,*i_eg_donor_email*,i_eg_donor_city*,i_eg_donor_state";
-			    query=runclient(:search_eb:content);
+			    width=150;
+
+			    do_search "widget/connector"
+				{
+				event=ReturnPressed;
+				target=gift_import_osrc;
+				action=QueryText;
+				cx__case_insensitive=1;
+				//use_having=1;
+				objname=runclient("eg");
+				field_list="*i_eg_donor_name*,*i_eg_desig_name*,*i_eg_desig_notes*,p_donor_partner_key,*i_eg_donor_email*,i_eg_donor_city*,i_eg_donor_state";
+				query=runclient(:search_eb:content);
+				}
+			    }
+
+			status_dd_label "widget/label" { align=right; y=2; width=70; text="Status:"; }
+
+			status_dd "widget/dropdown"
+			    {
+			    width=160;
+			    bgcolor=white; 
+			    mode=static;
+			    hilight="#d0d0d0";
+			    numdisplay=6;
+			    status_dd_hints "widget/hints" { style=notnull; }
+			    refresh_on_status_chg "widget/connector" { event=DataChange; target=gift_import_osrc; action=QueryParam; }
+
+			    all_status "widget/dropdownitem" { label="All"; value="*"; }
+			    imported "widget/dropdownitem" { label="Imported"; value="I"; }
+			    ready "widget/dropdownitem" { label="Ready for Import"; value="R"; }
+			    needqa "widget/dropdownitem" { label="Needing QA"; value="Q"; }
+			    readyorneedqa "widget/dropdownitem" { label="Ready or Needs QA"; value="RQ"; selected=yes; }
+			    notready "widget/dropdownitem" { label="Pending from Service"; value="N"; }
+			    }
+
+			time_dd_label "widget/label" { align=right; y=2; width=90; text="Date Range:"; }
+
+			time_dd "widget/dropdown"
+			    {
+			    width=120;
+			    bgcolor=white; 
+			    mode=static;
+			    hilight="#d0d0d0";
+			    time_dd_hints "widget/hints" { style=notnull; }
+			    refresh_on_time_chg "widget/connector" { event=DataChange; target=gift_import_osrc; action=QueryParam; }
+			    numdisplay=8;
+
+			    t_all "widget/dropdownitem" { label="All"; value="0"; }
+			    t_year "widget/dropdownitem" { label="Last 12 Months"; value="8784"; }
+			    t_month "widget/dropdownitem" { label="Last 31 Days"; value="744"; selected=yes; }
+			    t_week "widget/dropdownitem" { label="Last 7 Days"; value="168"; }
+			    t_day "widget/dropdownitem" { label="Last 24 Hours"; value="24"; }
+			    t_thismo "widget/dropdownitem" { label=runserver(substring(convert(string,getdate()),4,8)); value="0     M0"; }
+			    t_lastmo "widget/dropdownitem" { label=runserver(substring(convert(string,dateadd(month,-1,getdate())),4,8)); value="0     M1"; }
 			    }
 			}
 
-		    status_dd_label "widget/label" { align=right; y=2; width=70; text="Status:"; }
-
-		    status_dd "widget/dropdown"
+		    gift_import_osrc "widget/osrc"
 			{
-			width=160;
-			bgcolor=white; 
-			mode=static;
-			hilight="#d0d0d0";
-			numdisplay=6;
-			status_dd_hints "widget/hints" { style=notnull; }
-			refresh_on_status_chg "widget/connector" { event=DataChange; target=gift_import_osrc; action=QueryParam; }
+			sp1 "widget/parameter" { param_name=pstat; type=string; default=runclient(:status_dd:value); }
+			sp2 "widget/parameter" { param_name=ptime; type=string; default=runclient(:time_dd:value); }
 
-			all_status "widget/dropdownitem" { label="All"; value="*"; }
-			imported "widget/dropdownitem" { label="Imported"; value="I"; }
-			ready "widget/dropdownitem" { label="Ready for Import"; value="R"; }
-			needqa "widget/dropdownitem" { label="Needing QA"; value="Q"; }
-			readyorneedqa "widget/dropdownitem" { label="Ready or Needs QA"; value="RQ"; selected=yes; }
-			notready "widget/dropdownitem" { label="Pending from Service"; value="N"; }
-			}
-
-		    time_dd_label "widget/label" { align=right; y=2; width=90; text="Date Range:"; }
-
-		    time_dd "widget/dropdown"
-			{
-			width=120;
-			bgcolor=white; 
-			mode=static;
-			hilight="#d0d0d0";
-			time_dd_hints "widget/hints" { style=notnull; }
-			refresh_on_time_chg "widget/connector" { event=DataChange; target=gift_import_osrc; action=QueryParam; }
-			numdisplay=8;
-
-			t_all "widget/dropdownitem" { label="All"; value="0"; }
-			t_year "widget/dropdownitem" { label="Last 12 Months"; value="8784"; }
-			t_month "widget/dropdownitem" { label="Last 31 Days"; value="744"; selected=yes; }
-			t_week "widget/dropdownitem" { label="Last 7 Days"; value="168"; }
-			t_day "widget/dropdownitem" { label="Last 24 Hours"; value="24"; }
-			t_thismo "widget/dropdownitem" { label=runserver(substring(convert(string,getdate()),4,8)); value="0     M0"; }
-			t_lastmo "widget/dropdownitem" { label=runserver(substring(convert(string,dateadd(month,-1,getdate())),4,8)); value="0     M1"; }
-			}
-		    }
-
-		gift_import_osrc "widget/osrc"
-		    {
-		    sp1 "widget/parameter" { param_name=pstat; type=string; default=runclient(:status_dd:value); }
-		    sp2 "widget/parameter" { param_name=ptime; type=string; default=runclient(:time_dd:value); }
-
-		    sql=runserver("
-			    SELECT
-				    import_status = condition(
-							:eg:a_batch_number is not null,
-							'/sys/images/green_check.gif',
-							condition(
-							    :eg:a_batch_number is null and :eg:i_eg_donormap_confidence == 2 and :eg:i_eg_fundmap_confidence == 2 and :eg:i_eg_acctmap_confidence == 2 and :eg:i_eg_status == 'paid',
-							    '/sys/images/dotted_check.gif',
+			sql=runserver("
+				SELECT
+					import_status = condition(
+							    :eg:a_batch_number is not null,
+							    '/sys/images/green_check.gif',
 							    condition(
-								:eg:a_batch_number is null and (isnull(:eg:i_eg_donormap_confidence,0) < 2 or isnull(:eg:i_eg_fundmap_confidence,0) < 2 or isnull(:eg:i_eg_acctmap_confidence,0) < 2) and :eg:i_eg_status == 'paid',
-								'/sys/images/yellow_exclam.gif',
-								'/sys/images/red_x.gif')
-							    )
-							),
-				    qa_status = condition(
-							:eg:i_eg_donormap_confidence == 2 and :eg:i_eg_fundmap_confidence == 2 and :eg:i_eg_acctmap_confidence == 2,
-							'/sys/images/green_check.gif',
-							condition(
-							    :eg:i_eg_donormap_confidence == 0 or :eg:i_eg_fundmap_confidence == 0 or :eg:i_eg_acctmap_confidence == 0,
-							    '/sys/images/red_x.gif',
-							    '/sys/images/yellow_exclam.gif'
-							    )
-							),
-				    donor_qa_status = condition(
-							:eg:i_eg_donormap_confidence == 2,
-							'/sys/images/green_check.gif',
-							condition(
-							    :eg:i_eg_donormap_confidence == 0 or :eg:i_eg_donormap_confidence is null,
-							    '/sys/images/red_x.gif',
-							    '/sys/images/yellow_exclam.gif'
-							    )
-							),
-				    desig_qa_status = condition(
-							:eg:i_eg_fundmap_confidence == 2 and :eg:i_eg_acctmap_confidence == 2,
-							'/sys/images/green_check.gif',
-							condition(
-							    :eg:i_eg_donormap_confidence == 0 or :eg:i_eg_donormap_confidence is null or :eg:i_eg_acctmap_confidence == 0 or :eg:i_eg_acctmap_confidence is null,
-							    '/sys/images/red_x.gif',
-							    '/sys/images/yellow_exclam.gif'
-							    )
-							),
-				    trx_date = substring(convert(string,:eg:i_eg_gift_trx_date),1,11),
-				    gs_donor_info = :eg:i_eg_donor_name + isnull(' (' + :eg:i_eg_donor_city + ', ' + :eg:i_eg_donor_state + ')', ''),
-				    kardia_donor_info = :eg:p_donor_partner_key + isnull(' ' + :p:p_org_name, '') + isnull(' ' + :p:p_given_name,'') + isnull(' ' + :p:p_surname,'') + isnull(' (' + :l:p_city + ', ' + :l:p_state_province + ')', ''),
-				    gs_desig_info = :eg:i_eg_desig_name,
-				    kardia_desig_info = :eg:a_fund + isnull(' ' + :c:a_fund_desc,''),
-				    amount = :eg:i_eg_gift_amount,
-				    :eg:p_donor_partner_key,
-				    :eg:a_fund,
-				    :eg:a_account_code,
-				    :eg:a_batch_number,
-				    :eg:i_eg_donormap_confidence,
-				    :eg:i_eg_fundmap_confidence,
-				    :eg:i_eg_acctmap_confidence,
-				    :eg:i_eg_donormap_future,
-				    :eg:i_eg_fundmap_future,
-				    :eg:i_eg_acctmap_future,
-				    :eg:i_eg_status,
-				    :l:p_address_3, :l:p_address_2, :l:p_location_type, :l:p_country_code, :l:p_partner_key, :l:p_address_1,
-				    :l:p_postal_code, :l:p_state_province, :l:p_in_care_of, :l:p_city, :l:p_location_id,
-				    :p:p_partner_key, :p:p_partner_class, :p:p_title, :p:p_given_name, :p:p_preferred_name,
-				    :p:p_surname, :p:p_org_name, :p:p_comments,  :p:p_legacy_key_1, :p:p_legacy_key_2, :p:p_legacy_key_3,
-				    p_country_name = upper(:co:p_country_name),
-				    :af:p_format,
-				    :eg:i_eg_donor_name,
-				    :eg:i_eg_donor_addr1,
-				    :eg:i_eg_donor_addr2,
-				    :eg:i_eg_donor_city,
-				    :eg:i_eg_donor_state,
-				    :eg:i_eg_donor_postal,
-				    :eg:i_eg_donor_country,
-				    :eg:i_eg_donor_uuid,
-				    eg_donor_country_txt = condition(upper(:eg:i_eg_donor_country) == 'US', '', upper(isnull(:egco:p_country_name, :eg:i_eg_donor_country))),
-				    :eg:i_eg_desig_name,
-				    :eg:i_eg_desig_notes,
-				    :eg:i_eg_donor_email,
-				    :eg:i_eg_donor_phone,
-				    :eg:a_ledger_number,
-				    :eg:i_eg_gift_uuid,
-				    :eg:i_eg_trx_uuid,
-				    :eg:i_eg_returned_status,
-				    :eg:i_eg_processor,
-				    :eg:i_eg_gift_amount,
-				    :eg:i_eg_gift_currency,
-				    :eg:i_eg_net_amount,
-				    fees = :eg:i_eg_gift_amount - :eg:i_eg_net_amount,
-				    :eg:i_eg_gift_pmt_type,
-				    :eg:i_eg_gift_lastfour,
-				    :eg:i_eg_gift_interval,
-				    :eg:i_eg_gift_date,
-				    :eg:i_eg_gift_trx_date,
-				    :eg:i_eg_gift_settlement_date,
-				    :eg:i_eg_deposit_date,
-				    :eg:i_eg_deposit_uuid,
-				    import_country_code = isnull(:egco:p_country_code, :eg:i_eg_donor_country),
-				    i_eg_anonymous = isnull(:eg:i_eg_anonymous, 'NO')
-			    FROM
-				    identity /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows eg,
-				    /apps/kardia/data/Kardia_DB/p_partner/rows p,
-				    /apps/kardia/data/Kardia_DB/p_location/rows l,
-				    /apps/kardia/data/Kardia_DB/a_fund/rows c,
-				    /apps/kardia/data/Kardia_DB/a_account/rows a,
-				    /apps/kardia/data/Kardia_DB/p_country/rows co,
-				    /apps/kardia/data/Kardia_DB/p_address_format/rows af,
-				    /apps/kardia/data/Kardia_DB/p_country/rows egco
-			    WHERE
-				    :eg:a_ledger_number = " + quote(:this:ledger) + " and
-				    :p:p_partner_key =* :eg:p_donor_partner_key and
-				    :l:p_partner_key =* :p:p_partner_key and
-				    :c:a_ledger_number =* :eg:a_ledger_number and
-				    :c:a_fund =* :eg:a_fund and
-				    :a:a_ledger_number =* :eg:a_ledger_number and
-				    :a:a_account_code =* :eg:a_account_code and
-				    (:parameters:ptime is null or :parameters:ptime = '0' or substring(:parameters:ptime,7,1) = 'M' or (dateadd(hour, convert(integer, substring(:parameters:ptime,1,6)), :eg:i_eg_gift_trx_date) > getdate())) and
-				    (char_length(:parameters:ptime) < 8 or (datepart(year,dateadd(month, convert(integer,substring(:parameters:ptime,8,1)), :eg:i_eg_gift_trx_date)) == datepart(year,getdate()) and datepart(month,dateadd(month, convert(integer,substring(:parameters:ptime,8,1)), :eg:i_eg_gift_trx_date)) == datepart(month,getdate()))) and
-				    :l:p_revision_id = 0 and
-				    :l:p_country_code *= :co:p_country_code and
-				    :co:p_country_code *= :af:p_country_code and
-				    :af:p_address_set = 'STANDARD' and
-				    :egco:p_iso3166_2_code =* :eg:i_eg_donor_country
-			    HAVING
-				    (:parameters:pstat is null or :parameters:pstat = '*' or
-				      (:parameters:pstat = 'I' and :a_batch_number is not null) or
-				      ((:parameters:pstat = 'R' or :parameters:pstat = 'RQ') and :a_batch_number is null and :i_eg_donormap_confidence == 2 and :i_eg_fundmap_confidence == 2 and :i_eg_acctmap_confidence == 2 and :i_eg_status == 'paid') or
-				      ((:parameters:pstat = 'Q' or :parameters:pstat = 'RQ') and :a_batch_number is null and (isnull(:i_eg_donormap_confidence,0) < 2 or isnull(:i_eg_fundmap_confidence,0) < 2 or isnull(:i_eg_acctmap_confidence,0) < 2) and :i_eg_status == 'paid') or
-				      (:parameters:pstat = 'N' and :i_eg_status == 'pending') or
-				      (:parameters:pstat = 'N' and :i_eg_status == 'cleared')
-				    )
-			    ORDER BY
-				    :eg:i_eg_gift_trx_date desc
-			    ");
-		    replicasize=50;
-		    readahead=50;
-		    autoquery=onfirstreveal;
-
-		    gift_import_pane "widget/pane"
-			{
-			height=203;
-			widget_class="table_bgnd";
+								:eg:a_batch_number is null and :eg:i_eg_donormap_confidence == 2 and :eg:i_eg_fundmap_confidence == 2 and :eg:i_eg_acctmap_confidence == 2 and :eg:i_eg_status == 'paid',
+								'/sys/images/dotted_check.gif',
+								condition(
+								    :eg:a_batch_number is null and (isnull(:eg:i_eg_donormap_confidence,0) < 2 or isnull(:eg:i_eg_fundmap_confidence,0) < 2 or isnull(:eg:i_eg_acctmap_confidence,0) < 2) and :eg:i_eg_status == 'paid',
+								    '/sys/images/yellow_exclam.gif',
+								    '/sys/images/red_x.gif')
+								)
+							    ),
+					qa_status = condition(
+							    :eg:i_eg_donormap_confidence == 2 and :eg:i_eg_fundmap_confidence == 2 and :eg:i_eg_acctmap_confidence == 2,
+							    '/sys/images/green_check.gif',
+							    condition(
+								:eg:i_eg_donormap_confidence == 0 or :eg:i_eg_fundmap_confidence == 0 or :eg:i_eg_acctmap_confidence == 0,
+								'/sys/images/red_x.gif',
+								'/sys/images/yellow_exclam.gif'
+								)
+							    ),
+					donor_qa_status = condition(
+							    :eg:i_eg_donormap_confidence == 2,
+							    '/sys/images/green_check.gif',
+							    condition(
+								:eg:i_eg_donormap_confidence == 0 or :eg:i_eg_donormap_confidence is null,
+								'/sys/images/red_x.gif',
+								'/sys/images/yellow_exclam.gif'
+								)
+							    ),
+					desig_qa_status = condition(
+							    :eg:i_eg_fundmap_confidence == 2 and :eg:i_eg_acctmap_confidence == 2,
+							    '/sys/images/green_check.gif',
+							    condition(
+								:eg:i_eg_donormap_confidence == 0 or :eg:i_eg_donormap_confidence is null or :eg:i_eg_acctmap_confidence == 0 or :eg:i_eg_acctmap_confidence is null,
+								'/sys/images/red_x.gif',
+								'/sys/images/yellow_exclam.gif'
+								)
+							    ),
+					trx_date = substring(convert(string,:eg:i_eg_gift_trx_date),1,11),
+					gs_donor_info = :eg:i_eg_donor_name + isnull(' (' + :eg:i_eg_donor_city + ', ' + :eg:i_eg_donor_state + ')', ''),
+					kardia_donor_info = :eg:p_donor_partner_key + isnull(' ' + :p:p_org_name, '') + isnull(' ' + :p:p_given_name,'') + isnull(' ' + :p:p_surname,'') + isnull(' (' + :l:p_city + ', ' + :l:p_state_province + ')', ''),
+					kardia_donor_name = isnull(' ' + :p:p_org_name, '') + isnull(' ' + :p:p_given_name,'') + isnull(' ' + :p:p_surname,''),
+					has_donor_rec = (select count(1) from /apps/kardia/data/Kardia_DB/p_donor/rows d where :d:a_gl_ledger_number = :eg:a_ledger_number and :d:p_partner_key = :eg:p_donor_partner_key),
+					gs_desig_info = :eg:i_eg_desig_name,
+					kardia_desig_info = :eg:a_fund + isnull(' ' + :c:a_fund_desc,''),
+					amount = :eg:i_eg_gift_amount,
+					:eg:p_donor_partner_key,
+					:eg:a_fund,
+					:eg:a_account_code,
+					:eg:a_batch_number,
+					:eg:i_eg_donormap_confidence,
+					:eg:i_eg_fundmap_confidence,
+					:eg:i_eg_acctmap_confidence,
+					:eg:i_eg_donormap_future,
+					:eg:i_eg_fundmap_future,
+					:eg:i_eg_acctmap_future,
+					:eg:i_eg_status,
+					:l:p_address_3, :l:p_address_2, :l:p_location_type, :l:p_country_code, :l:p_partner_key, :l:p_address_1,
+					:l:p_postal_code, :l:p_state_province, :l:p_in_care_of, :l:p_city, :l:p_location_id,
+					:p:p_partner_key, :p:p_partner_class, :p:p_title, :p:p_given_name, :p:p_preferred_name,
+					:p:p_surname, :p:p_org_name, :p:p_comments,  :p:p_legacy_key_1, :p:p_legacy_key_2, :p:p_legacy_key_3,
+					p_country_name = upper(:co:p_country_name),
+					:af:p_format,
+					:eg:i_eg_donor_name,
+					:eg:i_eg_donor_addr1,
+					:eg:i_eg_donor_addr2,
+					:eg:i_eg_donor_city,
+					:eg:i_eg_donor_state,
+					:eg:i_eg_donor_postal,
+					:eg:i_eg_donor_country,
+					:eg:i_eg_donor_uuid,
+					eg_donor_country_txt = condition(upper(:eg:i_eg_donor_country) == 'US', '', upper(isnull(:egco:p_country_name, :eg:i_eg_donor_country))),
+					:eg:i_eg_desig_uuid,
+					:eg:i_eg_desig_name,
+					:eg:i_eg_desig_notes,
+					:eg:i_eg_donor_email,
+					:eg:i_eg_donor_phone,
+					:eg:a_ledger_number,
+					:eg:i_eg_gift_uuid,
+					:eg:i_eg_trx_uuid,
+					:eg:i_eg_line_item,
+					:eg:i_eg_returned_status,
+					:eg:i_eg_processor,
+					:eg:i_eg_gift_amount,
+					:eg:i_eg_gift_currency,
+					:eg:i_eg_net_amount,
+					fees = :eg:i_eg_gift_amount - :eg:i_eg_net_amount,
+					:eg:i_eg_gift_pmt_type,
+					:eg:i_eg_gift_lastfour,
+					:eg:i_eg_gift_interval,
+					:eg:i_eg_gift_date,
+					:eg:i_eg_gift_trx_date,
+					:eg:i_eg_gift_settlement_date,
+					:eg:i_eg_deposit_date,
+					:eg:i_eg_deposit_uuid,
+					import_country_code = isnull(:egco:p_country_code, :eg:i_eg_donor_country),
+					i_eg_anonymous = isnull(:eg:i_eg_anonymous, 'NO')
+				FROM
+					identity /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows eg,
+					/apps/kardia/data/Kardia_DB/p_partner/rows p,
+					/apps/kardia/data/Kardia_DB/p_location/rows l,
+					/apps/kardia/data/Kardia_DB/a_fund/rows c,
+					/apps/kardia/data/Kardia_DB/a_account/rows a,
+					/apps/kardia/data/Kardia_DB/p_country/rows co,
+					/apps/kardia/data/Kardia_DB/p_address_format/rows af,
+					/apps/kardia/data/Kardia_DB/p_country/rows egco
+				WHERE
+					:eg:a_ledger_number = " + quote(:this:ledger) + " and
+					:p:p_partner_key =* :eg:p_donor_partner_key and
+					:l:p_partner_key =* :p:p_partner_key and
+					:c:a_ledger_number =* :eg:a_ledger_number and
+					:c:a_fund =* :eg:a_fund and
+					:a:a_ledger_number =* :eg:a_ledger_number and
+					:a:a_account_code =* :eg:a_account_code and
+					(:parameters:ptime is null or :parameters:ptime = '0' or substring(:parameters:ptime,7,1) = 'M' or (dateadd(hour, convert(integer, substring(:parameters:ptime,1,6)), :eg:i_eg_gift_trx_date) > getdate())) and
+					(char_length(:parameters:ptime) < 8 or (datepart(year,dateadd(month, convert(integer,substring(:parameters:ptime,8,1)), :eg:i_eg_gift_trx_date)) == datepart(year,getdate()) and datepart(month,dateadd(month, convert(integer,substring(:parameters:ptime,8,1)), :eg:i_eg_gift_trx_date)) == datepart(month,getdate()))) and
+					:l:p_revision_id = 0 and
+					:l:p_country_code *= :co:p_country_code and
+					:co:p_country_code *= :af:p_country_code and
+					:af:p_address_set = 'STANDARD' and
+					:egco:p_iso3166_2_code =* :eg:i_eg_donor_country
+				HAVING
+					(:parameters:pstat is null or :parameters:pstat = '*' or
+					  (:parameters:pstat = 'I' and :a_batch_number is not null) or
+					  ((:parameters:pstat = 'R' or :parameters:pstat = 'RQ') and :a_batch_number is null and :i_eg_donormap_confidence == 2 and :i_eg_fundmap_confidence == 2 and :i_eg_acctmap_confidence == 2 and :i_eg_status == 'paid') or
+					  ((:parameters:pstat = 'Q' or :parameters:pstat = 'RQ') and :a_batch_number is null and (isnull(:i_eg_donormap_confidence,0) < 2 or isnull(:i_eg_fundmap_confidence,0) < 2 or isnull(:i_eg_acctmap_confidence,0) < 2) and :i_eg_status == 'paid') or
+					  (:parameters:pstat = 'N' and :i_eg_status == 'pending') or
+					  (:parameters:pstat = 'N' and :i_eg_status == 'cleared')
+					)
+				ORDER BY
+					:eg:i_eg_gift_trx_date desc,
+					:eg:i_eg_trx_uuid asc,
+					:eg:i_eg_line_item asc
+				");
+			replicasize=400;
+			readahead=400;
+			autoquery=onfirstreveal;
 
 			gift_import_tbl "widget/table"
 			    {
-			    x=0; y=0; width=800; height=201;
+			    x=0; y=0; width=752; height=553;
+			    overlap_scrollbar=yes;
+			    demand_scrollbar=yes;
+			    rowheight=null;
+			    cellvspacing=4;
+			    inner_padding=2;
+			    colsep=0;
+			    row_border_radius=6;
+			    row_shadow_radius=2;
+			    row_shadow_offset=1;
+			    row_shadow_color="#a0a0a0";
+			    row_shadow_angle=135;
+			    initial_selection = noexpand;
+			    allow_deselection = yes;
+			    nodata_message="No gifts to display";
 
-			    st_stat "widget/table-column" { width=23; fieldname=import_status; title="St."; type=image; }
-			    //st_qstat "widget/table-column" { width=30; fieldname=qa_status; title="QA"; type=image; }
-			    st_date "widget/table-column" { width=78; fieldname=trx_date; title="Date"; }
-			    st_gsdon "widget/table-column" { width=130; fieldname=gs_donor_info; title="Donor"; }
-			    st_qadon "widget/table-column" { width=23; fieldname=donor_qa_status; title="QA"; type=image; }
-			    st_kdon "widget/table-column" { width=170; fieldname=kardia_donor_info; title="Kardia Donor"; }
-			    st_gsdes "widget/table-column" { width=116; fieldname=gs_desig_info; title="Designation"; }
-			    st_qades "widget/table-column" { width=23; fieldname=desig_qa_status; title="QA"; type=image; }
-			    st_kdes "widget/table-column" { width=140; fieldname=kardia_desig_info; title="Kardia Desig."; }
-			    st_amount "widget/table-column" { width=73; fieldname=amount; title="Amount"; align=right; }
+			    st_stat "widget/table-column" { width=48; fieldname=import_status; title="Status"; type=image; }
+			    st_date "widget/table-column" { width=96; fieldname=trx_date; title="Date"; }
+			    st_gsdon "widget/table-column" { width=246; fieldname=gs_donor_info; title="Giving Service Donor/Designation"; caption_fieldname=gs_desig_info; }
+			    st_qadon "widget/table-column" { width=24; fieldname=qa_status; title="QA"; type=image; }
+			    //st_kdon "widget/table-column" { width=170; fieldname=kardia_donor_info; title="Kardia Donor"; }
+			    //st_qades "widget/table-column" { width=24; fieldname=desig_qa_status; title="QA"; type=image; }
+			    st_gsdes "widget/table-column" { width=246; value=runclient(isnull(:gift_import_osrc:kardia_donor_info, ' ')); title="Kardia Donor/Designation"; caption_fieldname=kardia_desig_info; }
+			    //st_kdes "widget/table-column" { width=140; fieldname=kardia_desig_info; title="Kardia Desig."; }
+			    st_amount "widget/table-column" { width=96; fieldname=amount; title="Amount"; align=right; caption_fieldname=i_eg_gift_interval; }
 
-			    dblclick_open_sub2 "widget/connector"
+			    tbl_detail "widget/table-row-detail"
 				{
-				event=DblClick;
-				target=new_subs;
-				action=Launch;
-				Width=800;
-				Height=600;
-				Source="/apps/kardia/modules/base/subscription.app";
-				partner=runclient(:new_subs_osrc:p_partner_key);
-				list=runclient(:new_subs_osrc:m_list_code);
-				mlist_parent_osrc = new_subs_osrc;
-				send_update = 1;
+				height=260;
+				width=752;
+
+				qa_pane "widget/pane"
+				    {
+				    x=10; y=5;
+				    height=250; width=732;
+				    border_radius=12;
+				    style=flat;
+				    bgcolor="#f8f8f8";
+
+				    qa_form "widget/form"
+					{
+					on_save_refresh_summary_cn "widget/connector" { event=DataSaved; target=gift_summary_osrc; action=Refresh; }
+
+					qa_hbox "widget/hbox"
+					    {
+					    x=10; y=5;
+					    height=240;
+					    width=712;
+					    spacing=20;
+
+					    qa_donorconf_var "widget/variable" { fieldname=i_eg_donormap_confidence; type=integer; }
+					    qa_fundconf_var "widget/variable" { fieldname=i_eg_fundmap_confidence; type=integer; }
+					    qa_acctconf_var "widget/variable" { fieldname=i_eg_acctmap_confidence; type=integer; }
+
+					    qa_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; form=qa_form; visual=no; }
+
+					    qa_service_vbox "widget/vbox"
+						{
+						width=271;
+						spacing=4;
+
+						import_desc "widget/label" { height=16; style=bold; text="Information from Giving Service:"; align=center; }
+						disp_pane "widget/pane"
+						    {
+						    height=72;
+						    style=bordered;
+						    border_color = black;
+						    bgcolor = white;
+						    disp_addr "widget/label"
+							{
+							x = 2;
+							height = 102;
+							width = 279;
+							fl_height = 1;
+							style = bold;
+							value = runclient(substitute("[:i_eg_donor_name]\n[:i_eg_donor_addr1]\n[:i_eg_donor_addr2]\n[:i_eg_donor_city] [:i_eg_donor_state] [:i_eg_donor_postal]\n[:eg_donor_country_txt]", "e=gift_import_osrc"));
+							}
+						    }
+
+						qa_donor_sep "widget/autolayoutspacer" { height=4; }
+
+						gs_email "widget/component" { height=16; path="/sys/cmp/smart_field.cmp"; field=i_eg_donor_email; ctl_type=label; text="Email:"; label_width=60; label_valign=top; }
+						gs_phone "widget/component" { height=16; path="/sys/cmp/smart_field.cmp"; field=i_eg_donor_phone; ctl_type=label; text="Phone:"; label_width=60; label_valign=top; }
+						gs_desig "widget/component" { height=22; path="/sys/cmp/smart_field.cmp"; field=i_eg_desig_name; ctl_type=label; text="Desig.:"; label_width=60; label_valign=top; }
+						gs_notes "widget/component" { height=70; path="/sys/cmp/smart_field.cmp"; field=i_eg_desig_notes; ctl_type=label; text="Notes:"; label_width=60; label_valign=top; }
+						}
+
+					    qa_kardia_vbox "widget/vbox"
+						{
+						width=271; 
+						spacing=4;
+
+						kardia_desc "widget/label" { height=16; style=bold; text="Information from Kardia:"; align=center; }
+						kardia_location_addr_label "widget/component"
+						    {
+						    height=72;
+						    path = "/apps/kardia/modules/base/address_label_fmt.cmp";
+						    partner = gift_import_osrc;
+						    location = gift_import_osrc;
+						    }
+
+						qa_donor_sep2 "widget/autolayoutspacer" { height=4; }
+
+						edit_donor_key_hbox "widget/hbox"
+						    {
+						    height=24;
+						    spacing=4;
+
+						    kardia_donor_key "widget/component"
+							{
+							width=217;
+							path="/apps/kardia/modules/base/editbox_table.cmp";
+							field='p_donor_partner_key';
+							text='Donor:';
+							label_width=60;
+							popup_width=380;
+							popup_sql="select value = :p:p_partner_key, label = condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname) + isnull(' [' + :pl:p_city + ', ' + :pl:p_state_province + ' ' + :pl:p_postal_code + '] #' + :p:p_partner_key, '') from /apps/kardia/data/Kardia_DB/p_partner/rows p, /apps/kardia/data/Kardia_DB/p_location/rows pl where :p:p_partner_key *= :pl:p_partner_key";
+							search_field_list="p_partner_key,*p_given_name*,*p_surname*,*p_org_name*,p_legacy_key_1,*p_legacy_key_2*";
+							key_name="p_partner_key";
+							object_name="Donor";
+							popup_text="Select a Donor:";
+							//attach_point=editbox;
+
+							donor_hints "widget/hints" { style=applyonchange; }
+
+							set_confidence_don "widget/connector"
+							    {
+							    event = DataChange;
+							    event_condition = runclient((not :FromOSRC) and isnull(:gift_import_osrc:i_eg_donormap_confidence,0) < 2);
+							    target = qa_donorconf_var;
+							    action = SetValue;
+							    Value = runclient(2);
+							    }
+
+							load_sidebar "widget/connector"
+							    {
+							    event=DataChange;
+							    target=gift_import;
+							    action=LoadSidebar;
+							    Donor=runclient(:Value);
+							    }
+							}
+
+						    add_donor_btn "widget/textbutton"
+							{
+							width=50; height=24;
+							text = "New";
+
+							addnew_cn "widget/connector"
+							    {
+							    event=Click;
+							    target=gift_import;
+							    action=Launch;
+							    Width=844;
+							    Height=600;
+							    Source="/apps/kardia/modules/base/new_partner.app";
+							    return_to=kardia_donor_key;
+							    set_donor=1;
+							    ledger=runclient(:gift_import:ledger);
+							    set_surname = runclient(condition(charindex(' ',:gift_import_osrc:i_eg_donor_name) > 0, substring(:gift_import_osrc:i_eg_donor_name, char_length(:gift_import_osrc:i_eg_donor_name) - charindex(' ',reverse(:gift_import_osrc:i_eg_donor_name)) + 2), null));
+							    set_given_name = runclient(condition(charindex(' ',:gift_import_osrc:i_eg_donor_name) > 0, substring(:gift_import_osrc:i_eg_donor_name, 1, char_length(:gift_import_osrc:i_eg_donor_name) - charindex(' ',reverse(:gift_import_osrc:i_eg_donor_name))), :gift_import_osrc:i_eg_donor_name));
+							    set_salutation = runclient(condition(charindex(' ',:gift_import_osrc:i_eg_donor_name) > 0, substring(:gift_import_osrc:i_eg_donor_name, 1, char_length(:gift_import_osrc:i_eg_donor_name) - charindex(' ',reverse(:gift_import_osrc:i_eg_donor_name))), :gift_import_osrc:i_eg_donor_name));
+							    set_addr1 = runclient(:gift_import_osrc:i_eg_donor_addr1);
+							    set_addr2 = runclient(:gift_import_osrc:i_eg_donor_addr2);
+							    set_city = runclient(:gift_import_osrc:i_eg_donor_city);
+							    set_state_province = runclient(:gift_import_osrc:i_eg_donor_state);
+							    set_postal = runclient(:gift_import_osrc:i_eg_donor_postal);
+							    set_country_code = runclient(:gift_import_osrc:import_country_code);
+							    set_phone = runclient(replace(replace(replace(replace(replace(:gift_import_osrc:i_eg_donor_phone, "+", NULL), "-", NULL), "(", NULL), ")", NULL), " ", NULL));
+							    set_email = runclient(:gift_import_osrc:i_eg_donor_email);
+							    }
+							}
+						    }
+
+						f_desig_cc "widget/component"
+						    {
+						    height=20;
+						    path="/apps/kardia/modules/base/editbox_table.cmp";
+						    field='a_fund';
+						    text='Desig.:';
+						    label_width=60;
+						    popup_width=380;
+						    popup_sql=runserver("select value = :c:a_fund, label = :c:a_fund + ' - ' + condition(isnull(:cr:a_receiptable,0) = 1, :c:a_fund_desc + isnull(' (legacy # ' + :c:a_legacy_code + ')',''), '** CLOSED **') from /apps/kardia/data/Kardia_DB/a_fund/rows c, /apps/kardia/data/Kardia_DB/a_fund_receipting/rows cr where :c:a_is_posting = 1 and :c:a_ledger_number = " + quote(:this:ledger) + " and :cr:a_ledger_number =* :c:a_ledger_number and :cr:a_fund =* :c:a_fund");
+						    search_field_list="a_fund*,*a_fund_desc*,a_legacy_code*";
+						    key_name="a_fund";
+						    object_name="Fund";
+						    popup_text="Select Designation:";
+						    empty_desc="required";
+
+						    desig_hints "widget/hints" { style=applyonchange,uppercase; }
+
+						    set_accts_based_on_cc "widget/connector"
+							{
+							event = DataChange;
+							target = f_desig_acct_dd;
+							action = SetItems;
+							SQL=runclient("select label = :a:a_account_code + ': ' + :a:a_acct_desc, value = :a:a_account_code, selected = 1 from /apps/kardia/data/Kardia_DB/a_fund_receipting_accts/rows cr, /apps/kardia/data/Kardia_DB/a_account/rows a where :cr:a_fund = " + quote(:f_desig_cc:content) + " and :cr:a_ledger_number = " + quote(:gift_import:ledger) + " and :a:a_ledger_number = :cr:a_ledger_number and :a:a_account_code = :cr:a_account_code order by :cr:a_is_default asc");
+							}
+
+						    set_confidence_cc "widget/connector"
+							{
+							event = DataChange;
+							event_condition = runclient((not :FromOSRC) and isnull(:gift_import_osrc:i_eg_fundmap_confidence,0) < 2);
+							target = qa_fundconf_var;
+							action = SetValue;
+							Value = runclient(2);
+							}
+						    }
+						remember_cc "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field=i_eg_fundmap_future; ctl_type=checkboxleft; text="Remember this designation"; x=62; remember_cc_hints "widget/hints" { default=runclient(1); style=notnull; } }
+						f_desig_acct_dd "widget/component"
+						    {
+						    height = 20;
+						    path = "/sys/cmp/smart_field.cmp";
+						    label_width=60;
+						    text = "GL Acct:";
+						    field = "a_account_code";
+						    ctl_type = dropdown;
+						    sql = "select '','' where 1 = 0";
+						    invalid_select_default = yes;
+
+						    ac_hints "widget/hints" { style=notnull; }
+
+						    set_confidence_acct "widget/connector"
+							{
+							event = DataChange;
+							event_condition = runclient((not :FromOSRC) and isnull(:gift_import_osrc:i_eg_acctmap_confidence,0) < 2);
+							target = qa_acctconf_var;
+							action = SetValue;
+							Value = runclient(2);
+							}
+						    }
+						remember_acct "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field=i_eg_acctmap_future; ctl_type=checkboxleft; text="Remember this GL account"; x=62; remember_acct_hints "widget/hints" { default=runclient(1); style=notnull; } }
+						}
+
+					    ctls_pane "widget/vbox"
+						{
+						width=130;
+						spacing=6;
+
+						ctls_sep "widget/autolayoutspacer"
+						    {
+						    height=14;
+						    }
+
+						save_btn "widget/textbutton"
+						    {
+						    width=130;
+						    text = "Save";
+						    enabled = runclient(:qa_form:is_savable);
+						    save_cn "widget/connector" { event=Click; target=qa_form; action=Save; }
+						    }
+
+						cancel_btn "widget/textbutton"
+						    {
+						    width=130;
+						    text = "Cancel";
+						    enabled = runclient(:qa_form:is_discardable);
+						    discard_cn "widget/connector" { event=Click; target=qa_form; action=Discard; }
+						    }
+
+						btns_sep "widget/pane"
+						    {
+						    height=2;
+						    style=lowered;
+						    x=8; width=114;
+						    }
+
+						splittrx_btn "widget/textbutton"
+						    {
+						    width=130;
+						    text = "Split Gift";
+						    enabled = runclient(:gift_import_osrc:a_batch_number is null and :gift_import_osrc:i_eg_line_item == 1);
+						    split_cn "widget/connector" { event=Click; target=popover_splittrx; action=Open; }
+						    }
+
+						unsplittrx_btn "widget/textbutton"
+						    {
+						    width=130;
+						    text = "Remove Split";
+						    enabled = runclient(:gift_import_osrc:a_batch_number is null and :gift_import_osrc:i_eg_line_item > 1);
+
+						    unsplit_cn "widget/connector"
+							{
+							event=Click;
+							event_confirm=runclient('Remove ' + :gift_import_osrc:amount + ' split gift item?');
+							target=do_unsplit_osrc;
+							action=QueryParam;
+							ledger=runclient(:gift_import_osrc:a_ledger_number);
+							trx=runclient(:gift_import_osrc:i_eg_trx_uuid);
+							desig=runclient(:gift_import_osrc:i_eg_desig_uuid);
+							line=runclient(:gift_import_osrc:i_eg_line_item);
+							origline=runclient(1);
+							}
+						    }
+
+						btns_sep2 "widget/pane"
+						    {
+						    height=2;
+						    style=lowered;
+						    x=8; width=114;
+						    }
+
+						partner_rec_btn "widget/textbutton"
+						    {
+						    width=130;
+						    text = "View Partner";
+						    enabled = runclient(:gift_import_osrc:p_donor_partner_key is not null);
+						    partner_rec_cn "widget/connector"
+							{
+							event=Click;
+							target=gift_import;
+							action=Launch; 
+							Width=844;
+							Height=600;
+							Source="/apps/kardia/modules/base/partner_window.app";
+							id=runclient(:gift_import_osrc:p_donor_partner_key);
+							ledger=runclient(:gift_import:ledger);
+							}
+						    }
+
+						view_detail_from_eg_btn "widget/textbutton"
+						    {
+						    width=130;
+						    text = "View Details";
+						    enabled = runclient(:gift_import_osrc:i_eg_donor_uuid is not null);
+						    open_id_cn "widget/connector" { event=Click; target=import_data_window; action=Open; }
+						    }
+
+						manage_gift_batch_btn "widget/textbutton"
+						    {
+						    width=130;
+						    text = "View Gift Batch";
+						    enabled = runclient(:gift_import_osrc:a_batch_number is not null);
+						    manage_batch_cn "widget/connector"
+							{
+							event=Click;
+							target=gift_import;
+							action=Launch; 
+							Width=800;
+							Height=600;
+							Source="/apps/kardia/modules/rcpt/cr_batches.app";
+							ledger=runclient(:gift_import:ledger);
+							period=runclient(:gift_import:period);
+							gotobatch=runclient(:gift_import_osrc:a_batch_number);
+							}
+						    }
+						}
+					    }
+					}
+				    }
 				}
 			    }
 			}
 
-		    qa_form "widget/form"
+		    summary_pane "widget/pane"
 			{
-			on_save_refresh_summary_cn "widget/connector" { event=DataSaved; target=gift_summary_osrc; action=Refresh; }
+			height=40; width=754;
+			//widget_class="label";
+			//border_color = "#153f5f";
+			//background = "/apps/kardia/images/bg/light_bgnd3.jpg";
+			bgcolor="#e0e0e0";
+			style = flat;
+			border_radius=12;
+			shadow_radius=4;
+			shadow_offset=2;
+			shadow_color="#808080";
+			shadow_angle=135;
 
-			qa_hbox "widget/hbox"
+			summary_hbox "widget/hbox"
 			    {
-			    height=240;
+			    x=8; y=0;
+			    height=40; width=738;
 			    spacing=10;
 
-			    qa_donorconf_var "widget/variable" { fieldname=i_eg_donormap_confidence; type=integer; }
-			    qa_fundconf_var "widget/variable" { fieldname=i_eg_fundmap_confidence; type=integer; }
-			    qa_acctconf_var "widget/variable" { fieldname=i_eg_acctmap_confidence; type=integer; }
-
-			    qa_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; form=qa_form; visual=no; }
-
-			    qa_donor_pane "widget/pane"
+			    get_gifts_btn "widget/textbutton"
 				{
-				width = 320;
-				style = raised;
-				border_radius = 12;
-				background = "/apps/kardia/images/bg/light_bgnd3.jpg";
+				y=8;
+				width=130; height=24;
+				text="Get New Gifts";
 
-				qa_donor_vbox "widget/vbox"
-				    {
-				    x=8; y=8; width=302; height=222;
-				    spacing=4;
-
-				    import_desc "widget/label" { height=16; style=bold; text="Information from Giving Service:"; align=center; }
-				    disp_pane "widget/pane"
-					{
-					height=72;
-					style=bordered;
-					border_color = black;
-					bgcolor = white;
-					disp_addr "widget/label"
-					    {
-					    x = 2;
-					    height = 102;
-					    width = 298;
-					    fl_height = 1;
-					    style = bold;
-					    value = runclient(substitute("[:i_eg_donor_name]\n[:i_eg_donor_addr1]\n[:i_eg_donor_addr2]\n[:i_eg_donor_city] [:i_eg_donor_state] [:i_eg_donor_postal]\n[:eg_donor_country_txt]", "e=gift_import_osrc"));
-					    }
-					}
-
-				    qa_donor_sep "widget/autolayoutspacer" { height=4; }
-
-				    gs_desig "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field=i_eg_desig_name; ctl_type=label; text="Desig.:"; label_width=60; }
-				    gs_notes "widget/component" { height=70; path="/sys/cmp/smart_field.cmp"; field=i_eg_desig_notes; ctl_type=label; text="Notes:"; label_width=60; }
-				    }
+				get_gifts_cn "widget/connector" { event=Click; target=do_import_osrc; action=QueryParam; }
 				}
 
-			    qa_desig_pane "widget/pane"
+			    create_gift_batch_btn "widget/textbutton"
 				{
-				width = 320;
-				style = raised;
-				border_radius = 12;
-				background = "/apps/kardia/images/bg/light_bgnd3.jpg";
-
-				qa_desig_vbox "widget/vbox"
-				    {
-				    x=8; y=8; width=302; height=222;
-				    spacing=4;
-
-				    kardia_desc "widget/label" { height=16; style=bold; text="Information from Kardia:"; align=center; }
-				    kardia_location_addr_label "widget/component"
-					{
-					height=72;
-					path = "/apps/kardia/modules/base/address_label_fmt.cmp";
-					partner = gift_import_osrc;
-					location = gift_import_osrc;
-					}
-
-				    qa_donor_sep2 "widget/autolayoutspacer" { height=4; }
-
-				    edit_donor_key_hbox "widget/hbox"
-					{
-					height=24;
-					spacing=4;
-
-					kardia_donor_key "widget/component"
-					    {
-					    width=238;
-					    path="/apps/kardia/modules/base/editbox_table.cmp";
-					    field='p_donor_partner_key';
-					    text='Donor:';
-					    label_width=60;
-					    popup_width=380;
-					    popup_sql="select value = :p:p_partner_key, label = condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname) + isnull(' [' + :pl:p_city + ', ' + :pl:p_state_province + ' ' + :pl:p_postal_code + '] #' + :p:p_partner_key, '') from /apps/kardia/data/Kardia_DB/p_partner/rows p, /apps/kardia/data/Kardia_DB/p_location/rows pl where :p:p_partner_key *= :pl:p_partner_key";
-					    search_field_list="p_partner_key,*p_given_name*,*p_surname*,*p_org_name*,p_legacy_key_1,*p_legacy_key_2*";
-					    key_name="p_partner_key";
-					    object_name="Donor";
-					    popup_text="Select a Donor:";
-					    //attach_point=editbox;
-
-					    donor_hints "widget/hints" { style=applyonchange; }
-
-					    set_confidence_don "widget/connector"
-						{
-						event = DataChange;
-						event_condition = runclient((not :FromOSRC) and isnull(:gift_import_osrc:i_eg_donormap_confidence,0) < 2);
-						target = qa_donorconf_var;
-						action = SetValue;
-						Value = runclient(2);
-						}
-					    }
-
-					add_donor_btn "widget/textbutton"
-					    {
-					    width=60; height=24;
-					    text = "Add...";
-
-					    addnew_cn "widget/connector"
-						{
-						event=Click;
-						target=gift_import;
-						action=Launch;
-						Width=844;
-						Height=600;
-						Source="/apps/kardia/modules/base/new_partner.app";
-						return_to=kardia_donor_key;
-						set_donor=1;
-						ledger=runclient(:gift_import:ledger);
-						set_surname = runclient(condition(charindex(' ',:gift_import_osrc:i_eg_donor_name) > 0, substring(:gift_import_osrc:i_eg_donor_name, char_length(:gift_import_osrc:i_eg_donor_name) - charindex(' ',reverse(:gift_import_osrc:i_eg_donor_name)) + 2), null));
-						set_given_name = runclient(condition(charindex(' ',:gift_import_osrc:i_eg_donor_name) > 0, substring(:gift_import_osrc:i_eg_donor_name, 1, char_length(:gift_import_osrc:i_eg_donor_name) - charindex(' ',reverse(:gift_import_osrc:i_eg_donor_name))), :gift_import_osrc:i_eg_donor_name));
-						set_salutation = runclient(condition(charindex(' ',:gift_import_osrc:i_eg_donor_name) > 0, substring(:gift_import_osrc:i_eg_donor_name, 1, char_length(:gift_import_osrc:i_eg_donor_name) - charindex(' ',reverse(:gift_import_osrc:i_eg_donor_name))), :gift_import_osrc:i_eg_donor_name));
-						set_addr1 = runclient(:gift_import_osrc:i_eg_donor_addr1);
-						set_addr2 = runclient(:gift_import_osrc:i_eg_donor_addr2);
-						set_city = runclient(:gift_import_osrc:i_eg_donor_city);
-						set_state_province = runclient(:gift_import_osrc:i_eg_donor_state);
-						set_postal = runclient(:gift_import_osrc:i_eg_donor_postal);
-						set_country_code = runclient(:gift_import_osrc:import_country_code);
-						set_phone = runclient(replace(replace(replace(replace(replace(:gift_import_osrc:i_eg_donor_phone, "+", NULL), "-", NULL), "(", NULL), ")", NULL), " ", NULL));
-						set_email = runclient(:gift_import_osrc:i_eg_donor_email);
-						}
-					    }
-					}
-
-				    f_desig_cc "widget/component"
-					{
-					height=20;
-					path="/apps/kardia/modules/base/editbox_table.cmp";
-					field='a_fund';
-					text='Desig.:';
-					label_width=60;
-					popup_width=380;
-					popup_sql=runserver("select value = :c:a_fund, label = :c:a_fund + ' - ' + condition(isnull(:cr:a_receiptable,0) = 1, :c:a_fund_desc + isnull(' (legacy # ' + :c:a_legacy_code + ')',''), '** CLOSED **') from /apps/kardia/data/Kardia_DB/a_fund/rows c, /apps/kardia/data/Kardia_DB/a_fund_receipting/rows cr where :c:a_is_posting = 1 and :c:a_ledger_number = " + quote(:this:ledger) + " and :cr:a_ledger_number =* :c:a_ledger_number and :cr:a_fund =* :c:a_fund");
-					search_field_list="a_fund*,*a_fund_desc*,a_legacy_code*";
-					key_name="a_fund";
-					object_name="Fund";
-					popup_text="Select Designation:";
-					empty_desc="required";
-
-					desig_hints "widget/hints" { style=applyonchange,uppercase; }
-
-					set_accts_based_on_cc "widget/connector"
-					    {
-					    event = DataChange;
-					    target = f_desig_acct_dd;
-					    action = SetItems;
-					    SQL=runclient("select label = :a:a_account_code + ': ' + :a:a_acct_desc, value = :a:a_account_code, selected = 1 from /apps/kardia/data/Kardia_DB/a_fund_receipting_accts/rows cr, /apps/kardia/data/Kardia_DB/a_account/rows a where :cr:a_fund = " + quote(:f_desig_cc:content) + " and :cr:a_ledger_number = " + quote(:gift_import:ledger) + " and :a:a_ledger_number = :cr:a_ledger_number and :a:a_account_code = :cr:a_account_code order by :cr:a_is_default asc");
-					    }
-
-					set_confidence_cc "widget/connector"
-					    {
-					    event = DataChange;
-					    event_condition = runclient((not :FromOSRC) and isnull(:gift_import_osrc:i_eg_fundmap_confidence,0) < 2);
-					    target = qa_fundconf_var;
-					    action = SetValue;
-					    Value = runclient(2);
-					    }
-					}
-				    remember_cc "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field=i_eg_fundmap_future; ctl_type=checkboxleft; text="Remember this designation"; x=62; remember_cc_hints "widget/hints" { default=runclient(1); style=notnull; } }
-				    f_desig_acct_dd "widget/component"
-					{
-					height = 20;
-					path = "/sys/cmp/smart_field.cmp";
-					label_width=60;
-					text = "GL Acct:";
-					field = "a_account_code";
-					ctl_type = dropdown;
-					sql = "select '','' where 1 = 0";
-					invalid_select_default = yes;
-
-					ac_hints "widget/hints" { style=notnull; }
-
-					set_confidence_acct "widget/connector"
-					    {
-					    event = DataChange;
-					    event_condition = runclient((not :FromOSRC) and isnull(:gift_import_osrc:i_eg_acctmap_confidence,0) < 2);
-					    target = qa_acctconf_var;
-					    action = SetValue;
-					    Value = runclient(2);
-					    }
-					}
-				    remember_acct "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field=i_eg_acctmap_future; ctl_type=checkboxleft; text="Remember this GL account"; x=62; remember_acct_hints "widget/hints" { default=runclient(1); style=notnull; } }
-				    }
+				y=8;
+				width=130; height=24;
+				text = "Create Gift Batch";
+				enabled = runclient(:gift_summary_osrc:ready > 0);
+				create_batch_cn "widget/connector" { event=Click; target=create_gift_batch_window; action=Open; }
 				}
 
-			    ctls_pane "widget/vbox"
+			    gift_summary_osrc "widget/osrc"
 				{
-				width=138;
-				spacing=6;
+				sql = "	select
+						notimported = count(condition(:a_batch_number is null and :i_eg_status != 'returned', 1, null)),
+						notimported_amt = isnull(sum(condition(:a_batch_number is null and :i_eg_status != 'returned', :i_eg_gift_amount, $0)), $0),
+						imported = count(condition(:a_batch_number is not null, 1, null)),
+						imported_amt = isnull(sum(condition(:a_batch_number is not null, :i_eg_gift_amount, $0)), $0),
+						ready = count(condition(:a_batch_number is null and :i_eg_donormap_confidence == 2 and :i_eg_fundmap_confidence == 2 and :i_eg_acctmap_confidence == 2 and :i_eg_status == 'paid', 1, null)),
+						ready_amt = isnull(sum(condition(:a_batch_number is null and :i_eg_donormap_confidence == 2 and :i_eg_fundmap_confidence == 2 and :i_eg_acctmap_confidence == 2 and :i_eg_status == 'paid', :i_eg_gift_amount, $0)), $0),
+						need_qa = count(condition(:a_batch_number is null and (isnull(:i_eg_donormap_confidence,0) < 2 or isnull(:i_eg_fundmap_confidence,0) < 2 or isnull(:i_eg_acctmap_confidence,0) < 2) and :i_eg_status == 'paid', 1, null)),
+						need_qa_amt = isnull(sum(condition(:a_batch_number is null and (isnull(:i_eg_donormap_confidence,0) < 2 or isnull(:i_eg_fundmap_confidence,0) < 2 or isnull(:i_eg_acctmap_confidence,0) < 2) and :i_eg_status == 'paid', :i_eg_gift_amount, $0)), $0),
+						pending = count(condition(:i_eg_status == 'pending' or :i_eg_status = 'cleared', 1, null)),
+						pending_amt = isnull(sum(condition(:i_eg_status == 'pending' or :i_eg_status = 'cleared', :i_eg_gift_amount, $0)), $0),
+						mostrecent = substring(convert(string, max(:i_eg_gift_trx_date)), 1, 11)
+					from
+						/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows
+					where
+						:i_eg_gift_trx_date > dateadd(day, -90, getdate())
+					";
+				autoquery = onfirstreveal;
+				readahead = 2;
+				replicasize = 2;
+				indicates_activity = no;
 
-				save_btn "widget/textbutton"
+				summary_form "widget/form"
 				    {
-				    width=138;
-				    text = "Save";
-				    enabled = runclient(:qa_form:is_savable);
-				    save_cn "widget/connector" { event=Click; target=qa_form; action=Save; }
-				    }
-
-				cancel_btn "widget/textbutton"
-				    {
-				    width=138;
-				    text = "Cancel";
-				    enabled = runclient(:qa_form:is_discardable);
-				    discard_cn "widget/connector" { event=Click; target=qa_form; action=Discard; }
-				    }
-
-				btns_sep "widget/pane"
-				    {
-				    height=2;
-				    style=lowered;
-				    x=8; width=122;
-				    }
-
-				partner_rec_btn "widget/textbutton"
-				    {
-				    width=138;
-				    text = "View Partner Record";
-				    enabled = runclient(:gift_import_osrc:p_donor_partner_key is not null);
-				    partner_rec_cn "widget/connector"
+				    col1_vbox "widget/vbox"
 					{
-					event=Click;
-					target=gift_import;
-					action=Launch; 
-					Width=844;
-					Height=600;
-					Source="/apps/kardia/modules/base/partner_window.app";
-					id=runclient(:gift_import_osrc:p_donor_partner_key);
-					ledger=runclient(:gift_import:ledger);
+					width=133;
+					spacing=0;
+					numimported "widget/component" { path="/sys/cmp/smart_field.cmp"; height=16; label_width=93; text="Last 90 Days:"; field=imported; color=white; ctl_type=label; }
+					numready "widget/component" { path="/sys/cmp/smart_field.cmp"; height=16; label_width=93; text="Import Ready:"; field=ready; color=white; ctl_type=label; }
 					}
-				    }
-
-				view_detail_from_eg_btn "widget/textbutton"
-				    {
-				    width=138;
-				    text = "View Import Data";
-				    enabled = runclient(:gift_import_osrc:i_eg_donor_uuid is not null);
-				    open_id_cn "widget/connector" { event=Click; target=import_data_window; action=Open; }
-				    }
-
-				create_gift_batch_btn "widget/textbutton"
-				    {
-				    width=138;
-				    text = "Create Gift Batch";
-				    enabled = runclient(:gift_summary_osrc:ready > 0);
-				    create_batch_cn "widget/connector" { event=Click; target=create_gift_batch_window; action=Open; }
-				    }
-
-				manage_gift_batch_btn "widget/textbutton"
-				    {
-				    width=138;
-				    text = "Manage Gift Batch";
-				    enabled = runclient(:gift_import_osrc:a_batch_number is not null);
-				    manage_batch_cn "widget/connector"
+				    col2_vbox "widget/vbox"
 					{
-					event=Click;
-					target=gift_import;
-					action=Launch; 
-					Width=800;
-					Height=600;
-					Source="/apps/kardia/modules/rcpt/cr_batches.app";
-					ledger=runclient(:gift_import:ledger);
-					period=runclient(:gift_import:period);
-					gotobatch=runclient(:gift_import_osrc:a_batch_number);
+					width=133;
+					spacing=0;
+					numneed_qa "widget/component" { path="/sys/cmp/smart_field.cmp"; height=16;  label_width=93; text="Needing QA:"; field=need_qa; color=white; ctl_type=label; }
+					numpending "widget/component" { path="/sys/cmp/smart_field.cmp"; height=16; label_width=93; text="Pending:"; field=pending; color=white; ctl_type=label; }
+					}
+				    col3_vbox "widget/vbox"
+					{
+					width=171;
+					spacing=0;
+					mostrecent "widget/component" { path="/sys/cmp/smart_field.cmp"; height=16; label_width=93; text="Most Recent:"; field=mostrecent; color=white; ctl_type=label; }
+					notimpamt "widget/component" { path="/sys/cmp/smart_field.cmp"; height=16; label_width=93; text="To Be Imported:"; field=notimported_amt; color=white; ctl_type=label; }
 					}
 				    }
 				}
@@ -573,56 +828,59 @@ gift_import "widget/component-decl"
 			}
 		    }
 
-		hdr_pane "widget/pane"
+		sidebar_pane "widget/pane"
 		    {
-		    height=40; width=802;
-		    //widget_class="label";
-		    //border_color = "#153f5f";
-		    background = "/apps/kardia/images/bg/light_bgnd3.jpg";
-		    style = raised;
+		    width=195;
+		    style=flat;
+		    bgcolor="#e0e0e0";
 		    border_radius=12;
+		    shadow_radius=4;
+		    shadow_offset=2;
+		    shadow_color="#808080";
+		    shadow_angle=135;
 
-		    get_gifts_btn "widget/textbutton"
+		    manage_vbox "widget/vbox"
 			{
-			x=8; y=8;
-			width=130; height=24;
-			text="Get New Gifts";
+			x=0; y=0;
+			width=195;
+			height=682;
+			spacing=10;
 
-			get_gifts_cn "widget/connector" { event=Click; target=do_import_osrc; action=QueryParam; }
-			}
-
-		    gift_summary_osrc "widget/osrc"
-			{
-			sql = "	select
-					notimported = count(condition(:a_batch_number is null and :i_eg_status != 'returned', 1, null)),
-					notimported_amt = isnull(sum(condition(:a_batch_number is null and :i_eg_status != 'returned', :i_eg_gift_amount, $0)), $0),
-					imported = count(condition(:a_batch_number is not null, 1, null)),
-					imported_amt = isnull(sum(condition(:a_batch_number is not null, :i_eg_gift_amount, $0)), $0),
-					ready = count(condition(:a_batch_number is null and :i_eg_donormap_confidence == 2 and :i_eg_fundmap_confidence == 2 and :i_eg_acctmap_confidence == 2 and :i_eg_status == 'paid', 1, null)),
-					ready_amt = isnull(sum(condition(:a_batch_number is null and :i_eg_donormap_confidence == 2 and :i_eg_fundmap_confidence == 2 and :i_eg_acctmap_confidence == 2 and :i_eg_status == 'paid', :i_eg_gift_amount, $0)), $0),
-					need_qa = count(condition(:a_batch_number is null and (isnull(:i_eg_donormap_confidence,0) < 2 or isnull(:i_eg_fundmap_confidence,0) < 2 or isnull(:i_eg_acctmap_confidence,0) < 2) and :i_eg_status == 'paid', 1, null)),
-					need_qa_amt = isnull(sum(condition(:a_batch_number is null and (isnull(:i_eg_donormap_confidence,0) < 2 or isnull(:i_eg_fundmap_confidence,0) < 2 or isnull(:i_eg_acctmap_confidence,0) < 2) and :i_eg_status == 'paid', :i_eg_gift_amount, $0)), $0),
-					pending = count(condition(:i_eg_status == 'pending' or :i_eg_status = 'cleared', 1, null)),
-					pending_amt = isnull(sum(condition(:i_eg_status == 'pending' or :i_eg_status = 'cleared', :i_eg_gift_amount, $0)), $0),
-					mostrecent = substring(convert(string, max(:i_eg_gift_trx_date)), 1, 11)
-				from
-					/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows
-				where
-					:i_eg_gift_trx_date > dateadd(day, -90, getdate())
-				";
-			autoquery = onfirstreveal;
-			readahead = 2;
-			replicasize = 2;
-			indicates_activity = no;
-
-			summary_form "widget/form"
+			manage_pane "widget/pane"
 			    {
-			    numimported "widget/component" { path="/sys/cmp/smart_field.cmp"; x=150; height=16; y=2; width=170; label_width=140; text="Last 90 Days:"; field=imported; color=white; ctl_type=label; }
-			    numready "widget/component" { path="/sys/cmp/smart_field.cmp"; x=150; height=16; y=18; width=170; label_width=140; text="Ready for Import:"; field=ready; color=white; ctl_type=label; }
-			    numneed_qa "widget/component" { path="/sys/cmp/smart_field.cmp"; x=320; height=16; y=2; width=170; label_width=140; text="Needing QA:"; field=need_qa; color=white; ctl_type=label; }
-			    numpending "widget/component" { path="/sys/cmp/smart_field.cmp"; x=320; height=16; y=18; width=170; label_width=140; text="Pending from Service:"; field=pending; color=white; ctl_type=label; }
-			    mostrecent "widget/component" { path="/sys/cmp/smart_field.cmp"; x=490; height=16; y=2; width=270; label_width=140; text="Most Recent Gift:"; field=mostrecent; color=white; ctl_type=label; }
-			    notimpamt "widget/component" { path="/sys/cmp/smart_field.cmp"; x=490; height=16; y=18; width=270; label_width=140; text="To Be Imported:"; field=notimported_amt; color=white; ctl_type=label; }
+			    height = 276;
+			    style = flat;
+
+			    manage_cmp "widget/component"
+				{
+				x=5; y=5;
+				width = 185;
+				height = 266;
+				path="/apps/kardia/modules/rcpt/donor_sidebar.cmp";
+				title_text = runclient(isnull(condition(char_length(:kardia_donor_key:value) <= 1, "", condition(:manage_cmp:partner = :kardia_donor_key:value and :manage_cmp:partner = :gift_import_osrc:p_donor_partner_key, :gift_import_osrc:kardia_donor_name, :manage_cmp:partner))));
+				no_donor_rec = runclient(:gift_import_osrc:has_donor_rec = 0);
+
+				on_manage_update_1 "widget/connector" { event=DonorChanged; target=gift_import_osrc; action=Refresh; }
+				}
+			    }
+
+			hist_pane "widget/pane"
+			    {
+			    height = 340;
+			    style = flat;
+			    border_radius=12;
+			    bgcolor = runclient('#e0e0e0');
+
+			    hist_cmp "widget/component"
+				{
+				x=5; y=5;
+				height=335;
+				width=185;
+				path="/apps/kardia/modules/rcpt/giving_history_sidebar.cmp";
+				ledger=runserver(:this:ledger);
+				enable_copy=runclient(0);
+				show_copy=0;
+				}
 			    }
 			}
 		    }
@@ -635,7 +893,7 @@ gift_import "widget/component-decl"
 
 	    dep_fee_vbox "widget/vbox"
 		{
-		x=10; y=10; width=802; height=533;
+		x=10; y=10; width=960; height=633;
 		spacing=10;
 		cellsize=20;
 
@@ -732,17 +990,25 @@ gift_import "widget/component-decl"
 				    net_cmp_amt = first(:i_eg_deposit_amt),
 				    fees_batch_number = first(:a_batch_number_fees),
 				    dep_batch_number = first(:a_batch_number_deposit),
+				    fees_period = :fb:a_period,
+				    dep_period = :db:a_period,
 				    is_unimp_gifts = max(:a_batch_number is null),
 				    is_pending = max(:i_eg_deposit_uuid is null)
 			    FROM
 				    /apps/kardia/data/Kardia_DB/a_period/rows per,
-				    identity /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows eg
+				    identity /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows eg,
+				    /apps/kardia/data/Kardia_DB/a_batch/rows fb,
+				    /apps/kardia/data/Kardia_DB/a_batch/rows db
 			    WHERE
 				    :per:a_ledger_number = " + quote(:this:ledger) + " and
 				    :per:a_period = " + quote(:this:period) + " and
 				    :eg:a_ledger_number = :per:a_ledger_number and
 				    (:parameters:ptime is null or :parameters:ptime = '0' or substring(:parameters:ptime,7,1) = 'M' or (dateadd(hour, convert(integer, substring(:parameters:ptime,1,6)), :eg:i_eg_gift_trx_date) > getdate())) and
-				    (char_length(:parameters:ptime) < 8 or (datepart(year,dateadd(month, convert(integer,substring(:parameters:ptime,8,1)), :eg:i_eg_gift_trx_date)) == datepart(year,getdate()) and datepart(month,dateadd(month, convert(integer,substring(:parameters:ptime,8,1)), :eg:i_eg_gift_trx_date)) == datepart(month,getdate())))
+				    (char_length(:parameters:ptime) < 8 or (datepart(year,dateadd(month, convert(integer,substring(:parameters:ptime,8,1)), :eg:i_eg_gift_trx_date)) == datepart(year,getdate()) and datepart(month,dateadd(month, convert(integer,substring(:parameters:ptime,8,1)), :eg:i_eg_gift_trx_date)) == datepart(month,getdate()))) and
+				    :db:a_ledger_number =* :eg:a_ledger_number and
+				    :db:a_batch_number =* :eg:a_batch_number_deposit and
+				    :fb:a_ledger_number =* :eg:a_ledger_number and
+				    :fb:a_batch_number =* :eg:a_batch_number_fees
 			    HAVING
 				    (:parameters:pstat is null or :parameters:pstat = '*' or
 				      (:parameters:pstat = 'I' and :fees_batch_number is not null and :dep_batch_number is not null and not :is_pending) or
@@ -756,28 +1022,36 @@ gift_import "widget/component-decl"
 				    :eg:i_eg_deposit_date desc,
 				    isnull(:eg:i_eg_deposit_uuid, -1)
 			    ");
-		    replicasize=200;
-		    readahead=200;
+		    replicasize=400;
+		    readahead=400;
 		    autoquery=oneachreveal;
 
-		    dep_import_pane "widget/pane"
+		    dep_import_tbl "widget/table"
 			{
-			height=222;
-			widget_class="table_bgnd";
+			x=0; y=0; width=960; height=272;
+			overlap_scrollbar=yes;
+			demand_scrollbar=yes;
+			rowheight=null;
+			cellvspacing=4;
+			inner_padding=2;
+			colsep=0;
+			row_border_radius=6;
+			row_shadow_radius=2;
+			row_shadow_offset=1;
+			row_shadow_color="#a0a0a0";
+			row_shadow_angle=135;
+			initial_selection = noexpand;
+			allow_deselection = yes;
+			nodata_message="No deposits to display";
 
-			dep_import_tbl "widget/table"
-			    {
-			    x=0; y=0; width=800; height=220;
-
-			    dep_st_stat "widget/table-column" { width=34; fieldname=dep_import_status; title="Dep."; type=image; }
-			    dep_st_feestat "widget/table-column" { width=34; fieldname=fee_import_status; title="Fees"; type=image; }
-			    dep_st_date "widget/table-column" { width=94; fieldname=deposit_date; title="Deposited"; }
-			    dep_st_giftdates "widget/table-column" { width=238; fieldname=gift_date_range; title="Gift Dates"; }
-			    dep_st_numgift "widget/table-column" { width=64; fieldname=gift_cnt; title="#Gifts"; }
-			    dep_st_gross "widget/table-column" { width=104; fieldname=gross_amt; title="Amt Given"; align=right; }
-			    dep_st_fees "widget/table-column" { width=104; fieldname=fees_amt; title="- Fees"; align=right; }
-			    dep_st_net "widget/table-column" { width=104; fieldname=net_amt; title="= Net Amt"; align=right; }
-			    }
+			dep_st_stat "widget/table-column" { width=34; fieldname=dep_import_status; title="Dep."; type=image; }
+			dep_st_feestat "widget/table-column" { width=34; fieldname=fee_import_status; title="Fees"; type=image; }
+			dep_st_date "widget/table-column" { width=94; fieldname=deposit_date; title="Deposited"; }
+			dep_st_giftdates "widget/table-column" { width=238; fieldname=gift_date_range; title="Gift Dates"; }
+			dep_st_numgift "widget/table-column" { width=64; fieldname=gift_cnt; title="#Gifts"; }
+			dep_st_gross "widget/table-column" { width=104; fieldname=gross_amt; title="Amt Given"; align=right; }
+			dep_st_fees "widget/table-column" { width=104; fieldname=fees_amt; title="- Fees"; align=right; }
+			dep_st_net "widget/table-column" { width=104; fieldname=net_amt; title="= Net Amt"; align=right; }
 			}
 
 		    dep_import_comment "widget/label" { height=14; style=italic; value=runclient("* asterisked deposits above will be posted to a different period than the current one (" + :gift_import:period + ")."); }
@@ -789,10 +1063,10 @@ gift_import "widget/component-decl"
 
 			dep_gift_list_vbox "widget/vbox"
 			    {
-			    width=630;
+			    width=785;
 			    spacing=10;
 
-			    dep_gift_list_hdr "widget/component" { path="/apps/kardia/modules/base/section_label.cmp"; height=16; text="Gifts in this deposit:"; }
+			    dep_gift_list_hdr "widget/component" { path="/apps/kardia/modules/base/section_label.cmp"; height=26; text="Gifts in This Deposit:"; }
 
 			    dep_gift_list_osrc "widget/osrc"
 				{
@@ -832,8 +1106,8 @@ gift_import "widget/component-decl"
 					ORDER BY
 						:eg:i_eg_gift_trx_date desc
 					");
-				replicasize=50;
-				readahead=50;
+				replicasize=100;
+				readahead=100;
 				autoquery=never;
 				
 				dep_link "widget/rule"
@@ -846,24 +1120,32 @@ gift_import "widget/component-decl"
 				    master_null_action = nullisvalue;
 				    }
 
-				dep_gift_list_pane "widget/pane"
+				dep_gift_list_table "widget/table"
 				    {
-				    widget_class = table_bgnd;
-				    height = 221;
+				    x=0; y=0;
+				    height=260;
+				    overlap_scrollbar=yes;
+				    demand_scrollbar=yes;
+				    rowheight=null;
+				    cellvspacing=4;
+				    inner_padding=2;
+				    colsep=0;
+				    row_border_radius=6;
+				    row_shadow_radius=2;
+				    row_shadow_offset=1;
+				    row_shadow_color="#a0a0a0";
+				    row_shadow_angle=135;
+				    initial_selection = noexpand;
+				    allow_deselection = yes;
+				    nodata_message="No gifts to display";
 
-				    dep_gift_list_table "widget/table"
-					{
-					x=0; y=0;
-					width=628; height=219;
-
-					dep_g_stat "widget/table-column" { width=34; fieldname=import_status; title="Stat."; type=image; }
-					dep_g_date "widget/table-column" { width=80; fieldname=trx_date; title="Gift Date"; }
-					dep_g_batch "widget/table-column" { width=65; fieldname=a_batch_number; title="Gift Batch"; }
-					dep_g_fund "widget/table-column" { width=186; fieldname=cctext; title="Designation"; }
-					dep_g_gross "widget/table-column" { width=80; fieldname=i_eg_gift_amount; title="Amt Given"; align=right; }
-					dep_g_fees "widget/table-column" { width=80; fieldname=fees; title="- Fees"; align=right; }
-					dep_g_net "widget/table-column" { width=80; fieldname=i_eg_net_amount; title="= Net Amt"; align=right; }
-					}
+				    dep_g_stat "widget/table-column" { width=34; fieldname=import_status; title="Stat."; type=image; }
+				    dep_g_date "widget/table-column" { width=80; fieldname=trx_date; title="Gift Date"; }
+				    dep_g_batch "widget/table-column" { width=65; fieldname=a_batch_number; title="Gift Batch"; }
+				    dep_g_fund "widget/table-column" { width=186; fieldname=cctext; title="Designation"; }
+				    dep_g_gross "widget/table-column" { width=80; fieldname=i_eg_gift_amount; title="Amt Given"; align=right; }
+				    dep_g_fees "widget/table-column" { width=80; fieldname=fees; title="- Fees"; align=right; }
+				    dep_g_net "widget/table-column" { width=80; fieldname=i_eg_net_amount; title="= Net Amt"; align=right; }
 				    }
 				}
 			    }
@@ -873,7 +1155,7 @@ gift_import "widget/component-decl"
 			    width = 162;
 			    spacing = 6;
 
-			    btn_list_hdr "widget/component" { path="/apps/kardia/modules/base/section_label.cmp"; height=16; text="Import & View..."; }
+			    btn_list_hdr "widget/component" { path="/apps/kardia/modules/base/section_label.cmp"; height=26; text="Import & View..."; }
 			    btnsep "widget/autolayoutspacer" { height=0; }
 
 			    create_lbl "widget/label"
@@ -900,6 +1182,19 @@ gift_import "widget/component-decl"
 				    target=create_dep_batch_window;
 				    action=Open;
 				    }
+				view_dep_batch_cn "widget/connector"
+				    {
+				    event_condition = runclient(:dep_import_osrc:dep_batch_number is not null);
+				    event=Click;
+				    target=gift_import;
+				    action=Launch;
+				    Width=800;
+				    Height=600;
+				    Source="/apps/kardia/modules/rcpt/de_batches.app";
+				    ledger=runclient(:gift_import:ledger);
+				    period=runclient(:dep_import_osrc:dep_period);
+				    gotobatch=runclient(:dep_import_osrc:dep_batch_number);
+				    }
 				}
 			    create_fee_batch_btn "widget/textbutton"
 				{
@@ -916,6 +1211,20 @@ gift_import "widget/component-decl"
 				    target=create_fee_batch_window;
 				    action=Open;
 				    }
+				view_fee_batch_cn "widget/connector"
+				    {
+				    event_condition = runclient(:dep_import_osrc:dep_batch_number is not null);
+				    event=Click;
+				    target=gift_import;
+				    action=Launch;
+				    Width=800;
+				    Height=600;
+				    Source="/apps/kardia/modules/gl/transaction_report.rpt";
+				    ledger=runclient(:gift_import:ledger);
+				    startperiod=runclient(:dep_import_osrc:fees_period);
+				    endperiod=runclient(:dep_import_osrc:fees_period);
+				    batch=runclient(:dep_import_osrc:fees_batch_number);
+				    }
 				}
 			    }
 			}
@@ -931,10 +1240,15 @@ gift_import "widget/component-decl"
 	modal=yes;
 	toplevel=yes;
 	width=780; height=450;
-	x=22; y=65;
+	x=100; y=115;
 	visible=no;
+	border_radius=12;
+	shadow_radius=4;
+	shadow_offset=2;
+	shadow_color="#404040";
+	shadow_angle=135;
 
-	import_data_hdr "widget/label" { x=10; y=10; width=758; height=20; font_size=15; style=bold; text="Data from Giving Service"; align=center; }
+	import_data_hdr "widget/label" { x=10; y=10; width=758; height=20; font_size=16; style=bold; text="Data from Giving Service"; align=center; }
 	import_data_vbox "widget/vbox"
 	    {
 	    x=10; y=50; width=758; height=358;
@@ -1002,8 +1316,13 @@ gift_import "widget/component-decl"
 	modal=yes;
 	toplevel=yes;
 	width=500; height=324;
-	x=162; y=152;
+	x=240; y=178;
 	visible=no;
+	border_radius=12;
+	shadow_radius=4;
+	shadow_offset=2;
+	shadow_color="#404040";
+	shadow_angle=135;
 
 	create_dep_batch_vbox "widget/vbox"
 	    {
@@ -1011,7 +1330,7 @@ gift_import "widget/component-decl"
 	    spacing=4;
 	    cellsize=20;
 
-	    create_dep_batch_hdr "widget/label" { font_size=15; style=bold; text="Create Deposits Batch"; align=center; }
+	    create_dep_batch_hdr "widget/label" { font_size=16; style=bold; text="Create Deposits Batch"; align=center; }
 
 	    cdb_sep "widget/autolayoutspacer" { height=8; }
 
@@ -1256,8 +1575,13 @@ gift_import "widget/component-decl"
 	modal=yes;
 	toplevel=yes;
 	width=500; height=324;
-	x=162; y=152;
+	x=240; y=178;
 	visible=no;
+	border_radius=12;
+	shadow_radius=4;
+	shadow_offset=2;
+	shadow_color="#404040";
+	shadow_angle=135;
 
 	create_fee_batch_vbox "widget/vbox"
 	    {
@@ -1265,7 +1589,7 @@ gift_import "widget/component-decl"
 	    spacing=4;
 	    cellsize=20;
 
-	    create_fee_batch_hdr "widget/label" { font_size=15; style=bold; text="Create Fees Batch"; align=center; }
+	    create_fee_batch_hdr "widget/label" { font_size=16; style=bold; text="Create Fees Batch"; align=center; }
 
 	    cfb_sep "widget/autolayoutspacer" { height=8; }
 
@@ -1634,8 +1958,13 @@ gift_import "widget/component-decl"
 	modal=yes;
 	toplevel=yes;
 	width=500; height=300;
-	x=162; y=140;
+	x=240; y=190;
 	visible=no;
+	border_radius=12;
+	shadow_radius=4;
+	shadow_offset=2;
+	shadow_color="#404040";
+	shadow_angle=135;
 
 	create_batch_vbox "widget/vbox"
 	    {
@@ -1643,7 +1972,7 @@ gift_import "widget/component-decl"
 	    spacing=4;
 	    cellsize=20;
 
-	    create_batch_hdr "widget/label" { font_size=15; style=bold; text="Create Gift Batch"; align=center; }
+	    create_batch_hdr "widget/label" { font_size=16; style=bold; text="Create Gift Batch"; align=center; }
 
 	    cb_sep "widget/autolayoutspacer" { height=8; }
 
@@ -1965,6 +2294,117 @@ gift_import "widget/component-decl"
 	    close_win_on_new_batch2 "widget/connector" { event=EndQuery; target=create_gift_batch_window; action=Close; }
 	    refresh_list_on_new_batch "widget/connector" { event=EndQuery; target=gift_import_osrc; action=Refresh; }
 	    refresh_summary_on_new_batch "widget/connector" { event=EndQuery; target=gift_summary_osrc; action=Refresh; }
+	    }
+	}
+
+    popover_splittrx "widget/childwindow"
+	{
+	width=350; height=146;
+	x=315; y=267;
+	titlebar=no;
+	visible=no;
+	modal=yes;
+	border_style=solid;
+	border_color="#f8f8f8";
+	background=null;
+	bgcolor="#f8f8f8";
+	border_radius=12;
+	shadow_radius=4;
+	shadow_offset=2;
+	shadow_color="#404040";
+	shadow_angle=135;
+
+	open_pst1 "widget/connector" { event = Open; target = f_pst_amount; action = SetFocus; }
+	open_pst2 "widget/connector" { event = Open; target = f_pst_remain; action = SetValue; Value=runclient(:gift_import_osrc:amount); }
+
+	pst_vbox "widget/vbox"
+	    {
+	    x=10; y=10; width=330; height=126;
+	    spacing=10;
+
+	    pst_title "widget/label" { height=20; align=center; font_size=16; style=bold; text="Split Gift Line Item"; }
+
+	    pst_form "widget/form"
+		{
+		allow_new = yes;
+
+		f_pst_remain "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; label_width=100; text="Remaining:"; field='remain'; ctl_type=label; }
+		f_pst_amount "widget/component"
+		    {
+		    height=20;
+		    path="/sys/cmp/smart_field.cmp";
+		    label_width=100;
+		    text='Split Amount:';
+		    field='amount';
+		    ctl_type=editbox;
+
+		    on_amount_change "widget/connector"
+			{
+			event=DataModify;
+			target=remain_txt;
+			action=SetValue;
+			Value=runclient('$' + (convert(double, :gift_import_osrc:amount) - convert(double, isnull(:f_pst_amount:content, '0')) + .0001));
+			}
+
+		    amt_hints "widget/hints" { allowchars="0123456789.$"; }
+		    }
+
+		remain_txt "widget/variable"
+		    {
+		    type=string;
+
+		    on_txt_change "widget/connector"
+			{
+			event=DataModify;
+			target=f_pst_remain;
+			action=SetValue;
+			Value=runclient(condition(charindex('.', :Value) > 0, substring(:Value + '00', 1, charindex('.', :Value) + 2), :Value + '.00'));
+			}
+		    }
+
+		pst_save "widget/connector" { event=BeforeSave; target=pst_ok; action=Click; event_cancel=runclient(1); }
+		pst_discard "widget/connector" { event=Discard; target=popover_splittrx; action=Close; }
+		}
+
+	    pst_sep "widget/autolayoutspacer" { height=1; }
+
+	    pst_ctls "widget/hbox"
+		{
+		height=24;
+		spacing=10;
+		align=center;
+
+		pst_ok "widget/textbutton"
+		    {
+		    height=24;
+		    width=130;
+		    text = "Split";
+		    enabled = runclient(char_length(:f_pst_amount:content) > 0 and convert(double, :gift_import_osrc:amount) > convert(double, :f_pst_amount:content) and convert(double, :f_pst_amount:content) > 0);
+
+		    do_split1 "widget/connector"
+			{
+			event=Click;
+			target=do_split_osrc;
+			action=QueryParam;
+			ledger=runclient(:gift_import_osrc:a_ledger_number);
+			trx=runclient(:gift_import_osrc:i_eg_trx_uuid);
+			desig=runclient(:gift_import_osrc:i_eg_desig_uuid);
+			line=runclient(:gift_import_osrc:i_eg_line_item);
+			amount=runclient(:f_pst_amount:content);
+			}
+
+		    do_split2 "widget/connector" { event=Click; target=pst_form; action=Discard; }
+		    }
+
+		pst_cancel "widget/textbutton"
+		    {
+		    height=24;
+		    width=130;
+		    text = "Cancel";
+
+		    do_split_cancel1 "widget/connector" { event=Click; target=pst_form; action=Discard; }
+		    }
+		}
 	    }
 	}
     }
