@@ -14,4 +14,5 @@ Datatypes "application/filespec"
     i_eg_target_desig_uuid "filespec/column" { type=string; id=2; }
     i_eg_target_desig_name "filespec/column" { type=string; id=3; }
     i_eg_gift_amount "filespec/column" { type=money; id=4; }
+    i_eg_line_item "filespec/column" { type=integer; id=5; }
     }

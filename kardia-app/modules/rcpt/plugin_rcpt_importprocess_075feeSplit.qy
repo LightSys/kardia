@@ -1,7 +1,7 @@
 $Version=2$
 plugin_rcpt_importprocess_050splitTrx "system/query"
     {
-    module_sequence=50; // want to run before matching
+    module_sequence=75; // want to run before matching
     module_letter='F';
     module_code='Fee';
     module_desc='Split donations made to cover transaction fees to other gifts in the transaction';
@@ -84,7 +84,6 @@ plugin_rcpt_importprocess_050splitTrx "system/query"
 	WHERE 
 	    :i:i_eg_trx_uuid = :f:i_eg_trx_uuid 
 	    AND :i:a_ledger_number = :f:a_ledger_number
-	    AND :i:i_eg_line_item = :f:i_eg_line_item
 	    AND substring(:i:i_eg_postprocess, 1, 1) = 'F'
 	    AND :i:i_eg_desig_uuid = :feeDesig:value
 	    AND :f:index = 1 -- only want one result regardless of how many were paired with the 'cover fee' gift

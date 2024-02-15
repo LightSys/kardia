@@ -27,11 +27,10 @@ plugin_rcpt_importprocess_050splitTrx "system/query"
 		INSERT INTO 
 		    COLLECTION split
 		SELECT 
-		    -- debug values
-		    --:t:i_eg_split_id, :t:i_eg_target_desig_uuid, amount = :t:i_eg_gift_amount,
-		    -- actual values
 		    :i:i_eg_gift_uuid,
 		    i_eg_desig_uuid = :t:i_eg_target_desig_uuid,
+		    --:i:i_eg_desig_uuid, -- TODO: need to find a wet to let desig be the same without messing up net values on updates
+		    i_eg_line_item = :t:i_eg_line_item,
 		    :i:i_eg_trx_uuid,
 		    i_eg_donor_uuid = substring(replace(:i:i_eg_donor_uuid, ' ', ''), 1, charindex('|', replace(:i:i_eg_donor_uuid, ' ', '')) - 1),
 		    i_eg_donor_alt_id = substring(replace(:i:i_eg_donor_uuid, ' ', ''), 1, charindex('|', replace(:i:i_eg_donor_uuid, ' ', '')) - 1),
@@ -87,8 +86,7 @@ plugin_rcpt_importprocess_050splitTrx "system/query"
 		    :i:i_eg_donor_prefix,
 		    :i:i_eg_donor_suffix,
 		    :i:i_eg_donor_addr3,
-		    a_ledger_number = :parameters:ledger
-		    -- TODO: look into any values missing from these compared to normal transactions
+		    :i:a_ledger_number
 		FROM
 		    IDENTITY /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows i,
 		    /apps/kardia/modules/rcpt/ids.csv/rows t
@@ -96,6 +94,8 @@ plugin_rcpt_importprocess_050splitTrx "system/query"
 		    substring(:i:i_eg_postprocess, 1, 1) = 'S'
 		    AND :i:i_eg_desig_uuid = :splitDesig:value
 		    AND substring(replace(:i:i_eg_donor_uuid, ' ', ''), charindex('|', replace(:i:i_eg_donor_uuid, ' ', '')) + 1) = :t:i_eg_split_id
+		    AND :i:i_eg_deposit_amt IS NOT NULL
+		    AND :i:i_eg_net_amount IS NOT NULL
 		;
 	
 		-- make a collection of ids of the transactiosn that do not sum up properly
@@ -141,7 +141,7 @@ plugin_rcpt_importprocess_050splitTrx "system/query"
 		FROM 
 		    COLLECTION split s
 		ON DUPLICATE
-		    :a_ledger_number, :i_eg_trx_uuid, :i_eg_desig_uuid
+		    :a_ledger_number, :i_eg_trx_uuid, :i_eg_desig_uuid, :i_eg_line_item
 		UPDATE SET
 		    :i_eg_deposit_date = :s:i_eg_deposit_date,
 		    :i_eg_deposit_uuid = :s:i_eg_deposit_uuid,
@@ -156,12 +156,11 @@ plugin_rcpt_importprocess_050splitTrx "system/query"
 		    :s_modified_by = user_name() IF MODIFIED
 		;
 	
-		-- remove the S from any transactions that have already been split. (i.e. have an id in trx_uuid)
-		UPDATE 
+		-- Delete any transactions that have already been split. (i.e. have an id in trx_uuid)
+		DELETE 
+		FROM
 		    IDENTITY /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows i,
 		    COLLECTION trx_uuids u
-		SET 
-		    :i:i_eg_postprocess = substring(:i_eg_postprocess, 2)
 		WHERE 
 		    substring(:i_eg_postprocess, 1, 1) = 'S'
 		    AND :i_eg_desig_uuid = :splitDesig:value

@@ -1,3 +1,3 @@
-i_eg_split_id,i_eg_target_desig_uuid,i_eg_target_desig_name,i_eg_gift_amount
-"EXAMPLE","DESIG_1","designation one",$20.00
-"EXAMPLE","DESIG_2","designation one",$30.00
+i_eg_split_id,i_eg_target_desig_uuid,i_eg_target_desig_name,i_eg_gift_amount,i_eg_line_item
+"EXAMPLE","DESIG_1","designation one",$20.00,2
+"EXAMPLE","DESIG_2","designation one",$30.00,3
