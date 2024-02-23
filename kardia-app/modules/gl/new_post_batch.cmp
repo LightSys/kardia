@@ -7,6 +7,7 @@ new_post_batch "widget/component-decl"
     ledger "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
     batch "widget/parameter" { type=integer; default=null; deploy_to_client=yes; }
     app_container "widget/parameter" { type=object; default=null; find_container="widget/page"; }
+    send_refresh "widget/parameter" { type=object; default=null; deploy_to_client=yes; }
 
     // This action is hooked by each of the osrc's in this component -- see the
     // individual osrcs for the connectors.  The action is TriggerEvent'ed by
@@ -22,6 +23,7 @@ new_post_batch "widget/component-decl"
 	refresh_on_posted "widget/connector" { event=Posted; target=new_post_batch; action=TriggerEvent; EventName=runclient("Refresh"); }
 	refresh_on_mkIXA "widget/connector" { event=AddIXAComplete; target=new_post_batch; action=TriggerEvent; EventName=runclient("Refresh"); }
 	refresh_on_rmIXA "widget/connector" { event=RemoveIXAComplete; target=new_post_batch; action=TriggerEvent; EventName=runclient("Refresh"); }
+	refresh_parent_on_posted "widget/connector" { event=Posted; target=send_refresh; action=Refresh; Batch=runclient(:batch:value); }
 	}
 
     batch_info_osrc "widget/osrc"

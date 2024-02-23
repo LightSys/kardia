@@ -8,6 +8,23 @@ batches "widget/component-decl"
     year_period "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
     periods_osrc "widget/parameter" { type=object; default=null; }
 
+    Refresh "widget/component-decl-action"
+	{
+	on_refresh_general "widget/connector"
+	    {
+	    //event_condition=runclient(:Batch is null or :batch_osrc:a_batch_number != :Batch);
+	    target=batch_osrc;
+	    action=Refresh;
+	    }
+	on_refresh_batch "widget/connector"
+	    {
+	    condition=0;
+	    event_condition=runclient(:Batch is not null and :batch_osrc:a_batch_number = :Batch);
+	    target=batch_osrc;
+	    action=RefreshObject;
+	    }
+	}
+
     // Tab control for managing different batch types
     batches_tab "widget/tab"
 	{
@@ -207,6 +224,7 @@ batches "widget/component-decl"
 			    Height=600;
 			    ledger=runclient(:batch_osrc:a_ledger_number);
 			    batch=runclient(:batch_osrc:a_batch_number);
+			    send_refresh=batches;
 			    }
 			}
 		    copy_trx "widget/textbutton"
@@ -240,6 +258,7 @@ batches "widget/component-decl"
 			    Height=600;
 			    ledger=runclient(:batch_osrc:a_ledger_number);
 			    batch=runclient(:batch_osrc:a_batch_number);
+			    send_refresh=batches;
 			    }
 
 			unpost_batch_cn "widget/connector"

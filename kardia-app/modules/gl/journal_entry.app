@@ -6,6 +6,7 @@ journal_entry "widget/page"
 
     ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
     batch "widget/parameter" { type=integer; default=null; }
+    send_refresh "widget/parameter" { type=object; default=null; deploy_to_client=yes; }
 
     widget_template = "/apps/kardia/tpl/kardia-system.tpl", runserver("/apps/kardia/tpl/" + user_name() + ".tpl");
 
@@ -20,5 +21,6 @@ journal_entry "widget/page"
 	path = "/apps/kardia/modules/gl/journal_entry.cmp";
 	ledger = runserver(:this:ledger);
 	batch = runserver(:this:batch);
+	send_refresh = send_refresh;
 	}
     }
