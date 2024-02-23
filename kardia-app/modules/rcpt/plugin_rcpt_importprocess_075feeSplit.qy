@@ -32,14 +32,17 @@ plugin_rcpt_importprocess_050splitTrx "system/query"
 	    :t:i_eg_trx_uuid, :t:i_eg_desig_uuid, :t:i_eg_gift_amount, 
 	    :t:i_eg_net_amount, :t:i_eg_deposit_gross_amt, :t:i_eg_deposit_amt,
 	    :t:a_ledger_number, :t:i_eg_line_item, 
-	    fee_trx = :f:i_eg_trx_uuid, fee_desig = :f:i_eg_desig_uuid, 
+	    fee_trx = :f:i_eg_trx_uuid, 
+	    fee_desig = :f:i_eg_desig_uuid, 
 	    fee_grs = :f:i_eg_gift_amount, 
 	    fee_net = :f:i_eg_net_amount,
-	    count = (SELECT count(1)
-		FROM /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows i
-		WHERE :i:i_eg_trx_uuid = :t:i_eg_trx_uuid AND :i:i_eg_desig_uuid != :feeDesig:value
-		),
-	    index = row_number(:t:i_eg_trx_uuid)
+	    -- get the share values for fees
+	    fee_share_grs = convert('double', :f:i_eg_gift_amount) * :t:i_eg_gift_amount / (:t:i_eg_deposit_gross_amt - :f:i_eg_gift_amount),
+	    fee_share_net = convert('double', :f:i_eg_net_amount) * :t:i_eg_net_amount / (:t:i_eg_deposit_amt - :f:i_eg_net_amount),
+	    cents_grs = 0,
+	    cents_net = 0,
+	    ind_net = -1,
+	    ind_grs = -1
 	FROM 
 	    IDENTITY /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows f,
 	    /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows t
@@ -50,7 +53,89 @@ plugin_rcpt_importprocess_050splitTrx "system/query"
 	    AND substring(:f:i_eg_postprocess, 1, 1) = 'F'
 	    AND :f:i_eg_deposit_amt IS NOT NULL
 	    AND :f:i_eg_net_amount IS NOT NULL
+	ORDER BY
+	    :t:i_eg_trx_uuid,
+	    :t:i_eg_desig_uuid,
+	    :t:i_eg_line_item
 	;
+
+	-- calculate the number of cents that will be leftover
+	DECLARE COLLECTION leftoverCents;
+	INSERT INTO 
+	    COLLECTION leftoverCents
+	SELECT
+	    grs = convert('integer', round(100 * sum(:i:fee_share_grs - truncate(:i:fee_share_grs, 2)),0)),
+	    net = convert('integer', round(100 * sum(:i:fee_share_net - truncate(:i:fee_share_net, 2)),0)),
+	    :i:i_eg_trx_uuid
+	FROM COLLECTION feeSets i
+	GROUP BY
+	    :i:i_eg_trx_uuid
+	;
+
+	-- join leftover data to the feeSets
+	UPDATE
+	    IDENTITY COLLECTION feeSets f,
+	    COLLECTION leftoverCents l
+	SET
+	    :f:cents_grs = :l:grs,
+	    :f:cents_net = :l:net
+	WHERE
+	    :l:i_eg_trx_uuid = :f:i_eg_trx_uuid	
+	;
+	
+	-- no longer needed so clear
+	DELETE FROM COLLECTION leftoverCents;
+
+	-- set an index for every gross share that has a fractional amount missing
+	DECLARE COLLECTION grossIndex;
+	INSERT INTO 
+	    COLLECTION grossIndex
+	SELECT 
+	    ind = row_number(:i_eg_trx_uuid),
+	    :i_eg_desig_uuid,
+	    :i_eg_trx_uuid,
+	    :i_eg_line_item
+	FROM 
+	    COLLECTION feeSets
+	WHERE 
+	    :fee_share_grs - truncate(:fee_share_grs, 2) > 0
+	;
+
+	-- now handle net
+	DECLARE COLLECTION netIndex;
+	INSERT INTO 
+	    COLLECTION netIndex
+	SELECT 
+	    ind = row_number(:i_eg_trx_uuid),
+	    :i_eg_desig_uuid,
+	    :i_eg_trx_uuid,
+	    :i_eg_line_item
+	FROM 
+	    COLLECTION feeSets
+	WHERE 
+	    :fee_share_net - truncate(:fee_share_net, 2) > 0
+	;
+
+	-- update with the new information
+	UPDATE
+	    IDENTITY COLLECTION feeSets f,
+	    COLLECTION netIndex n,
+	    COLLECTION grossIndex g
+	SET
+	    :f:ind_net = :n:ind,
+	    :f:ind_grs = :g:ind
+	WHERE
+	    :f:i_eg_trx_uuid *= :g:i_eg_trx_uuid
+	    AND :f:i_eg_desig_uuid *= :g:i_eg_desig_uuid
+	    AND :f:i_eg_line_item *= :g:i_eg_line_item
+	    AND :f:i_eg_trx_uuid *= :n:i_eg_trx_uuid
+	    AND :f:i_eg_desig_uuid *= :n:i_eg_desig_uuid
+	    AND :f:i_eg_line_item *= :n:i_eg_line_item
+	;
+
+	-- clear out uneeded collections
+	DELETE FROM COLLECTION grossIndex;
+	DELETE FROM COLLECTION netIndex;
 
 	-- update the values in the actual tables (must update even if no F; upsert reverts changes otherwise)
 	UPDATE
@@ -58,17 +143,24 @@ plugin_rcpt_importprocess_050splitTrx "system/query"
 	    COLLECTION feeSets f
 	SET
 	    -- gross does not update, so need to only run if marked
-	    :i:i_eg_gift_amount = condition(
-		substring(:i_eg_postprocess, 1, 1) = 'F',
-	    	:i:i_eg_gift_amount + truncate(:f:fee_grs/:f:count, 2) + condition(
-			(:f:fee_grs - truncate(:f:fee_grs/:f:count, 2) * :f:count) * 100 >= :f:index,
-			0.01, 
-			0.00),
-		:i:i_eg_gift_amount),
+	    :i:i_eg_gift_amount = condition(substring(:i_eg_postprocess, 1, 1) = 'F',
+		condition(:f:ind_grs IS NOT NULL,
+		    condition(:f:ind_grs <= :f:cents_grs,
+			:i:i_eg_gift_amount + truncate(:f:fee_share_grs, 2) + 0.01,
+			:i:i_eg_gift_amount + truncate(:f:fee_share_grs, 2)
+			),
+		    :i:i_eg_gift_amount + :f:fee_share_grs
+		    ),
+		:i:i_eg_gift_amount
+		),
 	    -- net amount gets overwritten by update, so always needs to run again
-	    :i:i_eg_net_amount = :i:i_eg_net_amount + truncate(:f:fee_net/:f:count, 2) + condition(
-		(:f:fee_net - truncate(:f:fee_net/:f:count, 2) * :f:count) * 100 >= :f:index,
-		0.01, 0.00)
+	    :i:i_eg_net_amount = condition(:f:ind_net IS NOT NULL,
+		    condition(:f:ind_net <= :f:cents_net,
+			:i:i_eg_net_amount + truncate(:f:fee_share_net, 2) + 0.01,
+			:i:i_eg_net_amount + truncate(:f:fee_share_net, 2)
+			),
+		    :i:i_eg_net_amount + :f:fee_share_net
+		    )
 	WHERE 
 	    :i:i_eg_trx_uuid = :f:i_eg_trx_uuid 
 	    AND :i:a_ledger_number = :f:a_ledger_number
@@ -86,7 +178,9 @@ plugin_rcpt_importprocess_050splitTrx "system/query"
 	    AND :i:a_ledger_number = :f:a_ledger_number
 	    AND substring(:i:i_eg_postprocess, 1, 1) = 'F'
 	    AND :i:i_eg_desig_uuid = :feeDesig:value
-	    AND :f:index = 1 -- only want one result regardless of how many were paired with the 'cover fee' gift
+	GROUP BY
+	    -- only want to try and delete it once
+	    :i:i_eg_trx_uuid
 	;
 
 	 -- remove the F if could have run, and move to back if waiting on net amounts
