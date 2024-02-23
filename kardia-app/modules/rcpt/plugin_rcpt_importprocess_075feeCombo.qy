@@ -1,17 +1,16 @@
 $Version=2$
-plugin_rcpt_importprocess_050splitTrx "system/query"
+plugin_rcpt_importprocess_075feeCombo "system/query"
     {
     module_sequence=75; // want to run before matching
     module_letter='F';
     module_code='Fee';
-    module_desc='Split donations made to cover transaction fees to other gifts in the transaction';
+    module_desc='Combine donations made to cover transaction fees to other gifts in the transaction';
 
     ledger "query/parameter" { type=string; }
     sql = "
 	-- when have a donation to cover transaction fees, just split it across all of the fees that happened with it
 	-- code: F for fee
-	-- NOTE: TODO: this must run after any modules that might create a transaction that needs handled here (e.g. the split import process)
-	-- TOOD: add randomness but repeatable
+	-- TOOD: add randomness but repeatable (maybe sort by a hashed desig id instead of the actual desig)
 	-- get the designation that indicates the transaction is a fee
 	DECLARE OBJECT feeDesig;
 		SELECT

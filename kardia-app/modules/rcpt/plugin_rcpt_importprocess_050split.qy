@@ -29,7 +29,7 @@ plugin_rcpt_importprocess_050splitTrx "system/query"
 		SELECT 
 		    :i:i_eg_gift_uuid,
 		    i_eg_desig_uuid = :t:i_eg_target_desig_uuid,
-		    --:i:i_eg_desig_uuid, -- TODO: need to find a wet to let desig be the same without messing up net values on updates
+		    --:i:i_eg_desig_uuid, -- TODO: need to find a way to let desig be the same without messing up net values on updates
 		    i_eg_line_item = :t:i_eg_line_item,
 		    :i:i_eg_trx_uuid,
 		    i_eg_donor_uuid = substring(replace(:i:i_eg_donor_uuid, ' ', ''), 1, charindex('|', replace(:i:i_eg_donor_uuid, ' ', '')) - 1),
