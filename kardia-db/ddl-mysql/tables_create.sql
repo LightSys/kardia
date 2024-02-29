@@ -3534,7 +3534,8 @@ create table a_subtrx_cashdisb (
         a_paid_by                             varchar(20)  null,       /* Who paid the check --  */
         a_paid_date                           datetime  null,          /* When the check was paid --  */
         a_reconciled                          bit  default 0,          /* Has this check been reconciled to the bank account (e.g. no longer outstanding) --  */
-        a_comment                             varchar(255)  null,      /* Xfer comments --  */
+        a_memo                                varchar(255)  null,      /* Check memo line / overall comment --  */
+        a_comment                             varchar(900)  null,      /* Line item specific comments --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
