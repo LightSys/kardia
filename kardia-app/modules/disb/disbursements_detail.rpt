@@ -283,7 +283,7 @@ disbursements_detail "system/report"
 		d_cnt "report/table-cell" { value=runserver(:disb_qy:dcnt); align=left; }
 		d_date "report/table-cell" { value=runserver(:disb_qy:date); align=left; }
 		d_payee "report/table-cell" { value=runserver(:disb_qy:extname); align=left; font=helvetica; }
-		d_desc "report/table-cell" { value=runserver(condition(:this:show_line_items, :disb_qy:a_memo, :disb_qy:dcomm)); align=left; font=helvetica; }
+		d_desc "report/table-cell" { value=runserver(condition(:this:show_line_items, :disb_qy:a_memo, condition(char_length(:disb_qy:a_memo) > 1, :disb_qy:a_memo, :disb_qy:dcomm))); align=left; font=helvetica; }
 		d_disb "report/table-cell" { value=runserver(condition(:disb_qy:a_voided, '**VOID**', :disb_qy:dtotal)); align=right; }
 		//d_gl "report/table-cell" { value=runserver(:disb_qy:gtotal); align=right; }
 		//d_diff "report/table-cell" { value=runserver(condition(:disb_qy:gtotal - :disb_qy:dtotal = $0, '', 'X')); align=right; }
