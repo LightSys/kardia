@@ -4,7 +4,8 @@ journal_entry "widget/component-decl"
     width=780; height=580;
 
     ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
-    batch "widget/parameter" { type=integer; default=null; }
+    batch "widget/parameter" { type=integer; default=null; deploy_to_client = yes; }
+    send_refresh "widget/parameter" { type=object; default=null; deploy_to_client=yes; }
 
     bpwin "widget/component"
 	{
@@ -115,6 +116,8 @@ journal_entry "widget/component-decl"
 	    trx_save_2 "widget/connector" { event="DataSaved"; target="jnl_total_osrc"; action="Refresh"; }
 	    trx_del_1 "widget/connector" { event="DataDeleted"; target="batch_total_osrc"; action="Refresh"; }
 	    trx_del_2 "widget/connector" { event="DataDeleted"; target="jnl_total_osrc"; action="Refresh"; }
+	    refresh_parent_on_save "widget/connector" { event=DataSaved; target=send_refresh; action=Refresh; Batch=runclient(:batch:value); }
+	    refresh_parent_on_del "widget/connector" { event=DataDeleted; target=send_refresh; action=Refresh; Batch=runclient(:batch:value); }
 
 	    trx_postproc "widget/variable" { fieldname = "a_postprocess_type"; postproc_hints "widget/hints" { style=readonly; default='XX'; } }
 	    trx_postproc2 "widget/variable" { fieldname = "a_postprocessed"; postproc2_hints "widget/hints" { style=readonly; default=0; } }

@@ -12,6 +12,7 @@ new_post_batch "widget/page"
 
     ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
     batch "widget/parameter" { type=integer; default=null; }
+    send_refresh "widget/parameter" { type=object; default=null; deploy_to_client=yes; }
 
     post_batch_cmp "widget/component"
 	{
@@ -20,5 +21,6 @@ new_post_batch "widget/page"
 	path = "/apps/kardia/modules/gl/new_post_batch.cmp";
 	ledger = runserver(:this:ledger);
 	batch = runserver(:this:batch);
+	send_refresh = send_refresh;
 	}
     }
