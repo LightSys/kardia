@@ -2226,6 +2226,8 @@ function cxStart
 	    sleep 0.1
 	    screen -S Centrallix -p 0 -X stuff "handle SIGPIPE nostop noprint"
 	    sleep 0.1
+	    screen -S Centrallix -p 0 -X stuff "handle SIG33 nostop noprint"
+	    sleep 0.1
 	    screen -S Centrallix -p 0 -X stuff "run -c $CXCONF"
 	    sleep 0.5
 	    ;;
