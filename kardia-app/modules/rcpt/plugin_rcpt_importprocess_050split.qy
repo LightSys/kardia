@@ -22,105 +22,108 @@ plugin_rcpt_importprocess_050splitTrx "system/query"
 			)
 		;
 
+		-- get all of the sets of transactions that could be transactions that were already split
+		DECLARE COLLECTION match;
+		INSERT INTO
+		    COLLECTION match
+		SELECT
+		    *
+		FROM 
+		    /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows 
+		WHERE 
+		    :i_eg_gift_amount < :i_eg_deposit_gross_amt -- make sure was split into multiple
+		GROUP BY
+		    :i_eg_line_item, :i_eg_donor_uuid, :i_eg_gift_amount, :i_eg_net_amount, 
+		    :i_eg_deposit_amt, :i_eg_deposit_gross_amt, :i_eg_desig_notes
+		;
+
 		-- Find all of the marked queries, split them into multiple, and insert into collection
+		-- try to match the queries with an existing transaction. If can't, will need manually done. 
+		-- TODO: there is no real reson to allow this to be here
 		DECLARE COLLECTION split;
 		INSERT INTO 
 		    COLLECTION split
 		SELECT 
-		    :i:i_eg_gift_uuid,
-		    i_eg_desig_uuid = :t:i_eg_target_desig_uuid,
+		    -- debug
+		    split_trx = :s:i_eg_trx_uuid,
+		    match_trx = :m:i_eg_trx_uuid,
+		    :s:i_eg_gift_uuid,
+		    :m:i_eg_desig_uuid,
 		    --:i:i_eg_desig_uuid, -- TODO: need to find a way to let desig be the same without messing up net values on updates
-		    i_eg_line_item = :t:i_eg_line_item,
-		    :i:i_eg_trx_uuid,
-		    i_eg_donor_uuid = substring(replace(:i:i_eg_donor_uuid, ' ', ''), 1, charindex('|', replace(:i:i_eg_donor_uuid, ' ', '')) - 1),
-		    i_eg_donor_alt_id = substring(replace(:i:i_eg_donor_uuid, ' ', ''), 1, charindex('|', replace(:i:i_eg_donor_uuid, ' ', '')) - 1),
-		    :i:i_eg_account_uuid,
-		    :i:i_eg_status,
-		    :i:i_eg_returned_status,
-		    :i:i_eg_donor_name,
-		    :i:i_eg_donor_given_name,
-		    :i:i_eg_donor_surname,
-		    :i:i_eg_donor_middle_name, 
-		    :i:i_eg_donor_address,
-		    :i:i_eg_donor_addr1,
-		    :i:i_eg_donor_addr2,
-		    :i:i_eg_donor_city,
-		    :i:i_eg_donor_state,
-		    :i:i_eg_donor_postal,
-		    :i:i_eg_donor_country,
-		    :i:i_eg_donor_phone,
-		    :i:i_eg_donor_email,
-		    i_eg_gift_amount = :t:i_eg_gift_amount,
-		    i_eg_net_amount = :t:i_eg_gift_amount,
-		    :i:i_eg_deposit_gross_amt,
-		    :i:i_eg_deposit_amt,
-		    :i:i_eg_deposit_date,
-		    :i:i_eg_deposit_status, 
-		    :i:i_eg_deposit_uuid,
-		    :i:i_eg_gift_pmt_type,
-		    :i:i_eg_gift_interval,
-		    :i:i_eg_gift_start_date,
-		    :i:i_eg_gift_end_date,
-		    :i:i_eg_gift_count,
-		    :i:i_eg_gift_date,
-		    :i:i_eg_gift_trx_date,
-		    :i:i_eg_gift_settlement_date, 
-		    :i:i_eg_gift_lastfour,
-		    i_eg_desig_name = :t:i_eg_target_desig_name,
-		    :i:i_eg_desig_notes,
-		    i_eg_postprocess = substring(:i:i_eg_postprocess, 2),	-- may need post processing from later modules
-		    -- constant values
-		    :i:i_eg_service,
-		    :i:i_eg_processor,
-		    :i:i_eg_gift_currency,
-		    :i:i_eg_receipt_desired,
-		    :i:i_eg_anonymous,
-		    :i:i_eg_prayforme,
-		    :i:i_eg_acctmap_future,
-		    :i:i_eg_fundmap_future,
-		    :i:i_eg_donormap_future,
+		    :m:i_eg_line_item,
+		    :s:i_eg_trx_uuid,
+		    :s:i_eg_donor_uuid,
+		    :s:i_eg_donor_alt_id,
+		    :s:i_eg_account_uuid,
+		    :s:i_eg_status,
+		    :s:i_eg_returned_status,
+		    :s:i_eg_donor_name,
+		    :s:i_eg_donor_given_name,
+		    :s:i_eg_donor_surname,
+		    :s:i_eg_donor_middle_name,
+		    :s:i_eg_donor_prefix,
+		    :s:i_eg_donor_suffix,
+		    :s:i_eg_donor_address,
+		    :s:i_eg_donor_addr1,
+		    :s:i_eg_donor_addr2,
+		    :s:i_eg_donor_addr3,
+		    :s:i_eg_donor_city,
+		    :s:i_eg_donor_state,
+		    :s:i_eg_donor_postal,
+		    :s:i_eg_donor_country,
+		    :s:i_eg_donor_phone,
+		    :s:i_eg_donor_email,
+		    :m:i_eg_gift_amount,
+		    :m:i_eg_net_amount,
+		    :s:i_eg_deposit_gross_amt,
+		    :s:i_eg_deposit_amt,
+		    :s:i_eg_deposit_date,
+		    :s:i_eg_deposit_status, 
+		    :s:i_eg_deposit_uuid,
+		    :s:i_eg_gift_pmt_type,
+		    :s:i_eg_gift_interval,
+		    :s:i_eg_gift_start_date,
+		    :s:i_eg_gift_end_date,
+		    :s:i_eg_gift_count,
+		    :s:i_eg_gift_date,
+		    :s:i_eg_gift_trx_date,
+		    :s:i_eg_gift_settlement_date, 
+		    :s:i_eg_gift_lastfour,
+		    :m:i_eg_desig_name,
+		    :s:i_eg_desig_notes,
+		    i_eg_postprocess = substring(:s:i_eg_postprocess, 2),	-- may need post processing from later modules
+		    :s:i_eg_service,
+		    :s:i_eg_processor,
+		    :s:i_eg_gift_currency,
+		    :s:i_eg_receipt_desired,
+		    :s:i_eg_anonymous,
+		    :s:i_eg_prayforme,
+		    :s:i_eg_acctmap_future,
+		    :s:i_eg_fundmap_future,
+		    :s:i_eg_donormap_future,
+		    :s:a_ledger_number,
 		    s_date_created = getdate(),
 		    s_created_by = user_name(),
 		    s_date_modified = getdate(),
-		    s_modified_by = user_name(),
-		    :i:i_eg_donor_prefix,
-		    :i:i_eg_donor_suffix,
-		    :i:i_eg_donor_addr3,
-		    :i:a_ledger_number
+		    s_modified_by = user_name()
 		FROM
-		    IDENTITY /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows i,
-		    /apps/kardia/modules/rcpt/ids.csv/rows t
+		    IDENTITY /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows s,	-- the transactions to split
+		    COLLECTION match m 							-- the existig values to match with
 		WHERE
-		    substring(:i:i_eg_postprocess, 1, 1) = 'S'
-		    AND :i:i_eg_desig_uuid = :splitDesig:value
-		    AND substring(replace(:i:i_eg_donor_uuid, ' ', ''), charindex('|', replace(:i:i_eg_donor_uuid, ' ', '')) + 1) = :t:i_eg_split_id
-		    AND :i:i_eg_deposit_amt IS NOT NULL
-		    AND :i:i_eg_net_amount IS NOT NULL
+		    substring(:s:i_eg_postprocess, 1, 1) = 'S'
+		    AND substring(:m:i_eg_postprocess, 1, 1) != 'S' -- the query matching to should have already been processed. 
+		    AND isnull(:s:i_eg_desig_notes, '') = isnull(:m:i_eg_desig_notes,'') -- make sure what donor sent was the same
+		    AND :s:i_eg_donor_uuid = :m:i_eg_donor_uuid -- make sure was the same donor
+		    AND :s:i_eg_deposit_amt = :m:i_eg_deposit_amt
+		    AND :s:i_eg_deposit_gross_amt = :m:i_eg_deposit_gross_amt
+		    AND :m:i_eg_gift_amount < :m:i_eg_deposit_gross_amt -- make sure was split into multiple
+		    AND :s:i_eg_deposit_amt = :s:i_eg_net_amount -- make sure only one item in transaction to be split
+		    AND :s:i_eg_deposit_gross_amt = :s:i_eg_gift_amount
+		    AND :s:i_eg_deposit_amt IS NOT NULL
+		    AND :s:i_eg_net_amount IS NOT NULL
 		;
 	
-		-- make a collection of ids of the transactiosn that do not sum up properly
-		DECLARE COLLECTION invalid;
-		INSERT INTO
-		    COLLECTION invalid
-		SELECT 
-		     :s:i_eg_trx_uuid, :s:i_eg_gift_uuid, calc_gross = sum(:s:i_eg_gift_amount), :s:i_eg_deposit_gross_amt
-		FROM
-		    COLLECTION split s
-		GROUP BY
-		    :s:i_eg_trx_uuid, :s:i_eg_gift_uuid
-		Having 
-		    :calc_gross != :s:i_eg_deposit_gross_amt
-		;
-	
-		-- now actually remove the invalid items
-		DELETE
-		FROM
-		    IDENTITY COLLECTION split s,
-		    COLLECTION invalid i
-		WHERE 
-		    :s:i_eg_trx_uuid = :i:i_eg_trx_uuid
-		;
-	
+		-- transactions will always sum properly since it was a matching condition given above
 		-- list all of the i_eg_trx_uuid values
 		DECLARE COLLECTION trx_uuids;
 		INSERT INTO
@@ -162,28 +165,18 @@ plugin_rcpt_importprocess_050splitTrx "system/query"
 		    IDENTITY /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows i,
 		    COLLECTION trx_uuids u
 		WHERE 
-		    substring(:i_eg_postprocess, 1, 1) = 'S'
-		    AND :i_eg_desig_uuid = :splitDesig:value
-		    AND :i:i_eg_trx_uuid = :u:i_eg_trx_uuid
+		    substring(:i_eg_postprocess, 1, 1) = 'S' -- all of the new items won't start with S
+		    AND :i:i_eg_trx_uuid = :u:i_eg_trx_uuid  -- limits to just the items worked on
+		    AND :i:i_eg_gift_amount = :i:i_eg_deposit_gross_amt -- will be a single transaction
+		    AND :i:i_eg_net_amount = :i:i_eg_deposit_amt
 		;
 	
-		-- Move to back for any could not handle. (i.e. any transactions left with the 0_multiple and S)
-		UPDATE 
-		    IDENTITY /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows
-		SET 
-		    :i_eg_postprocess = substring(:i_eg_postprocess, 2) + 'S'
-		WHERE 
-		    substring(:i_eg_postprocess, 1, 1) = 'S'
-		    AND :i_eg_desig_uuid = :splitDesig:value
-		;
-	
-		-- Remove S from any that don't need split (i.e. has the S but were lacking the 0_multiple designation)
+		-- If it still has an S, can assume that must not have been able to 
 		UPDATE 
 		    /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows
 		SET 
 		    :i_eg_postprocess = substring(:i_eg_postprocess, 2)
 		WHERE 
 		    substring(:i_eg_postprocess, 1, 1) = 'S'
-		    AND :i_eg_desig_uuid != :splitDesig:value
     ";
     }

@@ -70,8 +70,12 @@ myquery "system/query"
 		i_eg_gift_uuid = :TransactionRef,
 		i_eg_desig_uuid = :GroupID,
 		i_eg_trx_uuid = :TransactionRef+'-'+dateformat(convert('datetime', :ProcessDate), 'yyyy-MM-dd'),
-		i_eg_donor_uuid = :AssignedAccount,  
-		i_eg_donor_alt_id = :AssignedAccount, -- TODO: might leave this blank? Is duplicated in most vanco transactions anyway...
+		-- use a hash to provide a (hopefully) consistent ID reflective of the donor's info
+		i_eg_donor_uuid = hash('md5', convert('string', :GrossAmount)
+			+ isnull(:PayerFirstName,'') + isnull(:PayerMidName,'') + isnull(:PayerLastName, '')
+			+ isnull(:PayerAddress1,'') + isnull(:PayerAddress2,'') + isnull(:PayerCity,'')
+			+ isnull(:PayerState,'') + isnull(:PayerZip,'') + 'US'),  
+		i_eg_donor_alt_id = :AssignedAccount,   -- NOTE: if do vanco auto, this likely wouldn't be set
 		i_eg_account_uuid = NULL,
 		i_eg_status = condition(:Status == 'A' OR :Status IS NULL, 
 			condition(datediff('day', getdate(), convert('datetime', :SettlementDate)) <= 0, 'paid', 'pending'),
@@ -107,8 +111,8 @@ myquery "system/query"
 		i_eg_gift_trx_date = convert('datetime', :ProcessDate),
 		i_eg_gift_settlement_date = convert('datetime', :SettlementDate), 
 		i_eg_gift_lastfour = NULL,
-		i_eg_desig_name = :GroupID, -- FIXME: do I leave this blank instead to emphasize it probably needs redone...?
-		i_eg_desig_notes = NULL
+		i_eg_desig_name = :GroupID, -- NOTE: if enable auto from vanco, this will always be an unhelpful value
+		i_eg_desig_notes = :ReceivedAccount
 	    FROM
 		IDENTITY COLLECTION dataQuery
 	    WHERE

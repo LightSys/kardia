@@ -293,13 +293,15 @@ gift_import "widget/component-decl"
 					:eg:a_fund,
 					:eg:a_account_code,
 					:eg:a_batch_number,
-					:eg:i_eg_donormap_confidence,
+					:eg:i_eg_donormap_confidence, 
 					:eg:i_eg_fundmap_confidence,
 					:eg:i_eg_acctmap_confidence,
 					:eg:i_eg_donormap_future,
 					:eg:i_eg_fundmap_future,
 					:eg:i_eg_acctmap_future,
 					:eg:i_eg_status,
+					:eg:i_eg_service,
+					:gi:provides_designations,
 					:l:p_address_3, :l:p_address_2, :l:p_location_type, :l:p_country_code, :l:p_partner_key, :l:p_address_1,
 					:l:p_postal_code, :l:p_state_province, :l:p_in_care_of, :l:p_city, :l:p_location_id,
 					:p:p_partner_key, :p:p_partner_class, :p:p_title, :p:p_given_name, :p:p_preferred_name,
@@ -348,7 +350,8 @@ gift_import "widget/component-decl"
 					/apps/kardia/data/Kardia_DB/a_account/rows a,
 					/apps/kardia/data/Kardia_DB/p_country/rows co,
 					/apps/kardia/data/Kardia_DB/p_address_format/rows af,
-					/apps/kardia/data/Kardia_DB/p_country/rows egco
+					/apps/kardia/data/Kardia_DB/p_country/rows egco,
+					object wildcard /apps/kardia/modules/*/plugin_rcpt_giftimport_*.cmp gi
 				WHERE
 					:eg:a_ledger_number = " + quote(:this:ledger) + " and
 					:p:p_partner_key =* :eg:p_donor_partner_key and
@@ -363,7 +366,8 @@ gift_import "widget/component-decl"
 					:l:p_country_code *= :co:p_country_code and
 					:co:p_country_code *= :af:p_country_code and
 					:af:p_address_set = 'STANDARD' and
-					:egco:p_iso3166_2_code =* :eg:i_eg_donor_country
+					:egco:p_iso3166_2_code =* :eg:i_eg_donor_country and
+					:gi:tag =* :eg:i_eg_service
 				HAVING
 					(:parameters:pstat is null or :parameters:pstat = '*' or
 					  (:parameters:pstat = 'I' and :a_batch_number is not null) or
@@ -436,6 +440,9 @@ gift_import "widget/component-decl"
 					    qa_donorconf_var "widget/variable" { fieldname=i_eg_donormap_confidence; type=integer; }
 					    qa_fundconf_var "widget/variable" { fieldname=i_eg_fundmap_confidence; type=integer; }
 					    qa_acctconf_var "widget/variable" { fieldname=i_eg_acctmap_confidence; type=integer; }
+					    f_desig_name_var "widget/variable" { fieldname='i_eg_desig_name'; type=string; }
+					    f_desig_uuid_var "widget/variable" { fieldname='i_eg_desig_uuid'; type=string; }
+					    f_provides_desig_var "widget/variable" { fieldname='provides_designations'; type=string; }
 
 					    qa_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; form=qa_form; visual=no; }
 
@@ -589,6 +596,26 @@ gift_import "widget/component-decl"
 							target = qa_fundconf_var;
 							action = SetValue;
 							Value = runclient(2);
+							}
+
+						    // update the desig name whenever the a_fund changes
+						    set_desig_name "widget/connector"
+							{
+							event = DataChange;
+							event_condition = runclient((not :FromOSRC) AND isnull(:f_provides_desig_var:value, 1) == 0);
+							target = f_desig_name_var;
+							action = SetValue;
+							Value = runclient(:f_desig_cc:value);
+							}
+
+						    // update the desig name whenever the a_fund changes
+						    set_desig_uuid "widget/connector"
+							{
+							event = DataChange;
+							event_condition = runclient((not :FromOSRC) AND isnull(:f_provides_desig_var:value, 1) == 0);
+							target = f_desig_uuid_var;
+							action = SetValue;
+							Value = runclient(:f_desig_cc:value);
 							}
 						    }
 						remember_cc "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field=i_eg_fundmap_future; ctl_type=checkboxleft; text="Remember this designation"; x=62; remember_cc_hints "widget/hints" { default=runclient(1); style=notnull; } }

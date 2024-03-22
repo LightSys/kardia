@@ -5,6 +5,7 @@ plugin_rcpt_giftimport_EGS "widget/component-decl"
     // but for now we just use it to supply the infrastructure.
     description = "Vanco Payments Bill Pay via XML / POST API";
     tag = "VPMX";
+    provides_designations = 0; // indicate this module can have designations overwritten
     sql = "		i_eg_service = 'VPMX',
 			i_eg_processor = 'Vanco Payments PXM',
 			i_eg_gift_currency = 'USD',
