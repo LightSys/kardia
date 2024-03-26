@@ -531,6 +531,10 @@ crm "widget/component-decl"
 	    Source="/apps/kardia/modules/base/new_partner.app";
 	    return_to=newperson_popover;
 	    set_return=1;
+	    set_email=runclient(:email);
+	    set_given_name=runclient(:given_name);
+	    set_surname=runclient(:surname);
+	    set_comment=runclient(:comment);
 	    }
 	advnewpartner2_cn "widget/connector"
 	    {

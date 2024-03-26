@@ -34,6 +34,7 @@ new_partner "widget/component-decl"
     set_country_code "widget/parameter" { type=string; deploy_to_client=yes; }
     set_email "widget/parameter" { type=string; deploy_to_client=yes; }
     set_phone "widget/parameter" { type=string; deploy_to_client=yes; }
+    set_comment "widget/parameter" { type=string; deploy_to_client=yes; }
 
     set_focus "widget/connector"
 	{
@@ -45,6 +46,7 @@ new_partner "widget/component-decl"
     set_given_name_cn "widget/connector" { event=LoadComplete; event_condition=runclient(:new_partner:set_given_name is not null); target=new_partner_form; action=SetValue; Field=runclient("p_given_name"); Value=runclient(:new_partner:set_given_name); }
     set_surname_cn "widget/connector" { event=LoadComplete; event_condition=runclient(:new_partner:set_surname is not null); target=new_partner_form; action=SetValue; Field=runclient("p_surname"); Value=runclient(:new_partner:set_surname); }
     set_salutation_cn "widget/connector" { event=LoadComplete; event_condition=runclient(:new_partner:set_salutation is not null); target=new_partner_form; action=SetValue; Field=runclient("p_preferred_name"); Value=runclient(:new_partner:set_salutation); }
+    set_comment_cn "widget/connector" { event=LoadComplete; event_condition=runclient(:new_partner:set_comment is not null); target=new_partner_form; action=SetValue; Field=runclient("p_comments"); Value=runclient(:new_partner:set_comment); }
     set_addr1_cn "widget/connector" { event=LoadComplete; event_condition=runclient(:new_partner:set_addr1 is not null); target=new_location_form; action=SetValue; Field=runclient("p_address_1"); Value=runclient(:new_partner:set_addr1); }
     set_addr2_cn "widget/connector" { event=LoadComplete; event_condition=runclient(:new_partner:set_addr2 is not null); target=new_location_form; action=SetValue; Field=runclient("p_address_2"); Value=runclient(:new_partner:set_addr2); }
     set_city_cn "widget/connector" { event=LoadComplete; event_condition=runclient(:new_partner:set_city is not null); target=new_location_form; action=SetValue; Field=runclient("p_city"); Value=runclient(:new_partner:set_city); }
