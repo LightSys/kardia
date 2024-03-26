@@ -50,7 +50,8 @@ donor_sidebar "widget/component-decl"
 	    mo_ledger "widget/parameter" { param_name=ledger; type=string; }
 	    sql = " select
 			*,
-			edit = '/apps/kardia/images/icons/tango-edit.svg'
+			edit = '/apps/kardia/images/icons/tango-edit.svg',
+			moddate = dateformat(:modified_on, 'dd-MMM-yyyy')
 		    from
 			expression('/apps/kardia/modules/rcpt/donor_data.qy?partner=' + :parameters:partner + '&ledger=' + :parameters:ledger)
 		    ";
@@ -73,9 +74,9 @@ donor_sidebar "widget/component-decl"
 		row_shadow_offset=1;
 		row_shadow_color="#a0a0a0";
 		row_shadow_angle=135;
-		nodata_message="";
+		nodata_message="no donor selected";
 
-		t_info "widget/table-column" { title="Donor"; fieldname=data; width=164; style=bold; caption_fieldname=name; }
+		t_info "widget/table-column" { title="Donor"; fieldname=data; width=164; style=bold; caption_value=runclient(:manage_osrc:name + ' (' + :manage_osrc:moddate + ')'); }
 		t_edit "widget/table-column" { title="Edit"; fieldname=edit; width=26; image_maxwidth=20; image_maxheight=20; type=image; }
 
 		click_partner "widget/connector"
