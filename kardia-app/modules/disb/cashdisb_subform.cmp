@@ -1770,12 +1770,12 @@ cashdisb_subform "widget/component-decl"
 				
 				trx_vbox "widget/vbox"
 				{
-					x=8;y=20;width=372;height=303;spacing=5;cellsize=20;
+					x=8;y=20;width=372;height=303;spacing=4;cellsize=20;
 					
 
 					ck_line_hbox "widget/hbox"
 					{
-						height=16;
+						height=20;
 						spacing=10;
 
 						ckno_lbl "widget/component"
@@ -1787,7 +1787,7 @@ cashdisb_subform "widget/component-decl"
 							text="Check #:";
 							label_width=75;
 							width=180;
-							height=16;
+							height=20;
 						}
 
 						ckno_edit "widget/component"
@@ -1799,7 +1799,7 @@ cashdisb_subform "widget/component-decl"
 							text="Check #:";
 							label_width=75;
 							width=180;
-							height=16;
+							height=20;
 						}
 
 						lineitem_lbl "widget/component"
@@ -1810,7 +1810,7 @@ cashdisb_subform "widget/component-decl"
 							text="Line Item:";
 							label_width=75;
 							width=200;
-							height=16;
+							height=20;
 						}
 					}
 
@@ -1821,8 +1821,10 @@ cashdisb_subform "widget/component-decl"
 						ctl_type=editbox;
 						text="Memo:";
 						label_width=75;
-						height=16;
+						height=20;
 					}
+
+					ck_line_sep "widget/pane" { height=2; style=lowered; fl_height=0; }
 
 					// Line Item Thingy
 					trx_details_hbox "widget/hbox"
@@ -1972,10 +1974,10 @@ cashdisb_subform "widget/component-decl"
 					// DONE: Cancel Button Wire up...
 					line_item_date "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_effective_date; ctl_type=datetime; text="Date:"; width=225; label_width=75; date_only=1; default_time="12:00:00"; effective_date_hints "widget/hints" { default=runclient(getdate()); } }
 
-					comment_lbl "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_comment; ctl_type=textarea; text="Comment: "; label_width=75; height=55; }
+					comment_lbl "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_comment; ctl_type=textarea; text="Comment: "; label_width=75; height=50; }
 
 					// el Spacer 'o...
-					sp1 "widget/autolayoutspacer" { height=4; }
+					sp1 "widget/autolayoutspacer" { height=2; }
 					
 					// Save Cancel Area
 					cd_SaveCancel_hbox "widget/hbox"
@@ -2564,7 +2566,7 @@ cashdisb_subform "widget/component-decl"
 				Void_This_Check_btn "widget/textbutton"
 				{
 					width=160;
-					height = 30;
+					height = 24;
 					text="Mark as Void";
 					
 					cnSave_cn324 "widget/connector" { event="Click"; target=batch_total_osrc; action="Refresh"; }

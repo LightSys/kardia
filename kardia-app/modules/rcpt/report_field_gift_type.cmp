@@ -8,5 +8,17 @@ report_field_gift_type "widget/component-decl"
     rpt_form "widget/parameter" { type=object; find_container="report/form"; }
     ledger "widget/parameter" { type=string; default=null; }
 
-    f_type "widget/component" { width=350; height=24; path="/sys/cmp/smart_field.cmp"; field="gift_type"; text="Gift Type(s):"; ctl_type=dropdown; label_width=120; form=rpt_form; sql = "select :text, :tag from /apps/kardia/data/Kardia_DB/_a_gift_type/rows ; select text = 'EFT or Credit Card', tag = 'ED'; select text = 'Cash or Check', tag = 'CK'"; numdisplay=7; }
+    f_type "widget/component"
+	{
+	width=350;
+	height=24;
+	path="/sys/cmp/smart_field.cmp";
+	field="gift_type";
+	text="Gift Type(s):";
+	ctl_type=dropdown;
+	label_width=120;
+	form=rpt_form;
+	sql = runserver("select :a_gift_payment_type_desc, :a_gift_payment_type from /apps/kardia/data/Kardia_DB/a_gift_payment_type/rows where :a_ledger_number = " + quote(:this:ledger) + " order by :a_gift_payment_type_desc; select text = 'EFT or Credit Card', tag = 'ED'; select text = 'Cash or Check', tag = 'CK'; select text = 'Any Non-Cash', tag = (select sum(:a_gift_payment_type) from /apps/kardia/data/Kardia_DB/a_gift_payment_type/rows where :a_ledger_number = " + quote(:this:ledger) + " and :a_is_cash = 0); select text = 'Any Cash (Cash, Check, EFT, or Credit Card)', tag = (select sum(:a_gift_payment_type) from /apps/kardia/data/Kardia_DB/a_gift_payment_type/rows where :a_ledger_number = " + quote(:this:ledger) + " and :a_is_cash = 1)");
+	numdisplay=7;
+	}
     }

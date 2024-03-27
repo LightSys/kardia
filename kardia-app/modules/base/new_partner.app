@@ -25,6 +25,7 @@ new_partner "widget/page"
     set_country_code "widget/parameter" { type=string; }
     set_email "widget/parameter" { type=string; }
     set_phone "widget/parameter" { type=string; }
+    set_comment "widget/parameter" { type=string; }
 
     new_partner_cmp "widget/component" 
 	{ 
@@ -50,5 +51,6 @@ new_partner "widget/page"
 	set_email=runserver(:this:set_email);
 	set_phone=runserver(condition(:this:set_country_code = "US" OR :this:set_country_code = "CA", substring(:this:set_phone, char_length(:this:set_phone) - 6,3) + "-" + substring(:this:set_phone, char_length(:this:set_phone) - 3), :this:set_phone));      // set the subscriber number based on country (or all if unsuported)
 	set_phone_area=runserver(condition(:this:set_country_code = "US" OR :this:set_country_code = "CA", substring(:this:set_phone, char_length(:this:set_phone) - 9,3), NULL)); // set the area code based on country code (or blank if unsuported)
+	set_comment=runserver(:this:set_comment);
 	}
     }

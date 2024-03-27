@@ -8,7 +8,8 @@ person_data "system/query"
 		name = 'Name',
 		key = :p:p_partner_key,
 		partner=:p:p_partner_key,
-		data = condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname)
+		data = condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name, :p:p_given_name + ' ' + :p:p_surname),
+		modified_on=:p:s_date_modified
 	    from
 		/apps/kardia/data/Kardia_DB/p_partner/rows p
 	    where
@@ -21,7 +22,8 @@ person_data "system/query"
 		name = isnull(:lt:text + ' ', '') + 'Address',
 		key = :pl:name,
 		partner=:pl:p_partner_key,
-		data = substitute(isnull(:af:p_format, '[:p_in_care_of]\n[:p_address_1]\n[:p_address_2]\n[:p_address_3]\n[:p_city], [:p_state_province] [:p_postal_code]\n[:p_country_name]'), 'l=pl,p=pl')
+		data = substitute(isnull(:af:p_format, '[:p_in_care_of]\n[:p_address_1]\n[:p_address_2]\n[:p_address_3]\n[:p_city], [:p_state_province] [:p_postal_code]\n[:p_country_name]'), 'l=pl,p=pl'),
+		modified_on=:pl:s_date_modified
 	    from
 		/apps/kardia/data/Kardia_DB/p_location/rows pl,
 		/apps/kardia/data/Kardia_DB/_p_location_type/rows lt,
@@ -36,7 +38,7 @@ person_data "system/query"
 	    order by
 		charindex(:pl:p_record_status_code, 'OQIA') desc
 	    limit
-		1
+		2
 	    having
 		isnull(:parameters:name, 'Address') = 'Address'
 	    ;
@@ -45,7 +47,8 @@ person_data "system/query"
 		name = isnull(:lt:text, isnull(:lt2:text,'-')) + ' ' + :ct:text,
 		key = :c:name,
 		partner=:c:p_partner_key,
-		data=(isnull(:c:p_phone_country + ' ', '') + isnull(:c:p_phone_area_city + ' ', '') + :c:p_contact_data)
+		data=(isnull(:c:p_phone_country + ' ', '') + isnull(:c:p_phone_area_city + ' ', '') + :c:p_contact_data),
+		modified_on=:c:s_date_modified
 	    from
 		identity /apps/kardia/data/Kardia_DB/p_contact_info/rows c,
 		/apps/kardia/data/Kardia_DB/_p_contact_type/rows ct,
