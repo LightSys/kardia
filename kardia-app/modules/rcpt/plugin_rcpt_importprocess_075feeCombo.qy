@@ -26,9 +26,14 @@ plugin_rcpt_importprocess_075feeCombo "system/query"
 	INSERT INTO
 	    COLLECTION marked 
 	SELECT
-	    *
+	    :i_eg_trx_uuid, :i_eg_desig_uuid, :i_eg_gift_amount, 
+	    :i_eg_net_amount, :i_eg_deposit_gross_amt, :i_eg_deposit_amt,
+	    :a_ledger_number, :i_eg_line_item, :i_eg_postprocess
 	FROM 
-	    /apps/kardia/modules/rcpt/plugin_rcpt_sub_importprocess_findMarked.qy?module_letter=F
+	    /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows
+	WHERE 
+	    :i_eg_postprocess IS NOT NULL 
+	    AND substring(:i_eg_postprocess, 1, 1) == 'F'
 	;
 
 	-- get all of the fees and the transactions that go with them
