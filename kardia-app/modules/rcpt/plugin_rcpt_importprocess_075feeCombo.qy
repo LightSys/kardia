@@ -22,8 +22,16 @@ plugin_rcpt_importprocess_075feeCombo "system/query"
 			)
 		;
 
+	DECLARE COLLECTION marked;
+	INSERT INTO
+	    COLLECTION marked 
+	SELECT
+	    *
+	FROM 
+	    /apps/kardia/modules/rcpt/plugin_rcpt_sub_importprocess_findMarked.qy?module_letter=F
+	;
+
 	-- get all of the fees and the transactions that go with them
-	-- make sure has the F (on the 9999, that is. Needs to see full picture with related)
 	DECLARE COLLECTION feeSets;
 	INSERT INTO
 	    COLLECTION feeSets
@@ -43,8 +51,8 @@ plugin_rcpt_importprocess_075feeCombo "system/query"
 	    ind_net = -1,
 	    ind_grs = -1
 	FROM 
-	    IDENTITY /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows f,
-	    /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows t
+	    IDENTITY COLLECTION marked f,
+	    COLLECTION marked t
 	WHERE 
 	    :f:i_eg_desig_uuid = :feeDesig:value
 	    AND :t:i_eg_trx_uuid = :f:i_eg_trx_uuid
@@ -52,12 +60,8 @@ plugin_rcpt_importprocess_075feeCombo "system/query"
 	    AND substring(:f:i_eg_postprocess, 1, 1) = 'F'
 	    AND :f:i_eg_deposit_amt IS NOT NULL
 	    AND :f:i_eg_net_amount IS NOT NULL
-	ORDER BY
-	    :t:i_eg_trx_uuid,
-	    :t:i_eg_desig_uuid,
-	    :t:i_eg_line_item
 	;
-
+print 'done'
 	-- calculate the number of cents that will be leftover
 	DECLARE COLLECTION leftoverCents;
 	INSERT INTO 
@@ -131,6 +135,7 @@ plugin_rcpt_importprocess_075feeCombo "system/query"
 	    AND :f:i_eg_desig_uuid *= :n:i_eg_desig_uuid
 	    AND :f:i_eg_line_item *= :n:i_eg_line_item
 	;
+
 
 	-- clear out uneeded collections
 	DELETE FROM COLLECTION grossIndex;
