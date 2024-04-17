@@ -7,7 +7,7 @@ plugin_rcpt_giftimport_EGS "widget/component-decl"
     tag = "VPMX";
     provides_designations = 0; // indicate this module can have designations overwritten
     sql = "		i_eg_service = 'VPMX',
-			i_eg_processor = 'Vanco Payments PXM',
+			i_eg_processor = 'Vanco Payments PMX',
 			i_eg_gift_currency = 'USD',
 			i_eg_receipt_desired = null,
 			i_eg_anonymous = null,
