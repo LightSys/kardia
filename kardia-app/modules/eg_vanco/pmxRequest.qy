@@ -54,7 +54,7 @@ myquery "system/query"
 		    +'&VancoWS.Auth.SessionID='+:vancoKey:value
 		    +'&VancoWS.Auth.RequestID='+(hash('md5', convert('string', dateformat(getdate(), 'yyyy-MM-dd HH:mm:ss')))+'-'+convert('string',:dq:cx__page))
 		    +'&VancoWS.Request.RequestVars.ClientID='
-		    +(select first(:a_config_value) from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'VP_Client')
+		    +(select first(:a_config_value) from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'VP_PMX_Client')
 		    +'&VancoWS.Request.RequestVars.FromDate='
 		    +dateformat(dateadd('day', -1*(:dq:cx__page - 1), :vancoKey:toDate), 'yyyy-MM-dd')
 		    +'&VancoWS.Request.RequestVars.ToDate='
