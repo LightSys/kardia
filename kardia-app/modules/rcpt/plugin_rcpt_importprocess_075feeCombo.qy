@@ -10,7 +10,7 @@ plugin_rcpt_importprocess_075feeCombo "system/query"
     sql = "
 	-- when have a donation to cover transaction fees, just split it across all of the fees that happened with it
 	-- code: F for fee
-	-- TOOD: add randomness but repeatable (maybe sort by a hashed desig id instead of the actual desig)
+	-- TOOD: add randomness but repeatable (maybe sort by a hashed desig id instead of the actual desig?)
 	-- get the designation that indicates the transaction is a fee
 	DECLARE OBJECT feeDesig;
 		SELECT
@@ -66,14 +66,14 @@ plugin_rcpt_importprocess_075feeCombo "system/query"
 	    AND :f:i_eg_deposit_amt IS NOT NULL
 	    AND :f:i_eg_net_amount IS NOT NULL
 	;
-print 'done'
+
 	-- calculate the number of cents that will be leftover
 	DECLARE COLLECTION leftoverCents;
 	INSERT INTO 
 	    COLLECTION leftoverCents
 	SELECT
-	    grs = convert('integer', round(100 * sum(:i:fee_share_grs - truncate(:i:fee_share_grs, 2)),0)),
-	    net = convert('integer', round(100 * sum(:i:fee_share_net - truncate(:i:fee_share_net, 2)),0)),
+	    grs = convert('integer', round(100 * (:fee_grs - sum(truncate(:i:fee_share_grs, 2))), 0)),
+	    net = convert('integer', round(100 * (:fee_net - sum(truncate(:i:fee_share_net, 2))), 0)),
 	    :i:i_eg_trx_uuid
 	FROM COLLECTION feeSets i
 	GROUP BY
@@ -141,35 +141,63 @@ print 'done'
 	    AND :f:i_eg_line_item *= :n:i_eg_line_item
 	;
 
-
 	-- clear out uneeded collections
 	DELETE FROM COLLECTION grossIndex;
 	DELETE FROM COLLECTION netIndex;
+
+	-- update collection with calculated fee splits
+	UPDATE
+	    COLLECTION feeSets
+	SET
+	    :i_eg_gift_amount = condition(:ind_grs IS NOT NULL,
+		condition(:ind_grs <= :cents_grs,
+		    :i_eg_gift_amount + truncate(:fee_share_grs, 2) + 0.01,
+		    :i_eg_gift_amount + truncate(:fee_share_grs, 2)
+		    ),
+		:i_eg_gift_amount + :fee_share_grs
+		),
+	    :i_eg_net_amount = condition(:ind_net IS NOT NULL,
+		condition(:ind_net <= :cents_net,
+		    :i_eg_net_amount + truncate(:fee_share_net, 2) + 0.01,
+		    :i_eg_net_amount + truncate(:fee_share_net, 2)
+		    ),
+		:i_eg_net_amount + :fee_share_net
+		)
+	;
+
+	-- confirm the checksums
+	DECLARE COLLECTION checksum;
+	INSERT INTO 
+	    COLLECTION checksum
+	SELECT
+	   grs_sum = sum(:i_eg_gift_amount),
+	   net_sum = sum(:i_eg_net_amount),
+	   :i_eg_deposit_gross_amt,
+	   :i_eg_deposit_amt,
+	   :i_eg_trx_uuid
+	FROM 
+	    COLLECTION feeSets
+	GROUP BY
+	    :i_eg_trx_uuid
+	;
+
+	-- Remove any transactions that don't sum properly 
+	DELETE FROM
+	    IDENTITY COLLECTION feeSets f, 
+	    COLLECTION checksum c
+	WHERE
+	    :f:i_eg_trx_uuid = :c:i_eg_trx_uuid
+	    AND (:c:i_eg_deposit_gross_amt != :c:grs_sum 
+		OR :c:i_eg_deposit_amt != :c:net_sum)
+	;
 
 	-- update the values in the actual tables (must update even if no F; upsert reverts changes otherwise)
 	UPDATE
 	    IDENTITY /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows i,
 	    COLLECTION feeSets f
 	SET
-	    -- gross does not update, so need to only run if marked
-	    :i:i_eg_gift_amount = condition(substring(:i_eg_postprocess, 1, 1) = 'F',
-		condition(:f:ind_grs IS NOT NULL,
-		    condition(:f:ind_grs <= :f:cents_grs,
-			:i:i_eg_gift_amount + truncate(:f:fee_share_grs, 2) + 0.01,
-			:i:i_eg_gift_amount + truncate(:f:fee_share_grs, 2)
-			),
-		    :i:i_eg_gift_amount + :f:fee_share_grs
-		    ),
-		:i:i_eg_gift_amount
-		),
-	    -- net amount gets overwritten by update, so always needs to run again
-	    :i:i_eg_net_amount = condition(:f:ind_net IS NOT NULL,
-		    condition(:f:ind_net <= :f:cents_net,
-			:i:i_eg_net_amount + truncate(:f:fee_share_net, 2) + 0.01,
-			:i:i_eg_net_amount + truncate(:f:fee_share_net, 2)
-			),
-		    :i:i_eg_net_amount + :f:fee_share_net
-		    )
+	    :i:i_eg_gift_amount = :f:i_eg_gift_amount,
+	    :i:i_eg_net_amount = :f:i_eg_net_amount
 	WHERE 
 	    :i:i_eg_trx_uuid = :f:i_eg_trx_uuid 
 	    AND :i:a_ledger_number = :f:a_ledger_number

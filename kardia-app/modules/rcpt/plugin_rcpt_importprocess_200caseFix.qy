@@ -11,45 +11,52 @@ plugin_rcpt_importprocess_200caseFix "system/query"
     ledger "query/parameter" { type=string; }
 
     sql = "	
+		-- get the name and address exceptions 
+		DECLARE OBJECT except;
+		SELECT
+		    :except:name = isnull(
+			(
+			select first(:a_config_value) 
+			from /apps/kardia/data/Kardia_DB/a_config/rows 
+			where :a_config_name='EG_NameExcept'
+			), ''), 
+		    :except:addr = isnull(
+			(
+			select first(:a_config_value) 
+			from /apps/kardia/data/Kardia_DB/a_config/rows 
+			where :a_config_name='EG_AddrExcept'
+			), '')
+		;
+
+
 		-- update the case of any marked items that has feilds in all caps 
 		update 
 			/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows gifts 
 		set
-			:i_eg_donor_name = mixed(:i_eg_donor_name,isnull(
-				(select first(:a_config_value) from /apps/kardia/data/Kardia_DB/a_config/rows 
-				where :a_config_name='EG_NameExcept'),'')),
-			:i_eg_donor_given_name = mixed(:i_eg_donor_given_name,isnull(
-				(select first(:a_config_value) from /apps/kardia/data/Kardia_DB/a_config/rows 
-				where :a_config_name='EG_NameExcept'),'')),
-			:i_eg_donor_surname = mixed(:i_eg_donor_surname,isnull(
-				(select first(:a_config_value) from /apps/kardia/data/Kardia_DB/a_config/rows 
-				where :a_config_name='EG_NameExcept'),'')),
-			:i_eg_donor_middle_name = mixed(:i_eg_donor_middle_name,isnull(
-				(select first(:a_config_value) from /apps/kardia/data/Kardia_DB/a_config/rows 
-				where :a_config_name='EG_NameExcept'),'')),
+			:i_eg_donor_name = mixed(:i_eg_donor_name, :except:name),
+			:i_eg_donor_given_name = mixed(:i_eg_donor_given_name,:except:name),
+			:i_eg_donor_surname = mixed(:i_eg_donor_surname, :except:name),
+			:i_eg_donor_middle_name = mixed(:i_eg_donor_middle_name, :except:name),
 			:i_eg_donor_prefix = mixed(:i_eg_donor_prefix),
 			:i_eg_donor_suffix = mixed(:i_eg_donor_suffix),
-			:i_eg_donor_addr1 = mixed(:i_eg_donor_addr1,isnull(
-				(select first(:a_config_value) from /apps/kardia/data/Kardia_DB/a_config/rows 
-				where :a_config_name='EG_AddrExcept'),'')),
-			:i_eg_donor_addr2 = mixed(:i_eg_donor_addr2,isnull(
-				(select first(:a_config_value) from /apps/kardia/data/Kardia_DB/a_config/rows 
-				where :a_config_name='EG_AddrExcept'),'')),
-			:i_eg_donor_addr3 = mixed(:i_eg_donor_addr3,isnull(
-				(select first(:a_config_value) from /apps/kardia/data/Kardia_DB/a_config/rows 
-				where :a_config_name='EG_AddrExcept'),'')),
-			:i_eg_donor_city = mixed(:i_eg_donor_city,isnull(
-				(select first(:a_config_value) from /apps/kardia/data/Kardia_DB/a_config/rows 
-				where :a_config_name='EG_AddrExcept'),'')),
+			:i_eg_donor_address = mixed(:i_eg_donor_address, :except:addr),
+			:i_eg_donor_addr1 = mixed(:i_eg_donor_addr1, :except:addr),
+			:i_eg_donor_addr2 = mixed(:i_eg_donor_addr2, :except:addr),
+			:i_eg_donor_addr3 = mixed(:i_eg_donor_addr3, :except:addr),
+			:i_eg_donor_city = mixed(:i_eg_donor_city, :except:addr),
 			:i_eg_donor_state = upper(:i_eg_donor_state),
 			:i_eg_donor_email = lower(:i_eg_donor_email)
 		where 
 			substring(:i_eg_postprocess, 1, 1) = 'C'
-			AND upper(isnull(:i_eg_donor_name,'')+isnull(:i_eg_donor_addr1,'')+isnull(:i_eg_donor_city,'')) = (isnull(:i_eg_donor_name,'')+isnull(:i_eg_donor_addr1,'')+isnull(:i_eg_donor_city,''))
+			AND upper(isnull(:i_eg_donor_name,'')) = isnull(:i_eg_donor_name,'')
+			AND upper(isnull(:i_eg_donor_addr1,'')) = isnull(:i_eg_donor_addr1,'')
+			AND upper(isnull(:i_eg_donor_city,'')) = isnull(:i_eg_donor_city,'')
+			AND upper(isnull(:i_eg_donor_prefix,'')) = isnull(:i_eg_donor_prefix,'')
+			AND upper(isnull(:i_eg_donor_suffix,'')) = isnull(:i_eg_donor_suffix,'')
+			AND upper(isnull(:i_eg_donor_email,'')) = isnull(:i_eg_donor_email,'')
 		;
 
 		-- Mark these items complete.
-		--
 		update
 			/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e1
 		set

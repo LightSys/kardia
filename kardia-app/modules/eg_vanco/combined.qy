@@ -201,8 +201,13 @@ myquery "system/query"
 					:t:DepositDate, :t:SettlementDate)
 				)) <= 0, 'paid', 'pending'),
 			'returned'), -- either return code exists or CCStatus was E or F. Either way, mark as a return 
-		i_eg_returned_status = condition(:t:CCStatus == 'E', 'Error', 
-			condition(:t:CCStatus == 'F', 'Failed', :t:retunredCode)),
+		i_eg_returned_status = condition(:t:CCStatus == 'E', 
+		    'Error', 
+		    condition(:t:CCStatus == 'F', 
+			'Failed', 
+			condition(char_length(:t:retunredCode) > 0,
+			    :t:retunredCode, 
+			    NULL))),
 		-- convert from 'LNAME, FNAME(and FNAME)?( MI)?' to 'FNAME(and FNAME)?( MI)? LNAME'
 		i_eg_donor_name = condition(charindex(',', :c:CustomerName) == 0, :c:CustomerName, -- if no comma, likely an org.
 			substring(:c:CustomerName, charindex(',', :c:CustomerName) + 2)+' '+
@@ -235,7 +240,7 @@ myquery "system/query"
 		i_eg_deposit_amt = condition(char_length(:t:TransactionFee) > 1, 
 			convert('money', :t:Amount) - convert('money', :t:TransactionFee),
 			convert('money', :t:Amount)),
-		i_eg_deposit_date = condition(char_length(:t:DepositDate)<1, NULL, convert('datetime', :t:DepositDate)),
+		i_eg_deposit_date = condition(char_length(:t:DepositDate)<1, convert('datetime', NULL), convert('datetime', :t:DepositDate)),
 		i_eg_deposit_status = NULL, -- TODO: what is this the status of
 		i_eg_deposit_uuid = condition(char_length(:t:DepositDate) < 1, NULL, replace(:t:DepositDate, '-', NULL)),
 		i_eg_gift_pmt_type = condition(:p:AccountType == 'C' OR :p:AccountType == 'S', 'ACH', 
@@ -246,8 +251,8 @@ myquery "system/query"
 					:p:CardType
 					))))),
 		i_eg_gift_interval = isnull(upper(:o:FrequencyType), ''), -- Monthly, quaterly, and annual all line up.
-		i_eg_gift_start_date = condition(char_length(:o:StartDate) > 1, convert('datetime', :o:StartDate), NULL),
-		i_eg_gift_end_date = condition(char_length(:o:EndDate) > 1, convert('datetime', :o:EndDate), NULL),
+		i_eg_gift_start_date = condition(char_length(:o:StartDate) > 1, convert('datetime', :o:StartDate), convert('datetime', NULL)),
+		i_eg_gift_end_date = condition(char_length(:o:EndDate) > 1, convert('datetime', :o:EndDate), convert('datetime', NULL)),
 		i_eg_gift_count = NULL,
 		i_eg_gift_date = convert('datetime', :t:ProcessDate),
 		i_eg_gift_trx_date = convert('datetime', :t:ProcessDate),
