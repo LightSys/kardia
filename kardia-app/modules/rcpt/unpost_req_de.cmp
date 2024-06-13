@@ -60,7 +60,7 @@ unpost_req_de "widget/component-decl"
 	end_unpost "widget/connector"
 	    { 
 	    event=EndQuery;
-	    target=unpost_req;
+	    target=unpost_req_de;
 	    action=Requested;
 	    batch = runclient(:req_osrc:batch);
 	    ledger = runclient(:req_osrc:ledger);
