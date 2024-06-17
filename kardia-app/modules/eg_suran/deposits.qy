@@ -1,0 +1,27 @@
+$Version=2$
+deposits "system/query"
+    {
+    sql = " declare collection tmp;
+    
+	    insert
+		collection tmp
+	    select
+		name = convert(string, :DepositID) + '|' + convert(string, :CreditID),
+		DepositID = convert(string, :DepositID),
+		CreditID = convert(string, :CreditID),
+		:DepositDate,
+		GrossAmount = sum(convert(money, :GrossAmount)),
+		NetAmount = sum(convert(money, :NetAmount))
+	    from
+		identity wildcard '/apps/kardia/modules/eg_suran/suranapiv2_deposit.http/p1/data/*'
+	    group by
+		:DepositID,
+		:CreditID
+	    having
+		:GrossAmount is not null
+	    ;
+
+	    select * from collection tmp
+	    ";
+    name_expression = "convert(string, :DepositID) + '|' + convert(string, :CreditID)";
+    }

@@ -41,7 +41,7 @@ plugin_base_requests_unpostde "widget/component-decl"
 	    x=0; y=4;
 	    width=820; height=30;
 	    align=center;
-	    value=runclient(condition(:batch_osrc:glcnt > 0, 'This batch is still posted to the GL.  You must unpost it from the GL before unposting it from the Cash Receipts journal.', 'Unpost Cash Receipts Batch #' + :batch_osrc:a_batch_number + ' (' + :batch_osrc:a_batch_desc + '), in period ' + :batch_osrc:a_period + ', from the cash receipts journal?'));
+	    value=runclient(condition(:batch_osrc:glcnt > 0, 'This batch is still posted to the GL.  You must unpost it from the GL before unposting it from the Deposits journal.', 'Unpost Deposits Batch #' + :batch_osrc:a_batch_number + ' (' + :batch_osrc:a_batch_desc + '), in period ' + :batch_osrc:a_period + ', from the deposits journal?'));
 	    style=bold;
 	    fgcolor=white;
 	    }
@@ -56,24 +56,25 @@ plugin_base_requests_unpostde "widget/component-decl"
 	    option_view "widget/textbutton"
 		{
 		width=130; height=24;
-		text="View Receipts";
+		text="View Deposit";
 		on_view "widget/connector"
 		    {
 		    event=Click;
 		    target=plugin_base_requests_unpostde;
 		    action=Launch;
-		    Source = runclient("/apps/kardia/modules/rcpt/dep_entry.app");
+		    Source = runclient("/apps/kardia/modules/rcpt/de_batches.app");
 		    Width=800;
 		    Height=600;
 		    ledger=runclient(:batch_osrc:a_ledger_number);
-		    batch=runclient(:batch_osrc:a_batch_number);
+		    period=runclient(:batch_osrc:a_period);
+		    gotobatch=runclient(:batch_osrc:a_batch_number);
 		    }
 		}
 
 	    option_unpost "widget/textbutton"
 		{
 		width=130; height=24;
-		text="Unpost from Deposits";
+		text="Unpost from Dep.";
 		enabled=runclient(has_endorsement('kardia:dep_manage', 'kardia:ledger:' + :batch_osrc:a_ledger_number));
 		on_unpost "widget/connector"
 		    {

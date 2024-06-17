@@ -1589,7 +1589,8 @@ payroll_run "widget/component-decl"
 			    :p:a_ledger_number = :i:a_ledger_number and
 			    :p:a_payroll_group_id = :i:a_payroll_group_id and
 			    :p:a_payroll_id = :i:a_payroll_id and
-			    :par:p_partner_key = :p:p_payee_partner_key
+			    :par:p_partner_key = :p:p_payee_partner_key and
+			    :i:a_actual_amount > $0
 			;
 
 			update

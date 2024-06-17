@@ -1,0 +1,24 @@
+$Version=2$
+suranapiv2_donors "application/http"
+    {
+    // Pre-set parameters
+    Provision "http/parameter" { type=string; source=none; usage=header; default=runserver( (select first(:a_config_value) from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'CDM_Provision') ); }
+
+    // Just to force the first path element to be a param, which makes testing a bit easier.
+    p1 "http/parameter" { type=string; source=path; usage=none; pathpart=1; default="test"; }
+
+    // Parameters for the API
+
+    // Connection information
+    request_content_type = "application/json";
+    restrict_content_type = "application/json";
+    server = "api.suran.com";
+    path = "/api/v2/pay/donor_information_report";
+    protocol = "https";
+    method = GET;
+    allowsubdirs = 0;
+    allowcookies = 1;
+    success_codes = 422;
+    cache_max_ttl = 86400000;
+    cache_min_ttl = 3600000;
+    }
