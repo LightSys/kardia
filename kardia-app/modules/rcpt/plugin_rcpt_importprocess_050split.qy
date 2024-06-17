@@ -34,7 +34,7 @@ plugin_rcpt_importprocess_050splitTrx "system/query"
 		    :i_eg_gift_amount < :i_eg_deposit_gross_amt -- make sure was split into multiple
 		GROUP BY
 		    :i_eg_line_item, :i_eg_donor_uuid, :i_eg_gift_amount, :i_eg_net_amount, 
-		    :i_eg_deposit_amt, :i_eg_deposit_gross_amt, :i_eg_desig_notes
+		    :i_eg_deposit_amt, :i_eg_deposit_gross_amt, :i_eg_desig_uuid, :i_eg_desig_notes
 		;
 
 		-- Find all of the marked queries, split them into multiple, and insert into collection
@@ -140,7 +140,25 @@ plugin_rcpt_importprocess_050splitTrx "system/query"
 		INSERT INTO
 		    /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows
 		SELECT
-		    *
+		    :s:i_eg_trx_uuid,		:s:i_eg_gift_uuid,		:s:i_eg_desig_uuid, :s:i_eg_line_item,
+		    :s:i_eg_donor_uuid, 	:s:i_eg_donor_alt_id,		:s:i_eg_account_uuid, :s:i_eg_status,
+		    :s:i_eg_returned_status, 	:s:i_eg_donor_name,		:s:i_eg_donor_given_name, 
+		    :s:i_eg_donor_surname, 	:s:i_eg_donor_middle_name,	:s:i_eg_donor_prefix,
+		    :s:i_eg_donor_suffix, 	:s:i_eg_donor_address,		:s:i_eg_donor_addr1,
+		    :s:i_eg_donor_addr2,	:s:i_eg_donor_addr3,		:s:i_eg_donor_city,
+		    :s:i_eg_donor_state,	:s:i_eg_donor_postal,		:s:i_eg_donor_country,
+		    :s:i_eg_donor_phone,	:s:i_eg_donor_email,		:s:i_eg_gift_amount,
+		    :s:i_eg_net_amount,		:s:i_eg_deposit_gross_amt,	:s:i_eg_deposit_amt,
+		    :s:i_eg_deposit_date,	:s:i_eg_deposit_status, 	:s:i_eg_deposit_uuid,
+		    :s:i_eg_gift_pmt_type,	:s:i_eg_gift_interval,		:s:i_eg_gift_start_date,
+		    :s:i_eg_gift_end_date,	:s:i_eg_gift_count,		:s:i_eg_gift_date,
+		    :s:i_eg_gift_trx_date,	:s:i_eg_gift_settlement_date,	:s:i_eg_gift_lastfour,
+		    :s:i_eg_desig_name,		:s:i_eg_desig_notes,		:s:i_eg_postprocess,
+		    :s:i_eg_service,		:s:i_eg_processor,		:s:i_eg_gift_currency,
+		    :s:i_eg_receipt_desired,	:s:i_eg_anonymous,		:s:i_eg_prayforme,
+		    :s:i_eg_acctmap_future,	:s:i_eg_fundmap_future,		:s:i_eg_donormap_future,
+		    :s:a_ledger_number,		:s:s_date_created,		:s:s_created_by,
+		    :s:s_date_modified,		:s:s_modified_by
 		FROM 
 		    COLLECTION split s
 		ON DUPLICATE
