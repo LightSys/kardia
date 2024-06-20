@@ -44,8 +44,7 @@ plugin_rcpt_importprocess_200caseFix "system/query"
 			:i_eg_donor_addr2 = mixed(:i_eg_donor_addr2, :except:addr),
 			:i_eg_donor_addr3 = mixed(:i_eg_donor_addr3, :except:addr),
 			:i_eg_donor_city = mixed(:i_eg_donor_city, :except:addr),
-			:i_eg_donor_state = upper(:i_eg_donor_state),
-			:i_eg_donor_email = lower(:i_eg_donor_email)
+			:i_eg_donor_state = upper(:i_eg_donor_state)
 		where 
 			substring(:i_eg_postprocess, 1, 1) = 'C'
 			AND upper(isnull(:i_eg_donor_name,'')) = isnull(:i_eg_donor_name,'')
@@ -53,7 +52,6 @@ plugin_rcpt_importprocess_200caseFix "system/query"
 			AND upper(isnull(:i_eg_donor_city,'')) = isnull(:i_eg_donor_city,'')
 			AND upper(isnull(:i_eg_donor_prefix,'')) = isnull(:i_eg_donor_prefix,'')
 			AND upper(isnull(:i_eg_donor_suffix,'')) = isnull(:i_eg_donor_suffix,'')
-			AND upper(isnull(:i_eg_donor_email,'')) = isnull(:i_eg_donor_email,'')
 		;
 
 		-- Mark these items complete.

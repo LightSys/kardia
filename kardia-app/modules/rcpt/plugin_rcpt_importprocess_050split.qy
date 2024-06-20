@@ -11,46 +11,38 @@ plugin_rcpt_importprocess_050splitTrx "system/query"
     ledger "query/parameter" { type=string; }
 
     sql = "
-		-- find the designation 
-		DECLARE OBJECT splitDesig;
-		SELECT
-		    :splitDesig:value = 
-			(
-			select first(:a_config_value)
-			from /apps/kardia/data/Kardia_DB/a_config/rows
-			where :a_config_name = 'EgSplitDesig'
-			)
-		;
-
-		-- get all of the sets of transactions that could be transactions that were already split
+		-- get a transaction ID and the columns needed later for potential matching of any multi part rows. 
 		DECLARE COLLECTION match;
 		INSERT INTO
 		    COLLECTION match
 		SELECT
-		    *
+		    transaction_id = first(:i_eg_trx_uuid),
+		    :i_eg_donor_uuid, :i_eg_deposit_amt, 
+		    :i_eg_deposit_gross_amt, :i_eg_desig_notes
 		FROM 
 		    /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows 
 		WHERE 
 		    :i_eg_gift_amount < :i_eg_deposit_gross_amt -- make sure was split into multiple
+		    AND substring(:i_eg_postprocess, 1, 1) != 'S'
+		    AND :i_eg_desig_notes IS NOT NULL
 		GROUP BY
-		    :i_eg_line_item, :i_eg_donor_uuid, :i_eg_gift_amount, :i_eg_net_amount, 
-		    :i_eg_deposit_amt, :i_eg_deposit_gross_amt, :i_eg_desig_uuid, :i_eg_desig_notes
+		    :i_eg_donor_uuid, :i_eg_deposit_amt, 
+		    :i_eg_deposit_gross_amt, :i_eg_desig_notes
 		;
 
+		
 		-- Find all of the marked queries, split them into multiple, and insert into collection
 		-- try to match the queries with an existing transaction. If can't, will need manually done. 
-		-- TODO: there is no real reson to allow this to be here
 		DECLARE COLLECTION split;
 		INSERT INTO 
 		    COLLECTION split
 		SELECT 
 		    -- debug
 		    split_trx = :s:i_eg_trx_uuid,
-		    match_trx = :m:i_eg_trx_uuid,
+		    match_trx = :i:i_eg_trx_uuid,
 		    :s:i_eg_gift_uuid,
-		    :m:i_eg_desig_uuid,
-		    --:i:i_eg_desig_uuid, -- TODO: need to find a way to let desig be the same without messing up net values on updates
-		    :m:i_eg_line_item,
+		    :i:i_eg_desig_uuid,
+		    :i:i_eg_line_item,
 		    :s:i_eg_trx_uuid,
 		    :s:i_eg_donor_uuid,
 		    :s:i_eg_donor_alt_id,
@@ -73,8 +65,8 @@ plugin_rcpt_importprocess_050splitTrx "system/query"
 		    :s:i_eg_donor_country,
 		    :s:i_eg_donor_phone,
 		    :s:i_eg_donor_email,
-		    :m:i_eg_gift_amount,
-		    :m:i_eg_net_amount,
+		    i_eg_gift_amount = :i:i_eg_gift_amount,
+		    :i:i_eg_net_amount,
 		    :s:i_eg_deposit_gross_amt,
 		    :s:i_eg_deposit_amt,
 		    :s:i_eg_deposit_date,
@@ -89,7 +81,7 @@ plugin_rcpt_importprocess_050splitTrx "system/query"
 		    :s:i_eg_gift_trx_date,
 		    :s:i_eg_gift_settlement_date, 
 		    :s:i_eg_gift_lastfour,
-		    :m:i_eg_desig_name,
+		    :i:i_eg_desig_name,
 		    :s:i_eg_desig_notes,
 		    i_eg_postprocess = substring(:s:i_eg_postprocess, 2),	-- may need post processing from later modules
 		    :s:i_eg_service,
@@ -108,23 +100,58 @@ plugin_rcpt_importprocess_050splitTrx "system/query"
 		    s_modified_by = user_name()
 		FROM
 		    IDENTITY /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows s,	-- the transactions to split
-		    COLLECTION match m 							-- the existig values to match with
+		    IDENTITY /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows i,	-- the prexisting transaction to copy
+		    COLLECTION match m 							-- the guide for what to match with
 		WHERE
-		    substring(:s:i_eg_postprocess, 1, 1) = 'S'
-		    AND substring(:m:i_eg_postprocess, 1, 1) != 'S' -- the query matching to should have already been processed. 
+		    :m:transaction_id = :i:i_eg_trx_uuid
+		    AND i_eg_desig_notes IS NOT NULL
+		    AND substring(:s:i_eg_postprocess, 1, 1) = 'S'
 		    AND isnull(:s:i_eg_desig_notes, '') = isnull(:m:i_eg_desig_notes,'') -- make sure what donor sent was the same
 		    AND :s:i_eg_donor_uuid = :m:i_eg_donor_uuid -- make sure was the same donor
-		    AND :s:i_eg_deposit_amt = :m:i_eg_deposit_amt
+		    AND isnull(:s:i_eg_deposit_amt, :m:i_eg_deposit_amt) = :m:i_eg_deposit_amt -- need to let null net values pass for now
 		    AND :s:i_eg_deposit_gross_amt = :m:i_eg_deposit_gross_amt
-		    AND :m:i_eg_gift_amount < :m:i_eg_deposit_gross_amt -- make sure was split into multiple
-		    AND :s:i_eg_deposit_amt = :s:i_eg_net_amount -- make sure only one item in transaction to be split
+		    AND isnull(:s:i_eg_deposit_amt, 0) = isnull(:s:i_eg_net_amount, 0) -- make sure only one item in transaction to be split
 		    AND :s:i_eg_deposit_gross_amt = :s:i_eg_gift_amount
-		    AND :s:i_eg_deposit_amt IS NOT NULL
-		    AND :s:i_eg_net_amount IS NOT NULL
 		;
-	
-		-- transactions will always sum properly since it was a matching condition given above
-		-- list all of the i_eg_trx_uuid values
+
+		-- add a checksum in case an assumption was violated
+		-- also remove any without net values
+		DECLARE COLLECTION invalid;
+		INSERT INTO 
+		    COLLECTION invalid
+		SELECT
+		    :s:i_eg_trx_uuid
+		FROM
+		    COLLECTION split s
+		GROUP BY 
+		    :s:i_eg_trx_uuid
+		HAVING
+		    sum(:s:i_eg_gift_amount) != :s:i_eg_deposit_gross_amt
+		    OR sum(:s:i_eg_net_amount) != :s:i_eg_deposit_amt
+		    OR :s:i_eg_deposit_amt IS NULL 
+		    OR :s:i_eg_net_amount IS NULL
+		;
+
+		-- update the postprocess to show it failed
+		UPDATE 
+		    IDENTITY /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows a,
+		    COLLECTION invalid i
+		SET 
+		    :a:i_eg_postprocess = :a:i_eg_postprocess + 'S' -- add an extra 'S'; first 'S' is handled later
+		WHERE 
+		    :a:i_eg_trx_uuid = :i:i_eg_trx_uuid
+		;
+
+		-- now remove invalid from split
+		DELETE 
+		FROM
+		    IDENTITY COLLECTION split s,
+		    COLLECTION invalid i
+		WHERE 
+		    :s:i_eg_trx_uuid = :i:i_eg_trx_uuid
+		;
+
+		-- list all of the i_eg_trx_uuid values for delete later
 		DECLARE COLLECTION trx_uuids;
 		INSERT INTO
 		    COLLECTION trx_uuids
@@ -189,12 +216,13 @@ plugin_rcpt_importprocess_050splitTrx "system/query"
 		    AND :i:i_eg_net_amount = :i:i_eg_deposit_amt
 		;
 	
-		-- If it still has an S, can assume that must not have been able to 
+		-- If it still has an S, can assume does not need it
 		UPDATE 
 		    /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows
 		SET 
 		    :i_eg_postprocess = substring(:i_eg_postprocess, 2)
 		WHERE 
 		    substring(:i_eg_postprocess, 1, 1) = 'S'
+		;
     ";
     }
