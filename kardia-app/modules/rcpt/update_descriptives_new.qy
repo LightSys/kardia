@@ -9,7 +9,7 @@ update_descriptives_new "system/query"
     sql = " declare collection tmp_gift_items scope application;
 	    declare collection a_descriptives scope application;
 	    declare collection a_descriptives_hist scope application;
-            declare collection tmp_intermediate_vals;
+        declare collection tmp_intermediate_vals;
 
 	    --This is the main file for our donor analytics application
 	    --The donor analytics is meant to make a new table, a_descriptives_hist, that keeps track of donor giving patterns and such
@@ -18,7 +18,7 @@ update_descriptives_new "system/query"
 	    --This organizes the data so that we can easily tell what kind of pattern a donor has, which can therefore be used when someone stops doing their normal pattern
 
 	    delete collection tmp_gift_items;
-            delete collection tmp_intermediate_vals;
+        delete collection tmp_intermediate_vals;
 
 	    print 'Working on descriptives' + isnull(' for fund ' + :parameters:fund + ',', '') + isnull(' for ledger ' + :parameters:ledger + ',', '') + isnull(' for donor ' + :parameters:donor + ',', '') - ',';
 
@@ -148,8 +148,9 @@ update_descriptives_new "system/query"
 		s_date_modified = getdate(),
 		s_modified_by = user_name()
 	    from
-		collection tmp_gift_items
-	    group by
+		collection tmp_gift_items t
+		left join collection a_pledge p on t.ledger = p.a_ledger_number and t.fund = p.a_fund and t.donor = p.p_donor_partner_id
+	    group by             
 		:ledger,
 		:fund,
 		:donor
@@ -290,7 +291,7 @@ update_descriptives_new "system/query"
 		(:parameters:donor is null or :parameters:donor = :dh1:p_donor_partner_key) and
                 not :dh1:a_is_extra
 	    ;
-            update
+        update
 		collection a_descriptives_hist dh1
 	    set
 		:dh1:a_prev_end = (select :a_last_gift from collection a_descriptives_hist dh2 where :dh2:a_ledger_number = :dh1:a_ledger_number and :dh2:a_fund = :dh1:a_fund and :dh2:p_donor_partner_key = :dh1:p_donor_partner_key and :dh2:a_last_gift < :dh1:a_first_gift and :dh2:a_is_extra order by :dh2:a_last_gift desc limit 1),
@@ -303,7 +304,7 @@ update_descriptives_new "system/query"
 
             -- Correct NTL Tracking
 	    print 'Fixing next-to-last tracking at ' + dateformat(getdate(), 'hh:mm:ss');
-            update
+        update
 		collection a_descriptives_hist dh1
 	    set
 		:dh1:a_ntl_gift = (select nth(:t:giftdate, 2) from collection tmp_gift_items t where :t:ledger = :dh1:a_ledger_number and :t:fund = :dh1:a_fund and :t:donor = :dh1:p_donor_partner_key and :t:giftdate <= :dh1:a_last_gift order by :t:giftdate desc)
@@ -466,7 +467,7 @@ update_descriptives_new "system/query"
 	    -- if the interval is biannual or less, lookback slightly less than a year from the most recent gift
             -- the lookahead date is half an interval past the most recent gift
 	    print 'Setting general stats at ' + dateformat(getdate(), 'hh:mm:ss');
-            update
+        update
 		identity collection a_descriptives d
 	    set
 		:a_act_lookahead_date = dateadd(day, convert(integer, round(0.5 * 30.5 * :a_act_average_interval)), :a_last_gift),
@@ -480,7 +481,7 @@ update_descriptives_new "system/query"
 		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
 	    ;
             -- if the interval is greater than bi-annually, check back the last three intervals
-            update
+        update
 		identity collection a_descriptives d
 	    set
 		:a_act_lookahead_date = dateadd(day, convert(integer, round(0.5 * 30.5 * :a_act_average_interval)), :a_last_gift),
