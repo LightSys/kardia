@@ -9,6 +9,7 @@ update_descriptives_new "system/query"
     sql = " declare collection tmp_gift_items scope application;
 	    declare collection a_descriptives scope application;
 	    declare collection a_descriptives_hist scope application;
+		declare collection a_pledge scope query;
         declare collection tmp_intermediate_vals;
 
 	    --This is the main file for our donor analytics application
@@ -203,6 +204,35 @@ update_descriptives_new "system/query"
 		:seg,
 		:giftdate desc
 	    ;
+
+		-- Creating pledge collection
+		print 'Creating pledge collection at ' + dateformat(getdate(), 'hh:mm:ss');
+		insert into
+		collection a_pledge
+		select
+		:a_ledger_number = :i:a_ledger_number,
+		:p_donor_partner_id = :i:p_donor_partner_id,
+		:a_fund = :i:a_fund,
+		:a_pledge_id = :i:a_pledge_id,
+		:a_is_active = i:a_is_active
+		:a_intent_type = i:a_intent_type
+		:a_amount = :i:a_amount,
+		:a_total_amount = :i:a_total_amount,
+		:a_giving_interval = :i:a_giving_interval,
+		:a_gift_count = :i:a_gift_count,
+		:a_pledge_date = :i:a_pledge_date,
+		:a_start_date = :i:a_start_date,
+		:a_end_date = :i:a:a_end_date
+		from 
+		/apps/kardia/data/Kardia_DB/a_pledge/rows i
+		group by
+		:ledger
+		:fund,
+		:donor
+		order by
+		:ledger,
+		:fund,
+		:donor
 
 	    -- Update previous/next interval start/end dates
 	    print 'Updating segment start/end dates at ' + dateformat(getdate(), 'hh:mm:ss');
@@ -549,15 +579,27 @@ update_descriptives_new "system/query"
             ;
 
 		-- Update pledge information for a_descriptives_hist
-		insert into
-			identity collection a_descriptives_hist dh
-		select
-			:p:a_is_active, :p:a_intent_type, :p:a_amount, :p:a_total_amount, :p:a_giving_interval, :p:a_gift_count,
-			:p:a_pledge_date, :p:a_start_date, :p:a_end_date
-		from
+		update
+			identity collection a_descriptives_hist dh,
 			collection a_pledge p
+		set 
+			:dh:a_ledger_number = :p:a_ledger_number,
+			:dh:p_donor_partner_id = :p:p_donor_partner_id,
+			:dh:a_fund = :p:a_fund,
+			:dh:a_pledge_id = :p:a_pledge_id,
+			:dh:a_is_active = :p:a_is_active,
+			:dh:a_intent_type = :p:a_intent_type,
+			:dh:a_amount = :p:a_amount,
+			:dh:a_total_amount = :p:a_total_amount,
+			:dh:a_giving_interval = :p:a_giving_interval,
+			:dh:a_gift_count = :p:a_gift_count,
+			:dh:a_pledge_date = :p:a_pledge_date,
+			:dh:a_start_date = :p:a_start_date,
+			:dh:a_end_date = :p:a_end_date
 		where
-			:dh:ledger = :p:a_ledger_number and :dh:fund = :p:a_fund and :dh:p_donor_partner_key = :p:p_donor_partner_id
+			:dh:a_ledger_number *= :p:a_ledger_number
+				and :dh:a_fund *= :p:a_fund
+				and :dh:p_donor_partner_key *= :p:p_donor_partner_id
 
 	    -- Update past/current flags on histories and on descriptives. For a history entry with
 	    -- more than one gift, we base the current/lapsed indicator on the gift interval compared to
