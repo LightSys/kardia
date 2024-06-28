@@ -149,7 +149,6 @@ update_descriptives_new "system/query"
 		s_modified_by = user_name()
 	    from
 		collection tmp_gift_items t
-		left join collection a_pledge p on t.ledger = p.a_ledger_number and t.fund = p.a_fund and t.donor = p.p_donor_partner_id
 	    group by             
 		:ledger,
 		:fund,
@@ -548,6 +547,17 @@ update_descriptives_new "system/query"
                 (:parameters:donor is null or :parameters:donor = :dh:p_donor_partner_key) and
                 :dh:is_approximate = 0
             ;
+
+		-- Update pledge information for a_descriptives_hist
+		insert into
+			identity collection a_descriptives_hist dh
+		select
+			:p:a_is_active, :p:a_intent_type, :p:a_amount, :p:a_total_amount, :p:a_giving_interval, :p:a_gift_count,
+			:p:a_pledge_date, :p:a_start_date, :p:a_end_date
+		from
+			collection a_pledge p
+		where
+			:dh:ledger = :p:a_ledger_number and :dh:fund = :p:a_fund and :dh:p_donor_partner_key = :p:p_donor_partner_id
 
 	    -- Update past/current flags on histories and on descriptives. For a history entry with
 	    -- more than one gift, we base the current/lapsed indicator on the gift interval compared to
