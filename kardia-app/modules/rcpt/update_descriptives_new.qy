@@ -107,7 +107,7 @@ update_descriptives_new "system/query"
                 :t2:fund = :t3:fund and
                 :t2:id = :t3:id
             ;
-            
+
 	    -- Build a list of giving pattern descriptives for each of the fund's donors.  We want
 	    -- to optimize this to help staff interact with donors and ask good questions, instead
 	    -- of generating results simply based on math.
@@ -161,6 +161,8 @@ update_descriptives_new "system/query"
 		:giftdate desc
 	    ;
 
+            -- From David: Is this block of code is being used to pull the data, then have the 3 history data to update it? Thanks! 
+
 	    -- Generate the amount history data, starting with the most recent gift amount.
 	    print 'Creating descriptives histories at ' + dateformat(getdate(), 'hh:mm:ss');
 	    insert into
@@ -182,10 +184,10 @@ update_descriptives_new "system/query"
 			(datediff(day, last(:giftdate), first(:giftdate)) / 30.5) / convert(double, count(1) - 1)
 			),
 		a_act_average_amount = condition(
-                        datediff(day, last(:giftdate), first(:giftdate)) < 16,
-                        convert(money, null),
-                        (sum(:amount) - :amount) / round(datediff(day, last(:giftdate), first(:giftdate)) / 30.5)
-                        ),
+			datediff(day, last(:giftdate), first(:giftdate)) < 16,
+			convert(money, null),
+			(sum(:amount) - :amount) / round(datediff(day, last(:giftdate), first(:giftdate)) / 30.5)
+			),
 		s_date_created = getdate(),
 		s_created_by = user_name(),
 		s_date_modified = getdate(),
