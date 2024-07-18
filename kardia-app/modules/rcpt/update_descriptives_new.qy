@@ -160,6 +160,8 @@ update_descriptives_new "system/query"
 		:donor,
 		:giftdate desc
 	    ;
+        
+        -- From David: Is this block of code is being used to pull the data, then have the 3 history data to update it? Thanks! 
 
 	    -- Generate the amount history data, starting with the most recent gift amount.
 	    print 'Creating descriptives histories at ' + dateformat(getdate(), 'hh:mm:ss');
