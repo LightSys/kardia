@@ -24,6 +24,9 @@ FIX_SCREEN_DRAINBAMAGE=yes
 #K_GITREPO="git.code.sf.net/p/kardia/git"
 CX_GITREPO="github.com/LightSys/centrallix"
 K_GITREPO="github.com/LightSys/kardia"
+CKR_GITREPO="https://bitbucket.org/disciplemakers/check-reader.git"
+
+CKR_FROMPIP="pyftpdlib"
 
 # We need to set the umask to 002, so that we give write permission to
 # the kardia_src group for the shared repository.  This could be made
@@ -41,6 +44,35 @@ K_GITREPO="github.com/LightSys/kardia"
 #
 CX_KEY="git.code.sf.net ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAoMesJ60dow5VqNsIqIQMBNmSYz6txSC5YSUXzPNWV4VIWTWdqbQoQuIu+oYGhBMoeaSWWCiVIDTwFDzQXrq8CwmyxWp+2TTuscKiOw830N2ycIVmm3ha0x6VpRGm37yo+z+bkQS3m/sE7bkfTU72GbeKufFHSv1VLnVy9nmJKFOraeKSHP/kjmatj9aC7Q2n8QzFWWjzMxVGg79TUs7sjm5KrtytbxfbLbKtrkn8OXsRy1ib9hKgOwg+8cRjwKbSXVrNw/HM+MJJWp9fHv2yzWmL8B6fKoskslA0EjNxa6d76gvIxwti89/8Y6xlhR0u65u1AiHTX9Q4BVsXcBZUDw=="
 K_KEY="kardia.git.sourceforge.net ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAoMesJ60dow5VqNsIqIQMBNmSYz6txSC5YSUXzPNWV4VIWTWdqbQoQuIu+oYGhBMoeaSWWCiVIDTwFDzQXrq8CwmyxWp+2TTuscKiOw830N2ycIVmm3ha0x6VpRGm37yo+z+bkQS3m/sE7bkfTU72GbeKufFHSv1VLnVy9nmJKFOraeKSHP/kjmatj9aC7Q2n8QzFWWjzMxVGg79TUs7sjm5KrtytbxfbLbKtrkn8OXsRy1ib9hKgOwg+8cRjwKbSXVrNw/HM+MJJWp9fHv2yzWmL8B6fKoskslA0EjNxa6d76gvIxwti89/8Y6xlhR0u65u1AiHTX9Q4BVsXcBZUDw=="
+
+# Detect whether firewalld is enabled or not.  If the installation is not
+# using firewalld, then firewalling must be done entirely manually instead
+# of by this script.
+#
+USE_FIREWALLD=$(systemctl list-unit-files | sed -n 's/^firewalld.service[      ]*//p')
+
+# Boolean detectors
+function isYes
+    {
+    local YESNO="$1"
+    YESNO="${YESNO,,}"
+    if [ "$YESNO" = "yes" -o "$YESNO" = "y" -o "$YESNO" = "1" -o "$YESNO" = "true" -o "$YESNO" = "on" ]; then
+	return 0
+    else
+	return 1
+    fi
+    }
+
+function isNo
+    {
+    local YESNO="$1"
+    YESNO="${YESNO,,}"
+    if [ "$YESNO" = "no" -o "$YESNO" = "n" -o "$YESNO" = "0" -o "$YESNO" = "false" -o "$YESNO" = "off" -o "$YESNO" = "" ]; then
+	return 0
+    else
+	return 1
+    fi
+    }
 
 # Are we root?
 function Root
@@ -96,7 +128,8 @@ function insertLine
 BASEDIR=/usr/local
 USER=$(/usr/bin/id -un)
 VERSION="1.5"
-sTITLE="Kardia/Centrallix VM Appliance $VERSION  (C) LightSys"
+YEAR=$(date '+%Y')
+sTITLE="Kardia/Centrallix VM Appliance $VERSION (C) 2011-$YEAR LightSys"
 Root || TITLE="[$USER]  $sTITLE"
 Root && TITLE="** ROOT **  $sTITLE"
 export QUICKMODE=no
@@ -340,31 +373,32 @@ function doGit
 # Update the RHEL5 lokkit firewall
 function updateFirewall
     {
+    if [ "$USE_FIREWALLD" = "enabled" ]; then
+	#Centrallix main port
+	echo "Opening port for Centrallix"
+	firewall-cmd --add-port 800/tcp
+	firewall-cmd --perm --add-port 800/tcp
+	firewall-cmd --add-port 843/tcp
+	firewall-cmd --perm --add-port 843/tcp
 
-    #Centrallix main port
-    echo "Opening port for Centrallix"
-    firewall-cmd --add-port 800/tcp
-    firewall-cmd --perm --add-port 800/tcp
-    firewall-cmd --add-port 843/tcp
-    firewall-cmd --perm --add-port 843/tcp
+	#samba
+	echo "Opening port for Samba"
+	firewall-cmd --add-service samba
+	firewall-cmd --perm --add-service samba
 
-    #samba
-    echo "Opening port for Samba"
-    firewall-cmd --add-service samba
-    firewall-cmd --perm --add-service samba
+	for USERID in $(grep -- '- Kardia:' /etc/passwd | sed 's/^[^:]*:[^:]*:\([^:]*\):.*/\1/'); do
+	    PORT=$((8000 + $USERID))
+	    echo "Opening user port $PORT"
+	    firewall-cmd --add-port $PORT/tcp
+	    firewall-cmd --perm --add-port $PORT/tcp
+	    PORT=$((18000 + $USERID))
+	    echo "Opening user SSL port $PORT"
+	    firewall-cmd --add-port $PORT/tcp
+	    firewall-cmd --perm --add-port $PORT/tcp
+	done
 
-    for USERID in $(grep -- '- Kardia:' /etc/passwd | sed 's/^[^:]*:[^:]*:\([^:]*\):.*/\1/'); do
-	PORT=$((8000 + $USERID))
-	echo "Opening user port $PORT"
-	firewall-cmd --add-port $PORT/tcp
-	firewall-cmd --perm --add-port $PORT/tcp
-	PORT=$((18000 + $USERID))
-	echo "Opening user SSL port $PORT"
-	firewall-cmd --add-port $PORT/tcp
-	firewall-cmd --perm --add-port $PORT/tcp
-    done
-
-    sleep 0.5
+	sleep 0.5
+    fi
     }
 
 function genCertificate
@@ -438,6 +472,132 @@ function checkCert
     fi
     if [ "$todo" = "1" ]; then
 	genCertificate
+    fi
+    }
+
+#
+# Add a new user:  addUser username realname [nopass|pass] [uid] [gid]
+#
+function addUser
+    {
+    local N_USER="$1"
+    local N_REALNAME="$2"
+    local NOPASS="$3"
+    local USE_UID="$4"
+    local USE_GID="$5"
+    local NEWPASS="newuserpass"
+    if [ -f /usr/local/src/kardia-git/kardia-app/data/Kardia_DB ]; then
+	# Try to get default password from local configuration
+	NEWPASS=$(sed -n 's/.*default_password = "\([^"]*\)";.*/\1/p' < /usr/local/src/kardia-git/kardia-app/data/Kardia_DB)
+    fi
+    EXISTS=$(grep "^$N_USER:" /etc/passwd)
+    if [ "$EXISTS" != "" ]; then
+	echo "User already exists."
+	sleep 1
+	return 1
+    fi
+    echo "useradd"
+    if [ "$USE_UID" != "" ]; then
+	if [ "$USE_GID" != "" ]; then
+	    /usr/sbin/groupadd -g "$USE_GID" "$N_USER"
+	    /usr/sbin/useradd -c "$N_REALNAME - Kardia" -u "$USE_UID" -g "$USE_GID" "$N_USER"
+	else
+	    /usr/sbin/useradd -c "$N_REALNAME - Kardia" -u "$USE_UID" "$N_USER"
+	fi
+    else
+	/usr/sbin/useradd -c "$N_REALNAME - Kardia" "$N_USER"
+    fi
+    echo "smbpasswd"
+    smbpasswd -a -n "$N_USER"
+    echo "smbpasswd done"
+    if [ ! -f "/home/$N_USER/.ssh/known_hosts" ]; then
+	mkdir "/home/$N_USER/.ssh"
+	/bin/chown "$N_USER": "/home/$N_USER/.ssh"
+	/bin/chmod 700 "/home/$N_USER/.ssh"
+	touch "/home/$N_USER/.ssh/known_hosts"
+	/bin/chown "$N_USER": "/home/$N_USER/.ssh/known_hosts"
+	/bin/chmod 600 "/home/$N_USER/.ssh/known_hosts"
+    fi
+
+    insertLine "/home/$N_USER/.ssh/known_hosts" "$CX_KEY"
+    insertLine "/home/$N_USER/.ssh/known_hosts" "$K_KEY"
+    echo ""
+    echo "Setting an initial database password for $N_USER..."
+    echo ""
+    mysql -e "CREATE USER '$N_USER'@'%' IDENTIFIED BY '$NEWPASS';"
+    mysql -e "CREATE USER '$N_USER'@'localhost' IDENTIFIED BY '$NEWPASS';"
+    mysql -e "GRANT ALL ON Kardia_DB.* TO '$N_USER'@'%';"
+    mysql -e "GRANT ALL ON Kardia_DB.* TO '$N_USER'@'localhost';"
+    mysql -e "GRANT SELECT ON mysql.user TO '$N_USER'@'%';"
+    mysql -e "GRANT SELECT ON mysql.user TO '$N_USER'@'localhost';"
+    mysql -e "FLUSH PRIVILEGES;"
+
+    if [ "$NOPASS" != "nopass" ]; then
+	echo "Prompting for password..."
+	/usr/bin/passwd "$N_USER" < /dev/tty
+    fi
+
+    updateFirewall
+
+    insertLine /home/$N_USER/.vimrc "set ai"
+    insertLine /home/$N_USER/.vimrc "set shiftwidth=4"
+    insertLine /home/$N_USER/.vimrc "set cino={1s,:0,t0,f1s"
+    insertLine /home/$N_USER/.vimrc "set sts=4"
+
+    insertLine /home/$N_USER/.bashrc "alias vi=/usr/bin/vim"
+
+    mkdir -p "/home/$N_USER/cxinst/etc/centrallix" 2>/dev/null
+    sed -n "s/^\($N_USER:[^:]*\):.*/\1/p" < /etc/shadow > "/home/$N_USER/cxinst/etc/centrallix/cxpasswd"
+    chown -R "$N_USER": "/home/$N_USER/cxinst/"
+    }
+
+#
+# modifyUser username realname
+#
+function modifyUser
+    {
+    local N_USER="$1"
+    local N_REALNAME="$2"
+    /usr/sbin/usermod -c "$N_REALNAME - Kardia" "$N_USER"
+    }
+
+#
+# updateUserPerms username allowssh allowsrc allowroot allowkardiaadmin
+#
+function updateUserPerms
+    {
+    local N_USER="$1"
+    local N_ALLOW_SSH="$2"
+    local N_ALLOW_SRC="$3"
+    local N_ALLOW_ROOT="$4"
+    local N_ALLOW_KARDIA_SYSADM="$5"
+
+    local GRPS=$(groups "$N_USER" | sed "s/$N_USER : $N_USER *//" | sed 's/kardia_[a-z]*//g' | sed 's/  */ /g' | sed 's/^ //' | sed 's/ $//' | sed 's/ /,/g')
+
+    if [ "$N_ALLOW_SSH" != "$ALLOW_SSH" -o "$N_ALLOW_SRC" != "$ALLOW_SRC" -o "$N_ALLOW_ROOT" != "$ALLOW_ROOT" ]; then
+	if [ "$N_ALLOW_SSH" = yes ]; then
+	    GRPS="$GRPS,kardia_ssh"
+	fi
+	if [ "$N_ALLOW_SRC" = yes ]; then
+	    GRPS="$GRPS,kardia_src"
+	fi
+	if [ "$N_ALLOW_ROOT" = yes ]; then
+	    GRPS="$GRPS,kardia_root"
+	fi
+	GRPS="${GRPS##,}"
+	/usr/sbin/usermod -G "$GRPS" "$N_USER"
+    fi
+    if [ "$N_ALLOW_KARDIA_SYSADM" != "no" ]; then
+	#Add this user to the file and then give them the privs
+	AsRoot sed -i -e "/$N_USER/d" $BASEDIR/src/.cx_kardia_admins 2> /dev/null
+	AsRoot echo $N_USER >> $BASEDIR/src/.cx_kardia_admins
+	doGiveUserKardiaSysadmin $N_USER
+    else
+	#make sure we do not have this username in the file
+	if [ -f "$BASEDIR/src/.cx_kardia_admins" ]; then
+	    AsRoot sed -i -e "/$N_USER/d" $BASEDIR/src/.cx_kardia_admins
+	    doRemoveUserKardiaSysadmin $N_USER
+	fi
     fi
     }
 
@@ -517,63 +677,14 @@ function manageUser
 	    return 1
 	fi
 	if [ "$1" = "new" ]; then
-	    EXISTS=$(grep "^$N_USER:" /etc/passwd)
-	    if [ "$EXISTS" != "" ]; then
-		echo "User already exists."
-		sleep 1
-		return 1
-	    fi
-	    echo "useradd"
-	    /usr/sbin/useradd -c "$N_REALNAME - Kardia" "$N_USER"
-	    echo "smbpasswd"
-	    smbpasswd -a -n "$N_USER"
-	    echo "smbpasswd done"
-	    if [ ! -f "/home/$N_USER/.ssh/known_hosts" ]; then
-		mkdir "/home/$N_USER/.ssh"
-		/bin/chown "$N_USER": "/home/$N_USER/.ssh"
-		/bin/chmod 700 "/home/$N_USER/.ssh"
-		touch "/home/$N_USER/.ssh/known_hosts"
-		/bin/chown "$N_USER": "/home/$N_USER/.ssh/known_hosts"
-		/bin/chmod 600 "/home/$N_USER/.ssh/known_hosts"
-	    fi
-
-	    insertLine "/home/$N_USER/.ssh/known_hosts" "$CX_KEY"
-	    insertLine "/home/$N_USER/.ssh/known_hosts" "$K_KEY"
-	    echo ""
-	    echo "Setting an initial password for $N_USER..."
-	    echo ""
-	    mysql -e "CREATE USER '$N_USER'@'%' IDENTIFIED BY 'newuserpass';"
-	    mysql -e "CREATE USER '$N_USER'@'localhost' IDENTIFIED BY 'newuserpass';"
-	    mysql -e "GRANT ALL ON Kardia_DB.* TO '$N_USER'@'%';"
-	    mysql -e "GRANT ALL ON Kardia_DB.* TO '$N_USER'@'localhost';"
-	    mysql -e "GRANT SELECT ON mysql.user TO '$N_USER'@'%';"
-	    mysql -e "GRANT SELECT ON mysql.user TO '$N_USER'@'localhost';"
-	    mysql -e "FLUSH PRIVILEGES;"
-
-	    echo "prompting for password" 
-
-	    /usr/bin/passwd "$N_USER" < /dev/tty
-
-	    updateFirewall
-
-
-	    insertLine /home/$USER/.vimrc "set ai"
-	    insertLine /home/$USER/.vimrc "set shiftwidth=4"
-	    insertLine /home/$USER/.vimrc "set cino={1s,:0,t0,f1s"
-	    insertLine /home/$USER/.vimrc "set sts=4"
-	    #
-	    insertLine /home/$USER/.bashrc "alias vi=/usr/bin/vim"
-
-	    mkdir -p "/home/$N_USER/cxinst/etc/centrallix" 2>/dev/null
-	    sed -n "s/^\($N_USER:[^:]*\):.*/\1/p" < /etc/shadow > "/home/$N_USER/cxinst/etc/centrallix/cxpasswd"
-	    chown -R "$N_USER": "/home/$N_USER/cxinst/"
-
-	    # Update /etc/issue
+	    addUser "$N_USER" "$N_REALNAME"
+	    # Update /etc/issue to instruct user to no longer log in as root
 	    cat /etc/issue.kardia > /etc/issue
 	    cat /etc/issue.kardia > /etc/issue.net
 	elif [ "$REALNAME" != "$N_REALNAME" ]; then
-	    /usr/sbin/usermod -c "$N_REALNAME - Kardia" "$N_USER"
+	    modifyUser "$N_USER" "$N_REALNAME"
 	fi
+
 	#Create a .tpl file for the user
 	if [ ! -f "$KSRC/kardia-app/tpl/$N_USER.tpl" ]; then
 	    #Kardia may not yet be downloaded.  If not, this will fail
@@ -581,32 +692,9 @@ function manageUser
 		cp "$KSRC/kardia-app/tpl/newuser_default.tpl" "$KSRC/kardia-app/tpl/$N_USER.tpl"
 	    fi
 	fi 
-	if [ "$N_ALLOW_SSH" != "$ALLOW_SSH" -o "$N_ALLOW_SRC" != "$ALLOW_SRC" -o "$N_ALLOW_ROOT" != "$ALLOW_ROOT" ]; then
-	    GRPS=""
-	    if [ "$N_ALLOW_SSH" = yes ]; then
-		GRPS="$GRPS,kardia_ssh"
-	    fi
-	    if [ "$N_ALLOW_SRC" = yes ]; then
-		GRPS="$GRPS,kardia_src"
-	    fi
-	    if [ "$N_ALLOW_ROOT" = yes ]; then
-		GRPS="$GRPS,kardia_root"
-	    fi
-	    GRPS="${GRPS##,}"
-	    /usr/sbin/usermod -G "$GRPS" "$N_USER"
-	fi
-	if [ "$N_ALLOW_KARDIA_SYSADM" != "no" ]; then
-	    #Add this user to the file and then give them the privs
-	    AsRoot sed -i -e "/$N_USER/d" $BASEDIR/src/.cx_kardia_admins 2> /dev/null
-	    AsRoot echo $N_USER >> $BASEDIR/src/.cx_kardia_admins
-	    doGiveUserKardiaSysadmin $N_USER
-	else
-	    #make sure we do not have this username in the file
-	    if [ -f "$BASEDIR/src/.cx_kardia_admins" ]; then
-		AsRoot sed -i -e "/$N_USER/d" $BASEDIR/src/.cx_kardia_admins
-		doRemoveUserKardiaSysadmin $N_USER
-	    fi
-	fi
+
+	updateUserPerms "$N_USER" "$N_ALLOW_SSH" "$N_ALLOW_SRC" "$N_ALLOW_ROOT" "$N_ALLOW_KARDIA_SYSADM"
+
 	if [ "$1" = "existing" -a "$N_RESET_PASS" = yes ]; then
 	    echo ""
 	    echo "Resetting password for $N_USER..."
@@ -879,6 +967,7 @@ function menuSystem
 	DSTR="$DSTR Timezone 'Set the System Time Zone'"
 	DSTR="$DSTR Resize 'Resize the Virtual Machine'"
 	DSTR="$DSTR Autossh 'Configure Autossh'"
+	Rootable && DSTR="$DSTR Cron 'Configure Cron Tasks'"
         Rootable && DSTR="$DSTR Wizard 'Re-Run the Initial Setup Wizard'"
 	DSTR="$DSTR Quit 'Exit Kardia / Centrallix Management'"
 
@@ -921,6 +1010,9 @@ function menuSystem
 		;;
 	    Wizard)
 		AsRoot chooseSetupGuide
+		;;
+	    Cron)
+		AsRoot editAllCron
 		;;
 	esac
     done
@@ -2000,6 +2092,24 @@ function lookupStatus
     else
 	AUTOSSH_RUNNING=no
     fi
+    CKR_INSTALLED=no
+    CKR_CONFIGURED=no
+    CKR_RUNNING=no
+    if [ -d "/usr/local/src/check-reader" ]; then
+	CKR_INSTALLED=yes
+	if [ -f "/usr/local/src/check-reader/server/config/config.toml" -a -f "/usr/local/src/check-reader/server/config/auth.toml" ]; then
+	    CKR_CONFIGURED=yes
+	    CKR_PORT=$(sed -n 's/^port[ 	]*=[ 	]*"\?\([0-9a-z_-]*\)"\?[ 	]*$/\1/p' < /usr/local/src/check-reader/server/config/config.toml)
+	    CKR_HOST=$(sed -n 's/^host[ 	]*=[ 	]*"\?\([0-9a-z_.-]*\)"\?[ 	]*$/\1/p' < /usr/local/src/check-reader/server/config/config.toml)
+	    CKR_KEY=$(sed -n 's/^jwt_key[ 	]*=[ 	]*"\?\([0-9a-z_.-]*\)"\?[ 	]*$/\1/p' < /usr/local/src/check-reader/server/config/auth.toml)
+	    if [ "$CKR_PORT" != "" -a "$CKR_HOST" != "" ]; then
+		SOCKET=$(ss -Ainet -anp | grep 'tcp.*LISTEN.*:'"$CKR_PORT"'.*:\*.*python3')
+		if [ "$SOCKET" != "" ]; then
+		    CKR_RUNNING=yes
+		fi
+	    fi
+	fi
+    fi
     }
 
 
@@ -2101,43 +2211,57 @@ function AsStartStopUser
 
 function initConsole
     {
-    if [ "$USER" = root ]; then
-	screen -S Centrallix -p 0 -X stuff "export LD_LIBRARY_PATH=/usr/local/lib"
-    else
-	screen -S Centrallix -p 0 -X stuff "export LD_LIBRARY_PATH='/home/$USER/cxinst/lib'"
+    SNAME="$1"
+    if [ "$SNAME" = "" ]; then
+	SNAME=Centrallix
     fi
-    sleep 0.1
-    screen -S Centrallix -p 0 -X logfile "$CXLOG"
-    sleep 0.1
-    screen -S Centrallix -p 0 -X log on
-    sleep 0.1
-    screen -S Centrallix -p 0 -X stuff "##### Centrallix Console #####"
+    if [ "$SNAME" = Centrallix ]; then
+	if [ "$USER" = root ]; then
+	    screen -S "$SNAME" -p 0 -X stuff "export LD_LIBRARY_PATH=/usr/local/lib"
+	else
+	    screen -S "$SNAME" -p 0 -X stuff "export LD_LIBRARY_PATH='/home/$USER/cxinst/lib'"
+	fi
+	sleep 0.1
+	screen -S "$SNAME" -p 0 -X logfile "$CXLOG"
+	sleep 0.1
+	screen -S "$SNAME" -p 0 -X log on
+	sleep 0.1
+    fi
+    screen -S "$SNAME" -p 0 -X stuff "##### $SNAME Console #####"
     }
 
 
 function screenCheck
     {
-    IS_STARTED=$(screen -list | grep Centrallix)
+    SNAME="$1"
+    if [ "$SNAME" = "" ]; then
+	SNAME=Centrallix
+    fi
+    IS_STARTED=$(screen -list | grep "$SNAME")
     if [ "$IS_STARTED" = "" ]; then
-	screen -d -m -S Centrallix
+	screen -d -m -S "$SNAME"
 	# wait for screen to start
 	while true; do
 	    sleep 0.5
-	    IS_STARTED=$(screen -list | grep Centrallix)
+	    IS_STARTED=$(screen -list | grep "$SNAME")
 	    if [ "$IS_STARTED" != "" ]; then
 		break
 	    fi
 	done
 
-	initConsole
+	initConsole "$SNAME"
     fi
     }
 
 
 function screenPassCtrlC
     {
+    SNAME="$1"
+    if [ "$SNAME" = "" ]; then
+	SNAME=Centrallix
+    fi
     sleep 0.2
-    screen -S Centrallix -p 0 -X stuff ""
+    screen -S "$SNAME" -p 0 -X stuff ""
     sleep 0.2
     }
 
@@ -2402,13 +2526,17 @@ function menuMysqlAccessMode
     if [ "$SEL" != "" -a "$MYSQLMODE" != "$SEL" ]; then
 	if [ "$SEL" = "local" ]; then
 	    #block firewall in
-	    firewall-cmd --perm --remove-service mysql
-	    firewall-cmd --remove-service mysql
+	    if [ "$USE_FIREWALLD" = "enabled" ]; then
+		firewall-cmd --perm --remove-service mysql
+		firewall-cmd --remove-service mysql
+	    fi
 	fi
 	if [ "$SEL" = "both" ]; then
 	    #block firewall in
-	    firewall-cmd --perm --add-service mysql
-	    firewall-cmd --add-service mysql
+	    if [ "$USE_FIREWALLD" = "enabled" ]; then
+		firewall-cmd --perm --add-service mysql
+		firewall-cmd --add-service mysql
+	    fi
 	fi
     fi
     if [ "$SEL" != "" ]; then
@@ -2958,11 +3086,230 @@ function chooseKardiaGitBranch
 
     }
 
+
+# Rewrite check scanner configuration
+function writeCheckScannerConfig
+    {
+    if [ ! -f /usr/local/src/check-reader/server/config/config.toml ]; then
+	if [ -f /usr/local/src/check-reader/server/config/config.template ]; then
+	    cp -a /usr/local/src/check-reader/server/config/config.template /usr/local/src/check-reader/server/config/config.toml
+	else
+	    return 1
+	fi
+    fi
+    if [ ! -f /usr/local/src/check-reader/server/config/auth.toml ]; then
+	if [ -f /usr/local/src/check-reader/server/config/auth.template ]; then
+	    cp -a /usr/local/src/check-reader/server/config/auth.template /usr/local/src/check-reader/server/config/auth.toml
+	else
+	    return 1
+	fi
+    fi
+    if [ "$CKR_PORT" = "" ]; then
+	CKR_PORT=8000
+    fi
+    if [ "$CKR_HOST" = "" ]; then
+	CKR_HOST=0.0.0.0
+    fi
+    if [ "$CKR_KEY" = "" -o "$CKR_KEY" = "change_this" ]; then
+	CKR_KEY=$(dd if=/dev/urandom bs=1 count=16 | md5sum)
+    fi
+    sed -i 's/^port[ 	]*=[ 	]*"\?\([0-9a-z_-]*\)"\?[ 	]*$/port = '"$CKR_PORT"'/' /usr/local/src/check-reader/server/config/config.toml
+    sed -i 's/^host[ 	]*=[ 	]*"\?\([0-9a-z_-]*\)"\?[ 	]*$/host = "'"$CKR_HOST"'"/' /usr/local/src/check-reader/server/config/config.toml
+    sed -i 's/^jwt_key[ 	]*=[ 	]*"\?\([0-9a-z_-]*\)"\?[ 	]*$/host = "'"$CKR_KEY"'"/' /usr/local/src/check-reader/server/config/auth.toml
+    }
+
+
+# Set check scanner server host
+function setCheckScannerHost
+    {
+    lookupStatus
+    if [ "$1" = "" ]; then
+	DSTR="dialog --backtitle '$TITLE' --title 'Check Scanner Host' --inputbox 'Host name or IP for check scanner server:' 8 72 '$CKR_HOST'"
+	CKR_HOST=$(eval "$DSTR" 2>&1 >/dev/tty)
+	if [ "$?" != 0 ]; then
+	    return 1
+	fi
+    else
+	CKR_HOST="$1"
+    fi
+    writeCheckScannerConfig
+    checkRestartScanner
+    }
+
+
+# Set check scanner server port
+function setCheckScannerPort
+    {
+    lookupStatus
+    if [ "$1" = "" ]; then
+	DSTR="dialog --backtitle '$TITLE' --title 'Check Scanner Port' --inputbox 'Service name or port number for check scanner server:' 8 72 '$CKR_PORT'"
+	CKR_PORT=$(eval "$DSTR" 2>&1 >/dev/tty)
+	if [ "$?" != 0 ]; then
+	    return 1
+	fi
+    else
+	CKR_PORT="$1"
+    fi
+    writeCheckScannerConfig
+    checkRestartScanner
+    }
+
+
+# Check to see if the scanner server is running, and if so, restart it.
+function checkRestartScanner
+    {
+    lookupStatus
+    if [ "$CKR_RUNNING" = "yes" ]; then
+	stopCheckScanner
+	sleep 0.5
+	startCheckScanner
+    fi
+    }
+
+
+# Start the check scanner server
+function startCheckScanner
+    {
+    screenCheck Scanner
+    sleep 0.1
+    screen -S Scanner -p 0 -X stuff "cd /usr/local/src/check-reader/server"
+    sleep 0.1
+    screen -S Scanner -p 0 -X stuff "python3 app.py -c"
+    sleep 0.5
+    }
+
+
+# Stop the check scanner server
+function stopCheckScanner
+    {
+    screenCheck Scanner
+    screenPassCtrlC Scanner
+    sleep 0.1
+    lookupStatus
+    if [ "$CKR_RUNNING" = "yes" ]; then
+	screenPassCtrlC Scanner
+	sleep 5
+	lookupStatus
+    fi
+    if [ "$CKR_RUNNING" = "yes" ]; then
+	CKR_PID=$(ps auxw | grep 'python3 app.py' | grep -v grep | sed -n 's/^[^ ]\+ \+\([0-9]\+\) \+.*/\1/p')
+	if [ "$CKR_PID" != "" ]; then
+	    kill $CKR_PID 2>/dev/null
+	    sleep 1
+	    kill -9 $CKR_PID 2>/dev/null
+	fi
+    fi
+    }
+
+
+# Install the check scanner server from git
+function installCheckScanner
+    {
+    if [ ! -d "/usr/local/src/check-reader" ]; then
+	cd /usr/local/src
+	git clone "$CKR_REPO" check-reader
+    else
+	echo "Error: check-reader server already installed."
+	return 1
+    fi
+    cd /usr/local/src/check-reader/server
+    pip3 install $CKR_FROMPIP
+    writeCheckScannerConfig
+
+    #TODO# set up check reader server database via curl API calls.
+    }
+
+
+# Update the check scanner server software from git
+function updateCheckScanner
+    {
+    lookupStatus
+    cd /usr/local/src/check-reader
+    git pull
+    pip3 install --upgrade $CKR_FROMPIP
+    checkRestartScanner
+    }
+
+
+# Manage check scanners
+function menuCheckScanner
+    {
+    while true; do
+	lookupStatus
+
+	if [ "$CKR_INSTALLED" = "no" ]; then
+	    CKSCAN="not installed"
+	elif [ "$CKR_CONNFIGURED" = "no" ]; then
+	    CKSCAN="not configured"
+	else
+	    CKSCAN="host $CKR_HOST port $CKR_PORT"
+	fi
+
+	DSTR="dialog --backtitle '$TITLE' --title 'Check Scanner Server' --menu 'Check Scanner Server Options:' 20 72 14"
+	if [ "$CKR_INSTALLED" = "no" ]; then
+	    DSTR="$DSTR Install 'Install Check Scanner Server'"
+	else
+	    DSTR="$DSTR Host    'Set Scanner Host IP    (now: ${CKR_HOST})'"
+	    DSTR="$DSTR Port    'Set Scanner TCP Port   (now: ${CKR_PORT})'"
+	fi
+	DSTR="$DSTR '---'  ''"
+	if [ "$CKR_CONFIGURED" = "yes" ]; then
+	    DSTR="$DSTR Update  'Update Check Scanner Server'"
+	    if [ "$CKR_RUNNING" = "no" ]; then
+		DSTR="$DSTR Start   'Start Scanner Server   (now: STOPPED)'"
+	    else
+		DSTR="$DSTR Stop    'Stop Scanner Server    (now: running)'"
+	    fi
+	    DSTR="$DSTR '---'  ''"
+	fi
+	DSTR="$DSTR Quit    'Exit Kardia / Centrallix Management'"
+
+	SEL=$(eval "$DSTR" 2>&1 >/dev/tty)
+	case "$SEL" in
+	    Quit)
+		exit
+		;;
+	    '---')
+		;;
+	    '')
+		break
+		;;
+	    Install)
+		installCheckScanner
+		;;
+	    Update)
+		updateCheckScanner
+		;;
+	    Start)
+		startCheckScanner
+		;;
+	    Stop)
+		stopCheckScanner
+		;;
+	    Host)
+		setCheckScannerHost
+		;;
+	    Port)
+		setCheckScannerPort
+		;;
+	esac
+    done
+    }
+
+
 # Configure the VM
 function menuConfigure
     {
     while true; do
 	lookupStatus
+
+	if [ "$CKR_INSTALLED" = "no" ]; then
+	    CKSCAN="not installed"
+	elif [ "$CKR_CONNFIGURED" = "no" ]; then
+	    CKSCAN="not configured"
+	else
+	    CKSCAN="host $CKR_HOST port $CKR_PORT"
+	fi
 
 	CXORIGIN=$(cd $BASEDIR/src/cx-git 2>/dev/null; git config --get remote.origin.url 2>/dev/null)
 	CXMETHOD=${CXORIGIN%%:*}
@@ -3011,6 +3358,8 @@ function menuConfigure
 	    DSTR="$DSTR Email 'Set Email (now: $USER_EMAIL)'"
 	    DSTR="$DSTR '---' ''"
 	fi
+	Rootable && DSTR="$DSTR Scanner   'Check Scanner Server (now: $CKSCAN)'"
+	Rootable && DSTR="$DSTR '---' ''"
 	DSTR="$DSTR Quit 'Exit Kardia / Centrallix Management'"
 
 	SEL=$(eval "$DSTR" 2>&1 >/dev/tty)
@@ -3058,6 +3407,9 @@ function menuConfigure
 		;;
 	    WorkMode)
 		AsRoot menuWorkflowMode
+		;;
+	    Scanner)
+		AsRoot menuCheckScanner
 		;;
 	esac
     done
@@ -3263,19 +3615,21 @@ function vm_prep_cleanNetwork
 
 		echo "done"
 	done
-	echo "Cleaning up firewall"
-	for a in `firewall-cmd --list-ser`; do 
-		if [ $a != "ssh" -a $a != "dhcpv6-client" ]; then 
-			echo "  removing service $a"
-			firewall-cmd --remove-service $a
-			firewall-cmd --perm --remove-service $a
-		fi; 
-	done
-	for a in `firewall-cmd --list-port`; do 
-		echo "  removing port $a"
-		firewall-cmd --remove-port $a
-		firewall-cmd --perm --remove-port $a
-	done
+	if [ "$USE_FIREWALLD" = "enabled" ]; then
+		echo "Cleaning up firewall"
+		for a in `firewall-cmd --list-ser`; do 
+			if [ $a != "ssh" -a $a != "dhcpv6-client" ]; then 
+				echo "  removing service $a"
+				firewall-cmd --remove-service $a
+				firewall-cmd --perm --remove-service $a
+			fi; 
+		done
+		for a in `firewall-cmd --list-port`; do 
+			echo "  removing port $a"
+			firewall-cmd --remove-port $a
+			firewall-cmd --perm --remove-port $a
+		done
+	fi
 	echo
 }
 
@@ -3495,6 +3849,81 @@ function doCreateKardiaUnixUser
 	fi
     }
 
+#
+# editAllCron - manage all configured /etc/cron.d scripts, except for 0hourly
+#
+function editAllCron
+    {
+    while true; do
+	DSTR="dialog --backtitle '$TITLE' --title 'Edit Cron Tasks' --menu 'Edit Cron Tasks' 20 72 14"
+	for CRONPATH in /etc/cron.d/*; do
+	    CRONFILE=${CRONPATH##*/}
+	    CRONCMD=$(cat "$CRONPATH" | sed -n 's/^[^ ]* [^ ]* [^ ]* [^ ]* [^ ]* [^ ]* //p')
+	    CRONENABLE=$(grep "^[^#].*$CRONCMD" "$CRONPATH")
+	    if [ "$CRONENABLE" != "" ]; then
+		DSTR="$DSTR ${CRONFILE} '${CRONCMD}'"
+	    else
+		DSTR="$DSTR ${CRONFILE} '(disab) ${CRONCMD}'"
+	    fi
+	done
+	DSTR="$DSTR '---' '------'"
+	DSTR="$DSTR New 'New Cron Job'"
+	DSTR="$DSTR Quit 'Exit Kardia / Centrallix Management'"
+
+	SEL=$(eval "$DSTR" 2>&1 >/dev/tty)
+	case "$SEL" in
+	    Quit)
+		exit
+		;;
+	    New)
+		addNewCron
+		;;
+	    '')
+		break
+		;;
+	    '---')
+		break
+		;;
+	    *)
+		readCron "/etc/cron.d/${SEL}"
+		editCronFull "/etc/cron.d/${SEL}" "${cron_command}"
+		;;
+	esac
+    done
+    }
+
+#
+# addNewCron - create a new cron entry in cron.d
+#
+function addNewCron
+    {
+    local CRONNAME="$1"
+
+    if [ "$CRONNAME" != "" ]; then
+	export cron_minute="$2"
+	export cron_hour="$3"
+	export cron_dom="$4"
+	export cron_month="$5"
+	export cron_day="$6"
+	export cron_who="$7"
+	local CRONCMD="$8"
+
+	if [ "$CRONNAME" = "" -o "$CRONCMD" = "" ]; then
+	    echo "addNewCron: must supply: cronname min hr dom mon day who cmd"
+	    return
+	fi
+
+	writeCron "/etc/cron.d/${CRONNAME}" "$CRONCMD"
+    else
+	export cron_minute="*"
+	export cron_hour="*"
+	export cron_dom="*"
+	export cron_month="*"
+	export cron_day="*"
+	export cron_who="root"
+	editCronFull
+    fi
+    }
 
 #readCron - Pass filename first, followed by the command (in case no such cron exists yet)
 # readCron /etc/cron.kardia.d/backup /usr/local/bin/kardia.sh doBackup
@@ -3507,20 +3936,20 @@ function readCron
     if [ -n "$cronFile" -a -e "$cronFile" ]; then
 	#We were passed a cron file and it exists
 	while read a b c d e f g; do 
-	    export cron_hour="$a" 
-	    export cron_minute="$b"
-	    export cron_week="$c" 
+	    export cron_minute="$a"
+	    export cron_hour="$b" 
+	    export cron_dom="$c" 
 	    export cron_month="$d" 
 	    export cron_day="$e" 
 	    export cron_who="$f" 
 	    export cron_command="$g" 
 	done < $cronFile
-	#echo "$cron_hour $cron_minute $cron_day $cron_week $cron_month $cron_who $cron_command"
+	#echo "$cron_hour $cron_minute $cron_day $cron_dom $cron_month $cron_who $cron_command"
     else
 	#defaults
 	export cron_hour=22
 	export cron_minute=15
-	export cron_week="*"
+	export cron_dom="*"
 	export cron_month="*"
 	export cron_day="Mon,Tue,Wed,Thu,Fri"
 	export cron_who=root
@@ -3585,7 +4014,8 @@ PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
 MAILTO=root
 EOF
 #Now, put the cron command into the file
-	echo "$cron_hour $cron_minute $cron_week $cron_month $cron_day $cron_who $sentCommand" >> $cronFile
+	echo "$cron_minute $cron_hour $cron_dom $cron_month $cron_day $cron_who $sentCommand" >> $cronFile
+	chmod 600 "$cronFile"
     fi
     }
 
@@ -3599,19 +4029,33 @@ function editCronFull
     sentCommand="$*"
 
     #read the cronfile
-    readCron "$cronFile" "$sentCommand"
+    if [ "$cronFile" != "" ]; then
+	readCron "$cronFile" "$sentCommand"
+    fi
+
+    local cronName=${cronFile#/etc/cron.d/}
+    cronName=${cronName%.sh}
+
+    local cronEnabled=yes;
+    if [ "${cron_minute###}" != "$cron_minute" ]; then
+	cronEnabled=no
+	cron_minute="${cron_minute###}"
+    fi
 
     DSTR="dialog --title 'Edit Cron $cronFile' --backtitle '$TITLE' --form"
     DSTR="$DSTR 'Edit Cron' 0 0 0"
-    DSTR="$DSTR 'Hour(s):' 3 1 '$cron_hour' 3 36 30 0"
-    DSTR="$DSTR 'Minute(s):' 5 1 '$cron_minute' 5 36 30 0"
-    DSTR="$DSTR 'Day(s):' 7 1 '$cron_day' 7 36 30 0"
-    DSTR="$DSTR 'Week:' 9 1 '$cron_week' 9 36 30 0"
-    DSTR="$DSTR 'Month:' 11 1 '$cron_month' 11 36 30 0"
+    DSTR="$DSTR 'Name:' 1 1 '$cronName' 1 20 40 0"
+    DSTR="$DSTR 'Command:' 3 1 '$sentCommand' 3 20 40 0"
+    DSTR="$DSTR 'Enabled (yes/no):' 5 1 '$cronEnabled' 5 20 5 0"
+    DSTR="$DSTR 'Minute(s):' 7 1 '$cron_minute' 7 20 16 0"
+    DSTR="$DSTR 'Hour(s):' 9 1 '$cron_hour' 9 20 16 0"
+    DSTR="$DSTR 'Day(s) of Month:' 11 1 '$cron_dom' 11 20 16 0"
+    DSTR="$DSTR 'Month(s):' 13 1 '$cron_month' 13 20 16 0"
+    DSTR="$DSTR 'Day(s) of Week:' 15 1 '$cron_day' 15 20 16 0"
 
     eval "$DSTR" 2>&1 >/dev/tty |
 	{
-	read cron_hour; read cron_minute; read cron_day; read cron_week; read cron_month; 
+	read cron_name; read cron_cmd; read cron_ena; read cron_minute; read cron_hour; read cron_dom; read cron_month; read cron_day; 
 	if [ -z "$cron_hour" -a -z "$cron_minute" ]; then
 	    #they probably canceled
 	    return
@@ -3623,16 +4067,31 @@ function editCronFull
 	    echo "Invalid minute."; sleep 2; return
 	fi
 	if [ -z "$cron_day" ]; then
-	    echo "Invalid day."; sleep 2; return
+	    echo "Invalid day of week."; sleep 2; return
 	fi
-	if [ -z "$cron_week" ]; then
-	    echo "Invalid week."; sleep 2; return
+	if [ -z "$cron_dom" ]; then
+	    echo "Invalid day of month."; sleep 2; return
 	fi
 	if [ -z "$cron_month" ]; then
 	    echo "Invalid month."; sleep 2; return
 	fi
-	writeCron "$cronFile" "$sentCommand"
+	if isNo "$cron_ena"; then
+	    cron_minute="#${cron_minute}"
+	fi
+	if [ "$cron_name" != "$cronName" ]; then
+	    if [ "$cronFile" != "" ]; then
+		/bin/rm "$cronFile"
+	    fi
+	    cronFile="/etc/cron.d/${cron_name}"
+	fi
+	if [ "$cron_cmd" != "" -a "$cron_cmd" != "$sentCommand" ]; then
+	    sentCommand="$cron_cmd"
+	fi
 
+	# write the new/updated cron file
+	if [ "$cronFile" != "" -a "$sentCommand" != "" ]; then
+	    writeCron "$cronFile" "$sentCommand"
+	fi
 	}
     }
 
