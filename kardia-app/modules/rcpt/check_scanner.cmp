@@ -853,6 +853,7 @@ check_scanner "widget/component-decl"
 		from
 		    object expression ('/apps/kardia/modules/' + :scaninfo:module + '/' + :scaninfo:api + '/' + :scaninfo:got_scanner + '/scan/' + :scaninfo:conn_id + '?ledger=' + :parameters:ledger)
 		;
+		print 'Scan complete: ' + :scaninfo:check_number + ', ' + :scaninfo:image_content_type;
 
 		-- Hash the account and routing numbers using Argon2id for donor lookups.
 		select
@@ -861,6 +862,7 @@ check_scanner "widget/component-decl"
 		where
 		    :scaninfo:image_content_type is not null
 		;
+		print 'Hash complete: ' + :scaninfo:hash;
 
 		-- Filename
 		select

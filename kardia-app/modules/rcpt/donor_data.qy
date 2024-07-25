@@ -16,7 +16,8 @@ donor_data "system/query"
 		name='Donor Prefs',
 		key=:d:name,
 		partner=:d:p_partner_key,
-		data=isnull('Receipt Type: ' + isnull(:rt:a_receipt_type_desc, '(unset)') + '\n' + condition(:d:p_is_daf = 1, 'Donor-Advised Fund\n', ''), '') - '\n'
+		data=isnull('Receipt Type: ' + isnull(:rt:a_receipt_type_desc, '(unset)') + '\n' + condition(:d:p_is_daf = 1, 'Donor-Advised Fund\n', ''), '') - '\n',
+		modified_on=:d:s_date_modified
 	    from
 		identity /apps/kardia/data/Kardia_DB/p_donor/rows d,
 		/apps/kardia/data/Kardia_DB/a_receipt_type/rows rt

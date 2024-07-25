@@ -1,0 +1,10 @@
+$Version=2$
+kardia_modinfo "system/structure"
+    {
+    module_name = "Suran CDM+ Electronic Giving Integration";
+    module_abbrev = "CDM+ Integration";
+    module_description = "This module provides integration with Suran's CDM+ platform.";
+    module_sequence = null;
+    module_context = 'kardia:ledger';
+    module_endorsement = 'kardia:gift';
+    }

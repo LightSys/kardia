@@ -25,6 +25,7 @@ new_partner "widget/page"
     set_country_code "widget/parameter" { type=string; }
     set_email "widget/parameter" { type=string; }
     set_phone "widget/parameter" { type=string; }
+    set_comment "widget/parameter" { type=string; }
 
     new_partner_cmp "widget/component" 
 	{ 
@@ -49,5 +50,6 @@ new_partner "widget/page"
 	set_country_code=runserver(:this:set_country_code);
 	set_email=runserver(:this:set_email);
 	set_phone=runserver(:this:set_phone);
+	set_comment=runserver(:this:set_comment);
 	}
     }

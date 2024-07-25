@@ -473,9 +473,20 @@ popover_newperson_simple "widget/component-decl"
 			fgcolor2=black;
 			disable_color="#334466";
 
-			on_advadd1 "widget/connector" { event=Click; target=newp_form; action=Discard; }
-			on_advadd2 "widget/connector" { event=Click; target=newp_win; action=Close; }
-			on_advadd3 "widget/connector" { event=Click; target=popover_newperson_simple; action=AdvancedAddPerson; Origin=runclient(:point_var:value); event_delay=0.5; }
+			on_advadd1 "widget/connector"
+			    {
+			    event=Click;
+			    target=popover_newperson_simple;
+			    action=AdvancedAddPerson;
+			    Origin=runclient(:point_var:value);
+			    event_delay=0.5;
+			    email=runclient(:person_email:value);
+			    given_name=runclient(:person_fname:value);
+			    surname=runclient(:person_lname:value);
+			    comment=runclient(:person_comm:value);
+			    }
+			on_advadd2 "widget/connector" { event=Click; target=newp_form; action=Discard; }
+			on_advadd3 "widget/connector" { event=Click; target=newp_win; action=Close; }
 			}
 		    }
 		}

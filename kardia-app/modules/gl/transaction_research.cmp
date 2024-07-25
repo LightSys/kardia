@@ -23,6 +23,8 @@ transaction_research "widget/component-decl"
 	    {
 	    trp_ledger "widget/parameter" { param_name=ledger; type=string; default=runserver(:this:ledger); }
 	    trp_period "widget/parameter" { param_name=period; type=string; default=runclient(:f_period:value); }
+	    trp_startdate "widget/parameter" { param_name=startdate; type=string; default=runclient(:f_startdate:value); }
+	    trp_enddate "widget/parameter" { param_name=enddate; type=string; default=runclient(:f_enddate:value); }
 	    trp_fund "widget/parameter" { param_name=fund; type=string; default=runclient(:f_fund:value); }
 	    trp_batch "widget/parameter" { param_name=batch; type=integer; default=runclient(:f_batch:value); }
 	    trp_acct "widget/parameter" { param_name=account; type=string; default=runclient(:f_acct:value); }
@@ -30,6 +32,8 @@ transaction_research "widget/component-decl"
 	    trp_year "widget/parameter" { param_name=year; type=integer; default=runclient(:f_year:value); }
 	    trp_filter "widget/parameter" { param_name=filter; type=string; default=runclient(:f_filter:value); }
 	    trp_origin "widget/parameter" { param_name=origin; type=string; default=runclient(:f_origin:value); }
+	    trp_comment "widget/parameter" { param_name=comment; type=string; default=runclient(:f_comment:value); }
+	    trp_amount "widget/parameter" { param_name=amount; type=string; default=runclient(:f_amount:value); }
 
 	    sql = runclient("	declare object info;
 
@@ -38,6 +42,14 @@ transaction_research "widget/component-decl"
 				select :info:amax = :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'GLAssetHigh' and :a_ledger_number = :parameters:ledger;
 				select :info:lmin = :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'GLLiabLow' and :a_ledger_number = :parameters:ledger;
 				select :info:lmax = :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'GLLiabHigh' and :a_ledger_number = :parameters:ledger;
+				select :info:periods = sum(:p:a_period + ',') - ',' from /apps/kardia/data/Kardia_DB/a_period/rows p where :p:a_parent_period = :parameters:year and :p:a_ledger_number = :parameters:ledger;
+				select :info:startdate = convert(datetime, :parameters:startdate);
+				select :info:enddate = convert(datetime, :parameters:enddate);
+				select :info:amounttype = substring(:parameters:amount, 1, 1);
+				select :info:amount = convert(money, condition(charindex(:info:amounttype, '=<>') == 0, :parameters:amount, 
+							condition(:info:amounttype = '=', substring(:parameters:amount, 2, 999), null)));
+				select :info:minamount = convert(money, condition(:info:amounttype = '>', substring(:parameters:amount, 2, 999), null));
+				select :info:maxamount = convert(money, condition(:info:amounttype = '<', substring(:parameters:amount, 2, 999), null));
 	    
 				select
 				    cnt = count(1),
@@ -77,8 +89,14 @@ transaction_research "widget/component-decl"
 				    (:parameters:fund is null or charindex(',' + rtrim(:t:a_fund) + ',', ',' + :parameters:fund + ',') > 0) and
 				    (:parameters:batch is null or :t:a_batch_number = :parameters:batch) and
 				    (:parameters:account is null or charindex(',' + rtrim(:t:a_account_code) + ',', ',' + :parameters:account + ',') > 0) and
-				    (:parameters:year is null or datepart(year, :t:a_effective_date) = :parameters:year) and
+				    (:info:periods is null or charindex(',' + rtrim(:t:a_period) + ',', ',' + :info:periods + ',') > 0) and
+				    (:info:startdate is null or :t:a_effective_date >= :info:startdate) and
+				    (:info:enddate is null or :t:a_effective_date <= :info:enddate) and
 				    (:parameters:origin is null or :t:a_origin = :parameters:origin) and
+				    (:parameters:comment is null or charindex(lower(:parameters:comment), lower(:t:a_comment)) > 0) and
+				    (:info:amount is null or :t:a_amount = :info:amount) and
+				    (:info:minamount is null or :t:a_amount > :info:minamount) and
+				    (:info:maxamount is null or :t:a_amount < :info:maxamount) and
 				    (isnull(:parameters:filter,'') != 'I' or :t:a_account_code != :info:ixa) and
 				    (isnull(:parameters:filter,'') != 'Q' or not ((:t:a_account_code >= :info:amin and :t:a_account_code <= :info:amax) or (:t:a_account_code >= :info:lmin and :t:a_account_code <= :info:lmax))) and
 				    (isnull(:parameters:filter,'') != 'X' or (:t:a_account_category != '51' and :t:a_account_category != '52' and :t:a_account_category != '41' and :t:a_account_category != '42' and :t:a_account_category != '19')) and
@@ -106,7 +124,7 @@ transaction_research "widget/component-decl"
 
 	    tr_table "widget/table"
 		{
-		height=500;
+		height=490;
 		overlap_scrollbar = yes;
 		demand_scrollbar = yes;
 		initial_selection = no;
@@ -152,6 +170,8 @@ transaction_research "widget/component-decl"
 			    {
 			    tlp_ledger "widget/parameter" { param_name=ledger; type=string; default=runserver(:this:ledger); }
 			    tlp_period "widget/parameter" { param_name=period; type=string; default=runclient(:f_period:value); }
+			    tlp_startdate "widget/parameter" { param_name=startdate; type=string; default=runclient(:f_startdate:value); }
+			    tlp_enddate "widget/parameter" { param_name=enddate; type=string; default=runclient(:f_enddate:value); }
 			    tlp_fund "widget/parameter" { param_name=fund; type=string; default=runclient(:f_fund:value); }
 			    tlp_batch "widget/parameter" { param_name=batch; type=integer; default=runclient(:f_batch:value); }
 			    tlp_acct "widget/parameter" { param_name=account; type=string; default=runclient(:f_acct:value); }
@@ -165,6 +185,8 @@ transaction_research "widget/component-decl"
 			    tlp_gbatch "widget/parameter" { param_name=gbatch; type=string; default=runclient(:tr_osrc:minb); }
 			    tlp_gorigin "widget/parameter" { param_name=gorigin; type=string; default=runclient(:tr_osrc:mino); }
 			    tlp_tname "widget/parameter" { param_name=tname; type=string; }
+			    tlp_comment "widget/parameter" { param_name=comment; type=string; default=runclient(:f_comment:value); }
+			    tlp_amount "widget/parameter" { param_name=amount; type=string; default=runclient(:f_amount:value); }
 
 			    sql = " declare object info;
 
@@ -173,6 +195,14 @@ transaction_research "widget/component-decl"
 				    select :info:amax = :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'GLAssetHigh' and :a_ledger_number = :parameters:ledger;
 				    select :info:lmin = :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'GLLiabLow' and :a_ledger_number = :parameters:ledger;
 				    select :info:lmax = :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'GLLiabHigh' and :a_ledger_number = :parameters:ledger;
+				    select :info:periods = sum(:p:a_period + ',') - ',' from /apps/kardia/data/Kardia_DB/a_period/rows p where :p:a_parent_period = :parameters:year and :p:a_ledger_number = :parameters:ledger;
+				    select :info:startdate = convert(datetime, :parameters:startdate);
+				    select :info:enddate = convert(datetime, :parameters:enddate);
+				    select :info:amounttype = substring(:parameters:amount, 1, 1);
+				    select :info:amount = convert(money, condition(charindex(:info:amounttype, '=<>') == 0, :parameters:amount, null));
+				    select :info:amount = convert(money, condition(:info:amounttype = '=', substring(:parameters:amount, 2, 999), :info:amount));
+				    select :info:minamount = convert(money, condition(:info:amounttype = '>', substring(:parameters:amount, 2, 999), :parameters:amount));
+				    select :info:maxamount = convert(money, condition(:info:amounttype = '<', substring(:parameters:amount, 2, 999), :parameters:amount));
 
 				    select
 					stat = condition(:t:a_posted = 1, 'Posted', 'New'),
@@ -196,8 +226,14 @@ transaction_research "widget/component-decl"
 					(:parameters:fund is null or charindex(',' + rtrim(:t:a_fund) + ',', ',' + :parameters:fund + ',') > 0) and
 					(:parameters:batch is null or :t:a_batch_number = :parameters:batch) and
 					(:parameters:account is null or charindex(',' + rtrim(:t:a_account_code) + ',', ',' + :parameters:account + ',') > 0) and
-					(:parameters:year is null or datepart(year, :t:a_effective_date) = :parameters:year) and
+					(:info:periods is null or charindex(',' + rtrim(:t:a_period) + ',', ',' + :info:periods + ',') > 0) and
+					(:info:startdate is null or :t:a_effective_date >= :info:startdate) and
+					(:info:enddate is null or :t:a_effective_date <= :info:enddate) and
 					(:parameters:origin is null or :t:a_origin = :parameters:origin) and
+					(:parameters:comment is null or charindex(lower(:parameters:comment), lower(:t:a_comment)) > 0) and
+					(:info:amount is null or :t:a_amount = :info:amount) and
+					(:info:minamount is null or :t:a_amount > :info:minamount) and
+					(:info:maxamount is null or :t:a_amount < :info:maxamount) and
 					(isnull(:parameters:filter,'') != 'I' or :t:a_account_code != :info:ixa) and
 					(isnull(:parameters:filter,'') != 'Q' or not ((:t:a_account_code >= :info:amin and :t:a_account_code <= :info:amax) or (:t:a_account_code >= :info:lmin and :t:a_account_code <= :info:lmax))) and
 					(isnull(:parameters:filter,'') != 'X' or (:t:a_account_category != '51' and :t:a_account_category != '52' and :t:a_account_category != '41' and :t:a_account_category != '42' and :t:a_account_category != '19')) and
@@ -257,155 +293,254 @@ transaction_research "widget/component-decl"
 		    }
 		}
 
-	    tr_ctls_hbox "widget/hbox"
+	    tr_ctls_pane "widget/pane"
 		{
-		height=92;
-		spacing=10;
-		row_height=24;
+		height=146;
+		style=flat;
+		bgcolor="#d8d8d8";
+		border_radius=12;
+		shadow_radius=4;
+		shadow_offset=2;
+		shadow_color="#808080";
+		shadow_angle=135;
 
-		tr_form "widget/form"
+		tr_ctls_vbox "widget/vbox"
 		    {
-		    allow_new=no;
-		    allow_modify=no;
-		    allow_view=no;
-		    allow_nodata=no;
-		    f_period "widget/component" { width=235; path="/apps/kardia/modules/base/editbox_tree.cmp"; field="period"; popup_source=runserver("/apps/kardia/modules/gl/periods.qyt/" + :this:ledger + "/"); popup_text="Period:"; text="Period:"; attach_point=editbox; label_width=70; }
-		    f_year "widget/component"
+		    x=10; y=10;
+		    height=126;
+		    width=960;
+		    spacing=10;
+
+		    tr_ctls_hbox "widget/hbox"
 			{
-			width=235;
-			path="/sys/cmp/smart_field.cmp";
-			field="year"; 
-			text="Year:";
-			ctl_type=dropdown;
-			label_width=70;
-			numdisplay=12;
-			sql="select '' + datepart(year,:a_start_date), datepart(year, :a_start_date) from /apps/kardia/data/Kardia_DB/a_period/rows p group by datepart(year, :a_start_date) desc order by :a_start_date desc"; 
-			}
-		    f_batch "widget/component"
-			{
-			width=235;
-			label_width=70;
-			path="/apps/kardia/modules/base/editbox_table.cmp";
-			field=batch;
-			text='Batch:';
-			popup_width=300;
-			popup_height=210;
-			popup_sql = runserver("
-				SELECT
-				    value = :a_batch_number,
-				    label = '' + :a_batch_number + ' ' + :a_batch_desc
-				FROM
-				    /apps/kardia/data/Kardia_DB/a_batch/rows b
-				WHERE
-				    :a_ledger_number = " + quote(:this:ledger) + "
-				");
-			search_field_list="a_batch_number,*a_batch_desc*";
-			key_name="a_batch_number";
-			object_name="Batches";
-			popup_text="Choose Batch:";
-			attach_point=editbox;
-			}
-		    f_fund "widget/component"
-			{
-			width=235;
-			label_width=70;
-			path="/apps/kardia/modules/base/editbox_table.cmp";
-			field=fund;
-			text='Fund:';
-			popup_width=300;
-			popup_height=210;
-			popup_sql = runserver("
-				SELECT
-				    value = :a_fund,
-				    label = :a_fund + ' ' + :a_fund_desc
-				FROM
-				    /apps/kardia/data/Kardia_DB/a_fund/rows c
-				WHERE
-				    :a_ledger_number = " + quote(:this:ledger) + " and
-				    :a_bal_fund = :a_fund
-				");
-			search_field_list="a_fund,*a_fund_desc*,a_legacy_code";
-			key_name="a_fund";
-			object_name="Funds";
-			popup_text="Choose Fund:";
-			attach_point=editbox;
-			}
-		    f_acct "widget/component"
-			{
-			width=235;
-			label_width=70;
-			path="/apps/kardia/modules/base/editbox_table.cmp";
-			field=account;
-			text='Account:';
-			popup_width=300;
-			popup_height=210;
-			popup_sql = runserver("
-				SELECT
-				    value = :a_account_code,
-				    label = :a_account_code + ' ' + :a_acct_desc
-				FROM
-				    /apps/kardia/data/Kardia_DB/a_account/rows a
-				WHERE
-				    :a_ledger_number = " + quote(:this:ledger) + "
-				");
-			search_field_list="a_account_code,*a_acct_desc*";
-			key_name="a_account";
-			object_name="Accounts";
-			popup_text="Choose Account:";
-			attach_point=editbox;
+			x=0; y=0;
+			height=92;
+			spacing=10;
+			row_height=24;
+
+			tr_form "widget/form"
+			    {
+			    allow_new=no;
+			    allow_modify=no;
+			    allow_view=no;
+			    allow_nodata=no;
+
+			    f_year "widget/component"
+				{ 
+				width=230; height=24; 
+				path="/sys/cmp/smart_field.cmp"; 
+				field='year'; 
+				ctl_type=dropdown; 
+				text='Year:'; 
+				sql = runserver("select :a_period + ' - ' + :a_period_desc, :a_period from /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = " + quote(:this:ledger) + " and :a_parent_period is null order by :a_period desc");
+				label_width=70;
+				numdisplay=6;
+
+				year_sel_cn "widget/connector"
+				    {
+				    event="DataChange";
+				    //event_condition=runclient(char_length(:Value) > 0);
+				    target=f_period;
+				    action=SetGroup;
+				    Group = runclient(:Value);
+				    }
+				}
+			    f_period "widget/component"
+				{
+				width=230;
+				height=24;
+				path="/sys/cmp/smart_field.cmp";
+				field='period';
+				ctl_type=dropdown;
+				text='Period:';
+				label_width=70;
+				numdisplay=13;
+				sql = runserver("select :a_period + ' - ' + :a_period_desc, :a_period, 0, :a_parent_period from  /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = " + quote(:this:ledger) + " and :a_summary_only = 0 order by :a_period desc");
+				}
+			    //f_period "widget/component" { width=230; path="/apps/kardia/modules/base/editbox_tree.cmp"; field="period"; popup_source=runserver("/apps/kardia/modules/gl/periods.qyt/" + :this:ledger + "/"); popup_text="Period:"; text="Period:"; attach_point=editbox; label_width=70; }
+			    //f_year "widget/component"
+			//	{
+			//	width=230;
+			//	path="/sys/cmp/smart_field.cmp";
+			//	field="year"; 
+			//	text="Year:";
+			//	ctl_type=dropdown;
+			//	label_width=70;
+			//	numdisplay=12;
+			//	sql="select '' + datepart(year,:a_start_date), datepart(year, :a_start_date) from /apps/kardia/data/Kardia_DB/a_period/rows p group by datepart(year, :a_start_date) desc order by :a_start_date desc"; 
+			//	}
+
+			    f_startdate "widget/component"
+				{
+				width=230;
+				path="/sys/cmp/smart_field.cmp";
+				field="startdate";
+				text="Start Date:";
+				search_by_range=0;
+				ctl_type=datetime;
+				label_width=70;
+				date_only=1;
+				default_time="00:00:00";
+				}
+
+			    f_enddate "widget/component"
+				{
+				width=230;
+				path="/sys/cmp/smart_field.cmp";
+				field="enddate";
+				text="End Date:";
+				search_by_range=0;
+				ctl_type=datetime;
+				label_width=70;
+				date_only=1;
+				default_time="23:59:59";
+				}
+			    f_batch "widget/component"
+				{
+				width=230;
+				label_width=70;
+				path="/apps/kardia/modules/base/editbox_table.cmp";
+				field=batch;
+				text='Batch:';
+				popup_width=300;
+				popup_height=210;
+				popup_sql = runserver("
+					SELECT
+					    value = :a_batch_number,
+					    label = '' + :a_batch_number + ' ' + :a_batch_desc
+					FROM
+					    /apps/kardia/data/Kardia_DB/a_batch/rows b
+					WHERE
+					    :a_ledger_number = " + quote(:this:ledger) + "
+					");
+				search_field_list="a_batch_number,*a_batch_desc*";
+				key_name="a_batch_number";
+				object_name="Batches";
+				popup_text="Choose Batch:";
+				attach_point=editbox;
+				}
+			    f_fund "widget/component"
+				{
+				width=230;
+				label_width=70;
+				path="/apps/kardia/modules/base/editbox_table.cmp";
+				field=fund;
+				text='Fund(s):';
+				popup_width=300;
+				popup_height=210;
+				popup_sql = runserver("
+					SELECT
+					    value = :a_fund,
+					    label = :a_fund + ' ' + :a_fund_desc
+					FROM
+					    /apps/kardia/data/Kardia_DB/a_fund/rows c
+					WHERE
+					    :a_ledger_number = " + quote(:this:ledger) + " and
+					    :a_bal_fund = :a_fund
+					");
+				search_field_list="a_fund,*a_fund_desc*,a_legacy_code";
+				key_name="a_fund";
+				object_name="Funds";
+				popup_text="Choose Fund:";
+				attach_point=editbox;
+				}
+			    f_acct "widget/component"
+				{
+				width=230;
+				label_width=70;
+				path="/apps/kardia/modules/base/editbox_table.cmp";
+				field=account;
+				text='Account(s):';
+				popup_width=300;
+				popup_height=210;
+				popup_sql = runserver("
+					SELECT
+					    value = :a_account_code,
+					    label = :a_account_code + ' ' + :a_acct_desc
+					FROM
+					    /apps/kardia/data/Kardia_DB/a_account/rows a
+					WHERE
+					    :a_ledger_number = " + quote(:this:ledger) + "
+					");
+				search_field_list="a_account_code,*a_acct_desc*";
+				key_name="a_account";
+				object_name="Accounts";
+				popup_text="Choose Account:";
+				attach_point=editbox;
+				}
+
+			    f_origin "widget/component"
+				{
+				width=230;
+				path="/sys/cmp/smart_field.cmp";
+				field="origin"; 
+				text="Origin:";
+				ctl_type=dropdown;
+				label_width=70;
+				numdisplay=12;
+				sql="select 'Cash Disbursements', 'CD'; select 'Cash Receipts', 'CR'; select 'Deposits', 'DE'; select 'Electronic Giving', 'EG'; select 'Journal Entry', 'GL'; select 'Opening Balances', 'OB'; select 'Payroll', 'PP'"; 
+				}
+
+			    f_amount "widget/component"
+				{
+				width=230;
+				path="/sys/cmp/smart_field.cmp";
+				field="amount"; 
+				text="Amount:";
+				ctl_type=editbox;
+				label_width=70;
+				}
+
+			    f_comment "widget/component"
+				{
+				width=230;
+				path="/sys/cmp/smart_field.cmp";
+				field="comment"; 
+				text="Comment:";
+				ctl_type=editbox;
+				label_width=70;
+				}
+
+			    f_filter "widget/component"
+				{
+				width=230;
+				path="/sys/cmp/smart_field.cmp";
+				field="filter"; 
+				text="Filter:";
+				ctl_type=dropdown;
+				label_width=70;
+				numdisplay=12;
+				sql=runserver("select 'Hide IXA (" + (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'GLIfaAcct' and :a_ledger_number = :this:ledger) + ")', 'I'; select 'Hide Assets+Liabs', 'Q'; select 'Hide Interfund/WithinFund', 'X'"); 
+				}
+
+			    f_groupby "widget/component"
+				{
+				width=230;
+				path="/sys/cmp/smart_field.cmp";
+				field="groupby"; 
+				text="Summarize:";
+				ctl_type=dropdown;
+				label_width=70;
+				numdisplay=12;
+				sql="select 'By Batch','B'; select 'By Period','P'; select 'By Fund','F'; select 'By Account','A'; select 'By Origin','O'"; 
+				}
+			    }
 			}
 
-		    f_origin "widget/component"
+		    btns_hbox "widget/hbox"
 			{
-			width=235;
-			path="/sys/cmp/smart_field.cmp";
-			field="origin"; 
-			text="Origin:";
-			ctl_type=dropdown;
-			label_width=70;
-			numdisplay=12;
-			sql="select 'Cash Disbursements', 'CD'; select 'Cash Receipts', 'CR'; select 'Deposits', 'DE'; select 'Electronic Giving', 'EG'; select 'Journal Entry', 'GL'; select 'Opening Balances', 'OB'; select 'Payroll', 'PP'"; 
+			align=center;
+			height=24;
+
+			btn_search "widget/textbutton"
+			    {
+			    width=130;
+			    height=24;
+			    text="Update";
+			    enabled=runclient(:tr_form:is_queryexecutable);
+			    on_search "widget/connector" { event=Click; target=tr_form; action=QueryExec; }
+			    }
 			}
-
-		    f_filter "widget/component"
-			{
-			width=235;
-			path="/sys/cmp/smart_field.cmp";
-			field="filter"; 
-			text="Filter:";
-			ctl_type=dropdown;
-			label_width=70;
-			numdisplay=12;
-			sql=runserver("select 'Hide IXA (" + (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'GLIfaAcct' and :a_ledger_number = :this:ledger) + ")', 'I'; select 'Hide Assets+Liabs', 'Q'; select 'Hide Interfund/WithinFund', 'X'"); 
-			}
-
-		    f_groupby "widget/component"
-			{
-			width=235;
-			path="/sys/cmp/smart_field.cmp";
-			field="groupby"; 
-			text="Summarize:";
-			ctl_type=dropdown;
-			label_width=70;
-			numdisplay=12;
-			sql="select 'By Batch','B'; select 'By Period','P'; select 'By Fund','F'; select 'By Account','A'; select 'By Origin','O'"; 
-			}
-
-		    }
-		}
-
-	    btns_hbox "widget/hbox"
-		{
-		align=center;
-		height=24;
-
-		btn_search "widget/textbutton"
-		    {
-		    width=130;
-		    height=24;
-		    text="Update";
-		    enabled=runclient(:tr_form:is_queryexecutable);
-		    on_search "widget/connector" { event=Click; target=tr_form; action=QueryExec; }
 		    }
 		}
 	    }

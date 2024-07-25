@@ -1,0 +1,88 @@
+$Version=2$
+plugin_base_config_cdm "widget/component-decl"
+    {
+    width=828;
+    height=490;
+    title = "Suran CDM+";
+    description = "Configure electronic giving integration with Suran's CDM+ online giving service, so that donations in CDM+ can be easily imported into the Kardia receipting and finance system";
+    sequence = 1000;
+
+    vbox "widget/vbox"
+	{
+	x=0; y=0;
+	width=828; height=490;
+	spacing=7;
+
+	ledger_lbl "widget/label" { height=16; style=bold; text="Accounting Ledger Selection:"; }
+
+	ledger_osrc "widget/osrc"
+	    {
+	    sql = "select :name, label=:a_ledger_number + ' - ' + :a_ledger_desc, :a_ledger_number from /apps/kardia/data/Kardia_DB/a_ledger/rows";
+
+	    ledger_dd "widget/dropdown"
+		{
+		height=24; width=300;
+		mode=objectsource;
+		fieldname=label;
+		numdisplay=12;
+		}
+	    }
+
+	sep1 "widget/autolayoutspacer" { height=1; }
+
+	config_lbl "widget/label" { height=16; style=bold; text="CDM+ Integration Configuration:"; }
+
+	config_osrc "widget/osrc"
+	    {
+	    a_ledger_number "widget/parameter" { type=string; }
+	    sql = "select * from object expression('/apps/kardia/modules/gl/accounting_config.qyp/' + :parameters:a_ledger_number)";
+
+	    config_link "widget/rule"
+		{
+		ruletype=osrc_relationship;
+		target=ledger_osrc;
+		key_1=a_ledger_number;
+		target_key_1=a_ledger_number;
+		}
+
+	    config_form "widget/form"
+		{
+		allow_query=no;
+
+		ss_label_0 "widget/label" { height=15; text="Select this checkbox to allow Kardia to import data from CDM+ using Kardia's Gift Import tool."; }
+		ss_enab "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="GiftImport_CDM"; text="Enabled:"; ctl_type=checkbox; enab_hints "widget/hints" { style=notnull; } }
+		ss_label_1 "widget/label" { height=30; text="The API Provision code and PIN are values that need to be obtained from the CDM+ desktop application.  You can typically find these values in the System Preferences -> API tab in CDM+."; }
+		ss_user "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="CDM_Provision"; text="API Provision:"; width=500; ctl_type=editbox; }
+		ss_pass "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="CDM_PIN"; text="API PIN:"; width=200; ctl_type=editbox; }
+		ss_label_2 "widget/label" { height=30; text="The Lookback controls how many days of data Kardia looks at when it connects to CDM+ to examine the online giving data for new and changed gift information.  We recommend setting this to between 30 and 60 days."; }
+		ss_lookback "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="CDM_Lookback"; text="Lookback Days:"; width=200; ctl_type=editbox; }
+		}
+	    }
+
+	ctls_hbox "widget/hbox"
+	    {
+	    height=24;
+	    align=center;
+	    spacing=10;
+
+	    save_btn "widget/textbutton"
+		{
+		height=24; width=130;
+		text = "Save";
+		enabled=runclient(:config_form:is_savable);
+
+		on_save "widget/connector" { event=Click; target=config_form; action=Save; }
+		}
+
+	    cancel_btn "widget/textbutton"
+		{
+		height=24; width=130;
+		text = "Cancel";
+		enabled=runclient(:config_form:is_discardable);
+
+		on_cancel "widget/connector" { event=Click; target=config_form; action=Discard; }
+		}
+	    }
+	}
+    }
+

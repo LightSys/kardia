@@ -816,6 +816,7 @@ cashdisb_subform "widget/component-decl"
 			:t:a_approved_by,
 			approved = condition(:t:a_approved_date is null, 0, 1),
 			:t:a_reconciled,
+			:t:a_memo,
 			:t:a_comment,
 			:t:s_date_created,
 			:t:s_created_by,
@@ -965,6 +966,9 @@ cashdisb_subform "widget/component-decl"
 			var_disbursement_id "widget/variable" { fieldname="a_disbursement_id"; hints_disbursement "widget/hints" { default=3; } } // 3 is a dummy value to ensure the codebase is in a stable state
 			var_saved_disbursement_id "widget/variable" {  } // QUESTION: Are hints needed here?
 			
+			var_memo "widget/variable" { fieldname="a_memo"; } // QUESTION: Are hints needed here?
+			var_saved_memo "widget/variable" {  } // QUESTION: Are hints needed here?
+
 			//var_payee_partner_key "widget/variable" { fieldname="a_payee_partner_key"; } // QUESTION: Are hints needed here?
 			var_saved_payee_partner_key "widget/variable" {  } // QUESTION: Are hints needed here?
 			
@@ -1040,12 +1044,12 @@ cashdisb_subform "widget/component-decl"
 					//dd_a_period "widget/table-column" { title="Period"; fieldname="a_period"; width=60; }
 					//dd_a_effective_date "widget/table-column" { title="EffDate"; fieldname="a_effective_date"; width=60; }
 					//dd_a_cash_account_code "widget/table-column" { title="CAcode"; fieldname="a_cash_account_code"; width=60; }
-					dd_a_fund "widget/table-column" { title="Fund"; fieldname="a_cc_disp"; width=130; }
-					dd_a_account_code  "widget/table-column" { title="Account"; fieldname="a_acct_disp"; width=130; }
+					dd_a_fund "widget/table-column" { title="Fund"; fieldname="a_cc_disp"; width=110; }
+					dd_a_account_code  "widget/table-column" { title="Account"; fieldname="a_acct_disp"; width=110; }
 					//dd_a_posted "widget/table-column" { title="P"; fieldname="a_posted"; width=20; type="check"; }	
 					//dd_a_payee_partner_key "widget/table-column" { title="PayeePartnerKey"; fieldname="a_payee_partner_key"; width=60; }
 					//dd_a_posted_to_gl "widget/table-column" { title="PostedGL"; fieldname="a_posted_to_gl"; width=60; }
-					dd_a_comment "widget/table-column" { title="Comment"; fieldname="a_comment"; width=160; }
+					dd_a_comment "widget/table-column" { title="Memo/Comment"; value=runclient(isnull(:cashdisb_osrc:a_memo + ' / ', '') + :cashdisb_osrc:a_comment); width=200; }
 					dd_a_amount "widget/table-column" { title="Amount"; fieldname="a_amount"; width=60; align=right; }
 					//dd_s_date_created "widget/table-column" { title="DateCreated"; fieldname="s_date_created"; width=60; }
 					//dd_s_created_by "widget/table-column" { title="CreatedBy"; fieldname="s_created_by"; width=60; }
@@ -1084,7 +1088,7 @@ cashdisb_subform "widget/component-decl"
 				New_Check_btn "widget/textbutton"
 				{
 					width=160;
-					height = 30;
+					height = 24;
 					text="New Check";
 					// enabled = runclient(:check_form:is_newable);
 					enabled =    runclient(:check_form:is_newable and isnull(not :cashdisb_osrc:a_posted, true));
@@ -1166,7 +1170,7 @@ cashdisb_subform "widget/component-decl"
 				New_Trx_Line_btn "widget/textbutton"
 				{
 					width=160;
-					height = 30;
+					height = 24;
 					text="New Line Item";
 					
 					// tooltip = "New Transaction for this check";
@@ -1185,6 +1189,15 @@ cashdisb_subform "widget/component-decl"
 						Value=runclient(:var_check_number:value);
 					}
 					
+					// Save the current memo...
+					new_trx_line_cn1c "widget/connector"
+					{
+						event="Click";
+						target=var_saved_memo;
+						action="SetValue";
+						Value=runclient(:var_memo:value);
+					}
+
 					// Save the current check number...
 					new_trx_line_cn1b "widget/connector"
 					{
@@ -1251,6 +1264,14 @@ cashdisb_subform "widget/component-decl"
 						Value=runclient(:var_saved_check_number:value);
 					}
 					
+					new_trx_line_cn5c "widget/connector"
+					{
+						event="Click";
+						target=var_memo;
+						action="SetValue";
+						Value=runclient(:var_saved_memo:value);
+					}
+					
 					new_trx_line_cn5b "widget/connector"
 					{
 						event="Click";
@@ -1272,6 +1293,24 @@ cashdisb_subform "widget/component-decl"
 						Value=runclient(isnull(convert(integer,:var_saved_payee_partner_key:value)));
 					}
 					
+					new_trx_line_cn8ckno "widget/connector"
+					{
+						event="Click";
+						//target=var_payee_partner_key; // only works after the record is saved...
+						target=ckno_edit;
+						action="SetValue";
+						Value=runclient(:var_saved_check_number:value);
+					}
+
+					new_trx_line_cn9memo "widget/connector"
+					{
+						event="Click";
+						//target=var_payee_partner_key; // only works after the record is saved...
+						target=memo_edit;
+						action="SetValue";
+						Value=runclient(:var_saved_memo:value);
+					}
+
 					// TODO: SetFocus to 'Fund' Text Box (smartfield)
 					// Attempt 20110817
 					new_trx_line_cn7cctr_focus "widget/connector"
@@ -1313,7 +1352,7 @@ cashdisb_subform "widget/component-decl"
 				Delete_Trx_btn "widget/textbutton"
 				{
 					width=160;
-					height = 30;
+					height = 24;
 					text="Delete Line Item";
 					event_confirm=runclient("Are you sure you would like to delete this line item?");
 					
@@ -1733,38 +1772,59 @@ cashdisb_subform "widget/component-decl"
 				{
 					x=8;y=20;width=372;height=303;spacing=4;cellsize=20;
 					
-					ckno_lbl "widget/component"
+
+					ck_line_hbox "widget/hbox"
 					{
-						condition=runserver( (select isnull(first(:a_config_value), 'N') from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :this:ledger and :a_config_name = 'DisbAutoNumber') = 'Y');
-						path="/sys/cmp/smart_field.cmp";
-						value=runclient(isnull(convert(integer,:var_check_number:value), "(none selected)"));
-						ctl_type=label;
-						text="Check #:";
-						label_width=75;
-						height=16;
+						height=20;
+						spacing=10;
+
+						ckno_lbl "widget/component"
+						{
+							condition=runserver( (select isnull(first(:a_config_value), 'N') from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :this:ledger and :a_config_name = 'DisbAutoNumber') = 'Y');
+							path="/sys/cmp/smart_field.cmp";
+							value=runclient(isnull(convert(integer,:var_check_number:value), "(none selected)"));
+							ctl_type=label;
+							text="Check #:";
+							label_width=75;
+							width=180;
+							height=20;
+						}
+
+						ckno_edit "widget/component"
+						{
+							condition=runserver( (select isnull(first(:a_config_value), 'N') from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :this:ledger and :a_config_name = 'DisbAutoNumber') = 'N');
+							path="/sys/cmp/smart_field.cmp";
+							field=a_check_number;
+							ctl_type=editbox;
+							text="Check #:";
+							label_width=75;
+							width=180;
+							height=20;
+						}
+
+						lineitem_lbl "widget/component"
+						{
+							path="/sys/cmp/smart_field.cmp";
+							value=runclient(isnull(convert(integer,:var_line_item:value), "(none selected)"));
+							ctl_type=label;
+							text="Line Item:";
+							label_width=75;
+							width=200;
+							height=20;
+						}
 					}
 
-					ckno_edit "widget/component"
+					memo_edit "widget/component"
 					{
-						condition=runserver( (select isnull(first(:a_config_value), 'N') from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :this:ledger and :a_config_name = 'DisbAutoNumber') = 'N');
 						path="/sys/cmp/smart_field.cmp";
-						field=a_check_number;
+						field=a_memo;
 						ctl_type=editbox;
-						text="Check #:";
+						text="Memo:";
 						label_width=75;
-						width=225;
-						height=16;
+						height=20;
 					}
 
-					lineitem_lbl "widget/component"
-					{
-						path="/sys/cmp/smart_field.cmp";
-						value=runclient(isnull(convert(integer,:var_line_item:value), "(none selected)"));
-						ctl_type=label;
-						text="Line Item:";
-						label_width=75;
-						height=16;
-					}
+					ck_line_sep "widget/pane" { height=2; style=lowered; fl_height=0; }
 
 					// Line Item Thingy
 					trx_details_hbox "widget/hbox"
@@ -1914,10 +1974,10 @@ cashdisb_subform "widget/component-decl"
 					// DONE: Cancel Button Wire up...
 					line_item_date "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_effective_date; ctl_type=datetime; text="Date:"; width=225; label_width=75; date_only=1; default_time="12:00:00"; effective_date_hints "widget/hints" { default=runclient(getdate()); } }
 
-					comment_lbl "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_comment; ctl_type=textarea; text="Comment: "; label_width=75; height=55; }
+					comment_lbl "widget/component" { path="/sys/cmp/smart_field.cmp"; field=a_comment; ctl_type=textarea; text="Comment: "; label_width=75; height=50; }
 
 					// el Spacer 'o...
-					sp1 "widget/autolayoutspacer" { height=4; }
+					sp1 "widget/autolayoutspacer" { height=2; }
 					
 					// Save Cancel Area
 					cd_SaveCancel_hbox "widget/hbox"
@@ -1929,7 +1989,7 @@ cashdisb_subform "widget/component-decl"
 						save_trx_changes_btn "widget/textbutton"
 						{
 							width=130;
-							height = 30;
+							height = 24;
 							text="Save";
 							enabled = runclient(:check_form:is_savable);
 							
@@ -2008,7 +2068,7 @@ cashdisb_subform "widget/component-decl"
 						cancel_trx_changes_btn "widget/textbutton"
 						{
 							width=130;
-							height = 30;
+							height = 24;
 							text="Cancel";
 							enabled = runclient(:check_form:is_discardable);
 							
@@ -2506,7 +2566,7 @@ cashdisb_subform "widget/component-decl"
 				Void_This_Check_btn "widget/textbutton"
 				{
 					width=160;
-					height = 30;
+					height = 24;
 					text="Mark as Void";
 					
 					cnSave_cn324 "widget/connector" { event="Click"; target=batch_total_osrc; action="Refresh"; }
@@ -2566,7 +2626,7 @@ cashdisb_subform "widget/component-decl"
 				Approve_btn "widget/textbutton"
 				{
 					condition=runserver( (select isnull(first(:a_config_value), 'N') from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :this:ledger and :a_config_name = 'DisbApprovals') = 'Y');
-					height=30;
+					height=24;
 					width=160;
 					text=runclient(condition(:cashdisb_osrc:approved == 1, "Mark Not Approved", "Mark as Approved"));
 					enabled = runclient(:check_form:is_newable and isnull(not :cashdisb_osrc:a_posted, true));
@@ -2590,7 +2650,7 @@ cashdisb_subform "widget/component-decl"
 				Recon_btn "widget/textbutton"
 				{
 					condition=runserver( (select isnull(first(:a_config_value), 'N') from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :this:ledger and :a_config_name = 'DisbRecon') = 'Y');
-					height=30;
+					height=24;
 					width=160;
 					text=runclient(condition(:cashdisb_osrc:a_reconciled == 1, "Mark Not Reconciled", "Mark as Reconciled"));
 					enabled = runclient(:cashdisb_osrc:a_posted);
@@ -2633,7 +2693,7 @@ cashdisb_subform "widget/component-decl"
 				Print_All_Checks_btn "widget/textbutton"
 				{
 					width=160;
-					height = 30;
+					height = 24;
 					text=runserver(condition((select isnull(first(:a_config_value), 'N') from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :this:ledger and :a_config_name = 'DisbAutoNumber') = 'Y', 'Preview & Number', 'Preview Checks'));
 					enabled = runclient(:check_form:form_mode = 'View');
 					

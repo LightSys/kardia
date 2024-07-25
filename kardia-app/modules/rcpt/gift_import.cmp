@@ -283,7 +283,7 @@ gift_import "widget/component-decl"
 							    ),
 					trx_date = substring(convert(string,:eg:i_eg_gift_trx_date),1,11),
 					gs_donor_info = :eg:i_eg_donor_name + isnull(' (' + :eg:i_eg_donor_city + ', ' + :eg:i_eg_donor_state + ')', ''),
-					kardia_donor_info = :eg:p_donor_partner_key + isnull(' ' + :p:p_org_name, '') + isnull(' ' + :p:p_given_name,'') + isnull(' ' + :p:p_surname,'') + isnull(' (' + :l:p_city + ', ' + :l:p_state_province + ')', ''),
+					kardia_donor_info = :eg:p_donor_partner_key + isnull(' ' + :p:p_org_name, '') + isnull(' ' + :p:p_given_name,'') + isnull(' ' + :p:p_surname,'') + isnull(' (' + :l:p_city + isnull(', ' + :l:p_state_province, '') + ')', ''),
 					kardia_donor_name = isnull(' ' + :p:p_org_name, '') + isnull(' ' + :p:p_given_name,'') + isnull(' ' + :p:p_surname,''),
 					has_donor_rec = (select count(1) from /apps/kardia/data/Kardia_DB/p_donor/rows d where :d:a_gl_ledger_number = :eg:a_ledger_number and :d:p_partner_key = :eg:p_donor_partner_key),
 					gs_desig_info = :eg:i_eg_desig_name,
@@ -363,7 +363,8 @@ gift_import "widget/component-decl"
 					:l:p_country_code *= :co:p_country_code and
 					:co:p_country_code *= :af:p_country_code and
 					:af:p_address_set = 'STANDARD' and
-					:egco:p_iso3166_2_code =* :eg:i_eg_donor_country
+					:egco:p_iso3166_2_code =* :eg:i_eg_donor_country and
+					:l:p_record_status_code = 'A'
 				HAVING
 					(:parameters:pstat is null or :parameters:pstat = '*' or
 					  (:parameters:pstat = 'I' and :a_batch_number is not null) or
@@ -654,7 +655,7 @@ gift_import "widget/component-decl"
 						    {
 						    width=130;
 						    text = "Split Gift";
-						    enabled = runclient(:gift_import_osrc:a_batch_number is null and :gift_import_osrc:i_eg_line_item == 1);
+						    enabled = runclient(:gift_import_osrc:i_eg_net_amount is not null and :gift_import_osrc:a_batch_number is null and :gift_import_osrc:i_eg_line_item == 1);
 						    split_cn "widget/connector" { event=Click; target=popover_splittrx; action=Open; }
 						    }
 
@@ -857,7 +858,7 @@ gift_import "widget/component-decl"
 				width = 185;
 				height = 266;
 				path="/apps/kardia/modules/rcpt/donor_sidebar.cmp";
-				title_text = runclient(isnull(condition(char_length(:kardia_donor_key:value) <= 1, "", condition(:manage_cmp:partner = :kardia_donor_key:value and :manage_cmp:partner = :gift_import_osrc:p_donor_partner_key, :gift_import_osrc:kardia_donor_name, :manage_cmp:partner))));
+				title_text = runclient(isnull(condition(char_length(:kardia_donor_key:value) <= 1, "Donor", condition(:manage_cmp:partner = :kardia_donor_key:value and :manage_cmp:partner = :gift_import_osrc:p_donor_partner_key, :gift_import_osrc:kardia_donor_name, :manage_cmp:partner)), 'Donor'));
 				no_donor_rec = runclient(:gift_import_osrc:has_donor_rec = 0);
 
 				on_manage_update_1 "widget/connector" { event=DonorChanged; target=gift_import_osrc; action=Refresh; }
@@ -1102,7 +1103,8 @@ gift_import "widget/component-decl"
 						:l:p_partner_key =* :p:p_partner_key and
 						:l:p_revision_id = 0 and
 						:c:a_ledger_number =* :eg:a_ledger_number and
-						:c:a_fund =* :eg:a_fund
+						:c:a_fund =* :eg:a_fund and
+						:l:p_record_status_code = 'A'
 					ORDER BY
 						:eg:i_eg_gift_trx_date desc
 					");

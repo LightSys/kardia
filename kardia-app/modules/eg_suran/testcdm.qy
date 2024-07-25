@@ -1,0 +1,5 @@
+$Version=2$
+testst "system/query"
+    {
+    sql = runserver("select name = :g:transaction_id + '|' + :g:designation_id, " + /apps/kardia/modules/eg_suran/plugin_rcpt_giftimport_CDM.cmp:sql);
+    }
