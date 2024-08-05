@@ -572,7 +572,12 @@ update_descriptives_new "system/query"
 		:a_act_average_interval = convert(double, null),
 		:a_act_average_months = null,
 		:a_act_average_amount = convert(money, null),
-		:a_act_lookahead_date = condition(getdate() < dateadd(day, 366, :a_last_gift), getdate(), dateadd(day, 366, :a_last_gift)),
+		-- Can you please make sure my condition is correct for the lookback and lookahead dates?
+		:a_act_lookahead_date = condition(
+			getdate() < dateadd(day, convert(integer, round(0.5 * 30.5 * :a_act_average_interval)), :a_last_gift),
+			getdate(),
+			dateadd(day, convert(integer, round(0.5 * 30.5 * :a_act_average_interval)), :a_last_gift)
+		),
 		:a_act_lookback_date = :a_first_gift
 		where 
 		:a_act_average_months >= 12 and 
