@@ -498,6 +498,21 @@ update_descriptives_new "system/query"
 		-- Also, I would like to add extra checks on this part of code. 
 
 
+        -- Where should this block of code go? What is the best place? 
+		-- Add extra columns to a_descriptives_hist collection
+		alter collection a_descriptives_hist
+		add column a_check_1 bit default 0,
+		add column a_check_2 bit default 0,
+		add column a_check_3 bit default 0;
+
+		-- Add extra columns to a_descriptives collection
+		alter collection a_descriptives
+		add column a_check_1 bit default 0,
+		add column a_check_2 bit default 0,
+		add column a_check_3 bit default 0;
+
+
+
 
 	    -- Overall adjustments to a_act_average_xyz for a_descriptives
 	    -- if the interval is biannual or less, lookback slightly less than a year from the most recent gift
@@ -516,7 +531,7 @@ update_descriptives_new "system/query"
 		(:parameters:fund is null or :parameters:fund = :d:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
 	    ;
-        -- if the interval is greater than bi-annually, check back the last three intervals (Question: Does it mean more than twice a year but still in the same year?)
+        -- if the interval is greater than bi-annually, check back the last three intervals 
         update
 		identity collection a_descriptives d
 	    set
@@ -530,8 +545,7 @@ update_descriptives_new "system/query"
 		(:parameters:fund is null or :parameters:fund = :d:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
 	    ;
-            -- this handles one time gifts (and giving that falls all within half a month) ( Question: Figured out that in line around 628-634 that it is counting in/between a year. Am I right?)
-	    update 
+            -- this handles one time gifts (and giving that falls all within half a month) 
 		identity collection a_descriptives d
 	    set
 		:a_act_average_interval = convert(double, null),
@@ -572,15 +586,19 @@ update_descriptives_new "system/query"
 		:a_act_average_interval = convert(double, null),
 		:a_act_average_months = null,
 		:a_act_average_amount = convert(money, null),
-		-- Can you please make sure my condition is correct for the lookback and lookahead dates?
+		--  (David) Added the third condition which is about checking the future date
 		:a_act_lookahead_date = condition(
 			getdate() < dateadd(day, convert(integer, round(0.5 * 30.5 * :a_act_average_interval)), :a_last_gift),
 			getdate(),
-			dateadd(day, convert(integer, round(0.5 * 30.5 * :a_act_average_interval)), :a_last_gift)
+			condition(
+				dateadd(day, convert(integer, round(0.5 * 30.5 * :a_act_average_interval)), :a_last_gift) > getdate(),
+				getdate(),
+				dateadd(day, convert(integer, round(0.5 * 30.5 * :a_act_average_interval)), :a_last_gift)
+			)
 		),
 		:a_act_lookback_date = :a_first_gift
 		where 
-		:a_act_average_months >= 12 and 
+		:a_act_average_interval >= 12 and -- Yes, it might be that it is interval.
 		(:parameters:fund is null or :parameters:fund = :d:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
 		;
@@ -729,7 +747,7 @@ update_descriptives_new "system/query"
 		update
 			identity collection a_descriptives_hist dh
 		set
-			:dh:a_is_doubled = condition(:dh:a_increase_pct > 1.0, 1, 0) -- Using the dh:a_increase_pct to check if the amount is doubled or not (if the condition is wrong, should the first condition could be more than one and less than 2?)
+			:dh:a_is_doubled = condition(:dh:a_increase_pct >= 1.0, 1, 0) -- Using the dh:a_increase_pct to check if the amount is doubled or not (if the condition is wrong, should the first condition could be more than one and less than 2?)
 		where
 			(:parameters:fund is null or :parameters:fund = :dh:a_fund) and
 			(:parameters:donor is null or :parameters:donor = :dh:p_donor_partner_key) and
