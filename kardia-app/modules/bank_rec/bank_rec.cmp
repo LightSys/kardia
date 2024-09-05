@@ -1,0 +1,210 @@
+$Version=2$
+bank_rec "widget/component-decl"
+    {
+    width=758; height=565;
+
+    ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; deploy_to_client=yes; }
+    selected_period "widget/parameter" { type=object; default=null; deploy_to_client=yes; }
+
+    Refresh "widget/component-decl-action"
+	{
+	    test_refresh "widget/connector"
+		{
+		target=account_list_osrc;
+		//event=DataChange;
+		action=QueryParam;
+		}
+	}
+
+    main_v "widget/vbox"
+	{
+	// find the information on each bank account. Only create 
+	account_list_osrc "widget/osrc"
+	    {
+	    cur_ledger "widget/parameter" { type=string; default=runclient(:ledger:value); }
+	    cur_period "widget/parameter" { type=string; default=runclient(:selected_period:value); }
+
+	    sql = runserver("
+		DECLARE COLLECTION prev_period;
+
+		INSERT INTO
+		    COLLECTION prev_period
+		SELECT
+		    cur_period = :p1:a_period,
+		    prev_period = (SELECT last(:p2:a_period)
+			FROM /apps/kardia/data/Kardia_DB/a_period/rows p2
+			WHERE :p1:a_start_date > :p2:a_start_date
+			    AND :p1:a_end_date > :p2:a_end_date
+			    AND :p2:a_ledger_number = :parameters:cur_ledger
+			    AND isnull(:p2:a_summary_only, 0) = 0
+			ORDER BY :p2:a_start_date ASC)
+		FROM 
+		    /apps/kardia/data/Kardia_DB/a_period/rows p1
+		WHERE 
+		    :p1:a_ledger_number = :parameters:cur_ledger
+		    AND :p1:a_period = :parameters:cur_period
+		;
+
+		SELECT
+		    :acc:a_account_code,
+		    :acc:a_ledger_number,
+		    :acc:a_acct_desc,
+		    balance = isnull(sum(:trans:a_amount), 0), -- kardia balance
+		    rec_total = isnull(sum(:reci:a_amount), 0),
+		    net_kardia = isnull(sum(:reci:a_amount), 0) + isnull(:prev_rec:a_bank_balance, 0), -- bank_start + rec
+		    bank_end = :rec:a_bank_balance,
+		    bank_start = isnull(:prev_rec:a_bank_balance, 0),
+		    kard_diff = isnull(sum(:trans:a_amount), 0) - isnull(:rec:a_bank_balance, 0), -- kardia balance - bank end
+		    zero = isnull(sum(:reci:a_amount), 0) + isnull(:prev_rec:a_bank_balance, 0) - isnull(:rec:a_bank_balance, 0) -- net_kardia - bank_end
+		FROM 
+		    IDENTITY /apps/kardia/data/Kardia_DB/a_bank_recon_item/rows reci,
+		    /apps/kardia/data/Kardia_DB/a_account/rows acc,
+		    /apps/kardia/data/Kardia_DB/a_transaction/rows trans,
+		    /apps/kardia/data/Kardia_DB/a_bank_recon/rows rec,
+		    /apps/kardia/data/Kardia_DB/a_period/rows per,
+		    COLLECTION prev_period prev_per, -- only ever has one row
+		    /apps/kardia/data/Kardia_DB/a_bank_recon/rows prev_rec
+		WHERE
+		        :parameters:cur_ledger = :acc:a_ledger_number
+		    AND :parameters:cur_ledger = :trans:a_ledger_number
+		    AND :parameters:cur_ledger = :rec:a_ledger_number
+		    AND :parameters:cur_ledger = :reci:a_ledger_number
+		    AND :parameters:cur_ledger = :per:a_ledger_number
+		    AND :parameters:cur_ledger = :prev_rec:a_ledger_number
+		    AND :parameters:cur_period = :trans:a_period
+		    AND :parameters:cur_period = :reci:a_period
+		    AND :parameters:cur_period =  :rec:a_period
+		    AND :parameters:cur_period * = :per:a_period
+		    AND :prev_per:prev_period *= :prev_rec:a_period
+		    AND :acc:a_account_code *= :trans:a_account_code
+		    AND :acc:a_account_code *= :reci:a_account_code
+		    AND :acc:a_account_code *= :rec:a_account_code
+		    AND :acc:a_account_code *= :prev_rec:a_account_code
+		-- TODO: consider only showing accounts that have an entry in the period
+		GROUP BY 
+		    :acc:a_account_code
+		ORDER BY
+		    :acc:a_account_code
+		");
+		
+	    baseobj = "/apps/kardia/data/Kardia_DB/a_bank_recon/rows";
+	    replicasize=800; 
+	    readahead=800;
+	    autoquery=onfirstreveal;
+
+	   searchlisttbl "widget/table"
+		{
+		height=100; width = 750; x=0; y=0;
+
+		t_acc_code "widget/table-column" { title="Acct."; fieldname="a_account_code"; width=15; }
+		t_acc_desc "widget/table-column" { title="Description"; fieldname="a_acct_desc"; width=50; }
+		t_acc_bal "widget/table-column" { title="Balance"; fieldname="balance"; width=20; }
+		t_rec "widget/table-column" { title="Rec. Total"; fieldname="rec_total"; width=20; }
+		t_kar_net "widget/table-column" { title="Net Balance"; fieldname="net_kardia"; width=20; }
+		t_bank_start "widget/table-column" { title="Bank Start"; fieldname="bank_start"; width=20; }
+		t_bank_end "widget/table-column" { title="Bank End"; fieldname="bank_end"; width=20; }
+		t_zero "widget/table-column" { title="Zero"; fieldname="zero"; width=20; }
+		//t_DEBUG "widget/table-column" { title="DEBUG"; fieldname="TEST"; width=20; }
+		}
+
+	    }
+
+	h_split "widget/hbox"
+	    {
+	    spacing=10;
+	    
+	    // left side
+	    vbox "widget/vbox"
+		{
+		width = 412;
+		
+		acc_form "widget/form"
+		    {
+		    objectsource = account_list_osrc;
+		    allow_query = no; // TODO: needs to allow writes for the bank amount eventually
+
+		    f_bank_start "widget/component"
+			{
+			path="/sys/cmp/smart_field.cmp";
+			field = 'bank_start';
+			ctl_type=label; 
+			text='Bank Start Balance:';
+			label_width=120;
+			height = 20;
+			}
+
+		    f_bank_end "widget/component"
+			{
+			path="/sys/cmp/smart_field.cmp";
+			field = 'bank_end';
+			ctl_type=editbox; 
+			text='Bank End Balance:';
+			label_width=120;
+			height = 20;
+			width = 300;
+			}
+
+		    f_kardia_bal "widget/component"
+			{
+			path="/sys/cmp/smart_field.cmp";
+			field = 'balance';
+			ctl_type=label; 
+			text='Kardia Balance:';
+			label_width=120;
+			height = 20;
+			}
+		
+		    f_diff_bal "widget/component"
+			{
+			path="/sys/cmp/smart_field.cmp";
+			field = 'kard_diff';
+			ctl_type=label; 
+			text='Bank - Kardia: ';
+			label_width=120;
+			height = 20;
+			}
+
+		    f_zero "widget/component"
+			{
+			path="/sys/cmp/smart_field.cmp";
+			field = 'zero';
+			ctl_type=label; 
+			text='Bank - Adjusted:';
+			label_width=120;
+			height = 20;
+			}
+
+		    // TODO: make the save be able to create new a_bank_recon rows if needed
+		    button_box "widget/hbox"
+			{
+			acc_save_btn "widget/textbutton"
+			    {
+			    width=120;
+			    text = "Save";
+			    enabled = runclient(:acc_form:is_savable);
+
+			    save_acc "widget/connector" { event=Click; target=acc_form; action=Save; }
+			    }
+			acc_cancel_btn "widget/textbutton"
+			    {
+			    width=120;
+			    text = "Cancel";
+			    enabled = runclient(:acc_form:is_discardable);
+
+			    cancel_acc "widget/connector" { event=Click; target=acc_form; action=Discard; }
+			    }
+			}
+		    }
+		}
+
+	    //right side
+
+	    temp_6 "widget/label"
+		{
+		width = 400;
+		text = "Line item Select";
+		font_size=12;
+		}
+	    }
+	}
+    }
