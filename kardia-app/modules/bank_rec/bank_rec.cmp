@@ -8,10 +8,14 @@ bank_rec "widget/component-decl"
 
     Refresh "widget/component-decl-action"
 	{
-	    test_refresh "widget/connector"
+	    acc_refresh "widget/connector"
 		{
 		target=account_list_osrc;
-		//event=DataChange;
+		action=QueryParam;
+		}
+	    rec_refresh "widget/connector"
+		{
+		target=bank_rec_osrc;
 		action=QueryParam;
 		}
 	}
@@ -52,15 +56,15 @@ bank_rec "widget/component-decl"
 		    balance = isnull(sum(:trans:a_amount), 0), -- kardia balance
 		    rec_total = isnull(sum(:reci:a_amount), 0),
 		    net_kardia = isnull(sum(:reci:a_amount), 0) + isnull(:prev_rec:a_bank_balance, 0), -- bank_start + rec
-		    bank_end = :rec:a_bank_balance,
+		    bank_end = isnull(:rec:a_bank_balance, 0),
 		    bank_start = isnull(:prev_rec:a_bank_balance, 0),
 		    kard_diff = isnull(sum(:trans:a_amount), 0) - isnull(:rec:a_bank_balance, 0), -- kardia balance - bank end
 		    zero = isnull(sum(:reci:a_amount), 0) + isnull(:prev_rec:a_bank_balance, 0) - isnull(:rec:a_bank_balance, 0) -- net_kardia - bank_end
 		FROM 
-		    IDENTITY /apps/kardia/data/Kardia_DB/a_bank_recon_item/rows reci,
-		    /apps/kardia/data/Kardia_DB/a_account/rows acc,
+		    IDENTITY /apps/kardia/data/Kardia_DB/a_account/rows acc,
 		    /apps/kardia/data/Kardia_DB/a_transaction/rows trans,
 		    /apps/kardia/data/Kardia_DB/a_bank_recon/rows rec,
+		    /apps/kardia/data/Kardia_DB/a_bank_recon_item/rows reci,
 		    /apps/kardia/data/Kardia_DB/a_period/rows per,
 		    COLLECTION prev_period prev_per, -- only ever has one row
 		    /apps/kardia/data/Kardia_DB/a_bank_recon/rows prev_rec
@@ -74,13 +78,15 @@ bank_rec "widget/component-decl"
 		    AND :parameters:cur_period = :trans:a_period
 		    AND :parameters:cur_period = :reci:a_period
 		    AND :parameters:cur_period =  :rec:a_period
-		    AND :parameters:cur_period * = :per:a_period
+		    AND :parameters:cur_period *= :per:a_period
 		    AND :prev_per:prev_period *= :prev_rec:a_period
 		    AND :acc:a_account_code *= :trans:a_account_code
 		    AND :acc:a_account_code *= :reci:a_account_code
 		    AND :acc:a_account_code *= :rec:a_account_code
 		    AND :acc:a_account_code *= :prev_rec:a_account_code
-		-- TODO: consider only showing accounts that have an entry in the period
+		    AND :reci:a_is_reconciled = 1
+		    AND :reci:a_source_key =* convert('string', :trans:a_batch_number) + '|' 
+			+ convert('string', :trans:a_journal_number) + '|' + :trans:a_transaction_number
 		GROUP BY 
 		    :acc:a_account_code
 		ORDER BY
@@ -92,9 +98,9 @@ bank_rec "widget/component-decl"
 	    readahead=800;
 	    autoquery=onfirstreveal;
 
-	   searchlisttbl "widget/table"
+	   acc_list_table "widget/table"
 		{
-		height=100; width = 750; x=0; y=0;
+		height=100; width = 760; x=0; y=0;
 
 		t_acc_code "widget/table-column" { title="Acct."; fieldname="a_account_code"; width=15; }
 		t_acc_desc "widget/table-column" { title="Description"; fieldname="a_acct_desc"; width=50; }
@@ -104,7 +110,12 @@ bank_rec "widget/component-decl"
 		t_bank_start "widget/table-column" { title="Bank Start"; fieldname="bank_start"; width=20; }
 		t_bank_end "widget/table-column" { title="Bank End"; fieldname="bank_end"; width=20; }
 		t_zero "widget/table-column" { title="Zero"; fieldname="zero"; width=20; }
-		//t_DEBUG "widget/table-column" { title="DEBUG"; fieldname="TEST"; width=20; }
+		rec_select "widget/connector"
+		    {
+		    event=Click;
+		    target=bank_rec_osrc;
+		    action=QueryParam;
+		    }
 		}
 
 	    }
@@ -116,7 +127,7 @@ bank_rec "widget/component-decl"
 	    // left side
 	    vbox "widget/vbox"
 		{
-		width = 412;
+		width = 250;
 		
 		acc_form "widget/form"
 		    {
@@ -141,7 +152,7 @@ bank_rec "widget/component-decl"
 			text='Bank End Balance:';
 			label_width=120;
 			height = 20;
-			width = 300;
+			width = 200;
 			}
 
 		    f_kardia_bal "widget/component"
@@ -198,12 +209,219 @@ bank_rec "widget/component-decl"
 		}
 
 	    //right side
-
-	    temp_6 "widget/label"
+	    bank_rec_osrc "widget/osrc" 
 		{
-		width = 400;
-		text = "Line item Select";
-		font_size=12;
+		rec_ledger "widget/parameter" { type=string; default=runclient(:ledger:value); }
+		rec_period "widget/parameter" { type=string; default=runclient(:selected_period:value); }
+		rec_account "widget/parameter" { type=string; default=runclient(:account_list_osrc:a_account_code); }
+
+		sql = runserver("
+		    -- update the contents for the current section
+		    INSERT INTO
+			/apps/kardia/data/Kardia_DB/a_bank_recon_item/rows
+		    SELECT
+			-- let it auto assign line numbers
+			a_ledger_number = :t:a_ledger_number,
+			a_period = :t:a_period, 
+			a_account_code = :t:a_account_code,
+			a_origin = 'GL',
+			a_source_key = convert('string', :t:a_batch_number) + '|' + convert('string', :t:a_journal_number) + '|' + :t:a_transaction_number, 
+			a_amount = :t:a_amount,
+			a_posted_date = :t:a_effective_date, -- TODO: figure out if this is even close to the bank post date...
+			-- let a_reconciled go to default
+			a_comment = :t:a_comment,
+			s_date_created = getdate(),
+			s_created_by = user_name(),
+			s_date_modified = getdate(),
+			s_modified_by = user_name()
+		    FROM
+			/apps/kardia/data/Kardia_DB/a_transaction/rows t
+		    WHERE 
+			:a_ledger_number = :parameters:rec_ledger
+			AND :a_period = :parameters:rec_period
+			AND :a_account_code = :parameters:rec_account
+		    ON DUPLICATE 
+			:a_ledger_number, :a_account_code, :a_source_key -- period is subject to change, line item auto generates
+		    UPDATE SET
+			:a_amount = :t:a_amount,
+			:a_posted_date = :t:a_effective_date,
+			:s_date_modified = getdate() IF MODIFIED,
+			:s_modified_by = user_name() IF MODIFIED
+		    ;
+		
+		    -- now read the actual values
+		    SELECT 
+			:a_line_item, :a_origin, :a_source_key, :a_amount, :a_posted_date, :a_is_reconciled, :a_comment, 
+			is_rec_img = condition(:a_is_reconciled = 0, '/sys/images/checkbox_unchecked.gif', '/sys/images/checkbox_checked.gif') 
+		    FROM
+			/apps/kardia/data/Kardia_DB/a_bank_recon_item/rows
+		    WHERE
+			:a_ledger_number = :parameters:rec_ledger
+			AND (:a_period = :parameters:rec_period OR :a_is_reconciled = 0)
+			AND :a_account_code = :parameters:rec_account
+		    ORDER BY
+			:a_line_item
+		    ");
+		
+		baseobj = "/apps/kardia/data/Kardia_DB/a_bank_recon_item/rows";
+		replicasize=800; 
+		readahead=800;
+		autoquery=onfirstreveal;
+
+		rec_list_table "widget/table"
+		    {
+		    height=460; width = 500; x=0; y=0;
+		    overlap_scrollbar=yes;
+		    demand_scrollbar=yes;
+		    rowheight=null;
+		    cellvspacing=4;
+		    inner_padding=2;
+		    colsep=0;
+		    row_border_radius=6;
+		    row_shadow_radius=2;
+		    row_shadow_offset=1;
+		    row_shadow_color="#a0a0a0";
+		    row_shadow_angle=135;
+		    initial_selection = noexpand;
+		    allow_deselection = yes;
+		    nodata_message="No Transactions to display";
+		    // TODO: I really would like a way to single click a checkbox and get the row marked as reconciled without the internal form.
+		    //TODO: a new row button. Know the peroid, ledger, and account, and can let auto do the line number. SO yeah.
+		    rec_check_click "widget/connector" { event=DblClick; target=:bank_rec_osrc:a_is_reconciled; action=SetValue; Value=1;}
+
+		     
+		    t_rec_check "widget/table-column" 
+			{
+			type="check"; title="rec?"; fieldname="a_is_reconciled"; width=5; 
+			}
+		    t_rec_line "widget/table-column" { title="#"; fieldname="a_line_item"; width=5; }
+		    t_rec_origin "widget/table-column" { title="Src"; fieldname="a_origin"; width=5; }
+		    t_rec_source "widget/table-column" { title="Source Key"; fieldname="a_source_key"; width=20; }
+		    t_rec_amount "widget/table-column" { title="Amount"; fieldname="a_amount"; width=20; }
+		    t_rec_posted "widget/table-column" { title="Date Posted"; fieldname="a_posted_date"; width=20; }
+		    t_rec_comment "widget/table-column" { title="Comment"; fieldname="a_comment"; width=30; }
+
+		    rec_detail "widget/table-row-detail"
+			{
+			height = 260; width=500;
+			
+			rec_pane "widget/pane"
+			    {
+			// require_one_endorsement="kardia:gift_manage","kardia:gift_amt"; 
+			// ^^ this is probably the wrong place, and need own endorsement
+			    x=10; y=5;
+			    height = 250; width=480;
+			    border_radius=12;
+			    style=flat;
+			    bgcolor="#f8f8f8";
+			
+			    rec_form "widget/form"
+				{
+				rec_form_hbox "widget/hbox"
+				    {
+				    rec_form_left_vbox "widget/vbox"
+					{
+					width=200;
+					objectsource=bank_rec_osrc;
+					allow_new=yes;
+				//	on_save_refresh_acc { event=DataSaved; target=account_list_osrc; action=Refresh; } //TODO: this is probably wrong
+
+
+					f_rec_is_rec "widget/component" //TODO: make this a dropdown of just the 4 options.
+					    {
+					    path="/sys/cmp/smart_field.cmp";
+					    field = 'a_is_reconciled';
+					    ctl_type=checkbox; 
+					    text='Reconciled: ';
+					    label_width=80;
+					    height = 30;
+					    width=200;
+					    }
+
+					f_rec_origin "widget/component" //TODO: make this a dropdown of just the 4 options.
+					    {
+					    path="/sys/cmp/smart_field.cmp";
+					    field = 'a_origin';
+					    ctl_type=editbox; 
+					    text='Source: ';
+					    label_width=80;
+					    height = 30;
+					    width=200;
+					    }
+
+					// the widgets below span the full width
+					f_rec_source_id "widget/component"
+					    {
+					    path="/sys/cmp/smart_field.cmp";
+					    field = 'a_source_key';
+					    ctl_type=editbox; 
+					    text='Source Key: ';
+					    label_width=80;
+					    height = 30;
+					    width=400;
+					    }
+					
+					f_rec_comment "widget/component"
+					    {
+					    path="/sys/cmp/smart_field.cmp";
+					    field = 'a_comment';
+					    ctl_type=editbox; 
+					    text='Comment: ';
+					    label_width=80;
+					    height = 30;
+					    width=400;
+					    }
+
+					rec_button_box "widget/hbox"
+					    {
+					    width=400;
+					    rec_save_btn "widget/textbutton"
+						{
+						width=120;
+						text = "Save";
+						enabled = runclient(:rec_form:is_savable);
+
+						save_rec "widget/connector" { event=Click; target=rec_form; action=Save; }
+						}
+					    rec_cancel_btn "widget/textbutton"
+						{
+						width=120;
+						text = "Cancel";
+						enabled = runclient(:rec_form:is_discardable);
+
+						cancel_rec "widget/connector" { event=Click; target=rec_form; action=Discard; }
+						}
+					    }
+					}
+				    rec_form_right_vbox "widget/vbox"
+					{
+					width=240;
+					f_rec_amount "widget/component" //TODO: make this a dropdown of just the 4 options.
+					    {
+					    path="/sys/cmp/smart_field.cmp";
+					    field = 'a_amount';
+					    ctl_type=editbox; 
+					    text='Amount: ';
+					    label_width=100;
+					    height = 30;
+					    width=200;
+					    }
+					f_rec_date_posted "widget/component"
+					    {
+					    path="/sys/cmp/smart_field.cmp";
+					    field = 'a_posted_date';
+					    ctl_type=editbox; 
+					    text='Date Posted: ';
+					    label_width=100;
+					    height = 30;
+					    width=220;
+					    }
+					}
+				    }
+				}
+			    }
+			}
+		    }
 		}
 	    }
 	}
