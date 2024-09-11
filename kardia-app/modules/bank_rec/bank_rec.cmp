@@ -49,17 +49,38 @@ bank_rec "widget/component-decl"
 		    AND :p1:a_period = :parameters:cur_period
 		;
 
+		-- create or update any a_bank_recon rows that should exist in the period
+		INSERT INTO
+		    /apps/kardia/data/Kardia_DB/a_bank_recon/rows
+		SELECT
+		    :acc:a_ledger_number,
+		    a_period = :parameters:cur_period,
+		    :acc:a_account_code,
+		    a_bank_balance = NULL,
+		    a_comment = NULL,
+		    s_date_created = getdate(),
+		    s_created_by = user_name(),
+		    s_date_modified = getdate(),
+		    s_modified_by = user_name()
+		FROM 
+		    /apps/kardia/data/Kardia_DB/a_account/rows acc
+		WHERE 
+		    :acc:a_ledger_number = :parameters:cur_ledger
+		;
+
 		SELECT
 		    :acc:a_account_code,
 		    :acc:a_ledger_number,
 		    :acc:a_acct_desc,
-		    balance = isnull(sum(:trans:a_amount), 0), -- kardia balance
+		    :parameters:cur_period,
+		    kardia_balence = isnull(sum(:trans:a_amount), 0), -- kardia balance
 		    rec_total = isnull(sum(:reci:a_amount), 0),
 		    net_kardia = isnull(sum(:reci:a_amount), 0) + isnull(:prev_rec:a_bank_balance, 0), -- bank_start + rec
 		    bank_end = isnull(:rec:a_bank_balance, 0),
 		    bank_start = isnull(:prev_rec:a_bank_balance, 0),
 		    kard_diff = isnull(sum(:trans:a_amount), 0) - isnull(:rec:a_bank_balance, 0), -- kardia balance - bank end
-		    zero = isnull(sum(:reci:a_amount), 0) + isnull(:prev_rec:a_bank_balance, 0) - isnull(:rec:a_bank_balance, 0) -- net_kardia - bank_end
+		    zero = isnull(sum(:reci:a_amount), 0) + isnull(:prev_rec:a_bank_balance, 0) - isnull(:rec:a_bank_balance, 0), -- net_kardia - bank_end
+		    :rec:a_comment
 		FROM 
 		    IDENTITY /apps/kardia/data/Kardia_DB/a_account/rows acc,
 		    /apps/kardia/data/Kardia_DB/a_transaction/rows trans,
@@ -104,18 +125,14 @@ bank_rec "widget/component-decl"
 
 		t_acc_code "widget/table-column" { title="Acct."; fieldname="a_account_code"; width=15; }
 		t_acc_desc "widget/table-column" { title="Description"; fieldname="a_acct_desc"; width=50; }
-		t_acc_bal "widget/table-column" { title="Balance"; fieldname="balance"; width=20; }
+		t_acc_bal "widget/table-column" { title="Balance"; fieldname="kardia_balence"; width=20; }
 		t_rec "widget/table-column" { title="Rec. Total"; fieldname="rec_total"; width=20; }
 		t_kar_net "widget/table-column" { title="Net Balance"; fieldname="net_kardia"; width=20; }
 		t_bank_start "widget/table-column" { title="Bank Start"; fieldname="bank_start"; width=20; }
 		t_bank_end "widget/table-column" { title="Bank End"; fieldname="bank_end"; width=20; }
 		t_zero "widget/table-column" { title="Zero"; fieldname="zero"; width=20; }
-		rec_select "widget/connector"
-		    {
-		    event=Click;
-		    target=bank_rec_osrc;
-		    action=QueryParam;
-		    }
+		
+		rec_select "widget/connector" { event=Click; target=bank_rec_osrc; action=QueryParam; }
 		}
 
 	    }
@@ -158,7 +175,7 @@ bank_rec "widget/component-decl"
 		    f_kardia_bal "widget/component"
 			{
 			path="/sys/cmp/smart_field.cmp";
-			field = 'balance';
+			field = 'kardia_balence';
 			ctl_type=label; 
 			text='Kardia Balance:';
 			label_width=120;
@@ -170,7 +187,7 @@ bank_rec "widget/component-decl"
 			path="/sys/cmp/smart_field.cmp";
 			field = 'kard_diff';
 			ctl_type=label; 
-			text='Bank - Kardia: ';
+			text='Kardia Difference: ';
 			label_width=120;
 			height = 20;
 			}
@@ -180,9 +197,19 @@ bank_rec "widget/component-decl"
 			path="/sys/cmp/smart_field.cmp";
 			field = 'zero';
 			ctl_type=label; 
-			text='Bank - Adjusted:';
+			text='Zero:'; // bank - adjusted
 			label_width=120;
 			height = 20;
+			}
+		    f_comment "widget/component"
+			{
+			path="/sys/cmp/smart_field.cmp";
+			field = 'a_comment';
+			ctl_type=editbox; 
+			text='Comment:';
+			label_width=120;
+			height = 20;
+			width = 250;
 			}
 
 		    // TODO: make the save be able to create new a_bank_recon rows if needed
@@ -241,7 +268,7 @@ bank_rec "widget/component-decl"
 			AND :a_period = :parameters:rec_period
 			AND :a_account_code = :parameters:rec_account
 		    ON DUPLICATE 
-			:a_ledger_number, :a_account_code, :a_source_key -- period is subject to change, line item auto generates
+			:a_ledger_number, :a_period, :a_account_code, :a_source_key -- line item auto generates
 		    UPDATE SET
 			:a_amount = :t:a_amount,
 			:a_posted_date = :t:a_effective_date,
@@ -257,7 +284,7 @@ bank_rec "widget/component-decl"
 			/apps/kardia/data/Kardia_DB/a_bank_recon_item/rows
 		    WHERE
 			:a_ledger_number = :parameters:rec_ledger
-			AND (:a_period = :parameters:rec_period OR :a_is_reconciled = 0)
+			AND :a_period = :parameters:rec_period
 			AND :a_account_code = :parameters:rec_account
 		    ORDER BY
 			:a_line_item
@@ -287,8 +314,6 @@ bank_rec "widget/component-decl"
 		    nodata_message="No Transactions to display";
 		    // TODO: I really would like a way to single click a checkbox and get the row marked as reconciled without the internal form.
 		    //TODO: a new row button. Know the peroid, ledger, and account, and can let auto do the line number. SO yeah.
-		    rec_check_click "widget/connector" { event=DblClick; target=:bank_rec_osrc:a_is_reconciled; action=SetValue; Value=1;}
-
 		     
 		    t_rec_check "widget/table-column" 
 			{
@@ -382,6 +407,7 @@ bank_rec "widget/component-decl"
 						enabled = runclient(:rec_form:is_savable);
 
 						save_rec "widget/connector" { event=Click; target=rec_form; action=Save; }
+						update_acc "widget/connector" { event=Click; target=account_list_osrc; action=Refresh; }
 						}
 					    rec_cancel_btn "widget/textbutton"
 						{
