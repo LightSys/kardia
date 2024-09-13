@@ -28,7 +28,7 @@ bank_rec "widget/component-decl"
 	    cur_ledger "widget/parameter" { type=string; default=runclient(:ledger:value); }
 	    cur_period "widget/parameter" { type=string; default=runclient(:selected_period:value); }
 
-	    sql = runserver("
+	    sql = "
 		DECLARE COLLECTION prev_period;
 
 		INSERT INTO
@@ -106,13 +106,14 @@ bank_rec "widget/component-decl"
 		    AND :acc:a_account_code *= :rec:a_account_code
 		    AND :acc:a_account_code *= :prev_rec:a_account_code
 		    AND :reci:a_is_reconciled = 1
-		    AND :reci:a_source_key =* convert('string', :trans:a_batch_number) + '|' 
+		    -- NOTE: the left outer join below only works if we continue to generate all GL items. Otherwise, will need to make full outer join
+		    AND :reci:a_source_key *= convert('string', :trans:a_batch_number) + '|' 
 			+ convert('string', :trans:a_journal_number) + '|' + :trans:a_transaction_number
 		GROUP BY 
 		    :acc:a_account_code
 		ORDER BY
 		    :acc:a_account_code
-		");
+		";
 		
 	    baseobj = "/apps/kardia/data/Kardia_DB/a_bank_recon/rows";
 	    replicasize=800; 
@@ -249,7 +250,7 @@ bank_rec "widget/component-decl"
 		rec_period "widget/parameter" { type=string; default=runclient(:selected_period:value); }
 		rec_account "widget/parameter" { type=string; default=runclient(:account_list_osrc:a_account_code); }
 
-		sql = runserver("
+		sql = "
 		    -- update the contents for the current section
 		    INSERT INTO
 			/apps/kardia/data/Kardia_DB/a_bank_recon_item/rows
@@ -295,7 +296,7 @@ bank_rec "widget/component-decl"
 			AND :a_account_code = :parameters:rec_account
 		    ORDER BY
 			:a_line_item
-		    ");
+		    ";
 		
 		baseobj = "/apps/kardia/data/Kardia_DB/a_bank_recon_item/rows";
 		replicasize=800; 
@@ -348,110 +349,130 @@ bank_rec "widget/component-decl"
 			    rec_form "widget/form"
 				{
 				objectsource=bank_rec_osrc;
-
-				rec_form_hbox "widget/hbox"
+				rec_form_vbox "widget/vbox"
 				    {
-				    rec_form_left_vbox "widget/vbox"
+				    rec_form_hbox "widget/hbox"
 					{
-					width=200;
-
-					f_rec_is_rec "widget/component"
+					height=60;
+					rec_form_left_vbox "widget/vbox"
 					    {
-					    path="/sys/cmp/smart_field.cmp";
-					    field = 'a_is_reconciled';
-					    ctl_type=checkbox; 
-					    text='Reconciled: ';
-					    label_width=80;
-					    height = 30;
 					    width=200;
-					    }
 
-					f_rec_origin "widget/component" //TODO: make this a dropdown of just the 4 options.
-					    {
-					    path="/sys/cmp/smart_field.cmp";
-					    field = 'a_origin';
-					    ctl_type=editbox; 
-					    text='Source: ';
-					    label_width=80;
-					    height = 30;
-					    width=200;
-					    }
-
-					// the widgets below span the full width
-					f_rec_source_id "widget/component"
-					    {
-					    path="/sys/cmp/smart_field.cmp";
-					    field = 'a_source_key';
-					    ctl_type=editbox; 
-					    text='Source Key: ';
-					    label_width=80;
-					    height = 30;
-					    width=400;
-					    }
-					
-					f_rec_comment "widget/component"
-					    {
-					    path="/sys/cmp/smart_field.cmp";
-					    field = 'a_comment';
-					    ctl_type=editbox; 
-					    text='Comment: ';
-					    label_width=80;
-					    height = 30;
-					    width=400;
-					    }
-
-					rec_button_box "widget/hbox"
-					    {
-					    width=400;
-					    rec_save_btn "widget/textbutton"
+					    f_rec_is_rec "widget/component"
 						{
-						width=60;
-						text = "Save";
-						enabled = runclient(:rec_form:is_savable);
-
-						save_rec "widget/connector" { event=Click; target=rec_form; action=Save; }
-						update_acc "widget/connector" { event=Click; target=account_list_osrc; action=Refresh; }
+						path="/sys/cmp/smart_field.cmp";
+						field = 'a_is_reconciled';
+						ctl_type=checkbox; 
+						text='Reconciled: ';
+						label_width=80;
+						height = 30;
+						width=200;
 						}
-					    rec_cancel_btn "widget/textbutton"
-						{
-						width=60;
-						text = "Cancel";
-						enabled = runclient(:rec_form:is_discardable);
 
-						cancel_rec "widget/connector" { event=Click; target=rec_form; action=Discard; }
+					    f_rec_origin "widget/component" //TODO: make this a dropdown of just the 4 options.
+						{
+						path="/sys/cmp/smart_field.cmp";
+						field = 'a_origin';
+						tooltip="The source of the line item";
+						ctl_type=dropdown; 
+						text='Source: ';
+						label_width=80;
+						height = 30;
+						width=200;
+						sql="SELECT :text, :tag FROM /apps/kardia/data/Kardia_DB/_a_recon_item_source/rows";
 						}
-					    rec_delete_btn "widget/textbutton"
+					    }
+					rec_form_right_vbox "widget/vbox"
+					    {
+					    width=240;
+					    f_rec_amount "widget/component" //TODO: make this a dropdown of just the 4 options.
 						{
-						width=60;
-						text = "Delete";
-						enabled = runclient(NOT :rec_form:is_discardable);
-
-						delete_rec "widget/connector" { event=Click; target=rec_form; action=Delete; }
+						path="/sys/cmp/smart_field.cmp";
+						field = 'a_amount';
+						ctl_type=editbox; 
+						text='Amount: ';
+						label_width=100;
+						height = 30;
+						width=200;
+						}
+					    f_rec_date_posted "widget/component"
+						{
+						path="/sys/cmp/smart_field.cmp";
+						field = 'a_posted_date';
+						ctl_type=datetime; 
+						text='Date Posted: ';
+						label_width=100;
+						height = 30;
+						width=220;
 						}
 					    }
 					}
-				    rec_form_right_vbox "widget/vbox"
+				    // these widgets below span the full width
+				    f_rec_source_id "widget/component"
 					{
-					width=240;
-					f_rec_amount "widget/component" //TODO: make this a dropdown of just the 4 options.
+					path="/apps/kardia/modules/base/editbox_table.cmp";
+					field = 'a_source_key';
+					text='Source Key: ';
+					popup_width=300;
+					popup_height=210;
+					label_width=80;
+					height = 30;
+					width=400;
+					// FIXME: have this change behavior based on source dropdown
+					popup_sql = runserver("
+					    SELECT
+					        value = convert('string', :a_batch_number) + '|' + convert('string', :a_journal_number) + '|' + :a_transaction_number,
+					        label = '' + :a_batch_number + ' ' + :a_journal_number + ' ' + :a_transaction_number + ' ' + :a_comment
+					    FROM
+					        /apps/kardia/data/Kardia_DB/a_transaction/rows
+					    WHERE
+					        :a_ledger_number = " + quote(:this:ledger) + "
+					    ");
+					search_field_list="*a_batch_number*,a_journal_number,a_transaction_number,*a_comment*";
+					key_name="a_batch_number";
+					object_name="Transactions";
+					popup_text="Choose Transaction:";
+					attach_point=editbox;
+					}
+					
+				    f_rec_comment "widget/component"
+					{
+					path="/sys/cmp/smart_field.cmp";
+					field = 'a_comment';
+					ctl_type=editbox; 
+					text='Comment: ';
+					label_width=80;
+					height = 30;
+					width=400;
+					}
+
+				    rec_button_box "widget/hbox"
+					{
+					width=400;
+					rec_save_btn "widget/textbutton"
 					    {
-					    path="/sys/cmp/smart_field.cmp";
-					    field = 'a_amount';
-					    ctl_type=editbox; 
-					    text='Amount: ';
-					    label_width=100;
-					    height = 30;
-					    width=200;
+					    width=60;
+					    text = "Save";
+					    enabled = runclient(:rec_form:is_savable);
+
+					    save_rec "widget/connector" { event=Click; target=rec_form; action=Save; }
+					    update_acc "widget/connector" { event=Click; target=account_list_osrc; action=Refresh; }
 					    }
-					f_rec_date_posted "widget/component"
+					rec_cancel_btn "widget/textbutton"
 					    {
-					    path="/sys/cmp/smart_field.cmp";
-					    field = 'a_posted_date';
-					    ctl_type=datetime; 
-					    text='Date Posted: ';
-					    label_width=100;
-					    height = 30;
-					    width=220;
+					    width=60;
+					    text = "Cancel";
+					    enabled = runclient(:rec_form:is_discardable);
+
+					    cancel_rec "widget/connector" { event=Click; target=rec_form; action=Discard; }
+					    }
+					rec_delete_btn "widget/textbutton"
+					    {
+					    width=60;
+					    text = "Delete";
+					    enabled = runclient(NOT :rec_form:is_discardable);
+
+					    delete_rec "widget/connector" { event=Click; target=rec_form; action=Delete; }
 					    }
 					}
 				    }
