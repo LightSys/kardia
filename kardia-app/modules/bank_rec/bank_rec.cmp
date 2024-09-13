@@ -212,9 +212,9 @@ bank_rec "widget/component-decl"
 			width = 250;
 			}
 
-		    // TODO: make the save be able to create new a_bank_recon rows if needed
 		    button_box "widget/hbox"
 			{
+			height=50;
 			acc_save_btn "widget/textbutton"
 			    {
 			    width=120;
@@ -233,6 +233,13 @@ bank_rec "widget/component-decl"
 			    }
 			}
 		    }
+		// add a form just for the new button
+		    rec_new_btn "widget/textbutton"
+			{
+			text = "New Rec. Item";
+			enabled=runclient(:rec_form:is_newable);
+			new_rec "widget/connector" { event=Click; target=rec_form; action=New; }
+			}
 		}
 
 	    //right side
@@ -315,10 +322,7 @@ bank_rec "widget/component-decl"
 		    // TODO: I really would like a way to single click a checkbox and get the row marked as reconciled without the internal form.
 		    //TODO: a new row button. Know the peroid, ledger, and account, and can let auto do the line number. SO yeah.
 		     
-		    t_rec_check "widget/table-column" 
-			{
-			type="check"; title="rec?"; fieldname="a_is_reconciled"; width=5; 
-			}
+		    t_rec_check "widget/table-column" { type="check"; title="rec?"; fieldname="a_is_reconciled"; width=5; }
 		    t_rec_line "widget/table-column" { title="#"; fieldname="a_line_item"; width=5; }
 		    t_rec_origin "widget/table-column" { title="Src"; fieldname="a_origin"; width=5; }
 		    t_rec_source "widget/table-column" { title="Source Key"; fieldname="a_source_key"; width=20; }
@@ -328,31 +332,30 @@ bank_rec "widget/component-decl"
 
 		    rec_detail "widget/table-row-detail"
 			{
-			height = 260; width=500;
+			height = 160; width=500;
+			show_on_new=1;
 			
 			rec_pane "widget/pane"
 			    {
 			// require_one_endorsement="kardia:gift_manage","kardia:gift_amt"; 
 			// ^^ this is probably the wrong place, and need own endorsement
 			    x=10; y=5;
-			    height = 250; width=480;
+			    height = 150; width=480;
 			    border_radius=12;
 			    style=flat;
 			    bgcolor="#f8f8f8";
 			
 			    rec_form "widget/form"
 				{
+				objectsource=bank_rec_osrc;
+
 				rec_form_hbox "widget/hbox"
 				    {
 				    rec_form_left_vbox "widget/vbox"
 					{
 					width=200;
-					objectsource=bank_rec_osrc;
-					allow_new=yes;
-				//	on_save_refresh_acc { event=DataSaved; target=account_list_osrc; action=Refresh; } //TODO: this is probably wrong
 
-
-					f_rec_is_rec "widget/component" //TODO: make this a dropdown of just the 4 options.
+					f_rec_is_rec "widget/component"
 					    {
 					    path="/sys/cmp/smart_field.cmp";
 					    field = 'a_is_reconciled';
@@ -402,7 +405,7 @@ bank_rec "widget/component-decl"
 					    width=400;
 					    rec_save_btn "widget/textbutton"
 						{
-						width=120;
+						width=60;
 						text = "Save";
 						enabled = runclient(:rec_form:is_savable);
 
@@ -411,11 +414,19 @@ bank_rec "widget/component-decl"
 						}
 					    rec_cancel_btn "widget/textbutton"
 						{
-						width=120;
+						width=60;
 						text = "Cancel";
 						enabled = runclient(:rec_form:is_discardable);
 
 						cancel_rec "widget/connector" { event=Click; target=rec_form; action=Discard; }
+						}
+					    rec_delete_btn "widget/textbutton"
+						{
+						width=60;
+						text = "Delete";
+						enabled = runclient(NOT :rec_form:is_discardable);
+
+						delete_rec "widget/connector" { event=Click; target=rec_form; action=Delete; }
 						}
 					    }
 					}
@@ -436,7 +447,7 @@ bank_rec "widget/component-decl"
 					    {
 					    path="/sys/cmp/smart_field.cmp";
 					    field = 'a_posted_date';
-					    ctl_type=editbox; 
+					    ctl_type=datetime; 
 					    text='Date Posted: ';
 					    label_width=100;
 					    height = 30;
@@ -444,6 +455,12 @@ bank_rec "widget/component-decl"
 					    }
 					}
 				    }
+
+				// add in meta data so saving new items works
+				rec_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
+				rec_meta_ledger "widget/variable" { fieldname="a_ledger_number"; ledger_hints "widget/hints" { default=runclient(:ledger:value); } }
+				rec_meta_period "widget/variable" { fieldname="a_period"; period_hints "widget/hints" { default=runclient(:selected_period:value); } }
+				rec_meta_account "widget/variable" { fieldname="a_account_code"; account_hints "widget/hints" { default=runclient(:account_list_osrc:a_account_code); style=alwaysdef; } }
 				}
 			    }
 			}
