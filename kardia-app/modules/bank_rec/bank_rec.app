@@ -6,7 +6,7 @@ runpayroll "widget/page"
     height=600;
     widget_template = "/apps/kardia/tpl/kardia-system.tpl", runserver("/apps/kardia/tpl/" + user_name() + ".tpl");
     background="/apps/kardia/images/bg/light_bgnd.jpg";
-    require_endorsements="kardia:pay_manage"; // FIXME: needs own endorsement
+    require_endorsements="kardia:recon";
     endorsement_context=runserver("kardia:ledger:" + :this:ledger + ":");
     max_requests = 7;
 

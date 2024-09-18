@@ -5,6 +5,6 @@ kardia_modinfo "system/structure"
     module_abbrev = "Bank Rec.";
     module_description = "The Bank Reconciliation module in Kardia allows for reconciliation between Kardia's records and the actual bank values.";
     module_sequence = 1000;
-    module_context = 'kardia';
-    module_endorsement = 'kardia:sys_admin'; // FIXME: needs own endorsement
+    module_context = 'kardia:ledger';
+    module_endorsement = 'kardia:recon';
     }

@@ -150,7 +150,6 @@ bank_rec "widget/component-decl"
 		acc_form "widget/form"
 		    {
 		    objectsource = account_list_osrc;
-		    allow_query = no; // TODO: needs to allow writes for the bank amount eventually
 
 		    f_bank_start "widget/component"
 			{
@@ -234,13 +233,13 @@ bank_rec "widget/component-decl"
 			    }
 			}
 		    }
-		// add a form just for the new button
-		    rec_new_btn "widget/textbutton"
-			{
-			text = "New Rec. Item";
-			enabled=runclient(:rec_form:is_newable);
-			new_rec "widget/connector" { event=Click; target=rec_form; action=New; }
-			}
+		rec_new_btn "widget/textbutton"
+		    {
+		    text = "New Rec. Item";
+		    enabled=runclient(:rec_form:is_newable 
+			AND has_endorsement('kardia:recon_entry', 'kardia:ledger:' + :ledger:value + ":"));
+		    new_rec "widget/connector" { event=Click; target=rec_form; action=New; }
+		    }
 		}
 
 	    //right side
@@ -321,8 +320,7 @@ bank_rec "widget/component-decl"
 		    allow_deselection = yes;
 		    nodata_message="No Transactions to display";
 		    // TODO: I really would like a way to single click a checkbox and get the row marked as reconciled without the internal form.
-		    //TODO: a new row button. Know the peroid, ledger, and account, and can let auto do the line number. SO yeah.
-		     
+				     
 		    t_rec_check "widget/table-column" { type="check"; title="rec?"; fieldname="a_is_reconciled"; width=5; }
 		    t_rec_line "widget/table-column" { title="#"; fieldname="a_line_item"; width=5; }
 		    t_rec_origin "widget/table-column" { title="Src"; fieldname="a_origin"; width=5; }
@@ -367,14 +365,22 @@ bank_rec "widget/component-decl"
 						label_width=80;
 						height = 30;
 						width=200;
+						rec_check_hints "widget/hints" 
+						    { 
+						    condition=runserver(condition(
+							has_endorsement('kardia:recon_perform', 'kardia:ledger:' + :this:ledger + ":"), 
+							0, 1)); 
+						    style=readonly; 
+						    }
 						}
 
-					    f_rec_origin "widget/component" //TODO: make this a dropdown of just the 4 options.
+					    f_rec_origin "widget/component"
 						{
 						path="/sys/cmp/smart_field.cmp";
 						field = 'a_origin';
 						tooltip="The source of the line item";
-						ctl_type=dropdown; 
+						ctl_type=runserver(condition(has_endorsement('kardia:recon_entry', 'kardia:ledger:' + :this:ledger + ":"), 
+							'dropdown', 'label'));
 						text='Source: ';
 						label_width=80;
 						height = 30;
@@ -385,11 +391,12 @@ bank_rec "widget/component-decl"
 					rec_form_right_vbox "widget/vbox"
 					    {
 					    width=240;
-					    f_rec_amount "widget/component" //TODO: make this a dropdown of just the 4 options.
+					    f_rec_amount "widget/component"
 						{
 						path="/sys/cmp/smart_field.cmp";
 						field = 'a_amount';
-						ctl_type=editbox; 
+						ctl_type=runserver(condition(has_endorsement('kardia:recon_entry', 'kardia:ledger:' + :this:ledger + ":"), 
+							'editbox', 'label'));
 						text='Amount: ';
 						label_width=100;
 						height = 30;
@@ -399,7 +406,8 @@ bank_rec "widget/component-decl"
 						{
 						path="/sys/cmp/smart_field.cmp";
 						field = 'a_posted_date';
-						ctl_type=datetime; 
+						ctl_type=runserver(condition(has_endorsement('kardia:recon_entry', 'kardia:ledger:' + :this:ledger + ":"), 
+							'datetime', 'label')); 
 						text='Date Posted: ';
 						label_width=100;
 						height = 30;
@@ -410,7 +418,10 @@ bank_rec "widget/component-decl"
 				    // these widgets below span the full width
 				    f_rec_source_id "widget/component"
 					{
-					path="/apps/kardia/modules/base/editbox_table.cmp";
+					// needs to just be a label if the correct endorsement is not found.
+					path=runserver(condition(has_endorsement('kardia:recon_entry', 'kardia:ledger:' + :this:ledger + ":"), 
+						"/apps/kardia/modules/base/editbox_table.cmp", "/sys/cmp/smart_field.cmp"));
+					ctl_type='label';
 					field = 'a_source_key';
 					text='Source Key: ';
 					popup_width=300;
@@ -439,7 +450,8 @@ bank_rec "widget/component-decl"
 					{
 					path="/sys/cmp/smart_field.cmp";
 					field = 'a_comment';
-					ctl_type=editbox; 
+					ctl_type=runserver(condition(has_endorsement('kardia:recon_entry', 'kardia:ledger:' + :this:ledger + ":"), 
+						'editbox', 'label')); 
 					text='Comment: ';
 					label_width=80;
 					height = 30;
@@ -470,7 +482,8 @@ bank_rec "widget/component-decl"
 					    {
 					    width=60;
 					    text = "Delete";
-					    enabled = runclient(NOT :rec_form:is_discardable);
+					    enabled = runclient(NOT :rec_form:is_discardable 
+					    	AND has_endorsement('kardia:recon_entry', 'kardia:ledger:' + :ledger:value + ":"));
 
 					    delete_rec "widget/connector" { event=Click; target=rec_form; action=Delete; }
 					    }
