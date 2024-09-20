@@ -1,0 +1,93 @@
+$Version=2$
+testss "system/query"
+    {
+    cur_ledger "query/parameter" { type=string; }
+    cur_period "query/parameter" { type=string; }
+
+    sql = "
+	DECLARE COLLECTION prev_period;
+
+	INSERT INTO
+	    COLLECTION prev_period
+	SELECT
+	    cur_period = :p1:a_period,
+	    prev_period = (SELECT last(:p2:a_period)
+		FROM /apps/kardia/data/Kardia_DB/a_period/rows p2
+		WHERE :p1:a_start_date > :p2:a_start_date
+		    AND :p1:a_end_date > :p2:a_end_date
+		    AND :p2:a_ledger_number = :parameters:cur_ledger
+		    AND isnull(:p2:a_summary_only, 0) = 0
+		ORDER BY :p2:a_start_date ASC)
+	FROM 
+	    /apps/kardia/data/Kardia_DB/a_period/rows p1
+	WHERE 
+	    :p1:a_ledger_number = :parameters:cur_ledger
+	    AND :p1:a_period = :parameters:cur_period
+	;
+
+	-- create or update any a_bank_recon rows that should exist in the period
+	INSERT INTO
+	    /apps/kardia/data/Kardia_DB/a_bank_recon/rows
+	SELECT
+	    :acc:a_ledger_number,
+	    a_period = :parameters:cur_period,
+	    :acc:a_account_code,
+	    a_bank_balance = NULL,
+	    a_comment = NULL,
+	    s_date_created = getdate(),
+	    s_created_by = user_name(),
+	    s_date_modified = getdate(),
+	    s_modified_by = user_name()
+	FROM 
+	    /apps/kardia/data/Kardia_DB/a_account/rows acc
+	WHERE 
+	    :acc:a_ledger_number = :parameters:cur_ledger
+	;
+
+	SELECT
+	    :acc:a_account_code,
+	    :acc:a_ledger_number,
+	    :acc:a_acct_desc,
+	    :parameters:cur_period,
+	    kardia_balence = isnull(sum(:trans:a_amount), 0), -- kardia balance
+	    rec_total = isnull(sum(:reci:a_amount), 0),
+	    net_kardia = isnull(sum(:reci:a_amount), 0) + isnull(:prev_rec:a_bank_balance, 0), -- bank_start + rec
+	    bank_end = isnull(:rec:a_bank_balance, 0),
+	    bank_start = isnull(:prev_rec:a_bank_balance, 0),
+	    kard_diff = isnull(sum(:trans:a_amount), 0) - isnull(:rec:a_bank_balance, 0), -- kardia balance - bank end
+	    zero = isnull(sum(:reci:a_amount), 0) + isnull(:prev_rec:a_bank_balance, 0) - isnull(:rec:a_bank_balance, 0), -- net_kardia - bank_end
+	    :rec:a_comment
+	FROM 
+	    IDENTITY /apps/kardia/data/Kardia_DB/a_account/rows acc,
+	    /apps/kardia/data/Kardia_DB/a_transaction/rows trans,
+	    /apps/kardia/data/Kardia_DB/a_bank_recon/rows rec,
+	    /apps/kardia/data/Kardia_DB/a_bank_recon_item/rows reci,
+	    /apps/kardia/data/Kardia_DB/a_period/rows per,
+	    COLLECTION prev_period prev_per, -- only ever has one row
+	    /apps/kardia/data/Kardia_DB/a_bank_recon/rows prev_rec
+	WHERE
+	        :parameters:cur_ledger = :acc:a_ledger_number
+	    AND :parameters:cur_ledger = :trans:a_ledger_number
+	    AND :parameters:cur_ledger = :rec:a_ledger_number
+	    AND :parameters:cur_ledger = :reci:a_ledger_number
+	    AND :parameters:cur_ledger = :per:a_ledger_number
+	    AND :parameters:cur_ledger = :prev_rec:a_ledger_number
+	    AND :parameters:cur_period = :trans:a_period
+	    AND :parameters:cur_period = :reci:a_period
+	    AND :parameters:cur_period =  :rec:a_period
+	    AND :parameters:cur_period *= :per:a_period
+	    AND :prev_per:prev_period *= :prev_rec:a_period
+	    AND :acc:a_account_code *= :trans:a_account_code
+	    AND :acc:a_account_code *= :reci:a_account_code
+	    AND :acc:a_account_code *= :rec:a_account_code
+	    AND :acc:a_account_code *= :prev_rec:a_account_code
+	    AND :reci:a_is_reconciled = 1
+	    -- NOTE: the left outer join below only works if we continue to generate all GL items. Otherwise, will need to make full outer join
+	    AND :reci:a_source_key *= convert('string', :trans:a_batch_number) + '|' 
+		+ convert('string', :trans:a_journal_number) + '|' + :trans:a_transaction_number
+	GROUP BY 
+	    :acc:a_account_code
+	ORDER BY
+	    :acc:a_account_code
+	";
+    }
