@@ -327,8 +327,13 @@ bank_rec "widget/component-decl"
 			    t_rec_posted "widget/table-column" { title="Date Posted"; fieldname="a_posted_date"; width=20; }
 			    t_rec_comment "widget/table-column" { title="Comment"; fieldname="a_comment"; width=30; }
 			
-			    rec_shortcut "widget/connector" { event=DblClick; target=bank_rec_osrc; action=Modify; a_is_reconciled=runclient(condition(:bank_rec_osrc:a_is_reconciled = 1, 0, 1)); }
-			    short_update_acc "widget/connector" { event=DblClick; target=account_list_osrc; action=Refresh; event_delay=runclient(0.1); }
+			    rec_shortcut "widget/connector"
+				{
+				event=DblClick; target=bank_rec_osrc; action=Modify; 
+				a_is_reconciled=runclient(condition(:bank_rec_osrc:a_is_reconciled = 1, 0, 1)); 
+				event_condition=runclient(has_endorsement('kardia:recon_perform', 'kardia:ledger:' + :ledger:value + ":")); 
+				}
+			    short_update_acc "widget/connector" { event=DblClick; target=account_list_osrc; action=Refresh; event_delay=runclient(0.1);  }
 
 			    rec_detail "widget/table-row-detail"
 				{
