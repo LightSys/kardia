@@ -24,7 +24,7 @@ use File::Slurp;
 # The default users we will add to the sql
 $userlist=read_file("kardia_users.txt");
 
-$infile="./dropdowns.csv";
+$infile="../dropdowns.csv";
 $createout="dropdowns_create.sql";
 $deleteout="dropdowns_drop.sql";
 my $csv = Text::CSV->new();
@@ -51,6 +51,7 @@ print OUTC "use Kardia_DB$cmd_terminator\n";
 print OUTD "use Kardia_DB$cmd_terminator\n";
 while (<INFILE>) 
     {
+print "yay!\n";
     $line=$_;
     $status = $csv->parse($line);
     ($table,$key,$value,$explanation,$extra) = $csv->fields();
