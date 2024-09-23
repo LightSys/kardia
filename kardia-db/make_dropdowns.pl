@@ -51,7 +51,6 @@ print OUTC "use Kardia_DB$cmd_terminator\n";
 print OUTD "use Kardia_DB$cmd_terminator\n";
 while (<INFILE>) 
     {
-print "yay!\n";
     $line=$_;
     $status = $csv->parse($line);
     ($table,$key,$value,$explanation,$extra) = $csv->fields();
