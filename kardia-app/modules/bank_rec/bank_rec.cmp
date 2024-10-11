@@ -293,7 +293,20 @@ bank_rec "widget/component-decl"
 			rec_period "widget/parameter" { type=string; default=runclient(:selected_period:value); }
 			rec_account "widget/parameter" { type=string; default=runclient(:account_list_osrc:a_account_code); }
 
-			sql = "EXEC /apps/kardia/modules/bank_rec/bank_rec_list.qy rec_ledger=:parameters:rec_ledger, rec_period=:parameters:rec_period, rec_account=:parameters:rec_account";
+			sql = "EXEC /apps/kardia/modules/bank_rec/bank_rec_list.qy rec_ledger=:parameters:rec_ledger, rec_period=:parameters:rec_period, rec_account=:parameters:rec_account; 
+				-- now read the actual values
+				SELECT 
+				    :a_line_item, :a_origin, :a_source_key, :a_amount, :a_posted_date, :a_is_reconciled, :a_comment, 
+				    is_rec_img = condition(:a_is_reconciled = 0, '/sys/images/checkbox_unchecked.gif', '/sys/images/checkbox_checked.gif') 
+				FROM
+				    /apps/kardia/data/Kardia_DB/a_bank_recon_item/rows
+				WHERE
+				    :a_ledger_number = :parameters:rec_ledger
+				    AND :a_period = :parameters:rec_period
+				    AND :a_account_code = :parameters:rec_account
+				ORDER BY
+				    :a_line_item
+				    ";
 
 			baseobj = "/apps/kardia/data/Kardia_DB/a_bank_recon_item/rows";
 			replicasize=800; 
@@ -435,18 +448,12 @@ bank_rec "widget/component-decl"
 						label_width=80;
 						height = 30;
 						width=400;
-						// FIXME: have this change behavior based on source dropdown
-						popup_sql = runserver("
-						    SELECT
-						        value = convert('string', :a_batch_number) + '|' + convert('string', :a_journal_number) + '|' + :a_transaction_number,
-						        label = '' + :a_batch_number + ' ' + :a_journal_number + ' ' + :a_transaction_number + ' ' + :a_comment
-						    FROM
-						        /apps/kardia/data/Kardia_DB/a_transaction/rows
-						    WHERE
-						        :a_ledger_number = " + quote(:this:ledger) + "
-						    ");
-						search_field_list="*a_batch_number*,a_journal_number,a_transaction_number,*a_comment*";
-						key_name="a_batch_number";
+						// TODO: consider having this change behavior based on source dropdown (requires rewriting editbox_table)
+						popup_sql = runserver("exec /apps/kardia/modules/bank_rec/bank_popup_gl.qy cur_ledger=" + quote(:this:ledger));
+
+						search_field_list="*key1*,key2,key3,*comment*,src";
+						key_name="key1";
+						key_type="string";
 						object_name="Transactions";
 						popup_text="Choose Transaction:";
 						attach_point=editbox;
@@ -493,6 +500,45 @@ bank_rec "widget/component-decl"
 
 						    delete_rec "widget/connector" { event=Click; target=rec_form; action=Delete; }
 						    del_update_acc "widget/connector" { event=Click; target=account_list_osrc; action=Refresh; event_delay=runclient(0.1); }
+						    }
+
+						sp3 "widget/autolayoutspacer" { width=225; }
+
+						lookup_button "widget/textbutton"
+						    {
+						    width=90;
+						    text = "View Source";
+						    enabled = runclient(:bank_rec_osrc:a_source_key is not null AND :bank_rec_osrc:a_origin != 'DE' AND :bank_rec_osrc:a_origin != '');
+						    gl_source_cn "widget/connector"
+							{
+							event=Click; target=bank_rec; action=Launch; 
+							Width=800;
+							Height=600;
+							event_condition=runclient(:bank_rec_osrc:a_origin = 'GL');
+							Source="/apps/kardia/modules/gl/journal_entry.app";
+							batch=runclient(:bank_rec_osrc:a_source_key);
+							ledger=runclient(:ledger:value);
+							}
+						    cr_source_cn "widget/connector"
+							{
+							event=Click; target=bank_rec; action=Launch; 
+							Width=1000;
+							Height=700;
+							event_condition=runclient(:bank_rec_osrc:a_origin = 'CR');
+							Source="/apps/kardia/modules/rcpt/gift_entry.app";
+							batch=runclient(:bank_rec_osrc:a_source_key);
+							ledger=runclient(:ledger:value);
+							}
+						    cd_source_cn "widget/connector"
+							{
+							event=Click; target=bank_rec; action=Launch; 
+							Width=900;
+							Height=600;
+							event_condition=runclient(:bank_rec_osrc:a_origin = 'CD');
+							Source="/apps/kardia/modules/disb/disbursements.app";
+							batch=runclient(:bank_rec_osrc:a_source_key);
+							ledger=runclient(:ledger:value);
+							}
 						    }
 						}
 					    }

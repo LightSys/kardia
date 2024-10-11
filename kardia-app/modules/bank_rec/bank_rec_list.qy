@@ -1,5 +1,5 @@
 $Version=2$
-testss "system/query"
+rec_list "system/query"
     {
     rec_ledger "query/parameter" { type=string; }
     rec_period "query/parameter" { type=string; }
@@ -38,17 +38,5 @@ testss "system/query"
 	    :s_date_modified = getdate() IF MODIFIED,
 	    :s_modified_by = user_name() IF MODIFIED
 	;
-	-- now read the actual values
-	SELECT 
-	    :a_line_item, :a_origin, :a_source_key, :a_amount, :a_posted_date, :a_is_reconciled, :a_comment, 
-	    is_rec_img = condition(:a_is_reconciled = 0, '/sys/images/checkbox_unchecked.gif', '/sys/images/checkbox_checked.gif') 
-	FROM
-	    /apps/kardia/data/Kardia_DB/a_bank_recon_item/rows
-	WHERE
-	    :a_ledger_number = :parameters:rec_ledger
-	    AND :a_period = :parameters:rec_period
-	    AND :a_account_code = :parameters:rec_account
-	ORDER BY
-	    :a_line_item
 	";
     }

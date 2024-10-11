@@ -1,0 +1,63 @@
+$Version=2$
+popup_trans "system/query"
+    {
+    cur_ledger "query/parameter" { type=string; }
+
+    sql = "
+	    DECLARE COLLECTION line_items;
+
+	    -- get the GL:
+	    INSERT INTO COLLECTION line_items
+	    SELECT
+		key1 = :a_batch_number, 
+		key2 = :a_journal_number, 
+		key3 = :a_transaction_number, 
+		comment = :a_comment,
+		src = 'GL'
+	    FROM
+		/apps/kardia/data/Kardia_DB/a_transaction/rows
+	    WHERE
+		:a_ledger_number = :parameters:cur_ledger
+	    ;
+
+	    -- get the CR
+	    INSERT INTO COLLECTION line_items
+	    SELECT
+		key1 = :a_batch_number, 
+		key2 = :a_gift_number, 
+		key3 = :a_split_number, 
+		comment = :a_comment,
+		src = 'CR'
+	    FROM
+		/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows
+	    WHERE
+		:a_ledger_number = :parameters:cur_ledger
+	    ;
+
+	    -- get the CD
+	    INSERT INTO COLLECTION line_items
+	    SELECT
+		key1 = :a_batch_number, 
+		key2 = :a_disbursement_id, 
+		key3 = :a_line_item, 
+		comment = :a_comment,
+		src = 'CD'
+	    FROM
+		/apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows
+	    WHERE
+		:a_ledger_number = :parameters:cur_ledger
+	    ;
+
+	    SELECT 
+		key1 = convert('string', :key1),
+		key2 = convert('string', :key2),
+		key3 = convert('string', :key3),
+		:comment,
+		:src,
+		value = convert('string', :key1) + '|' + convert('string', :key2) + '|' + :key3, 
+		label = :src + ' ' + convert('string', :key1) + ' ' + convert('string', :key2) + ' ' + :key3 + ' ' + condition(:comment IS NULL, '', quote(:comment)) 
+	    FROM 
+		COLLECTION line_items
+	    ;
+	";
+    }

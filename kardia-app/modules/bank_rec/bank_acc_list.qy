@@ -1,5 +1,5 @@
 $Version=2$
-testss "system/query"
+acc_list "system/query"
     {
     cur_ledger "query/parameter" { type=string; }
     cur_period "query/parameter" { type=string; }
