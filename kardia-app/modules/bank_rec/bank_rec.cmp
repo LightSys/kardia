@@ -149,7 +149,7 @@ bank_rec "widget/component-decl"
 			}
 		    }
 		sp2 "widget/autolayoutspacer" { height=2; }
-		sep_line "widget/pane" { x=0;y=28; width=780; height=2; style=lowered; }
+		sep_line_1 "widget/pane" { x=0;y=28; width=780; height=2; style=lowered; }
 
 		main_v "widget/vbox"
 		    {
@@ -287,6 +287,11 @@ bank_rec "widget/component-decl"
 				    }
 				}
 			    }
+
+			sep_line_2 "widget/pane" { x=0;y=28; width=780; height=2; style=lowered; }
+
+			sp3 "widget/autolayoutspacer" { height=5; }
+
 			rec_new_btn "widget/textbutton"
 			    {
 			    text = "New Rec. Item";
@@ -366,10 +371,8 @@ bank_rec "widget/component-decl"
 
 			rec_pane "widget/pane"
 			    {
-			// require_one_endorsement="kardia:gift_manage","kardia:gift_amt"; 
-			// ^^ this is probably the wrong place, and need own endorsement
 			    x=10; y=5;
-			    height = 150; width=480;
+			    height = 150; width=550;
 			    border_radius=12;
 			    style=flat;
 			    bgcolor="#f8f8f8";
@@ -384,7 +387,7 @@ bank_rec "widget/component-decl"
 					height=60;
 					rec_form_left_vbox "widget/vbox"
 					    {
-					    width=200;
+					    width=250;
 
 					    f_rec_is_rec "widget/component"
 						{
@@ -394,7 +397,7 @@ bank_rec "widget/component-decl"
 						text='Reconciled: ';
 						label_width=80;
 						height = 30;
-						width=200;
+						width=250;
 						rec_check_hints "widget/hints" 
 						    { 
 						    condition=runserver(condition(
@@ -414,13 +417,13 @@ bank_rec "widget/component-decl"
 						text='Source: ';
 						label_width=80;
 						height = 30;
-						width=200;
+						width=250;
 						sql="SELECT :text, :tag FROM /apps/kardia/data/Kardia_DB/_a_recon_item_source/rows";
 						}
 					    }
 					rec_form_right_vbox "widget/vbox"
 					    {
-					    width=240;
+					    width=250;
 					    f_rec_amount "widget/component"
 						{
 						path="/sys/cmp/smart_field.cmp";
@@ -430,7 +433,7 @@ bank_rec "widget/component-decl"
 						text='Amount: ';
 						label_width=100;
 						height = 30;
-						width=200;
+						width=250;
 						}
 					    f_rec_date_posted "widget/component"
 						{
@@ -441,7 +444,7 @@ bank_rec "widget/component-decl"
 						text='Date Posted: ';
 						label_width=100;
 						height = 30;
-						width=220;
+						width=250;
 						}
 					    }
 					}
@@ -458,7 +461,7 @@ bank_rec "widget/component-decl"
 					popup_height=210;
 					label_width=80;
 					height = 30;
-					width=400;
+					width=525;
 					// TODO: consider having this change behavior based on source dropdown (requires rewriting editbox_table)
 					popup_sql = runserver("exec /apps/kardia/modules/bank_rec/bank_popup_gl.qy cur_ledger=" + quote(:this:ledger));
 
@@ -479,7 +482,7 @@ bank_rec "widget/component-decl"
 					text='Comment: ';
 					label_width=80;
 					height = 30;
-					width=400;
+					width=500;
 					}
 
 				    rec_button_box "widget/hbox"
@@ -513,7 +516,7 @@ bank_rec "widget/component-decl"
 					    del_update_acc "widget/connector" { event=Click; target=account_list_osrc; action=Refresh; event_delay=runclient(0.1); }
 					    }
 
-					sp3 "widget/autolayoutspacer" { width=225; }
+					sp4 "widget/autolayoutspacer" { width=225; }
 
 					lookup_button "widget/textbutton"
 					    {
