@@ -332,7 +332,7 @@ bank_rec "widget/component-decl"
 		rec_list_table "widget/table"
 		    {
 		    height=580; width = 580; x=0; y=0;
-		    overlap_scrollbar=yes;
+		    overlap_scrollbar=no;
 		    demand_scrollbar=yes;
 		    rowheight=null;
 		    cellvspacing=4;
@@ -345,24 +345,44 @@ bank_rec "widget/component-decl"
 		    row_shadow_angle=135;
 		    initial_selection = noexpand;
 		    allow_deselection = yes;
-		    nodata_message="No Transactions to display";
-		    // TODO: I really would like a way to single click a checkbox and get the row marked as reconciled without the internal form.
+		    nodata_message="No transactions to display";
 
-		    t_rec_check "widget/table-column" { type="check"; title="rec?"; fieldname="a_is_reconciled"; width=5; }
+		    t_rec_check "widget/table-column" 
+			{ 
+			type="image"; title="rec?"; fieldname="a_is_reconciled"; width=5; 
+			// select the proper image depending on value and if is clickable
+			value=runclient(
+				condition(:bank_rec_osrc:a_is_reconciled  >= 1, 
+					condition(has_endorsement('kardia:recon_perform', 'kardia:ledger:' + :ledger:value + ":"),
+						'/sys/images/checkbox_checked.gif',
+						'/sys/images/checkbox_checked_dis.gif'
+						),
+					condition(has_endorsement('kardia:recon_perform', 'kardia:ledger:' + :ledger:value + ":"),
+						'/sys/images/checkbox_unchecked.gif',
+						'/sys/images/checkbox_unchecked_dis.gif'
+						)
+					)
+				); 
+			}
 		    t_rec_line "widget/table-column" { title="#"; fieldname="a_line_item"; width=5; }
 		    t_rec_origin "widget/table-column" { title="Src"; fieldname="a_origin"; width=5; }
 		    t_rec_source "widget/table-column" { title="Source Key"; fieldname="a_source_key"; width=20; }
 		    t_rec_amount "widget/table-column" { title="Amount"; fieldname="a_amount"; width=20; }
 		    t_rec_posted "widget/table-column" { title="Date Posted"; fieldname="a_posted_date"; width=20; }
 		    t_rec_comment "widget/table-column" { title="Comment"; fieldname="a_comment"; width=30; }
-		
+		    // let the user click is the is reconciled column to mark/unmark it
 		    rec_shortcut "widget/connector"
 			{
-			event=DblClick; target=bank_rec_osrc; action=Modify; 
+			event=Click; target=bank_rec_osrc; action=Modify;
 			a_is_reconciled=runclient(condition(:bank_rec_osrc:a_is_reconciled = 1, 0, 1)); 
-			event_condition=runclient(has_endorsement('kardia:recon_perform', 'kardia:ledger:' + :ledger:value + ":")); 
+			event_condition=runclient(:Column == 'a_is_reconciled' AND has_endorsement('kardia:recon_perform', 'kardia:ledger:' + :ledger:value + ":")); 
 			}
-		    short_update_acc "widget/connector" { event=DblClick; target=account_list_osrc; action=Refresh; event_delay=runclient(0.1);  }
+		    short_update_acc "widget/connector" 
+			{
+			event=Click; source=rec_list_table; target=account_list_osrc; action=Refresh; event_delay=runclient(0.1);
+			event_condition=runclient(:Column == 'a_is_reconciled' AND has_endorsement('kardia:recon_perform', 'kardia:ledger:' + :ledger:value + ":"));
+			event_cancel=runclient(:Column == 'a_is_reconciled' AND has_endorsement('kardia:recon_perform', 'kardia:ledger:' + :ledger:value + ":")); 
+			}
 
 		    rec_detail "widget/table-row-detail"
 			{
@@ -376,7 +396,6 @@ bank_rec "widget/component-decl"
 			    border_radius=12;
 			    style=flat;
 			    bgcolor="#f8f8f8";
-
 			    rec_form "widget/form"
 				{
 				objectsource=bank_rec_osrc;
