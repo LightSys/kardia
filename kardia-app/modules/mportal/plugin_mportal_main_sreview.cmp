@@ -397,12 +397,12 @@ support_review "widget/component-decl"
 		    :gp:a_interval = 0 and
 		    (:parameters:name is null or :parameters:name = :gp:name)
 		set
-		    :gp:a_amount = (
+		    :gp:a_amount = isnull((
 			    --select sum(condition(:i:a_fund = :gp:a_fund, :i:a_amount, :i:a_amount * isnull(:gp:a_percent, 1.0)))
 			    select sum(:i:a_amount * isnull(:gp:a_percent, 1.0))
 			    from /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i
 			    where :i:a_ledger_number = :gp:a_ledger_number and (:i:a_fund = :gp:a_fund or :i:a_fund = :gp:a_actual_fund) and :i:p_dn_donor_partner_id = :gp:p_donor_partner_key and :i:a_posted = 1 and isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) <= getdate() and isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) >= dateadd(day, -366, getdate())
-		    ),
+		    ), $0),
 		    :gp:s_date_modified = getdate(),
 		    :gp:s_modified_by = user_name()
 		;
