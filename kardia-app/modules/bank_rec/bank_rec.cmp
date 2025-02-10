@@ -1,0 +1,591 @@
+$Version=2$
+bank_rec "widget/component-decl"
+    {
+    width=1380;
+    height=580;
+
+    ledger "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
+    title "widget/parameter" { type=string; default=''; }
+    period "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
+
+    periods_osrc "widget/osrc"
+	{
+	periods_ledger "widget/parameter" { param_name=ledger; type=string; default=runserver(:this:ledger); }
+
+	sql = runserver("
+		SELECT
+			:p:a_period, :p:a_period_desc, :p:a_ledger_number, 
+			txt=:p:a_period + ' - ' + :p:a_period_desc + isnull(' (' + condition(:p:a_status = 'P', 'Provisional', condition(:p:a_status = 'O', 'Open', condition(:p:a_status = 'N', 'Not yet open', condition(:p:a_status = 'C', 'Closed', null)))) + ')', ''),
+			:p:a_status, :p:a_parent_period
+		FROM
+			/apps/kardia/data/Kardia_DB/a_period/rows p
+		WHERE
+			:p:a_summary_only = 0 and :p:a_ledger_number = :parameters:ledger
+		ORDER BY
+			:p:a_start_date desc");
+	replicasize=256;
+	readahead=256;
+	autoquery=onload;
+
+	auto_select_current "widget/connector"
+	    {
+	    event=EndQuery;
+	    event_condition=runclient(:periods_osrc:a_period != :bank_rec:period and not (:bank_rec:period is null));
+	    target = periods_osrc;
+	    action = FindObject;
+	    a_period = runclient(:bank_rec:period);
+	    }
+
+	period_form "widget/form" { selected_period "widget/variable" {type=string; fieldname=a_period;} }
+	
+	main_split "widget/hbox"
+	    {
+	    // left side: title, peiod select, and red summary details 
+	    ctls_vbox "widget/vbox"
+		{
+		width=800;
+		rcpt_label "widget/label"
+		    {
+		    width=250;
+		    text = runserver(:this:title); 
+		    style=bold;
+		    font_size=16;
+		    }
+
+		ctls_hbox "widget/hbox"
+		    {
+		    x=0; y=0; width=780;height=22;
+		    spacing=4;
+		    ledger_label "widget/label"
+			{
+			width=70;
+			y=1;
+			text = runserver("Ledger: "+:this:ledger);
+			align=right;
+			style=bold;
+			}
+		    periods_label "widget/label"
+			{
+			width=120;
+			y=1;
+			text = "Select Period:";
+			align=right;
+			style=bold;
+			}
+		    periods_select "widget/dropdown"
+			{
+			width=250;
+			mode=objectsource;
+			fieldname=txt;
+			numdisplay=12;
+			height=20;
+			acc_refresh "widget/connector" 
+			    {
+			    target=account_list_osrc; event=DataChange; action=QueryParam; 
+			    event_condition=runclient(:rec_form:is_newable AND :acc_form:is_newable); 
+			    }
+			rec_refresh "widget/connector" 
+			    {
+			    target=bank_rec_osrc; event=DataChange; action=QueryParam;
+			    event_condition=runclient(:rec_form:is_newable AND :acc_form:is_newable); 
+			    }
+			}
+
+		    sp0 "widget/autolayoutspacer" { width=8; }
+
+		    btnFirst "widget/imagebutton"
+			{
+			y=1;
+			width=18;
+			height=18;
+			image="/sys/images/ico16aa.gif";
+			pointimage="/sys/images/ico16ab.gif";
+			clickimage="/sys/images/ico16ac.gif";
+			disabledimage="/sys/images/ico16ad.gif";
+			tooltip = runserver("First Period");
+			enabled = runclient(not(:period_form:recid == :period_form:lastrecid) AND :rec_form:is_newable AND :acc_form:is_newable);
+			cnLast "widget/connector" { event="Click"; target=period_form; action="Last"; }
+			}
+		    btnBack "widget/imagebutton"
+			{
+			y=1;
+			width=18;
+			height=18;
+			image="/sys/images/ico16ba.gif";
+			pointimage="/sys/images/ico16bb.gif";
+			clickimage="/sys/images/ico16bc.gif";
+			disabledimage="/sys/images/ico16bd.gif";
+			tooltip = runserver("Previous Period");
+			repeat = yes;
+			enabled = runclient(not(:period_form:recid == :period_form:lastrecid) AND :rec_form:is_newable AND :acc_form:is_newable);
+			cnNext "widget/connector" { event="MouseDown"; target=period_form; action="Next"; }
+			}
+		    btnNext "widget/imagebutton"
+			{
+			y=1;
+			width=18;
+			height=18;
+			image="/sys/images/ico16ca.gif";
+			pointimage="/sys/images/ico16cb.gif";
+			clickimage="/sys/images/ico16cc.gif";
+			disabledimage="/sys/images/ico16cd.gif";
+			tooltip = runserver("Next Period");
+			repeat = yes;
+			enabled = runclient(:period_form:recid > 1 AND :rec_form:is_newable AND :acc_form:is_newable);
+			cnBack "widget/connector" { event="MouseDown"; target=period_form; action="Prev"; }
+			}
+		    btnLast "widget/imagebutton"
+			{
+			y=1;
+			width=18;
+			height=18;
+			image="/sys/images/ico16da.gif";
+			pointimage="/sys/images/ico16db.gif";
+			clickimage="/sys/images/ico16dc.gif";
+			disabledimage="/sys/images/ico16dd.gif";
+			tooltip = runserver("Last Period");
+			enabled = runclient(:period_form:recid > 1 AND :rec_form:is_newable AND :acc_form:is_newable);
+			cnFirst "widget/connector" { event="Click"; target=period_form; action="First"; }
+			}
+		    }
+		sp2 "widget/autolayoutspacer" { height=2; }
+		sep_line_1 "widget/pane" { x=0;y=28; width=780; height=2; style=lowered; }
+
+		main_v "widget/vbox"
+		    {
+		    // find the information on each bank account
+		    account_list_osrc "widget/osrc"
+			{
+			cur_ledger "widget/parameter" { type=string; default=runclient(:ledger:value); }
+			cur_period "widget/parameter" { type=string; default=runclient(:selected_period:value); }
+
+			sql = "EXEC /apps/kardia/modules/bank_rec/bank_acc_list.qy cur_ledger=:parameters:cur_ledger, cur_period=:parameters:cur_period";
+		
+			baseobj = "/apps/kardia/data/Kardia_DB/a_bank_recon/rows";
+			replicasize=800; 
+			readahead=800;
+			autoquery=onfirstreveal;
+
+			acc_list_table "widget/table"
+			    {
+			    height=450; width = 760; x=0; y=0;
+
+			    t_acc_code "widget/table-column" { title="Acct."; fieldname="a_account_code"; width=15; }
+			    t_acc_desc "widget/table-column" { title="Description"; fieldname="a_acct_desc"; width=50; }
+			    t_acc_bal "widget/table-column" { title="Balance"; fieldname="kardia_balence"; width=20; }
+			    t_rec "widget/table-column" { title="Rec. Total"; fieldname="rec_total"; width=20; }
+			    t_kar_net "widget/table-column" { title="Net Balance"; fieldname="net_kardia"; width=20; }
+			    t_bank_start "widget/table-column" { title="Bank Start"; fieldname="bank_start"; width=20; }
+			    t_bank_end "widget/table-column" { title="Bank End"; fieldname="bank_end"; width=20; }
+			    t_zero "widget/table-column" { title="Zero"; fieldname="zero"; width=20; }
+		
+			    rec_select "widget/connector" { event=Click; target=bank_rec_osrc; action=QueryParam; }
+			    }
+			}
+		    sp1 "widget/autolayoutspacer" { height=10; }
+		    period_forms_vbox "widget/vbox"
+			{
+			bank_rec_form_hbox "widget/hbox" 
+			    {
+			    height=50;
+
+			    acc_form "widget/form"
+				{
+				objectsource = account_list_osrc;
+				rec_feilds_1_vbox "widget/vbox" 
+				    {
+				    width=225;
+				    f_bank_start "widget/component"
+					{
+					path="/sys/cmp/smart_field.cmp";
+					field = 'bank_start';
+					ctl_type=label; 
+					text='Bank Start Balance:';
+					label_width=120;
+					height = 20;
+					}
+
+				    f_bank_end "widget/component"
+					{
+					path="/sys/cmp/smart_field.cmp";
+					field = 'bank_end';
+					ctl_type=editbox; 
+					text='Bank End Balance:';
+					label_width=120;
+					height = 20;
+					width = 200;
+					}
+				    }
+				rec_feilds_2_vbox "widget/vbox" 
+				    {
+				    width=175;
+				    f_kardia_bal "widget/component"
+					{
+					path="/sys/cmp/smart_field.cmp";
+					field = 'kardia_balence';
+					ctl_type=label; 
+					text='Kardia Balance:';
+					label_width=120;
+					height = 20;
+					}
+		
+				    f_diff_bal "widget/component"
+					{
+					path="/sys/cmp/smart_field.cmp";
+					field = 'kard_diff';
+					ctl_type=label; 
+					text='Kardia Difference: ';
+					label_width=120;
+					width=200;
+					height = 20;
+					}
+				    }
+				rec_feilds_3_vbox "widget/vbox" 
+				    {
+				    width=275;
+				    f_zero "widget/component"
+					{
+					path="/sys/cmp/smart_field.cmp";
+					field = 'zero';
+					ctl_type=label; 
+					text='Zero:'; // bank - adjusted
+					label_width=120;
+					height = 20;
+					}
+
+				    f_comment "widget/component"
+					{
+					path="/sys/cmp/smart_field.cmp";
+					field = 'a_comment';
+					ctl_type=editbox; 
+					text='Comment:';
+					label_width=120;
+					height = 20;
+					width = 250;
+					}
+				    }
+
+				button_vbox "widget/vbox"
+				    {
+				    width=200;
+				    acc_save_btn "widget/textbutton"
+					{
+					width=80;
+					text = "Save";
+					enabled = runclient(:acc_form:is_savable);
+
+					save_acc "widget/connector" { event=Click; target=acc_form; action=Save; }
+					}
+				    acc_cancel_btn "widget/textbutton"
+					{
+					width=80;
+					text = "Cancel";
+					enabled = runclient(:acc_form:is_discardable);
+
+					cancel_acc "widget/connector" { event=Click; target=acc_form; action=Discard; }
+					}
+				    }
+				}
+			    }
+
+			sep_line_2 "widget/pane" { x=0;y=28; width=780; height=2; style=lowered; }
+
+			sp3 "widget/autolayoutspacer" { height=5; }
+
+			rec_new_btn "widget/textbutton"
+			    {
+			    text = "New Rec. Item";
+			    enabled=runclient(:rec_form:is_newable 
+				AND has_endorsement('kardia:recon_entry', 'kardia:ledger:' + :ledger:value + ":"));
+			    new_rec "widget/connector" { event=Click; target=rec_form; action=New; }
+			    }
+			}
+		    }
+		}
+	    // right side: just the rec item list
+	    bank_rec_osrc "widget/osrc" 
+		{
+		rec_ledger "widget/parameter" { type=string; default=runclient(:ledger:value); }
+		rec_period "widget/parameter" { type=string; default=runclient(:selected_period:value); }
+		rec_account "widget/parameter" { type=string; default=runclient(:account_list_osrc:a_account_code); }
+
+		sql = "EXEC /apps/kardia/modules/bank_rec/bank_rec_list.qy rec_ledger=:parameters:rec_ledger, rec_period=:parameters:rec_period, rec_account=:parameters:rec_account; 
+			-- now read the actual values
+			SELECT 
+			    :a_line_item, :a_origin, :a_source_key, :a_amount, :a_posted_date, :a_is_reconciled, :a_comment, 
+			    is_rec_img = condition(:a_is_reconciled = 0, '/sys/images/checkbox_unchecked.gif', '/sys/images/checkbox_checked.gif') 
+			FROM
+			    /apps/kardia/data/Kardia_DB/a_bank_recon_item/rows
+			WHERE
+			    :a_ledger_number = :parameters:rec_ledger
+			    AND :a_period = :parameters:rec_period
+			    AND :a_account_code = :parameters:rec_account
+			ORDER BY
+			    :a_line_item
+			    ";
+
+		baseobj = "/apps/kardia/data/Kardia_DB/a_bank_recon_item/rows";
+		replicasize=800; 
+		readahead=800;
+		autoquery=onfirstreveal;
+
+		rec_list_table "widget/table"
+		    {
+		    height=580; width = 580; x=0; y=0;
+		    overlap_scrollbar=no;
+		    demand_scrollbar=yes;
+		    rowheight=null;
+		    cellvspacing=4;
+		    inner_padding=2;
+		    colsep=0;
+		    row_border_radius=6;
+		    row_shadow_radius=2;
+		    row_shadow_offset=1;
+		    row_shadow_color="#a0a0a0";
+		    row_shadow_angle=135;
+		    initial_selection = noexpand;
+		    allow_deselection = yes;
+		    nodata_message="No transactions to display";
+
+		    t_rec_check "widget/table-column" 
+			{ 
+			type="image"; title="rec?"; fieldname="a_is_reconciled"; width=5; 
+			// select the proper image depending on value and if is clickable
+			value=runclient(
+				condition(:bank_rec_osrc:a_is_reconciled  >= 1, 
+					condition(has_endorsement('kardia:recon_perform', 'kardia:ledger:' + :ledger:value + ":"),
+						'/sys/images/checkbox_checked.gif',
+						'/sys/images/checkbox_checked_dis.gif'
+						),
+					condition(has_endorsement('kardia:recon_perform', 'kardia:ledger:' + :ledger:value + ":"),
+						'/sys/images/checkbox_unchecked.gif',
+						'/sys/images/checkbox_unchecked_dis.gif'
+						)
+					)
+				); 
+			}
+		    t_rec_line "widget/table-column" { title="#"; fieldname="a_line_item"; width=5; }
+		    t_rec_origin "widget/table-column" { title="Src"; fieldname="a_origin"; width=5; }
+		    t_rec_source "widget/table-column" { title="Source Key"; fieldname="a_source_key"; width=20; }
+		    t_rec_amount "widget/table-column" { title="Amount"; fieldname="a_amount"; width=20; }
+		    t_rec_posted "widget/table-column" { title="Date Posted"; fieldname="a_posted_date"; width=20; }
+		    t_rec_comment "widget/table-column" { title="Comment"; fieldname="a_comment"; width=30; }
+		    // let the user click is the is reconciled column to mark/unmark it
+		    rec_shortcut "widget/connector"
+			{
+			event=Click; target=bank_rec_osrc; action=Modify;
+			a_is_reconciled=runclient(condition(:bank_rec_osrc:a_is_reconciled = 1, 0, 1)); 
+			event_condition=runclient(:Column == 'a_is_reconciled' AND has_endorsement('kardia:recon_perform', 'kardia:ledger:' + :ledger:value + ":")); 
+			}
+		    short_update_acc "widget/connector" 
+			{
+			event=Click; source=rec_list_table; target=account_list_osrc; action=Refresh; event_delay=runclient(0.1);
+			event_condition=runclient(:Column == 'a_is_reconciled' AND has_endorsement('kardia:recon_perform', 'kardia:ledger:' + :ledger:value + ":"));
+			event_cancel=runclient(:Column == 'a_is_reconciled' AND has_endorsement('kardia:recon_perform', 'kardia:ledger:' + :ledger:value + ":")); 
+			}
+
+		    rec_detail "widget/table-row-detail"
+			{
+			height = 160; width=500;
+			show_on_new=1;
+
+			rec_pane "widget/pane"
+			    {
+			    x=10; y=5;
+			    height = 150; width=550;
+			    border_radius=12;
+			    style=flat;
+			    bgcolor="#f8f8f8";
+			    rec_form "widget/form"
+				{
+				objectsource=bank_rec_osrc;
+				rec_form_vbox "widget/vbox"
+				    {
+				    rec_form_hbox "widget/hbox"
+					{
+					height=60;
+					rec_form_left_vbox "widget/vbox"
+					    {
+					    width=250;
+
+					    f_rec_is_rec "widget/component"
+						{
+						path="/sys/cmp/smart_field.cmp";
+						field = 'a_is_reconciled';
+						ctl_type=checkbox; 
+						text='Reconciled: ';
+						label_width=80;
+						height = 30;
+						width=250;
+						rec_check_hints "widget/hints" 
+						    { 
+						    condition=runserver(condition(
+							has_endorsement('kardia:recon_perform', 'kardia:ledger:' + :this:ledger + ":"), 
+							0, 1)); 
+						    style=readonly; 
+						    }
+						}
+
+					    f_rec_origin "widget/component"
+						{
+						path="/sys/cmp/smart_field.cmp";
+						field = 'a_origin';
+						tooltip="The source of the line item";
+						ctl_type=runserver(condition(has_endorsement('kardia:recon_entry', 'kardia:ledger:' + :this:ledger + ":"), 
+							'dropdown', 'label'));
+						text='Source: ';
+						label_width=80;
+						height = 30;
+						width=250;
+						sql="SELECT :text, :tag FROM /apps/kardia/data/Kardia_DB/_a_recon_item_source/rows";
+						}
+					    }
+					rec_form_right_vbox "widget/vbox"
+					    {
+					    width=250;
+					    f_rec_amount "widget/component"
+						{
+						path="/sys/cmp/smart_field.cmp";
+						field = 'a_amount';
+						ctl_type=runserver(condition(has_endorsement('kardia:recon_entry', 'kardia:ledger:' + :this:ledger + ":"), 
+							'editbox', 'label'));
+						text='Amount: ';
+						label_width=100;
+						height = 30;
+						width=250;
+						}
+					    f_rec_date_posted "widget/component"
+						{
+						path="/sys/cmp/smart_field.cmp";
+						field = 'a_posted_date';
+						ctl_type=runserver(condition(has_endorsement('kardia:recon_entry', 'kardia:ledger:' + :this:ledger + ":"), 
+							'datetime', 'label')); 
+						text='Date Posted: ';
+						label_width=100;
+						height = 30;
+						width=250;
+						}
+					    }
+					}
+				    // these widgets below span the full width
+				    f_rec_source_id "widget/component"
+					{
+					// needs to just be a label if the correct endorsement is not found.
+					path=runserver(condition(has_endorsement('kardia:recon_entry', 'kardia:ledger:' + :this:ledger + ":"), 
+						"/apps/kardia/modules/base/editbox_table.cmp", "/sys/cmp/smart_field.cmp"));
+					ctl_type='label';
+					field = 'a_source_key';
+					text='Source Key: ';
+					popup_width=300;
+					popup_height=210;
+					label_width=80;
+					height = 30;
+					width=525;
+					// TODO: consider having this change behavior based on source dropdown (requires rewriting editbox_table)
+					popup_sql = runserver("exec /apps/kardia/modules/bank_rec/bank_popup_gl.qy cur_ledger=" + quote(:this:ledger));
+
+					search_field_list="*key1*,key2,key3,*comment*,src";
+					key_name="key1";
+					key_type="string";
+					object_name="Transactions";
+					popup_text="Choose Transaction:";
+					attach_point=editbox;
+					}
+
+				    f_rec_comment "widget/component"
+					{
+					path="/sys/cmp/smart_field.cmp";
+					field = 'a_comment';
+					ctl_type=runserver(condition(has_endorsement('kardia:recon_entry', 'kardia:ledger:' + :this:ledger + ":"), 
+						'editbox', 'label')); 
+					text='Comment: ';
+					label_width=80;
+					height = 30;
+					width=500;
+					}
+
+				    rec_button_box "widget/hbox"
+					{
+					width=400;
+					rec_save_btn "widget/textbutton"
+					    {
+					    width=60;
+					    text = "Save";
+					    enabled = runclient(:rec_form:is_savable);
+
+					    save_rec "widget/connector" { event=Click; target=rec_form; action=Save; }
+					    save_update_acc "widget/connector" { event=Click; target=account_list_osrc; action=Refresh; event_delay=runclient(0.1); }
+					    }
+					rec_cancel_btn "widget/textbutton"
+					    {
+					    width=60;
+					    text = "Cancel";
+					    enabled = runclient(:rec_form:is_discardable);
+
+					    cancel_rec "widget/connector" { event=Click; target=rec_form; action=Discard; }
+					    }
+					rec_delete_btn "widget/textbutton"
+					    {
+					    width=60;
+					    text = "Delete";
+					    enabled = runclient(NOT :rec_form:is_discardable 
+					    	AND has_endorsement('kardia:recon_entry', 'kardia:ledger:' + :ledger:value + ":"));
+
+					    delete_rec "widget/connector" { event=Click; target=rec_form; action=Delete; }
+					    del_update_acc "widget/connector" { event=Click; target=account_list_osrc; action=Refresh; event_delay=runclient(0.1); }
+					    }
+
+					sp4 "widget/autolayoutspacer" { width=225; }
+
+					lookup_button "widget/textbutton"
+					    {
+					    width=90;
+					    text = "View Source";
+					    enabled = runclient(:bank_rec_osrc:a_source_key is not null AND :bank_rec_osrc:a_origin != 'DE' AND :bank_rec_osrc:a_origin != '');
+					    gl_source_cn "widget/connector"
+						{
+						event=Click; target=bank_rec; action=Launch; 
+						Width=800;
+						Height=600;
+						event_condition=runclient(:bank_rec_osrc:a_origin = 'GL');
+						Source="/apps/kardia/modules/gl/journal_entry.app";
+						batch=runclient(:bank_rec_osrc:a_source_key);
+						ledger=runclient(:ledger:value);
+						}
+					    cr_source_cn "widget/connector"
+						{
+						event=Click; target=bank_rec; action=Launch; 
+						Width=1000;
+						Height=700;
+						event_condition=runclient(:bank_rec_osrc:a_origin = 'CR');
+						Source="/apps/kardia/modules/rcpt/gift_entry.app";
+						batch=runclient(:bank_rec_osrc:a_source_key);
+						ledger=runclient(:ledger:value);
+						}
+					    cd_source_cn "widget/connector"
+						{
+						event=Click; target=bank_rec; action=Launch; 
+						Width=900;
+						Height=600;
+						event_condition=runclient(:bank_rec_osrc:a_origin = 'CD');
+						Source="/apps/kardia/modules/disb/disbursements.app";
+						batch=runclient(:bank_rec_osrc:a_source_key);
+						ledger=runclient(:ledger:value);
+						}
+					    }
+					}
+				    }
+
+				// add in meta data so saving new items works
+				rec_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
+				rec_meta_ledger "widget/variable" { fieldname="a_ledger_number"; ledger_hints "widget/hints" { default=runclient(:ledger:value); } }
+				rec_meta_period "widget/variable" { fieldname="a_period"; period_hints "widget/hints" { default=runclient(:selected_period:value); } }
+				rec_meta_account "widget/variable" { fieldname="a_account_code"; account_hints "widget/hints" { default=runclient(:account_list_osrc:a_account_code); style=alwaysdef; } }
+				}
+			    }
+			}
+		    }
+		}
+	    } 
+	}
+    }

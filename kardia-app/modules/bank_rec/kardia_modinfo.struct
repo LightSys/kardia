@@ -1,0 +1,10 @@
+$Version=2$
+kardia_modinfo "system/structure"
+    {
+    module_name = "Bank Reconciliation - Reconcile Kardia's Records with Bank Funds";
+    module_abbrev = "Bank Rec.";
+    module_description = "The Bank Reconciliation module in Kardia allows for reconciliation between Kardia's records and the actual bank values.";
+    module_sequence = 1000;
+    module_context = 'kardia:ledger';
+    module_endorsement = 'kardia:recon';
+    }
