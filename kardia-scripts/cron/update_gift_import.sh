@@ -4,6 +4,9 @@
 #
 # Greg Beeley / LightSys - 09-Sep-2019
 #
+#NAME gift_import
+#HOUR 2
+#MINUTE 40
 
 # Load bashrc
 . ~/.bashrc

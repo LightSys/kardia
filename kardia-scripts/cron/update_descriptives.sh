@@ -4,6 +4,9 @@
 #
 # Greg Beeley / LightSys - 13-Sep-2018
 #
+#NAME descriptives
+#HOUR 1
+#MINUTE 40
 
 # Load bashrc
 . ~/.bashrc

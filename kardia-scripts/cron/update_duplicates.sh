@@ -4,6 +4,9 @@
 #
 # Greg Beeley / LightSys - 12-May-2022
 #
+#NAME duplicates
+#HOUR 3
+#MINUTE 0
 
 # Load bashrc
 . ~/.bashrc

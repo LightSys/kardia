@@ -4,6 +4,9 @@
 #
 # Greg Beeley / LightSys - 13-Sep-2018
 #
+#NAME tag_implications
+#HOUR 2
+#MINUTE 0
 
 # Load bashrc
 . ~/.bashrc

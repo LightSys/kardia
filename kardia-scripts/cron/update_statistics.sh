@@ -4,6 +4,9 @@
 #
 # Greg Beeley / LightSys - 11-Jul-2019
 #
+#NAME statistics
+#HOUR 2
+#MINUTE 20
 
 # Load bashrc
 . ~/.bashrc
