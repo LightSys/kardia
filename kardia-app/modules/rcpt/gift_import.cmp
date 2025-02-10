@@ -1242,7 +1242,7 @@ gift_import "widget/component-decl"
 				    }
 				view_fee_batch_cn "widget/connector"
 				    {
-				    event_condition = runclient(:dep_import_osrc:dep_batch_number is not null);
+				    event_condition = runclient(:dep_import_osrc:fees_batch_number is not null);
 				    event=Click;
 				    target=gift_import;
 				    action=Launch;
