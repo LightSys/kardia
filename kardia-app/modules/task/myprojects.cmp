@@ -1532,18 +1532,21 @@ myprojects "widget/component-decl"
 			    initial_selection=noexpand;
 			    allow_deselection=yes;
 			    nodata_message="No tasks yet...";
+			    newrow_bgcolor = "#282828";
+			    newrow_textcolor = "#ffff80";
 
-			    t_tkname "widget/table-column" { title="Task"; fieldname=nametxt; style=bold; width=100; }
+			    t_tkname "widget/table-column" { title="Task"; fieldname=nametxt; sort_fieldname=t_task_label; style=bold; width=100; }
 			    t_tkdesc "widget/table-column" { title="Description"; fieldname=t_task_desc; width=260; wrap=yes; }
-			    t_tkassign "widget/table-column" { title="Assign"; fieldname=assignees; style=bold; width=50; align=center; }
+			    t_tkassign "widget/table-column" { title="Assign"; fieldname=assignees; sort_fieldname=t_task_id; style=bold; width=50; align=center; }
 			    t_tkhrs "widget/table-column" { title="Hours"; fieldname=t_task_hours; style=bold; width=50; align=center; }
 			    //t_tkdone "widget/table-column" { title="% Done"; fieldname=pctdone; style=bold; width=70; }
-			    t_tkstat "widget/table-column" { title="Status"; fieldname=stat; style=bold; width=70; align=center; }
+			    t_tkstat "widget/table-column" { title="Status"; fieldname=stat; sort_fieldname=t_task_state; style=bold; width=70; align=center; }
 			    //t_tkdone "widget/table-column" { title = "% Done"; value=runclient('/apps/kardia/modules/task/percent_done_svg.rpt?text=' + isnull(:tasks_osrc:pctdone, '-') + '&done=' + isnull(condition(:tasks_osrc:t_task_percent > 1.0, 70, :tasks_osrc:t_task_percent * 70), 0) + '&color=' + condition(:tasks_osrc:t_task_percent >= 0.799, 'green', 'red') + '&image_height=16&image_width=70&text_outside_color=white'); width=70; type=image; image_maxwidth=70; image_maxheight=16; style=bold; }
 			    t_tkdone "widget/table-column" { width=70; title = "% Done"; type=progress; style=bold; fieldname=t_task_percent; bar_color=runclient(condition(:tasks_osrc:t_task_percent >= 0.995, '#59b550', condition(:tasks_osrc:t_task_percent >= 0.599, '#DDB261', '#d96066'))); bar_padding=0; bar_textcolor=black; }
 
 			    tasks_detail "widget/table-row-detail"
 				{
+				show_on_new=1;
 				width=940;
 				height=176;
 
@@ -1580,9 +1583,9 @@ myprojects "widget/component-decl"
 						height=20;
 						spacing=10;
 
-						f_taskhours "widget/component" { width=160; path="/sys/cmp/smart_field.cmp"; text="# Hours:"; field=t_task_hours; }
-						f_taskpercent "widget/component" { width=130; label_width=70; path="/sys/cmp/smart_field.cmp"; text="% Done:"; field=t_task_percent; ctl_type=dropdown; sql="select label='' + (convert(integer,:name) * 10) + '%', value=convert(string, abs(round(convert(double,:name) / 10,1))) from /apps/kardia/data/Months.csv/rows limit 11"; numdisplay=12; }
-						f_taskstatus "widget/component" { width=170; label_width=70; path="/sys/cmp/smart_field.cmp"; text="Status:"; field=t_task_state; ctl_type=dropdown; sql="select label=:t_task_state_label, value=:t_task_state_id from /apps/kardia/data/Kardia_DB/t_task_state/rows order by :t_task_state_sequence"; numdisplay=8; }
+						f_taskhours "widget/component" { width=160; path="/sys/cmp/smart_field.cmp"; text="# Hours:"; field=t_task_hours; fth_hints "widget/hints" { default=1; } }
+						f_taskpercent "widget/component" { width=130; label_width=70; path="/sys/cmp/smart_field.cmp"; text="% Done:"; field=t_task_percent; ctl_type=dropdown; sql="select label='' + (convert(integer,:name) * 10) + '%', value=convert(string, abs(round(convert(double,:name) / 10,1))) from /apps/kardia/data/Months.csv/rows limit 11"; numdisplay=12; ftp_hints "widget/hints" { default='0.0'; } } 
+						f_taskstatus "widget/component" { width=170; label_width=70; path="/sys/cmp/smart_field.cmp"; text="Status:"; field=t_task_state; ctl_type=dropdown; sql="select label=:t_task_state_label, value=:t_task_state_id from /apps/kardia/data/Kardia_DB/t_task_state/rows order by :t_task_state_sequence"; numdisplay=8; fts_hints "widget/hints" { default=runserver( (select :t_task_state_id from /apps/kardia/data/Kardia_DB/t_task_state/rows where :t_task_state_type != 'F' order by :t_task_state_sequence asc limit 1)); } }
 						}
 
 					    task_sep "widget/autolayoutspacer" { height=1; }
@@ -1626,11 +1629,12 @@ myprojects "widget/component-decl"
 						    }
 						}
 					    }
+					tasks_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
 					}
 
 				    assignee_vbox "widget/vbox"
 					{
-					width=400;
+					width=380;
 					spacing=10;
 
 					assignee_osrc "widget/osrc"
@@ -1770,6 +1774,14 @@ myprojects "widget/component-decl"
 
 				on_newtask "widget/connector"
 				    {
+				    event=Click;
+				    target=task_edit_form;
+				    action=New;
+				    }
+
+				on_newtask "widget/connector"
+				    {
+				    condition=0;
 				    event=Click;
 				    target=tasks_osrc;
 				    action=Create;
