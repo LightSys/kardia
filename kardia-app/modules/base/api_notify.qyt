@@ -1,0 +1,82 @@
+$Version=2$
+api_notify "system/querytree"
+    {
+    Pending "system/querytree"
+	{
+	text = "Pending";
+
+	//require_endorsements = "system:from_appgroup";
+
+	Pending_list "system/querytree"
+	    {
+	    sql = " select
+			:n:p_notify_id,
+			:n:p_notify_type,
+			:n:p_event_date,
+			:n:p_object_id,
+			:n:p_message,
+			:n:p_source_partner_key,
+			:n:p_recip_partner_key,
+			:n:p_notify_method,
+			:n:p_notify_method_item,
+			:n:p_contact_id,
+			:n:p_contact_data,
+			:n:p_status,
+			:n:p_sent_date,
+			:n:p_ack_date,
+			:n:p_response,
+			:n:s_date_created,
+			:n:s_created_by,
+			:n:s_date_modified,
+			:n:s_modified_by,
+			:np:p_enabled,
+			:np:p_frequency,
+			:np:p_pause_until_date,
+			:np:p_pause_discard,
+			contact_name = condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, condition(char_length(:p:p_preferred_name) > 1, :p:p_preferred_name, :p:p_given_name) + ' ' + :p:p_surname),
+			contact_data = isnull(:c:p_phone_country + ' ', '') + isnull(:c:p_phone_area_city + ' ', '') + :c:p_contact_data,
+			:c:p_contact_type,
+			:c:p_record_status_code,
+			:c:p_contact_comments
+		    from
+			identity /apps/kardia/data/Kardia_DB/p_notification/rows n,
+			/apps/kardia/data/Kardia_DB/p_notification_pref/rows np,
+			/apps/kardia/data/Kardia_DB/p_contact_info/rows c,
+			/apps/kardia/data/Kardia_DB/p_partner/rows p
+		    where
+			:np:p_recip_partner_key = :n:p_recip_partner_key and
+			:np:p_notify_method = :n:p_notify_method and
+			:np:p_notify_method_item = :n:p_notify_method_item and
+			:np:p_notify_type = :n:p_notify_type and
+			(:n:p_status = 'N' or :n:p_status = 'U') and
+			:p:p_partner_key = :n:p_recip_partner_key and
+			:c:p_partner_key = :n:p_recip_partner_key and
+			:c:p_contact_id = :n:p_contact_id
+		    having
+			:np:p_enabled = 1 and
+			(:np:p_pause_until_date is null or :np:p_pause_until_date <= getdate())
+		    ";
+	    }
+	}
+    Types "system/querytree"
+	{
+	text = "Types";
+
+	Types_list "system/querytree"
+	    {
+	    sql = " select
+			:nt:p_notify_type,
+			:nt:p_notify_type_label,
+			:nt:p_notify_type_desc,
+			:nt:p_message,
+			:nt:p_object_label,
+			:nt:s_date_created,
+			:nt:s_created_by,
+			:nt:s_date_modified,
+			:nt:s_modified_by
+		    from
+			identity /apps/kardia/data/Kardia_DB/p_notification_type/rows nt
+		    ";
+	    }
+	}
+    }
