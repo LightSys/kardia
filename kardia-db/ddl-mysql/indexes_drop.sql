@@ -59,20 +59,10 @@ alter table p_contact_info drop index p_contact_idx;
 /* go */
 
 
-/* p_contact_usage_type */
-/* drop index p_contact_usage_type.p_contact_ut_pk */ 
-/* go */
-
-
 /* p_partner_relationship */
 /* drop index p_partner_relationship.p_partner_relationship_pk */ 
 /* go */
 alter table p_partner_relationship drop index p_relate_reverse_idx;
-
-
-/* p_partner_relationship_type */
-/* drop index p_partner_relationship_type.p_relat_type_pk */ 
-/* go */
 
 
 /* p_church */
@@ -99,6 +89,24 @@ alter table p_staff drop index p_staff_login_idx;
 alter table p_staff drop index p_staff_weblogin_idx;
 
 
+/* p_banking_details */
+alter table p_banking_details drop index p_bankd_acct_idx;
+alter table p_banking_details drop index p_bankd_bpartner_idx;
+alter table p_banking_details drop index p_bankd_partner_idx;
+/* drop index p_banking_details.p_banking_details_pk */ 
+/* go */
+
+
+/* p_contact_usage_type */
+/* drop index p_contact_usage_type.p_contact_ut_pk */ 
+/* go */
+
+
+/* p_partner_relationship_type */
+/* drop index p_partner_relationship_type.p_relat_type_pk */ 
+/* go */
+
+
 /* p_bulk_postal_code */
 /* drop index p_bulk_postal_code.p_bulk_code_pk */ 
 /* go */
@@ -116,14 +124,6 @@ alter table p_staff drop index p_staff_weblogin_idx;
 
 /* p_pol_division */
 /* drop index p_pol_division.p_poldiv_pk */ 
-/* go */
-
-
-/* p_banking_details */
-alter table p_banking_details drop index p_bankd_acct_idx;
-alter table p_banking_details drop index p_bankd_bpartner_idx;
-alter table p_banking_details drop index p_bankd_partner_idx;
-/* drop index p_banking_details.p_banking_details_pk */ 
 /* go */
 
 
@@ -148,19 +148,13 @@ alter table p_gazetteer drop index p_gaz_type_idx;
 /* go */
 
 
-/* p_dup_check_tmp */
-alter table p_dup_check_tmp drop index p_dc_username_idx;
-/* drop index p_dup_check_tmp.p_dupcheck_pk */ 
+/* p_acquisition_code */
+/* drop index p_acquisition_code.p_acqcode_pk */ 
 /* go */
 
 
 /* p_partner_sort_tmp */
 /* drop index p_partner_sort_tmp.p_sort_pk */ 
-/* go */
-
-
-/* p_acquisition_code */
-/* drop index p_acquisition_code.p_acqcode_pk */ 
 /* go */
 
 
@@ -185,6 +179,12 @@ alter table p_partner_search_results drop index p_search_stage_idx;
 /* go */
 
 
+/* p_dup_check_tmp */
+alter table p_dup_check_tmp drop index p_dc_username_idx;
+/* drop index p_dup_check_tmp.p_dupcheck_pk */ 
+/* go */
+
+
 /* p_nondup */
 /* drop index p_nondup.p_nondup_pk */ 
 /* go */
@@ -201,6 +201,30 @@ alter table p_dup drop index p_dup_rev_idx;
 /* drop index p_merge.p_merge_pk */ 
 /* go */
 alter table p_merge drop index p_merge_rev_idx;
+
+
+/* p_notification */
+/* drop index p_notification.p_notify_pk */ 
+/* go */
+alter table p_notification drop index p_notify_recip_idx;
+alter table p_notification drop index p_notify_source_idx;
+alter table p_notification drop index p_notify_type_idx;
+
+
+/* p_notification_type */
+/* drop index p_notification_type.p_notify_type_pk */ 
+/* go */
+
+
+/* p_notification_method */
+/* drop index p_notification_method.p_notify_method_pk */ 
+/* go */
+
+
+/* p_notification_pref */
+alter table p_notification_pref drop index p_notify_partner_idx;
+/* drop index p_notification_pref.p_notify_pref_pk */ 
+/* go */
 
 
 /* m_list */
@@ -239,14 +263,6 @@ alter table e_contact_history drop index e_cnt_hist_par_idx;
 /* go */
 alter table e_contact_history drop index e_cnt_hist_type_idx;
 alter table e_contact_history drop index e_cnt_hist_whom_idx;
-
-
-/* e_activity */
-alter table e_activity drop index e_act_par_idx;
-/* drop index e_activity.e_act_pk */ 
-/* go */
-alter table e_activity drop index e_act_sort_idx;
-alter table e_activity drop index e_act_type_idx;
 
 
 /* e_engagement_track */
@@ -353,6 +369,11 @@ alter table e_partner_document drop index e_pardoc_rev_idx;
 alter table e_partner_document drop index e_pardoc_work_idx;
 
 
+/* e_text_expansion */
+/* drop index e_text_expansion.e_exp_pk */ 
+/* go */
+
+
 /* e_workflow_type */
 /* drop index e_workflow_type.e_work_pk */ 
 /* go */
@@ -438,6 +459,19 @@ alter table e_data_highlight drop index e_dh_obj_idx;
 /* go */
 
 
+/* e_activity */
+alter table e_activity drop index e_act_par_idx;
+/* drop index e_activity.e_act_pk */ 
+/* go */
+alter table e_activity drop index e_act_sort_idx;
+alter table e_activity drop index e_act_type_idx;
+
+
+/* e_trackactivity */
+/* drop index e_trackactivity.e_trkact_pk */ 
+/* go */
+
+
 /* e_ack */
 alter table e_ack drop index e_ack_obj_idx;
 alter table e_ack drop index e_ack_par2_idx;
@@ -449,16 +483,6 @@ alter table e_ack drop index e_ack_par_idx;
 
 /* e_ack_type */
 /* drop index e_ack_type.e_ackt_pk */ 
-/* go */
-
-
-/* e_trackactivity */
-/* drop index e_trackactivity.e_trkact_pk */ 
-/* go */
-
-
-/* e_text_expansion */
-/* drop index e_text_expansion.e_exp_pk */ 
 /* go */
 
 
@@ -747,6 +771,16 @@ alter table a_fund_staff drop index a_fund_staff_partner_idx;
 
 /* a_currency_exch_rate */
 /* drop index a_currency_exch_rate.a_curr_pk */ 
+/* go */
+
+
+/* a_bank_recon */
+/* drop index a_bank_recon.a_recon_pk */ 
+/* go */
+
+
+/* a_bank_recon_item */
+/* drop index a_bank_recon_item.a_recon_item_pk */ 
 /* go */
 
 

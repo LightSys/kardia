@@ -86,15 +86,7 @@ alter table p_contact_usage
 	drop primary key;
 
 
-alter table p_contact_usage_type
-	drop primary key;
-
-
 alter table p_partner_relationship
-	drop primary key;
-
-
-alter table p_partner_relationship_type
 	drop primary key;
 
 
@@ -122,22 +114,6 @@ alter table p_staff
 	drop index p_staff_weblogin_idx;
 
 
-alter table p_bulk_postal_code
-	drop primary key;
-
-
-alter table p_zipranges
-	drop primary key;
-
-
-alter table p_country
-	drop primary key;
-
-
-alter table p_pol_division
-	drop primary key;
-
-
 alter table p_banking_details
 	drop primary key;
 
@@ -152,6 +128,30 @@ alter table p_banking_details
 
 alter table p_banking_details
 	drop index p_bankd_acct_idx;
+
+
+alter table p_contact_usage_type
+	drop primary key;
+
+
+alter table p_partner_relationship_type
+	drop primary key;
+
+
+alter table p_bulk_postal_code
+	drop primary key;
+
+
+alter table p_zipranges
+	drop primary key;
+
+
+alter table p_country
+	drop primary key;
+
+
+alter table p_pol_division
+	drop primary key;
 
 
 alter table p_banking_type
@@ -178,15 +178,11 @@ alter table p_gazetteer
 	drop index p_gaz_name_clustered_idx;
 
 
-alter table p_dup_check_tmp
+alter table p_acquisition_code
 	drop primary key;
 
 
 alter table p_partner_sort_tmp
-	drop primary key;
-
-
-alter table p_acquisition_code
 	drop primary key;
 
 
@@ -206,6 +202,10 @@ alter table p_search_stage_criteria
 	drop primary key;
 
 
+alter table p_dup_check_tmp
+	drop primary key;
+
+
 alter table p_nondup
 	drop primary key;
 
@@ -215,6 +215,34 @@ alter table p_dup
 
 
 alter table p_merge
+	drop primary key;
+
+
+alter table p_notification
+	drop primary key;
+
+
+alter table p_notification
+	drop index p_notify_recip_idx;
+
+
+alter table p_notification
+	drop index p_notify_source_idx;
+
+
+alter table p_notification
+	drop index p_notify_type_idx;
+
+
+alter table p_notification_type
+	drop primary key;
+
+
+alter table p_notification_method
+	drop primary key;
+
+
+alter table p_notification_pref
 	drop primary key;
 
 
@@ -256,22 +284,6 @@ alter table e_contact_history
 
 alter table e_contact_history
 	drop index e_cnt_hist_whom_idx;
-
-
-alter table e_activity
-	drop primary key;
-
-
-alter table e_activity
-	drop index e_act_type_idx;
-
-
-alter table e_activity
-	drop index e_act_par_idx;
-
-
-alter table e_activity
-	drop index e_act_sort_idx;
 
 
 alter table e_engagement_track
@@ -391,6 +403,10 @@ alter table e_document_comment
 
 
 alter table e_partner_document
+	drop primary key;
+
+
+alter table e_text_expansion
 	drop primary key;
 
 
@@ -514,6 +530,26 @@ alter table e_data_highlight
 	drop primary key;
 
 
+alter table e_activity
+	drop primary key;
+
+
+alter table e_activity
+	drop index e_act_type_idx;
+
+
+alter table e_activity
+	drop index e_act_par_idx;
+
+
+alter table e_activity
+	drop index e_act_sort_idx;
+
+
+alter table e_trackactivity
+	drop primary key;
+
+
 alter table e_ack
 	drop primary key;
 
@@ -535,14 +571,6 @@ alter table e_ack
 
 
 alter table e_ack_type
-	drop primary key;
-
-
-alter table e_trackactivity
-	drop primary key;
-
-
-alter table e_text_expansion
 	drop primary key;
 
 
@@ -807,6 +835,14 @@ alter table a_currency
 
 
 alter table a_currency_exch_rate
+	drop primary key;
+
+
+alter table a_bank_recon
+	drop primary key;
+
+
+alter table a_bank_recon_item
 	drop primary key;
 
 
