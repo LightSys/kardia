@@ -155,7 +155,9 @@ task_burnup_svg "system/report"
 	sql = "	declare object tasklist;
 
 		select
-		    :tasklist:tasks = sum(',' + :t_task_id) + ','
+		    :tasklist:tasks = sum(',' + :t_task_id) + ',',
+		    :tasklist:mintask = min(:t_task_id),
+		    :tasklist:maxtask = max(:t_task_id)
 		from
 		    /apps/kardia/data/Kardia_DB/t_task/rows t
 		where
@@ -166,11 +168,15 @@ task_burnup_svg "system/report"
 		select
 		    transition_date = max(:th1:t_transition_date),
 		    min_transition_date = min(:th1:t_transition_date),
-		    tasks = :tasklist:tasks
+		    tasks = :tasklist:tasks,
+		    mintask = :tasklist:mintask,
+		    maxtask = :tasklist:maxtask
 		from
 		    /apps/kardia/data/Kardia_DB/t_task_history/rows th1
 		where
-		    charindex(',' + convert(string, :th1:t_task_id) + ',', :tasklist:tasks) > 0
+		    charindex(',' + convert(string, :th1:t_task_id) + ',', :tasklist:tasks) > 0 and
+		    :th1:t_task_id >= :tasklist:mintask and
+		    :th1:t_task_id <= :tasklist:maxtask
 		order by
 		    datepart(year, :th1:t_transition_date) asc,
 		    datepart(month, :th1:t_transition_date) asc,
@@ -198,6 +204,8 @@ task_burnup_svg "system/report"
 		    /apps/kardia/data/Kardia_DB/t_task_history/rows th2
 		where
 		    charindex(',' + convert(string, :th2:t_task_id) + ',', :data_points_qy:tasks) > 0 and
+		    :th2:t_task_id >= :data_points_qy:mintask and
+		    :th2:t_task_id <= :data_points_qy:maxtask and
 		    :th2:t_transition_date <= :data_points_qy:transition_date
 		group by
 		    :th2:t_task_id
