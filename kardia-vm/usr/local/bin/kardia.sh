@@ -198,12 +198,10 @@ if [ "$HAS_GRPS" = "" ]; then
 	systemctl enable chronyd
     fi
     #
-    updateVimrc /root/.vimrc
-    #done by updateVimrc above
-    #insertLine /root/.vimrc "set ai"
-    #insertLine /root/.vimrc "set shiftwidth=4"
-    #insertLine /root/.vimrc "set cino={1s,:0,t0,f1s"
-    #insertLine /root/.vimrc "set sts=4"
+    insertLine /root/.vimrc "set ai"
+    insertLine /root/.vimrc "set shiftwidth=4"
+    insertLine /root/.vimrc "set cino={1s,:0,t0,f1s"
+    insertLine /root/.vimrc "set sts=4"
     #
     insertLine /root/.bashrc "alias vi=/usr/bin/vim"
     setsebool -P samba_enable_home_dirs on
@@ -477,27 +475,6 @@ function checkCert
     fi
     }
 
-#This should update the contents of the vimrc file.
-#It should be called with: updateVimrc [filename]
-function updateVimrc
-{
-    local N_FILE="$1"
-    if [ -f "$N_FILE" ]; then
-	#Insert some basic items
-	insertLine $N_FILE "set ai"
-	insertLine $N_FILE "set shiftwidth=4"
-	insertLine $N_FILE "set cino={1s,:0,t0,f1s"
-	insertLine $N_FILE "set sts=4"
-
-	#now, insert the contents of cx-git/centrallix-dev-tools/.vimrc 
-	if [ -f  $CXSRC/centrallix-dev-tools/.vimrc ]; then
-	    cat $CXSRC/centrallix-dev-tools/.vimrc | while read line; do
-		insertLine $N_FILE $line
-	    done
-	fi
-    fi
-}
-
 #
 # Add a new user:  addUser username realname [nopass|pass] [uid] [gid]
 #
@@ -562,12 +539,10 @@ function addUser
 
     updateFirewall
 
-    updateVimrc /home/$N_USER/.vimrc
-    # Done in the UpdateVimrc above
-    #insertLine /home/$N_USER/.vimrc "set ai"
-    #insertLine /home/$N_USER/.vimrc "set shiftwidth=4"
-    #insertLine /home/$N_USER/.vimrc "set cino={1s,:0,t0,f1s"
-    #insertLine /home/$N_USER/.vimrc "set sts=4"
+    insertLine /home/$N_USER/.vimrc "set ai"
+    insertLine /home/$N_USER/.vimrc "set shiftwidth=4"
+    insertLine /home/$N_USER/.vimrc "set cino={1s,:0,t0,f1s"
+    insertLine /home/$N_USER/.vimrc "set sts=4"
 
     insertLine /home/$N_USER/.bashrc "alias vi=/usr/bin/vim"
 
@@ -3687,7 +3662,7 @@ function vm_prep_cleanSSH
 # Clean up the contents of history and other files
 function vm_prep_cleanFiles
 {
-    cxfiles="/usr/local/sbin/centrallix /usr/local/sbin/cxpasswd /usr/local/etc/centrallix /usr/local/etc/kardia_pw.txt"
+    cxfiles="/usr/local/sbin/centrallix /usr/local/sbin/cxpasswd /usr/local/etc/centrallix /usr/local/etc/kardia_pw.txt /usr/local/etc/centrallix/kardia-auth"
     cxlibs="/usr/local/lib/StPar* /usr/local/centrallix/ /usr/local/libCentrallix*"
     cxinc="/usr/local/include/cxlib/"
     cxetc="/etc/init.d/centrallix"
@@ -3706,6 +3681,9 @@ function vm_prep_cleanFiles
 	echo > /root/.lesshst
 	echo "  Cleaning root vim history"
 	echo > /root/.viminfo
+
+	#clean out all the crontabs we added using kardia
+	cleanKardiaCrontabs
 
 	#remove the file that says Kardia has been initialized
 	rm /usr/local/src/.initialized 2> /dev/null
@@ -3865,6 +3843,7 @@ function doCreateKardiaUnixUser
 	    #store the password
 	    echo $KARDPW > /usr/local/etc/kardia_pw.txt
 	    chmod 400 /usr/local/etc/kardia_pw.txt
+	    ln -s /usr/local/etc/kardia_pw.txt /usr/local/etc/centrallix/kardia-auth
 	    #create the kardia user
 	    useradd -r kardia
 	    #set the password for the kardia user
@@ -3872,6 +3851,45 @@ function doCreateKardiaUnixUser
 	    #grant the kardia user sysadmin privs so they can do cron
 	    doGiveUserKardiaSysadmin kardia
 	fi
+    }
+
+#
+# addKardiaCrontabs - add the crontabs listed in kardia-git/kardia-scripts/cron 
+#
+function addKardiaCrontabs
+    {
+	for onefile in /usr/local/src/kardia-git/kardia-scripts/cron/*; do
+	    echo $onefile
+	    if [ -f $onefile ]; then
+		c_name=$( (grep NAME $onefile || echo $onefile) | sed 's/^#.* //')
+		c_hour=$( (grep HOUR $onefile || echo \* ) | sed 's/^#.* //')
+		c_minute=$( (grep MINUTE $onefile || echo \* ) | sed 's/^#.* //')
+		c_day=$( (grep DAY $onefile || echo \*) | sed 's/^#.* //')
+		c_dom=$( (grep DOM $onefile || echo \*) | sed 's/^#.* //')
+		c_month=$( (grep MONTH $onefile || echo \* )| sed 's/^#.* //')
+		c_who=$( (grep WHO $onefile || echo root) | sed 's/^#.* //')
+
+		echo "$c_name" "$c_minute" "$c_hour" "$c_dom" "$c_mon" "$c_day" "$c_who" "$onefile"
+		addNewCron "$c_name" "$c_minute" "$c_hour" "$c_dom" "$c_mon" "$c_day" "$c_who" "$onefile"
+	    fi
+	done
+
+    }
+
+#
+# cleanKardiaCrontabs - remove all the kardia crontabs, most of which call files in kardia-git
+#
+function cleanKardiaCrontabs
+    {
+    echo cleaning crontabs
+    for onefile in /etc/cron.d/*; do
+	if [ -n "`grep -i kardia $onefile`" ]; then
+	    echo $onefile is kardia
+	    rm $onefile
+	else
+	    echo $onefile is not kardia
+	fi
+    done
     }
 
 #
@@ -4034,6 +4052,7 @@ function writeCron
 
 #Make sure we have the paths set up for the cron and other default info
 cat > $cronFile << EOF
+#A Kardia cron file
 SHELL=/bin/bash
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
 MAILTO=root
@@ -5584,6 +5603,8 @@ function sg08InitRepo
     value=$?
     if [ "$value" == 0 ]; then
 	repoInitShared
+	#since these crons are in the repo, add them
+	addKardiaCrontabs
     fi
     if [ "$value" == 1 ]; then
 	return 1
