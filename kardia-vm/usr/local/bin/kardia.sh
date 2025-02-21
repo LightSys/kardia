@@ -205,6 +205,13 @@ if [ "$HAS_GRPS" = "" ]; then
     #insertLine /root/.vimrc "set cino={1s,:0,t0,f1s"
     #insertLine /root/.vimrc "set sts=4"
     #
+
+    #do gdbinit
+    insertLine /root/.gdbinit "set history save on"
+    insertLine /root/.gdbinit "set history size 999"
+    insertLine /root/.gdbinit "handle SIGHUP noprint nostop"
+    insertLine /root/.gdbinit "handle SIG33 noprint nostop"
+
     insertLine /root/.bashrc "alias vi=/usr/bin/vim"
     setsebool -P samba_enable_home_dirs on
 fi
@@ -570,6 +577,12 @@ function addUser
     #insertLine /home/$N_USER/.vimrc "set shiftwidth=4"
     #insertLine /home/$N_USER/.vimrc "set cino={1s,:0,t0,f1s"
     #insertLine /home/$N_USER/.vimrc "set sts=4"
+
+    #do gdbinit
+    insertLine /home/$N_USER/.gdbinit "set history save on"
+    insertLine /home/$N_USER/.gdbinit "set history size 999"
+    insertLine /home/$N_USER/.gdbinit "handle SIGHUP noprint nostop"
+    insertLine /home/$N_USER/.gdbinit "handle SIG33 noprint nostop"
 
     insertLine /home/$N_USER/.bashrc "alias vi=/usr/bin/vim"
 
