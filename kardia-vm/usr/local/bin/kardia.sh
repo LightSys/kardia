@@ -198,10 +198,12 @@ if [ "$HAS_GRPS" = "" ]; then
 	systemctl enable chronyd
     fi
     #
-    insertLine /root/.vimrc "set ai"
-    insertLine /root/.vimrc "set shiftwidth=4"
-    insertLine /root/.vimrc "set cino={1s,:0,t0,f1s"
-    insertLine /root/.vimrc "set sts=4"
+    updateVimrc /root/.vimrc
+    #done by updateVimrc above
+    #insertLine /root/.vimrc "set ai"
+    #insertLine /root/.vimrc "set shiftwidth=4"
+    #insertLine /root/.vimrc "set cino={1s,:0,t0,f1s"
+    #insertLine /root/.vimrc "set sts=4"
     #
     insertLine /root/.bashrc "alias vi=/usr/bin/vim"
     setsebool -P samba_enable_home_dirs on
@@ -475,6 +477,29 @@ function checkCert
     fi
     }
 
+
+#This should update the contents of the vimrc file.
+#It should be called with: updateVimrc [filename]
+function updateVimrc
+    {
+    local N_FILE="$1"
+    if [ -f "$N_FILE" ]; then
+	#insert some basic items
+	insertLine $N_FILE "set ai"
+	insertLine $N_FILE "set shiftwidth=4"
+	insertLine $N_FILE "set cino={1s,:0,t0,f1s"
+	insertLine $N_FILE "set sts=4"
+
+	#now, insert the contents of cx-git/centrallix-dev-tools/.vimrc 
+	if [ -f  $CXSRC/centrallix-dev-tools/.vimrc ]; then
+	    cat $CXSRC/centrallix-dev-tools/.vimrc |sed 's/vim70/vim??/' | while read line; do
+		insertLine "$N_FILE" "$line"
+	    done
+	fi
+    fi
+    }
+
+
 #
 # Add a new user:  addUser username realname [nopass|pass] [uid] [gid]
 #
@@ -539,10 +564,12 @@ function addUser
 
     updateFirewall
 
-    insertLine /home/$N_USER/.vimrc "set ai"
-    insertLine /home/$N_USER/.vimrc "set shiftwidth=4"
-    insertLine /home/$N_USER/.vimrc "set cino={1s,:0,t0,f1s"
-    insertLine /home/$N_USER/.vimrc "set sts=4"
+    updateVimrc /home/$N_USER/.vimrc
+    #done by updateVimrc above
+    #insertLine /home/$N_USER/.vimrc "set ai"
+    #insertLine /home/$N_USER/.vimrc "set shiftwidth=4"
+    #insertLine /home/$N_USER/.vimrc "set cino={1s,:0,t0,f1s"
+    #insertLine /home/$N_USER/.vimrc "set sts=4"
 
     insertLine /home/$N_USER/.bashrc "alias vi=/usr/bin/vim"
 
@@ -872,6 +899,12 @@ function checkAndInstallRequiredPackages
 		yum -y install $a
 	    fi
 	done
+
+	#At this point in time, we hopefully have vim installed
+	if [ -f /usr/local/src/cx-git/centrallix-dev-tools/cx.vim ]; then
+	    cp /usr/local/src/cx-git/centrallix-dev-tools/cx.vim /usr/share/vim/vim??/syntax/ 
+	fi
+
 	rm -f $YUMTMPFILE
     }
 
@@ -3869,7 +3902,7 @@ function addKardiaCrontabs
 		c_month=$( (grep MONTH $onefile || echo \* )| sed 's/^#.* //')
 		c_who=$( (grep WHO $onefile || echo root) | sed 's/^#.* //')
 
-		echo "$c_name" "$c_minute" "$c_hour" "$c_dom" "$c_mon" "$c_day" "$c_who" "$onefile"
+		#echo "$c_name" "$c_minute" "$c_hour" "$c_dom" "$c_mon" "$c_day" "$c_who" "$onefile"
 		addNewCron "$c_name" "$c_minute" "$c_hour" "$c_dom" "$c_mon" "$c_day" "$c_who" "$onefile"
 	    fi
 	done
