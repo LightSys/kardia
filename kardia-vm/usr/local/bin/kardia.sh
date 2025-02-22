@@ -1799,6 +1799,8 @@ function doBuildAsSeparateUser
     fi
     sed "s/\/var\/centrallix\/os/\/home\/$USER\/cx-git\/centrallix-os/" < etc/rootnode > "$INSTDIR/etc/centrallix/rootnode"
 
+    verifyLinksigningKey
+
     # Create user template for Kardia?
     if [ ! -f "$KSRC/kardia-app/tpl/$USER.tpl" ]; then
 	cp "$KSRC/kardia-app/tpl/newuser_default.tpl" "$KSRC/kardia-app/tpl/$USER.tpl"
@@ -1912,6 +1914,8 @@ function doBuildAsUser
     /bin/cp -a etc/types.cfg ~/cxinst/etc/centrallix/
     /bin/cp -a etc/useragent.cfg ~/cxinst/etc/centrallix/
 
+    verifyLinksigningKey
+
     # Create user template for Kardia?
     if [ ! -f "$KSRC/kardia-app/tpl/$USER.tpl" ]; then
 	cp "$KSRC/kardia-app/tpl/newuser_default.tpl" "$KSRC/kardia-app/tpl/$USER.tpl"
@@ -2020,6 +2024,8 @@ function doBuildAsRoot
 	echo -e "\"application/vnd.oasis.opendocument.spreadsheet\"\t\t\"OpenDocument Spreadsheet\"\t\tods\t\t\"\"\t\t\"application/octet-stream\"" >> /usr/local/etc/centrallix/types.cfg
 	echo -e "\"application/vnd.oasis.opendocument.text\"\t\t\"OpenDocument Text\"\t\todt\t\t\"\"\t\t\"application/octet-stream\"" >> /usr/local/etc/centrallix/types.cfg
     fi
+
+    verifyLinksigningKey
 
     # Set rootnode
     sed 's/\/var\/centrallix\/os/\/usr\/local\/src\/cx-git\/centrallix-os/' < /usr/local/etc/centrallix/rootnode > /usr/local/etc/centrallix/rootnode.new
