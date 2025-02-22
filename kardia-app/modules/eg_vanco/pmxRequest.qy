@@ -20,10 +20,16 @@ myquery "system/query"
 			    from /apps/kardia/data/Kardia_DB/a_config/rows
 			    where :a_config_name = 'VP_Lookback'
 			    )),
-			convert('datetime', getdate())
+			convert('datetime', 
+			    isnull((select first(:a_config_value) from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'VP_StartDate'),getdate())
+			)
 		    ),
 		    'yyyy-MM-dd'),
-		:vancoKey:toDate = dateformat(getdate(), 'yyyy-MM-dd')
+		:vancoKey:toDate = dateformat(
+		    convert('datetime', 
+			isnull((select first(:a_config_value) from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'VP_StartDate'),getdate())
+		    ), 
+		    'yyyy-MM-dd')
             FROM
                 SUBTREE EXPRESSION(
 		    '/apps/kardia/modules/eg_vanco/egvapi_pmx.http?VancoWS.Auth.RequestType=Login'
