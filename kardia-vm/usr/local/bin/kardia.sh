@@ -1674,6 +1674,40 @@ function menuIndRepo
     done
     }
 
+function verifyLinksigningKey
+    {
+    lookupStatus
+    if [ -z "`grep link_signing_key $CXCONF`" ]; then
+	linksigningfile="$(dirname $CXCONF)/linksigningkey.txt"
+	if [ -f $linksigningfile ]; then
+	    #echo found link signing $linksigningfile
+	    lkey=`cat $linksigningfile`
+	else
+	    #echo Making linksigning key file
+	    lkey=$(dd if=/dev/urandom bs=32 count=1 2>/dev/null| sha256sum | cut -c1-32)
+	    echo $lkey > $linksigningfile
+	    if [ -z "echo $CXCONF | grep home" ]; then
+		#We are doing it in the home directory - permissions for user
+		chown $USER.$USER $linksigningfile
+		chmod 600 $linksigningfile
+	    else
+		chown root.root $linksigningfile
+		#it is going to be /usr/local/etc.  chown to root
+		chmod 600 $linksigningfile
+	    fi
+	fi
+	#echo not found
+	lineno=$(grep -n "upload_tmpdir" $CXCONF | sed 's/:.*//')
+	lineno=$((lineno + 1))
+
+	sed -i "${lineno}i\/\/" $CXCONF
+	sed -i "${lineno}ilink_signing_sites = \"http:\/\/localhost:800\/\", \"http:\/\/localhost:1800\/\", \"\/\";" $CXCONF
+	sed -i "${lineno}ilink_signing_key = \"$lkey\";" $CXCONF
+	sed -i "${lineno}i\/\/ Signed links..." $CXCONF
+	sed -i "${lineno}i\/\/" $CXCONF
+    fi
+    }
+
 
 # Rebuild / reinstall Centrallix - as user, individual repositories.
 function doBuildAsSeparateUser
@@ -3712,7 +3746,7 @@ function vm_prep_cleanFiles
     cxlibs="/usr/local/lib/StPar* /usr/local/centrallix/ /usr/local/libCentrallix*"
     cxinc="/usr/local/include/cxlib/"
     cxetc="/etc/init.d/centrallix"
-    kardiash="/usr/local/src/.initialized /usr/local/src/.cx* /usr/local/src/.mysqlaccess /usr/local/etc/autossh.conf /usr/local/etc/centrallix.conf /usr/local/etc/cifs.conf /usr/local/etc/duplicity.conf /usr/local/etc/rc.d/"
+    kardiash="/usr/local/src/.initialized /usr/local/src/.cx* /usr/local/src/.mysqlaccess /usr/local/etc/autossh.conf /usr/local/etc/centrallix.conf /usr/local/etc/linksigningkey.txt /usr/local/etc/cifs.conf /usr/local/etc/duplicity.conf /usr/local/etc/rc.d/"
     gitfiles="/usr/local/src/cx-git /usr/local/src/kardia-git"
 	echo "Cleaning up Filesystem"
 	echo "  Cleaning up history"
