@@ -4134,7 +4134,8 @@ function writeCron
 
     if [ -n "$cronFile" ]; then
 	#make the directory if it does not yet exist
-	cronDir=`basename $cronFile`
+	cronDir=`dirname $cronFile`
+	#echo "Making crondir $cronDir for cronfile $cronFile"
 	mkdir -p $cronDir
 
 #Make sure we have the paths set up for the cron and other default info
