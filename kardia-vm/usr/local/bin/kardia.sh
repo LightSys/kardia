@@ -1,8 +1,8 @@
 #!/bin/bash
 #
 # kardia.sh - manage the Kardia / Centrallix VM appliance
-# version: 1.0.10
-# os: centos_7
+# version: 1.0.11
+# os: rocky_8
 
 # Some housekeeping stuff.  We may be running under a user account, but
 # called by the superuser.  Don't give the user account too much control.
@@ -2523,6 +2523,7 @@ function menuWorkflowMode
 
     if [ "$SEL" != "" ]; then
 	echo "$SEL" > $BASEDIR/src/.cx_wkfmode
+	[ -f /usr/local/src/.initialized ] || touch $BASEDIR/src/.initialized
     else
 	return 0
     fi
