@@ -3949,15 +3949,15 @@ function addKardiaCrontabs
 	    echo $onefile
 	    if [ -f $onefile ]; then
 		c_name=$( (grep NAME $onefile || echo $onefile) | sed 's/^#.* //')
-		c_hour=$( (grep HOUR $onefile || echo \* ) | sed 's/^#.* //')
 		c_minute=$( (grep MINUTE $onefile || echo \* ) | sed 's/^#.* //')
-		c_day=$( (grep DAY $onefile || echo \*) | sed 's/^#.* //')
+		c_hour=$( (grep HOUR $onefile || echo \* ) | sed 's/^#.* //')
 		c_dom=$( (grep DOM $onefile || echo \*) | sed 's/^#.* //')
 		c_month=$( (grep MONTH $onefile || echo \* )| sed 's/^#.* //')
+		c_day=$( (grep DAY $onefile || echo \*) | sed 's/^#.* //')
 		c_who=$( (grep WHO $onefile || echo root) | sed 's/^#.* //')
 
 		#echo "$c_name" "$c_minute" "$c_hour" "$c_dom" "$c_mon" "$c_day" "$c_who" "$onefile"
-		addNewCron "$c_name" "$c_minute" "$c_hour" "$c_dom" "$c_mon" "$c_day" "$c_who" "$onefile"
+		addNewCron "$c_name" "$c_minute" "$c_hour" "$c_dom" "$c_month" "$c_day" "$c_who" "$onefile"
 	    fi
 	done
 
