@@ -49,7 +49,7 @@ K_KEY="kardia.git.sourceforge.net ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAoMesJ60dow
 # using firewalld, then firewalling must be done entirely manually instead
 # of by this script.
 #
-USE_FIREWALLD=$(systemctl list-unit-files | sed -n 's/^firewalld.service[      ]*//p')
+USE_FIREWALLD=$(systemctl list-unit-files | sed -n 's/^firewalld.service[      ]*//p' | sed 's/\s//g')
 
 # Boolean detectors
 function isYes
