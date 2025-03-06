@@ -887,6 +887,16 @@ function doUpdates
     yum update --skip-broken
     }
 
+function installExtraPackages
+    {
+    if [ -f /usr/local/src/kardia-git/kardia-vm/extra_rpms.txt ]; then
+	echo "Installing unnecessary packages"
+	for a in $( cat /usr/local/src/kardia-git/kardia-vm/extra_rpms.txt | grep -v "^#" ); do
+		dnf -y install $a
+	done
+    fi
+    }
+
 # Check to see if the required packages are installed
 function checkAndInstallRequiredPackages
     {
@@ -1016,6 +1026,12 @@ function menuSystem
 	DSTR="$DSTR RootShell 'Get a Root Shell'"
 	DSTR="$DSTR RootPass 'Change Root Password'"
 	DSTR="$DSTR Updates 'Download and Install OS Updates'"
+	if [ -f /usr/local/src/kardia-git/kardia-vm/extra_rpms.txt ]; then
+	    first=$( cat /usr/local/src/kardia-git/kardia-vm/extra_rpms.txt | grep -v "^#" | head -1)
+	    if [ -z "`rpm -q $first | grep -v 'not installed'`"  ]; then
+		DSTR="$DSTR Extra 'Install unnecessary packages'"
+	    fi
+	fi
 	DSTR="$DSTR Timezone 'Set the System Time Zone'"
 	DSTR="$DSTR Resize 'Resize the Virtual Machine'"
 	DSTR="$DSTR Autossh 'Configure Autossh'"
@@ -1053,6 +1069,9 @@ function menuSystem
 		;;
 	    Updates)
 		doUpdates
+		;;
+	    Extra)
+		installExtraPackages
 		;;
 	    Hostname)
 		setHostname
