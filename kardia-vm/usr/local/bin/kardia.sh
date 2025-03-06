@@ -1438,6 +1438,10 @@ function repoInitUser
     cd cx-git/centrallix-os/apps
     ln -s ../../../kardia-git/kardia-app kardia
 
+    #mark git directories as trusted
+    git config --global --add safe.directory /home/$RUSER/cx-git
+    git config --global --add safe.directory /home/$RUSER/kardia-git
+
     setGitEmail "/home/$RUSER"
     }
 
@@ -1480,6 +1484,11 @@ function repoInitShared
     cd ../kardia-git
     doGit config receive.denyCurrentBranch ignore
     cd ..
+
+    #mark git directories as trusted
+    git config --global --add safe.directory $BASEDIR/src/cx-git
+    git config --global --add safe.directory $BASEDIR/src/kardia-git
+
     #make user tpl files
     doMakeTplFiles
     }
