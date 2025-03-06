@@ -3797,8 +3797,10 @@ function vm_prep_cleanFiles
 function vm_prep_cleanKernel
 {
     echo "Uninstalling old kernel versions"
-    local RESCUE="kernel-3.10.0-123"
-    rpm -q kernel | grep -v `uname -r` | grep -v $RESCUE | while read line; do 
+    local LATEST="kernel-3.10.0-123"
+    cd /boot
+    LATEST=$(ls vmlinuz-* | grep -v rescue | sed 's/vmlinuz-//;s/.el.*//' | sort -n | tail -1)
+    rpm -qa kernel* | grep -v $LATEST | while read line; do 
 	echo "Removing package: $line"
 	rpm -e $line; 
     done
