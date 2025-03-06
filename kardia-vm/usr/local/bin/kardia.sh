@@ -894,6 +894,12 @@ function checkAndInstallRequiredPackages
 	if [ ! -e /usr/local/src/kardia-git/kardia-vm/rpms_needed.txt ]; then
 	    exit 2; #The file we need does not exist.  Cannot check
 	fi
+	if [ -f /usr/local/src/kardia-git/kardia-vm/extra_rpms.txt ]; then
+	    echo "Removing unnecessary packages"
+	    for a in $( cat /usr/local/src/kardia-git/kardia-vm/extra_rpms.txt | grep -v "^#" ); do
+		    dnf -y remove $a
+	    done
+	fi
 	YUMTMPFILE="$$-YUM.tmp"
 	rpm -qa > $YUMTMPFILE
 	NOTFOUNDLIST=""
