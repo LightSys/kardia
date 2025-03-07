@@ -2991,18 +2991,20 @@ function menuDevel
 #	if [ "$WKFMODE" != shared -a "$USER" != root ]; then
 #	    DSTR="$DSTR MyRepo 'Individual Repository Management'"
 #	fi
-	if [ "$USER" != root -o "$DEVMODE" != users ]; then
-	    StartStoppable && DSTR="$DSTR '---' ''"
-	    if [ "$CXRUNNING" = "" ]; then
-		StartStoppable && DSTR="$DSTR Start 'Start Centrallix (ip:$IPADDR port:$CXPORT/$CXSSLPORT)'"
-	    else
-		StartStoppable && DSTR="$DSTR Restart 'Restart Centrallix'"
-		StartStoppable && DSTR="$DSTR Stop 'Stop Centrallix (ip:$IPADDR port:$CXPORT/$CXSSLPORT)'"
+	if [ -f "$CXBIN" ]; then #if the centrallix binary exists, then we can start/stop/restart it
+	    if [ "$USER" != root -o "$DEVMODE" != users ]; then
+		StartStoppable && DSTR="$DSTR '---' ''"
+		if [ "$CXRUNNING" = "" ]; then
+		    StartStoppable && DSTR="$DSTR Start 'Start Centrallix (ip:$IPADDR port:$CXPORT/$CXSSLPORT)'"
+		else
+		    StartStoppable && DSTR="$DSTR Restart 'Restart Centrallix'"
+		    StartStoppable && DSTR="$DSTR Stop 'Stop Centrallix (ip:$IPADDR port:$CXPORT/$CXSSLPORT)'"
+		fi
+		StartStoppable && DSTR="$DSTR Console 'View Centrallix Console'"
+		StartStoppable && DSTR="$DSTR Log 'View Centrallix Console Log'"
+		[ $DEVMODE = "root" ] && ! systemctl is-enabled centrallix >/dev/null && DSTR="$DSTR Enable 'Enable Centrallix start at boot'"
+		[ $DEVMODE = "root" ] && systemctl is-enabled centrallix >/dev/null && DSTR="$DSTR Disable 'Disable Centrallix start at boot'"
 	    fi
-	    StartStoppable && DSTR="$DSTR Console 'View Centrallix Console'"
-	    StartStoppable && DSTR="$DSTR Log 'View Centrallix Console Log'"
-	    [ $DEVMODE = "root" ] && ! systemctl is-enabled centrallix >/dev/null && DSTR="$DSTR Enable 'Enable Centrallix start at boot'"
-	    [ $DEVMODE = "root" ] && systemctl is-enabled centrallix >/dev/null && DSTR="$DSTR Disable 'Disable Centrallix start at boot'"
 	fi
 	DSTR="$DSTR '---' ''"
 	DSTR="$DSTR Quit 'Exit Kardia / Centrallix Management'"
