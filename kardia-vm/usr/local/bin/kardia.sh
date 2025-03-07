@@ -1732,13 +1732,22 @@ function verifyLinksigningKey
 	fi
 	#echo not found
 	lineno=$(grep -n "upload_tmpdir" $CXCONF | sed 's/:.*//')
-	lineno=$((lineno + 1))
+	if [ $lineno -lt 10 ]; then #Use a backup location for inserting the link-signing key
+	    lineno=$(grep -n "accept_localhost_only" $CXCONF | sed 's/:.*//')
+	fi
+	if [ $lineno -gt 10 ]; then #only install it if we have found a spot in the config
+	    lineno=$((lineno + 1))
 
-	sed -i "${lineno}i\/\/" $CXCONF
-	sed -i "${lineno}ilink_signing_sites = \"http:\/\/localhost:800\/\", \"http:\/\/localhost:1800\/\", \"\/\";" $CXCONF
-	sed -i "${lineno}ilink_signing_key = \"$lkey\";" $CXCONF
-	sed -i "${lineno}i\/\/ Signed links..." $CXCONF
-	sed -i "${lineno}i\/\/" $CXCONF
+	    sed -i "${lineno}i\/\/" $CXCONF
+	    sed -i "${lineno}ilink_signing_sites = \"http:\/\/localhost:800\/\", \"http:\/\/localhost:1800\/\", \"\/\";" $CXCONF
+	    sed -i "${lineno}ilink_signing_key = \"$lkey\";" $CXCONF
+	    sed -i "${lineno}i\/\/ Signed links..." $CXCONF
+	    sed -i "${lineno}i\/\/" $CXCONF
+	else
+	    #We cannot install the link-signing key yet.
+	    #delete the file so it will try to regen it later
+	    rm $linksigningfile
+	fi
     fi
     }
 
