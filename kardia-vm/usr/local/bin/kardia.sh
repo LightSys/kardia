@@ -49,7 +49,7 @@ K_KEY="kardia.git.sourceforge.net ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAoMesJ60dow
 # using firewalld, then firewalling must be done entirely manually instead
 # of by this script.
 #
-USE_FIREWALLD=$(systemctl list-unit-files | sed -n 's/^firewalld.service[      ]*//p')
+USE_FIREWALLD=$(systemctl list-unit-files | sed -n 's/^firewalld.service[      ]*//p' | sed 's/\s//g')
 
 # Boolean detectors
 function isYes
@@ -887,12 +887,28 @@ function doUpdates
     yum update --skip-broken
     }
 
+function installExtraPackages
+    {
+    if [ -f /usr/local/src/kardia-git/kardia-vm/extra_rpms.txt ]; then
+	echo "Installing unnecessary packages"
+	for a in $( cat /usr/local/src/kardia-git/kardia-vm/extra_rpms.txt | grep -v "^#" ); do
+		dnf -y install $a
+	done
+    fi
+    }
+
 # Check to see if the required packages are installed
 function checkAndInstallRequiredPackages
     {
 	#Go through and check to see if every package in the list is installed
 	if [ ! -e /usr/local/src/kardia-git/kardia-vm/rpms_needed.txt ]; then
 	    exit 2; #The file we need does not exist.  Cannot check
+	fi
+	if [ -f /usr/local/src/kardia-git/kardia-vm/extra_rpms.txt ]; then
+	    echo "Removing unnecessary packages"
+	    for a in $( cat /usr/local/src/kardia-git/kardia-vm/extra_rpms.txt | grep -v "^#" ); do
+		    dnf -y remove $a
+	    done
 	fi
 	YUMTMPFILE="$$-YUM.tmp"
 	rpm -qa > $YUMTMPFILE
@@ -1010,6 +1026,12 @@ function menuSystem
 	DSTR="$DSTR RootShell 'Get a Root Shell'"
 	DSTR="$DSTR RootPass 'Change Root Password'"
 	DSTR="$DSTR Updates 'Download and Install OS Updates'"
+	if [ -f /usr/local/src/kardia-git/kardia-vm/extra_rpms.txt ]; then
+	    first=$( cat /usr/local/src/kardia-git/kardia-vm/extra_rpms.txt | grep -v "^#" | head -1)
+	    if [ -z "`rpm -q $first | grep -v 'not installed'`"  ]; then
+		DSTR="$DSTR Extra 'Install unnecessary packages'"
+	    fi
+	fi
 	DSTR="$DSTR Timezone 'Set the System Time Zone'"
 	DSTR="$DSTR Resize 'Resize the Virtual Machine'"
 	DSTR="$DSTR Autossh 'Configure Autossh'"
@@ -1047,6 +1069,9 @@ function menuSystem
 		;;
 	    Updates)
 		doUpdates
+		;;
+	    Extra)
+		installExtraPackages
 		;;
 	    Hostname)
 		setHostname
@@ -1413,6 +1438,10 @@ function repoInitUser
     cd cx-git/centrallix-os/apps
     ln -s ../../../kardia-git/kardia-app kardia
 
+    #mark git directories as trusted
+    git config --global --add safe.directory /home/$RUSER/cx-git
+    git config --global --add safe.directory /home/$RUSER/kardia-git
+
     setGitEmail "/home/$RUSER"
     }
 
@@ -1455,6 +1484,11 @@ function repoInitShared
     cd ../kardia-git
     doGit config receive.denyCurrentBranch ignore
     cd ..
+
+    #mark git directories as trusted
+    git config --global --add safe.directory $BASEDIR/src/cx-git
+    git config --global --add safe.directory $BASEDIR/src/kardia-git
+
     #make user tpl files
     doMakeTplFiles
     }
@@ -1698,13 +1732,22 @@ function verifyLinksigningKey
 	fi
 	#echo not found
 	lineno=$(grep -n "upload_tmpdir" $CXCONF | sed 's/:.*//')
-	lineno=$((lineno + 1))
+	if [ $lineno -lt 10 ]; then #Use a backup location for inserting the link-signing key
+	    lineno=$(grep -n "accept_localhost_only" $CXCONF | sed 's/:.*//')
+	fi
+	if [ $lineno -gt 10 ]; then #only install it if we have found a spot in the config
+	    lineno=$((lineno + 1))
 
-	sed -i "${lineno}i\/\/" $CXCONF
-	sed -i "${lineno}ilink_signing_sites = \"http:\/\/localhost:800\/\", \"http:\/\/localhost:1800\/\", \"\/\";" $CXCONF
-	sed -i "${lineno}ilink_signing_key = \"$lkey\";" $CXCONF
-	sed -i "${lineno}i\/\/ Signed links..." $CXCONF
-	sed -i "${lineno}i\/\/" $CXCONF
+	    sed -i "${lineno}i\/\/" $CXCONF
+	    sed -i "${lineno}ilink_signing_sites = \"http:\/\/localhost:800\/\", \"http:\/\/localhost:1800\/\", \"\/\";" $CXCONF
+	    sed -i "${lineno}ilink_signing_key = \"$lkey\";" $CXCONF
+	    sed -i "${lineno}i\/\/ Signed links..." $CXCONF
+	    sed -i "${lineno}i\/\/" $CXCONF
+	else
+	    #We cannot install the link-signing key yet.
+	    #delete the file so it will try to regen it later
+	    rm $linksigningfile
+	fi
     fi
     }
 
@@ -2957,18 +3000,20 @@ function menuDevel
 #	if [ "$WKFMODE" != shared -a "$USER" != root ]; then
 #	    DSTR="$DSTR MyRepo 'Individual Repository Management'"
 #	fi
-	if [ "$USER" != root -o "$DEVMODE" != users ]; then
-	    StartStoppable && DSTR="$DSTR '---' ''"
-	    if [ "$CXRUNNING" = "" ]; then
-		StartStoppable && DSTR="$DSTR Start 'Start Centrallix (ip:$IPADDR port:$CXPORT/$CXSSLPORT)'"
-	    else
-		StartStoppable && DSTR="$DSTR Restart 'Restart Centrallix'"
-		StartStoppable && DSTR="$DSTR Stop 'Stop Centrallix (ip:$IPADDR port:$CXPORT/$CXSSLPORT)'"
+	if [ -f "$CXBIN" ]; then #if the centrallix binary exists, then we can start/stop/restart it
+	    if [ "$USER" != root -o "$DEVMODE" != users ]; then
+		StartStoppable && DSTR="$DSTR '---' ''"
+		if [ "$CXRUNNING" = "" ]; then
+		    StartStoppable && DSTR="$DSTR Start 'Start Centrallix (ip:$IPADDR port:$CXPORT/$CXSSLPORT)'"
+		else
+		    StartStoppable && DSTR="$DSTR Restart 'Restart Centrallix'"
+		    StartStoppable && DSTR="$DSTR Stop 'Stop Centrallix (ip:$IPADDR port:$CXPORT/$CXSSLPORT)'"
+		fi
+		StartStoppable && DSTR="$DSTR Console 'View Centrallix Console'"
+		StartStoppable && DSTR="$DSTR Log 'View Centrallix Console Log'"
+		[ $DEVMODE = "root" ] && ! systemctl is-enabled centrallix >/dev/null && DSTR="$DSTR Enable 'Enable Centrallix start at boot'"
+		[ $DEVMODE = "root" ] && systemctl is-enabled centrallix >/dev/null && DSTR="$DSTR Disable 'Disable Centrallix start at boot'"
 	    fi
-	    StartStoppable && DSTR="$DSTR Console 'View Centrallix Console'"
-	    StartStoppable && DSTR="$DSTR Log 'View Centrallix Console Log'"
-	    [ $DEVMODE = "root" ] && ! systemctl is-enabled centrallix >/dev/null && DSTR="$DSTR Enable 'Enable Centrallix start at boot'"
-	    [ $DEVMODE = "root" ] && systemctl is-enabled centrallix >/dev/null && DSTR="$DSTR Disable 'Disable Centrallix start at boot'"
 	fi
 	DSTR="$DSTR '---' ''"
 	DSTR="$DSTR Quit 'Exit Kardia / Centrallix Management'"
@@ -3797,8 +3842,15 @@ function vm_prep_cleanFiles
 function vm_prep_cleanKernel
 {
     echo "Uninstalling old kernel versions"
-    local RESCUE="kernel-3.10.0-123"
-    rpm -q kernel | grep -v `uname -r` | grep -v $RESCUE | while read line; do 
+    echo "We will try twice to fix dependancies"
+    local LATEST="kernel-3.10.0-123"
+    cd /boot
+    LATEST=$(ls vmlinuz-* | grep -v rescue | sed 's/vmlinuz-//;s/.el.*//' | sort -n | tail -1)
+    rpm -qa kernel* | grep -v $LATEST | while read line; do 
+	echo "Removing package: $line"
+	rpm -e $line; 
+    done
+    rpm -qa kernel* | grep -v $LATEST | while read line; do 
 	echo "Removing package: $line"
 	rpm -e $line; 
     done
