@@ -11,6 +11,9 @@ myprojects "widget/component-decl"
     // Counter to trigger chart image refresh
     imgcnt "widget/variable" { type=integer; value=1; }
 
+    // ID of recently deleted task
+    deleted_task "widget/variable" { type=integer; }
+
     // Global refresh
     RefreshTaskData "widget/component-decl-action" { }
     onRefreshTaskData0 "widget/connector"
@@ -127,6 +130,7 @@ myprojects "widget/component-decl"
     make_history_osrc "widget/osrc"
 	{
 	t_task_id "widget/parameter" { type=integer; }
+	task_op "widget/parameter" { type=string; }
 	sql = "	insert
 		    /apps/kardia/data/Kardia_DB/t_task_history/rows
 		select
@@ -142,7 +146,15 @@ myprojects "widget/component-decl"
 		from
 		    /apps/kardia/data/Kardia_DB/t_task/rows
 		where
-		    :t_task_id = :parameters:t_task_id
+		    :t_task_id = :parameters:t_task_id and
+		    :parameters:task_op != 'D'
+		;
+
+		delete
+		    /apps/kardia/data/Kardia_DB/t_task_history/rows
+		where
+		    :t_task_id = :parameters:t_task_id and
+		    :parameters:task_op = 'D'
 		;
 
 		select 0 where 0 = 1
@@ -569,6 +581,7 @@ myprojects "widget/component-decl"
 			    ;
 
 			    select
+				--name = :pr:t_project_id,
 				:tmp:participants,
 				rev = condition(:tmp:rev > :tmp:srev, :tmp:rev, :tmp:srev),
 				:tmp:color,
@@ -1515,9 +1528,9 @@ myprojects "widget/component-decl"
 			    target_key_2=t_sprint_id;
 			    }
 
-			onTaskCreate "widget/connector" { event=Created; target=make_history_osrc; action=QueryParam; t_task_id=runclient(:tasks_osrc:t_task_id); }
+			onTaskCreate "widget/connector" { event=Created; target=make_history_osrc; action=QueryParam; t_task_id=runclient(:tasks_osrc:t_task_id); task_op=runclient("C"); }
 			onTaskCreate2 "widget/connector" { event=Created; target=sprints_osrc; action=RefreshObject; }
-			onTaskMod "widget/connector" { event=Modified; target=make_history_osrc; action=QueryParam; t_task_id=runclient(:tasks_osrc:t_task_id); }
+			onTaskMod "widget/connector" { event=Modified; target=make_history_osrc; action=QueryParam; t_task_id=runclient(:tasks_osrc:t_task_id); task_op=runclient("M"); }
 			onTaskMod2 "widget/connector" { event=Modified; target=sprints_osrc; action=RefreshObject; }
 
 			tasks_table "widget/table"
@@ -1558,9 +1571,9 @@ myprojects "widget/component-decl"
 
 				    task_edit_form "widget/form"
 					{
-					onTaskDel "widget/connector" { event=DataDeleted; target=make_history_osrc; action=QueryParam; t_task_id=runclient(:tasks_osrc:t_task_id); }
+					onTaskDel "widget/connector" { event=DataDeleted; target=make_history_osrc; action=QueryParam; t_task_id=runclient(:deleted_task:value); task_op=runclient("D"); }
 					onTaskDel2 "widget/connector" { event=DataDeleted; target=sprints_osrc; action=RefreshObject; }
-					onTaskSave "widget/connector" { event=DataSaved; target=make_history_osrc; action=QueryParam; t_task_id=runclient(:tasks_osrc:t_task_id); }
+					onTaskSave "widget/connector" { event=DataSaved; target=make_history_osrc; action=QueryParam; t_task_id=runclient(:tasks_osrc:t_task_id); task_op=runclient("S"); }
 					onTaskSave2 "widget/connector" { event=DataSaved; target=sprints_osrc; action=RefreshObject; }
 
 					task_edit_vbox "widget/vbox"
@@ -1603,7 +1616,15 @@ myprojects "widget/component-decl"
 						    text="Delete Task";
 						    enabled=runclient(:tasks_osrc:assignees = '' and not :task_edit_form:is_discardable);
 
-						    on_deltask "widget/connector"
+						    on_deltask1 "widget/connector"
+							{
+							event=Click;
+							target=deleted_task;
+							action=SetValue;
+							Value=runclient(:tasks_osrc:t_task_id);
+							}
+
+						    on_deltask2 "widget/connector"
 							{
 							event=Click;
 							target=task_edit_form;

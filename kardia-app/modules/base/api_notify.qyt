@@ -5,8 +5,6 @@ api_notify "system/querytree"
 	{
 	text = "Pending";
 
-	//require_endorsements = "system:from_appgroup";
-
 	Pending_list "system/querytree"
 	    {
 	    sql = " select
@@ -48,6 +46,7 @@ api_notify "system/querytree"
 			:np:p_notify_method = :n:p_notify_method and
 			:np:p_notify_method_item = :n:p_notify_method_item and
 			:np:p_notify_type = :n:p_notify_type and
+			(::p_notify_type is null or ::p_notify_type == :n:p_notify_type) and
 			(:n:p_status = 'N' or :n:p_status = 'U') and
 			:p:p_partner_key = :n:p_recip_partner_key and
 			:c:p_partner_key = :n:p_recip_partner_key and
@@ -56,8 +55,40 @@ api_notify "system/querytree"
 			:np:p_enabled = 1 and
 			(:np:p_pause_until_date is null or :np:p_pause_until_date <= getdate())
 		    ";
+
+	    MarkSent "system/querytree"
+		{
+		require_endorsements = "system:from_application";
+		text = "MarkSent";
+		sql = "	update
+			    identity /apps/kardia/data/Kardia_DB/p_notification/rows n
+			set
+			    :p_sent_date = getdate(),
+			    :p_status = 'S',
+			    :s_date_modified = getdate(),
+			    :s_modified_by = user_name()
+			where
+			    :n:p_notify_id = ::p_notify_id
+			";
+		}
+
+	    Delete "system/querytree"
+		{
+		require_endorsements = "system:from_application";
+		text = "Delete";
+		sql = "	update
+			    identity /apps/kardia/data/Kardia_DB/p_notification/rows n
+			set
+			    :p_status = 'D',
+			    :s_date_modified = getdate(),
+			    :s_modified_by = user_name()
+			where
+			    :n:p_notify_id = ::p_notify_id
+			";
+		}
 	    }
 	}
+
     Types "system/querytree"
 	{
 	text = "Types";
@@ -77,6 +108,12 @@ api_notify "system/querytree"
 		    from
 			identity /apps/kardia/data/Kardia_DB/p_notification_type/rows nt
 		    ";
+
+	    TypesPending "system/querytree"
+		{
+		text = "Pending";
+		same_children_as = Pending;
+		}
 	    }
 	}
     }
