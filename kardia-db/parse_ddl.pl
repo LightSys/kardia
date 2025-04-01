@@ -1405,7 +1405,7 @@ sub print_table() {
     }
     # Drop table ###########################
     print SQL_D "\n\n/* $table */\n";      # 
-    print SQL_D "drop table $table$cmd_terminator"; #
+    print SQL_D "drop table if exists $table$cmd_terminator"; #
     ########################################
      
     ####################################### 
