@@ -1,0 +1,145 @@
+$Version=2$
+plugin_base_config_rec "widget/component-decl"
+    {
+    width=828;
+    height=490;
+    title = "Bank Rec. Accounts";
+    description = "Configure which accounts can be reconciled within the Bank Reconciliation app";
+    sequence = 1300;
+
+    vbox "widget/vbox"
+	{
+	x=0; y=0;
+	width=828; height=490;
+	spacing=7;
+
+	ledger_label "widget/label" { height=16; style=bold; text="Accounting Ledger Selection:"; }
+
+	ledger_osrc "widget/osrc"
+	    {
+	    sql = "select :name, label=:a_ledger_number + ' - ' + :a_ledger_desc, :a_ledger_number from /apps/kardia/data/Kardia_DB/a_ledger/rows";
+	    replicasize=256;
+	    readahead=256;
+	    autoquery=onload;
+
+	    ledger_dd "widget/dropdown"
+		{
+		height=24; width=300;
+		mode=objectsource;
+		fieldname=label;
+		numdisplay=12;
+		}
+	    }
+
+	table_label "widget/label" { height=16; style=bold; text="Reconcilable Accounts:"; }
+
+	account_osrc "widget/osrc"
+	    {
+	    a_ledger_number "widget/parameter" { type=string; }
+		
+	    sql = "
+		    SELECT 
+			:a:a_ledger_number, :a:a_account_code, :b:a_is_reconcilable,
+			 s_date_created = getdate(), s_created_by = user_name(), 
+			 s_date_modified = getdate(), s_modified_by = user_name()
+		    FROM
+			/apps/kardia/data/Kardia_DB/a_account/rows a, 
+			IDENTITY /apps/kardia/data/Kardia_DB/a_bank_recon_accts/rows b  
+		    WHERE
+			:a:a_account_code *= :b:a_account_code
+			AND :parameters:a_ledger_number = :a:a_ledger_number
+			AND :parameters:a_ledger_number = :b:a_ledger_number
+		    ;
+		";
+	
+	    replicasize=256;
+	    readahead=256;
+	    baseobj = "/apps/kardia/data/Kardia_DB/a_bank_recon_accts/rows";
+
+	    config_link "widget/rule"
+		{
+		ruletype=osrc_relationship;
+		target=ledger_osrc;
+		key_1=a_ledger_number;
+		target_key_1=a_ledger_number;
+		}
+
+	    account_table "widget/table"
+		{
+		height=400; width = 200; x=0; y=0;
+		nodata_message="No transactions to display";
+		t_rec_line "widget/table-column" { type="string"; title="Account #"; fieldname="a_account_code"; width=10; }
+		t_rec_check "widget/table-column" { type="image"; title="rec?"; fieldname="a_is_reconcilable"; width=5; 
+		    // select the proper image depending on value and if is clickable
+		    value=runclient(
+			condition(:account_osrc:a_is_reconcilable  >= 1, 
+			//    condition(has_endorsement('kardia:recon_perform', 'kardia:ledger:' + :account_osrc:a_ledger_number + ":"),
+				'/sys/images/checkbox_checked.gif',
+			//	'/sys/images/checkbox_checked_dis.gif'
+			//	),
+			//    condition(has_endorsement('kardia:recon_perform', 'kardia:ledger:' + :account_osrc:a_ledger_number + ":"),
+				'/sys/images/checkbox_unchecked.gif',
+			//	'/sys/images/checkbox_unchecked_dis.gif'
+			//	)
+			    )
+			); 
+		    }
+
+		// need to perform an upsert before refresh runs.
+		upsert_osrc "widget/osrc"
+		    {
+		    upsert_ledger "widget/parameter" { type=string; }
+		    upsert_account "widget/parameter" { type=string; }
+		    upsert_recon "widget/parameter" { type=integer; }
+		    sql = "
+			INSERT INTO
+			    /apps/kardia/data/Kardia_DB/a_bank_recon_accts/rows
+			SELECT 
+			    a_ledger_number = :parameters:upsert_ledger, 
+			    a_account_code = :parameters:upsert_account, 
+			    a_is_reconcilable = condition(:parameters:upsert_recon = 1, 0, 1),
+			    s_date_created = getdate(), 
+			    s_created_by = user_name(), 
+			    s_date_modified = getdate(), 
+			    s_modified_by = user_name()
+			ON DUPLICATE 
+			    :a_ledger_number, :a_account_code 
+			UPDATE SET
+			    :a_is_reconcilable = condition(:a_is_reconcilable = 1, 0, 1),
+			    :s_date_modified = getdate(), 
+			    :s_modified_by = user_name()
+			;
+			";
+		    autoquery = never;
+		    baseobj = "/apps/kardia/data/Kardia_DB/a_bank_recon_accts/rows";
+// FIXME: the rule causes this to run every time the thing gets updated, thus we need to get params from the onclick maybe??
+		    upsert_link "widget/rule"
+			{
+			ruletype=osrc_relationship;
+			target=account_osrc;
+			autoquery=false;
+			key_1=upsert_ledger;
+			target_key_1=a_ledger_number;
+			key_2=upsert_account;
+			target_key_2=a_account_code;
+			key_3=upsert_recon;
+			target_key_3=a_is_reconcilable;
+			}
+		    }
+		// let the user click is the is reconcilable column to mark/unmark it
+		rec_enable "widget/connector"
+		    {
+		    event=Click; target=upsert_osrc; action=QueryParam;
+		    event_condition=runclient(:Column == 'a_is_reconcilable'); 
+		    }
+		rec_update "widget/connector" 
+		    {
+		    event=Click; target=account_osrc; action=Refresh; event_delay=runclient(0.1);
+		    event_condition=runclient(:Column == 'a_is_reconcilable'); 
+		    //event_cancel=runclient(:Column == 'a_is_reconciled' AND has_endorsement('kardia:recon_perform', 'kardia:ledger:' + :ledger:value + ":")); 
+		    }
+		}
+	    }
+	}
+    }
+
