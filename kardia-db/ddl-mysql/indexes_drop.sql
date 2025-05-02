@@ -784,6 +784,24 @@ alter table a_fund_staff drop index a_fund_staff_partner_idx;
 /* go */
 
 
+/* a_dimension */
+alter table a_dimension drop index a_dim_fund_class_idx;
+alter table a_dimension drop index a_dim_fund_idx;
+alter table a_dimension drop index a_dim_ledger_number_idx;
+alter table a_dimension drop index a_dim_legacy_idx;
+/* drop index a_dimension.a_dim_pk */ 
+/* go */
+
+
+/* a_dimension_item */
+alter table a_dimension_item drop index a_dim_item_fund_class_idx;
+alter table a_dimension_item drop index a_dim_item_fund_idx;
+alter table a_dimension_item drop index a_dim_item_ledger_number_idx;
+alter table a_dimension_item drop index a_dim_item_legacy_idx;
+/* drop index a_dimension_item.a_dim_item_pk */ 
+/* go */
+
+
 /* a_payroll */
 alter table a_payroll drop index a_payroll_fund_idx;
 alter table a_payroll drop index a_payroll_payee_idx;
