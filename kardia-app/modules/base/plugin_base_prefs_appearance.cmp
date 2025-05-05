@@ -53,7 +53,7 @@ plugin_base_prefs_appearance "widget/component-decl"
 			event=DataModify;
 			target=f_rowheight;
 			action=SetValue;
-			Value=runclient(condition(:Value == 11, 16, condition(:Value == 12, 18, 20)));
+			Value=runclient(condition(:Value == 11, 18, condition(:Value == 12, 20, 22)));
 			}
 		    }
 		f_showdiag "widget/component" { x=30; width=350; text="Show Diagnostics:"; path="/sys/cmp/smart_field.cmp"; ctl_type=checkbox; field=show_diagnostics; label_width=140; }
