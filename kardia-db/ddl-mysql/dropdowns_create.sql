@@ -6,12 +6,11 @@ create table _p_record_status (
   description varchar(255) null,
   __cx_osml_control varchar(255) null);
 alter table _p_record_status add constraint pk__p_record_status primary key  (tag);
-insert _p_record_status values('A','Active','','');
-insert _p_record_status values('Q','Active/QA','','');
-insert _p_record_status values('U','Unknown','','');
-insert _p_record_status values('X','Unknown','','');
-insert _p_record_status values('M','Merged','Two records have been merged.  This is no longer used.','');
-insert _p_record_status values('O','Obsolete','','');
+insert _p_record_status values('A','Active','Valid and Active','');
+insert _p_record_status values('Q','Active/QA','Valid but needs QA','');
+insert _p_record_status values('I','Inactive','Valid but not currently active','');
+insert _p_record_status values('M','Merged','Two records have been merged.','');
+insert _p_record_status values('O','Obsolete','No longer valid','');
 create table _p_contact_type (
   tag	char(1) not null,
   text	varchar(60) not null,
@@ -150,6 +149,7 @@ insert _a_period_status values('N','Never Opened','','');
 insert _a_period_status values('O','Open','','');
 insert _a_period_status values('C','Closed','','');
 insert _a_period_status values('A','Archived','','');
+insert _a_period_status values('P','Provisional','','');
 create table _a_gift_type (
   tag	char(1) not null,
   text	varchar(60) not null,
@@ -482,10 +482,20 @@ alter table _a_item_intent_code add constraint pk__a_item_intent_code primary ke
 insert _a_item_intent_code values('A','As Able','','');
 insert _a_item_intent_code values('D','Decreasing','','');
 insert _a_item_intent_code values('E','Extra Giving','','');
+insert _a_item_intent_code values('F','Final Gift','','');
 insert _a_item_intent_code values('I','Increasing','','');
-insert _a_item_intent_code values('L','Last Gift','','');
 insert _a_item_intent_code values('M','Monthly Recurring','','');
 insert _a_item_intent_code values('O','One-Time','','');
 insert _a_item_intent_code values('Q','Quarterly Recurring','','');
 insert _a_item_intent_code values('R','Recurring (Other)','','');
-insert _a_item_intent_code values('Y','Annually Recurring','','');
+insert _a_item_intent_code values('Y','Yearly Recurring','','');
+create table _a_recon_item_source (
+  tag	char(2) not null,
+  text	varchar(60) not null,
+  description varchar(255) null,
+  __cx_osml_control varchar(255) null);
+alter table _a_recon_item_source add constraint pk__a_recon_item_source primary key  (tag);
+insert _a_recon_item_source values('GL','General Ledger','','');
+insert _a_recon_item_source values('CR','Cash Receipts','','');
+insert _a_recon_item_source values('CD','Cash Disbursements','','');
+insert _a_recon_item_source values('DE','Data Entry','','');

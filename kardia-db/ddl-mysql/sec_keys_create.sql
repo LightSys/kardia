@@ -55,6 +55,15 @@ alter table p_gazetteer
 alter table p_gazetteer
 	add constraint p_gaz_state_idx unique  (p_state_province, p_country_code, p_feature_type, p_feature_id);
 
+alter table p_notification
+	add constraint p_notify_recip_idx unique  (p_recip_partner_key, p_notify_id);
+
+alter table p_notification
+	add constraint p_notify_source_idx unique  (p_source_partner_key, p_notify_id);
+
+alter table p_notification
+	add constraint p_notify_type_idx unique  (p_notify_type, p_object_id, p_recip_partner_key, p_notify_method, p_notify_method_item, p_notify_id);
+
 alter table e_contact_history
 	add constraint e_cnt_hist_type_idx unique  (e_contact_history_type, p_partner_key, e_contact_history_id);
 
@@ -66,15 +75,6 @@ alter table e_contact_history
 
 alter table e_contact_history
 	add constraint e_cnt_hist_whom_idx unique  (e_whom, p_partner_key, e_contact_history_type, e_contact_history_id);
-
-alter table e_activity
-	add constraint e_act_type_idx unique  (e_activity_type, e_activity_group_id, e_activity_id);
-
-alter table e_activity
-	add constraint e_act_par_idx unique  (p_partner_key, e_activity_group_id, e_activity_id);
-
-alter table e_activity
-	add constraint e_act_sort_idx unique  (e_sort_key, e_activity_group_id, e_activity_id);
 
 alter table e_engagement_track
 	add constraint e_trk_name_idx unique  (e_track_name, e_track_id);
@@ -169,6 +169,15 @@ alter table e_data_item
 alter table e_highlights
 	add constraint e_h_nt_idx unique  (e_highlight_type, e_highlight_name, e_highlight_user, e_highlight_partner, e_highlight_id);
 
+alter table e_activity
+	add constraint e_act_type_idx unique  (e_activity_type, e_activity_group_id, e_activity_id);
+
+alter table e_activity
+	add constraint e_act_par_idx unique  (p_partner_key, e_activity_group_id, e_activity_id);
+
+alter table e_activity
+	add constraint e_act_sort_idx unique  (e_sort_key, e_activity_group_id, e_activity_id);
+
 alter table e_ack
 	add constraint e_ack_obj_idx unique  (e_object_type,e_object_id,e_ack_type,e_whom,e_ack_id);
 
@@ -228,6 +237,24 @@ alter table a_transaction_tmp
 
 alter table a_transaction_tmp
 	add constraint a_trxt_recip_id_idx unique  (p_int_partner_id, a_ledger_number, a_batch_number, a_journal_number, a_transaction_number);
+
+alter table a_dimension
+	add constraint a_dim_legacy_idx unique  (a_legacy_code, a_dimension, a_ledger_number);
+
+alter table a_dimension
+	add constraint a_dim_fund_idx unique  (a_dim_fund, a_dimension, a_ledger_number);
+
+alter table a_dimension
+	add constraint a_dim_fund_class_idx unique  (a_dim_fund_class, a_dim_fund, a_dimension, a_ledger_number);
+
+alter table a_dimension_item
+	add constraint a_dim_item_legacy_idx unique  (a_legacy_code, a_dimension, a_ledger_number, a_dimension_item);
+
+alter table a_dimension_item
+	add constraint a_dim_item_fund_idx unique  (a_dim_item_fund, a_dimension, a_ledger_number, a_dimension_item);
+
+alter table a_dimension_item
+	add constraint a_dim_item_fund_class_idx unique  (a_dim_fund_class, a_dim_fund, a_dimension, a_ledger_number, a_dimension_item);
 
 alter table a_payroll_period
 	add constraint a_payperiod_idx unique  (a_period, a_ledger_number, a_payroll_group_id, a_payroll_period);

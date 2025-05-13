@@ -197,24 +197,6 @@ create table p_contact_usage (
 );
 
 
-/* p_contact_usage_type */
-
-create table p_contact_usage_type (
-        p_contact_usage_type_code             varchar(4)  not null,    /* Unique code for this usage type --  */
-        p_system_provided                     bit  not null,           /* 1 = this code is provided with the system and cannot be changed or removed --  */
-        p_use_for_locations                   bit  not null,           /* 1 = this code can be used for p_location records. --  */
-        p_use_for_contacts                    bit  not null,           /* 1 = this code can be used for contact data (phone, email, etc.) --  */
-        p_contact_types                       varchar(32)  not null,   /* a list of contact type codes that this code applies to. --  */
-        p_contact_usage_label                 varchar(80)  not null,   /* The label/description for this usage code. --  */
-        s_date_created                        datetime  not null,      /*  --  */
-        s_created_by                          varchar(20)  not null,   /*  --  */
-        s_date_modified                       datetime  not null,      /*  --  */
-        s_modified_by                         varchar(20)  not null,   /*  --  */
-        __cx_osml_control                     varchar(255)  null       /*  --  */
-
-);
-
-
 /* p_partner_relationship */
 
 create table p_partner_relationship (
@@ -224,23 +206,6 @@ create table p_partner_relationship (
         p_relation_comments                   varchar(900)  null,      /*  --  */
         p_relation_start_date                 datetime  null,          /*  --  */
         p_relation_end_date                   datetime  null,          /*  --  */
-        s_date_created                        datetime  not null,      /*  --  */
-        s_created_by                          varchar(20)  not null,   /*  --  */
-        s_date_modified                       datetime  not null,      /*  --  */
-        s_modified_by                         varchar(20)  not null,   /*  --  */
-        __cx_osml_control                     varchar(255)  null       /*  --  */
-
-);
-
-
-/* p_partner_relationship_type */
-
-create table p_partner_relationship_type (
-        p_relation_type                       integer  not null,       /* brother, wife, son, etc. See p_partner_relationship_type. --  */
-        p_relation_type_label                 varchar(40)  not null,   /*  --  */
-        p_relation_type_desc                  varchar(900)  null,      /*  --  */
-        p_relation_type_rev_label             varchar(40)  not null,   /* label for relationship applied in reverse --  */
-        p_relation_type_rev_desc              varchar(900)  null,      /* description for relationship applied in reverse --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -315,6 +280,66 @@ create table p_staff (
         p_kardiaweb_login                     varchar(128)  null,      /* The Kardia self-service website login of the staff member. --  */
         p_preferred_email_id                  integer  null,           /* Preferred email (p_contact_info) for receiving reports and such from Kardia --  */
         p_preferred_location_id               integer  null,           /* Preferred location (p_location) for receiving reports and such from Kardia --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* p_banking_details */
+
+create table p_banking_details (
+        p_banking_details_key                 integer  not null,       /* banking details key (autonumbered) --  */
+        p_banking_type                        char(1)  not null,       /* type of account (C=checking, S=savings, R=revolving credit account such as VISA/MC) --  */
+        p_banking_card_type                   char(2)  null,           /* type of revolving credit - VI = visa, MC = mastercard, AE = american express, DI = discover, etc. --  */
+        p_partner_id                          char(10)  null,          /* partner id of the account owner (if relevant) --  */
+        p_bank_partner_id                     char(10)  null,          /* partner id of the financial institution itself (if available) --  */
+        p_bank_account_name                   varchar(80)  not null,   /* name on the account (e.g., name on visa card, etc.) --  */
+        p_bank_account_number                 varchar(32)  null,       /* number of the account --  */
+        p_bank_routing_number                 varchar(32)  null,       /* routing number, if applicable --  */
+        p_next_check_number                   integer  null,           /* next check number to use when writing checks --  */
+        p_bank_expiration                     datetime  null,          /* expiration date on account --  */
+        a_ledger_number                       char(10)  null,          /* GL ledger associated with this bank account --  */
+        a_account_code                        char(16)  null,          /* GL account associated with this bank account --  */
+        p_comment                             varchar(255)  null,      /* comments / description of bank account --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* p_contact_usage_type */
+
+create table p_contact_usage_type (
+        p_contact_usage_type_code             varchar(4)  not null,    /* Unique code for this usage type --  */
+        p_system_provided                     bit  not null,           /* 1 = this code is provided with the system and cannot be changed or removed --  */
+        p_use_for_locations                   bit  not null,           /* 1 = this code can be used for p_location records. --  */
+        p_use_for_contacts                    bit  not null,           /* 1 = this code can be used for contact data (phone, email, etc.) --  */
+        p_contact_types                       varchar(32)  not null,   /* a list of contact type codes that this code applies to. --  */
+        p_contact_usage_label                 varchar(80)  not null,   /* The label/description for this usage code. --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* p_partner_relationship_type */
+
+create table p_partner_relationship_type (
+        p_relation_type                       integer  not null,       /* brother, wife, son, etc. See p_partner_relationship_type. --  */
+        p_relation_type_label                 varchar(40)  not null,   /*  --  */
+        p_relation_type_desc                  varchar(900)  null,      /*  --  */
+        p_relation_type_rev_label             varchar(40)  not null,   /* label for relationship applied in reverse --  */
+        p_relation_type_rev_desc              varchar(900)  null,      /* description for relationship applied in reverse --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -451,31 +476,6 @@ insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,p_
 insert into p_pol_division (p_country_code,p_pol_division,p_pol_division_name,p_record_status_code,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'US' as p_country_code, 'FL' as p_pol_division, 'Florida' as p_pol_division_name, 'A' as p_record_status_code, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
 
 
-/* p_banking_details */
-
-create table p_banking_details (
-        p_banking_details_key                 integer  not null,       /* banking details key (autonumbered) --  */
-        p_banking_type                        char(1)  not null,       /* type of account (C=checking, S=savings, R=revolving credit account such as VISA/MC) --  */
-        p_banking_card_type                   char(2)  null,           /* type of revolving credit - VI = visa, MC = mastercard, AE = american express, DI = discover, etc. --  */
-        p_partner_id                          char(10)  null,          /* partner id of the account owner (if relevant) --  */
-        p_bank_partner_id                     char(10)  null,          /* partner id of the financial institution itself (if available) --  */
-        p_bank_account_name                   varchar(80)  not null,   /* name on the account (e.g., name on visa card, etc.) --  */
-        p_bank_account_number                 varchar(32)  null,       /* number of the account --  */
-        p_bank_routing_number                 varchar(32)  null,       /* routing number, if applicable --  */
-        p_next_check_number                   integer  null,           /* next check number to use when writing checks --  */
-        p_bank_expiration                     datetime  null,          /* expiration date on account --  */
-        a_ledger_number                       char(10)  null,          /* GL ledger associated with this bank account --  */
-        a_account_code                        char(16)  null,          /* GL account associated with this bank account --  */
-        p_comment                             varchar(255)  null,      /* comments / description of bank account --  */
-        s_date_created                        datetime  not null,      /*  --  */
-        s_created_by                          varchar(20)  not null,   /*  --  */
-        s_date_modified                       datetime  not null,      /*  --  */
-        s_modified_by                         varchar(20)  not null,   /*  --  */
-        __cx_osml_control                     varchar(255)  null       /*  --  */
-
-);
-
-
 /* p_banking_type */
 
 create table p_banking_type (
@@ -535,40 +535,6 @@ create table p_gazetteer (
 );
 
 
-/* p_dup_check_tmp */
-
-create table p_dup_check_tmp (
-        p_partner_key                         char(10)  not null,      /* partner key of a potential duplicate record. --  */
-        s_username                            varchar(20)  not null,   /* name of the user that is looking for the dups --  */
-        p_score                               int  not null,           /* the "score" that we want to order the potential duplicate record in. --  */
-        p_comment                             varchar(255)  not null,  /* a comment describing what is similar about this duplicate record. --  */
-        s_date_created                        datetime  not null,      /*  --  */
-        s_created_by                          varchar(20)  not null,   /*  --  */
-        s_date_modified                       datetime  not null,      /*  --  */
-        s_modified_by                         varchar(20)  not null,   /*  --  */
-        __cx_osml_control                     varchar(255)  null       /*  --  */
-
-);
-
-
-/* p_partner_sort_tmp */
-
-create table p_partner_sort_tmp (
-        p_partner_key                         char(10)  not null,      /* partner key --  */
-        s_username                            varchar(20)  not null,   /* name of the user --  */
-        p_sort_session_id                     integer  not null,       /* ID of sort session, a unique integer. --  */
-        p_sortkey                             varchar(255)  not null,  /* the sorting key, determining the order in which sorted records are returned. --  */
-        p_location_id                         integer  null,           /* the location record to use for this partner --  */
-        p_contact_id                          integer  null,           /* the contact record to use for this partner --  */
-        s_date_created                        datetime  not null,      /*  --  */
-        s_created_by                          varchar(20)  not null,   /*  --  */
-        s_date_modified                       datetime  not null,      /*  --  */
-        s_modified_by                         varchar(20)  not null,   /*  --  */
-        __cx_osml_control                     varchar(255)  null       /*  --  */
-
-);
-
-
 /* p_acquisition_code */
 
 create table p_acquisition_code (
@@ -591,6 +557,24 @@ insert into p_acquisition_code (p_acquisition_code,p_acquisition_name,s_date_cre
 insert into p_acquisition_code (p_acquisition_code,p_acquisition_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'EVT' as p_acquisition_code, 'Met at an Event' as p_acquisition_name, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
 insert into p_acquisition_code (p_acquisition_code,p_acquisition_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'UNI' as p_acquisition_code, 'Met at a College or University' as p_acquisition_name, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
 insert into p_acquisition_code (p_acquisition_code,p_acquisition_name,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'RAN' as p_acquisition_code, 'Met at Random / Divine Appointment' as p_acquisition_name, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+
+
+/* p_partner_sort_tmp */
+
+create table p_partner_sort_tmp (
+        p_partner_key                         char(10)  not null,      /* partner key --  */
+        s_username                            varchar(20)  not null,   /* name of the user --  */
+        p_sort_session_id                     integer  not null,       /* ID of sort session, a unique integer. --  */
+        p_sortkey                             varchar(255)  not null,  /* the sorting key, determining the order in which sorted records are returned. --  */
+        p_location_id                         integer  null,           /* the location record to use for this partner --  */
+        p_contact_id                          integer  null,           /* the contact record to use for this partner --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
 
 
 /* p_partner_search */
@@ -662,6 +646,22 @@ create table p_search_stage_criteria (
 );
 
 
+/* p_dup_check_tmp */
+
+create table p_dup_check_tmp (
+        p_partner_key                         char(10)  not null,      /* partner key of a potential duplicate record. --  */
+        s_username                            varchar(20)  not null,   /* name of the user that is looking for the dups --  */
+        p_score                               int  not null,           /* the "score" that we want to order the potential duplicate record in. --  */
+        p_comment                             varchar(255)  not null,  /* a comment describing what is similar about this duplicate record. --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
 /* p_nondup */
 
 create table p_nondup (
@@ -720,6 +720,88 @@ create table p_merge (
         p_allow_collate                       bit  not null,           /* 1 if we should look at the "short desc" to see if two of these are identical, 0 if they are never considered identical --  */
         p_disposition                         varchar(3)  not null,    /* How we're handling this, first char where from (uppercase if copy, lowercase if move), 2nd/3rd chars where to, for example aB means move from a to b, BC means copy from B to C, ABC means copy from A to both B and C. --  */
         p_comment                             varchar(900)  null,      /* comments about this merge data --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* p_notification */
+
+create table p_notification (
+        p_notify_id                           integer  not null,       /* id of the message --  */
+        p_notify_type                         varchar(4)  not null,    /* notification type code (p_notification_type) --  */
+        p_event_date                          datetime  not null,      /* date the event happened which triggered the notification --  */
+        p_object_id                           varchar(255)  not null,  /* an object ID for the event triggering the notification. for example, a gift record primary key. --  */
+        p_message                             varchar(900)  null,      /* additional text provided as a part of the notification --  */
+        p_source_partner_key                  varchar(10)  null,       /* the ID of the partner triggering the notification, if any. For example, the donor ID for a gift. --  */
+        p_recip_partner_key                   varchar(10)  not null,   /* partner key of the person to receive the notification --  */
+        p_notify_method                       integer  not null,       /* notification method (p_notification_method) --  */
+        p_notify_method_item                  integer  not null,       /* notification method line item. --  */
+        p_contact_id                          integer  null,           /* the p_contact_info ID from the notification method preference at the time the notification was SENT. Denormalization for historical recordkeeping. --  */
+        p_contact_data                        varchar(255)  null,      /* the p_contact_info data, including phone country/area, for the notification method at the time the notification was SENT. Denormalization for historical recordkeeping. --  */
+        p_status                              char(1)  not null,       /* status of this notification: (N)ew, (U)pdated, (S)ent, (D)eleted/discarded --  */
+        p_sent_date                           datetime  null,          /* date the notification was actually sent --  */
+        p_ack_date                            datetime  null,          /* date the notification was read or acknowledged by the recipient (this may not be available for all notification types) --  */
+        p_response                            varchar(900)  null,      /* response, if any, from the notification recipient --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* p_notification_type */
+
+create table p_notification_type (
+        p_notify_type                         varchar(4)  not null,    /* notification type code --  */
+        p_notify_type_label                   varchar(10)  not null,   /* short label for the notification type --  */
+        p_notify_type_desc                    varchar(255)  not null,  /* longer description for the notification type --  */
+        p_message                             varchar(900)  null,      /* Text to include in the notification message --  */
+        p_object_label                        varchar(255)  not null,  /* Short label for the object being referenced by the object ID in p_notification --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* p_notification_method */
+
+create table p_notification_method (
+        p_notify_method                       integer  not null,       /* id of the notification method --  */
+        p_notify_method_label                 varchar(10)  not null,   /* notification method short label --  */
+        p_notify_method_desc                  varchar(255)  not null,  /* longer description of the notification method --  */
+        p_allowed_contact_types               varchar(32)  null,       /* list of p_contact_type(s) that are allowed for this notification method. --  */
+        p_expects_ack                         bit  not null,           /* whether this method anticipates an message-seen acknowledgement from the recipient (0=no, 1=yes) --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* p_notification_pref */
+
+create table p_notification_pref (
+        p_notify_type                         varchar(4)  not null,    /* notification type code (p_notification_type) --  */
+        p_notify_method                       integer  not null,       /* notification method (p_notification_method) --  */
+        p_notify_method_item                  integer  not null,       /* notification method line item (for example, if the recipient wants notifications sent via SMS to two phone numbers) --  */
+        p_recip_partner_key                   varchar(10)  not null,   /* recipient's partner key --  */
+        p_recip_contact_id                    integer  null,           /* the p_contact_info ID of the contact method for the notification, if applicable. --  */
+        p_enabled                             bit  not null,           /* whether this type of notification is desired (0=no, 1=yes) --  */
+        p_frequency                           integer  null,           /* the maximum frequency (in hours between notifications) for receiving this type of notification. For example, this could be used to batch up and send email notifications daily (every 24 hours). --  */
+        p_pause_until_date                    datetime  null,          /* pause sending notifications until after the given date. --  */
+        p_pause_discard                       bit  not null,           /* whether to queue up (0) or discard (1) notifications that occur before the pause_until date above. --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -865,28 +947,6 @@ create table e_contact_history (
         e_contact_date                        datetime  not null,      /* The date and time that the contact took place --  */
         e_notes                               varchar(900)  null,      /* Notes regarding this contact --  */
         e_message_id                          varchar(255)  null,      /* Message-ID header field of email message, or similar unique ID for other communications --  */
-        s_date_created                        datetime  not null,      /*  --  */
-        s_created_by                          varchar(20)  not null,   /*  --  */
-        s_date_modified                       datetime  not null,      /*  --  */
-        s_modified_by                         varchar(20)  not null,   /*  --  */
-        __cx_osml_control                     varchar(255)  null       /*  --  */
-
-);
-
-
-/* e_activity */
-
-create table e_activity (
-        e_activity_group_id                   integer  not null,       /* A unique ID identifying the group of contact activity items that are being aggregated. --  */
-        e_activity_id                         integer  not null,       /* A unique ID identifying a single activity item within a group of items. --  */
-        p_partner_key                         char(10)  not null,      /* The partner involved in the activity --  */
-        e_whom                                char(10)  null,          /* The collaborator (with the organization) that was involved in the communication, if any. --  */
-        e_initiation                          char(1)  null,           /* Set to 'P' if the engaging partner initiated the activity, or 'C' if the collaborator (organization) initiated the activity. --  */
-        e_sort_key                            varchar(20)  null,       /* A value we can use to sort this activity data, if needed --  */
-        e_activity_date                       datetime  not null,      /* The date that the activity took place --  */
-        e_activity_type                       char(4)  not null,       /* The type of activity. --  */
-        e_reference_info                      varchar(900)  null,      /* Information we can use to track back to the source data of the activity (such as a history ID, a gift ledger+batch+giftid, or such). --  */
-        e_info                                varchar(900)  null,      /* Informational notes regarding this activity --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -1221,6 +1281,21 @@ create table e_partner_document (
 );
 
 
+/* e_text_expansion */
+
+create table e_text_expansion (
+        e_exp_tag                             varchar(16)  not null,   /* The short tag to be expanded --  */
+        e_exp_desc                            varchar(64)  not null,   /* A brief description of the tag/expansion --  */
+        e_exp_expansion                       varchar(900)  not null,  /* The expansion of the short tag (i.e., a phrase or paragraph). --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
 /* e_workflow_type */
 
 create table e_workflow_type (
@@ -1468,6 +1543,51 @@ create table e_data_highlight (
 );
 
 
+/* e_activity */
+
+create table e_activity (
+        e_activity_group_id                   integer  not null,       /* A unique ID identifying the group of contact activity items that are being aggregated. --  */
+        e_activity_id                         integer  not null,       /* A unique ID identifying a single activity item within a group of items. --  */
+        p_partner_key                         char(10)  not null,      /* The partner involved in the activity --  */
+        e_whom                                char(10)  null,          /* The collaborator (with the organization) that was involved in the communication, if any. --  */
+        e_initiation                          char(1)  null,           /* Set to 'P' if the engaging partner initiated the activity, or 'C' if the collaborator (organization) initiated the activity. --  */
+        e_sort_key                            varchar(20)  null,       /* A value we can use to sort this activity data, if needed --  */
+        e_activity_date                       datetime  not null,      /* The date that the activity took place --  */
+        e_activity_type                       char(4)  not null,       /* The type of activity. --  */
+        e_reference_info                      varchar(900)  null,      /* Information we can use to track back to the source data of the activity (such as a history ID, a gift ledger+batch+giftid, or such). --  */
+        e_info                                varchar(900)  null,      /* Informational notes regarding this activity --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* e_trackactivity */
+
+create table e_trackactivity (
+        p_partner_key                         char(10)  not null,      /* The partner whose track information we are displaying --  */
+        e_username                            varchar(20)  not null,   /* The username of the user viewing the partner --  */
+        e_sort_key                            varchar(32)  not null,   /* Controls the display order (steps by sequence, requirements by step sequence and req ID) --  */
+        e_track_id                            integer  not null,       /* The ID of the track being displayed --  */
+        e_step_id                             integer  not null,       /* The ID of the step being displayed --  */
+        e_object_type                         char(1)  not null,       /* 'S' for step and 'R' for requirement --  */
+        e_completion_status                   char(1)  not null,       /* I/C/E for steps, I/C/W for requirements --  */
+        e_object_name                         varchar(32)  not null,   /* The "name" of the step or requirement being displayed (for linkage to a data editing form) --  */
+        e_object_label                        varchar(64)  not null,   /* The main visual label for the step or requirement --  */
+        e_object_desc                         varchar(255)  not null,  /* The brief description of the step or requirement --  */
+        e_object_comm                         varchar(900)  null,      /* Any comments associated with the step or requirement --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
 /* e_ack */
 
 create table e_ack (
@@ -1504,44 +1624,6 @@ insert into e_ack_type (e_ack_type,e_ack_type_label,e_ack_type_desc,s_date_creat
 insert into e_ack_type (e_ack_type,e_ack_type_label,e_ack_type_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 2 as e_ack_type, 'Reply' as e_ack_type_label, 'Reply' as e_ack_type_desc, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
 insert into e_ack_type (e_ack_type,e_ack_type_label,e_ack_type_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 3 as e_ack_type, 'Comment' as e_ack_type_label, 'Comment' as e_ack_type_desc, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
 insert into e_ack_type (e_ack_type,e_ack_type_label,e_ack_type_desc,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 4 as e_ack_type, 'Viewed' as e_ack_type_label, 'Viewed' as e_ack_type_desc, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
-
-
-/* e_trackactivity */
-
-create table e_trackactivity (
-        p_partner_key                         char(10)  not null,      /* The partner whose track information we are displaying --  */
-        e_username                            varchar(20)  not null,   /* The username of the user viewing the partner --  */
-        e_sort_key                            varchar(32)  not null,   /* Controls the display order (steps by sequence, requirements by step sequence and req ID) --  */
-        e_track_id                            integer  not null,       /* The ID of the track being displayed --  */
-        e_step_id                             integer  not null,       /* The ID of the step being displayed --  */
-        e_object_type                         char(1)  not null,       /* 'S' for step and 'R' for requirement --  */
-        e_completion_status                   char(1)  not null,       /* I/C/E for steps, I/C/W for requirements --  */
-        e_object_name                         varchar(32)  not null,   /* The "name" of the step or requirement being displayed (for linkage to a data editing form) --  */
-        e_object_label                        varchar(64)  not null,   /* The main visual label for the step or requirement --  */
-        e_object_desc                         varchar(255)  not null,  /* The brief description of the step or requirement --  */
-        e_object_comm                         varchar(900)  null,      /* Any comments associated with the step or requirement --  */
-        s_date_created                        datetime  not null,      /*  --  */
-        s_created_by                          varchar(20)  not null,   /*  --  */
-        s_date_modified                       datetime  not null,      /*  --  */
-        s_modified_by                         varchar(20)  not null,   /*  --  */
-        __cx_osml_control                     varchar(255)  null       /*  --  */
-
-);
-
-
-/* e_text_expansion */
-
-create table e_text_expansion (
-        e_exp_tag                             varchar(16)  not null,   /* The short tag to be expanded --  */
-        e_exp_desc                            varchar(64)  not null,   /* A brief description of the tag/expansion --  */
-        e_exp_expansion                       varchar(900)  not null,  /* The expansion of the short tag (i.e., a phrase or paragraph). --  */
-        s_date_created                        datetime  not null,      /*  --  */
-        s_created_by                          varchar(20)  not null,   /*  --  */
-        s_date_modified                       datetime  not null,      /*  --  */
-        s_modified_by                         varchar(20)  not null,   /*  --  */
-        __cx_osml_control                     varchar(255)  null       /*  --  */
-
-);
 
 
 /* e_text_search_word */
@@ -2458,6 +2540,117 @@ create table a_currency_exch_rate (
         a_foreign_currency_code               char(3)  not null,       /* The foreign currency --  */
         a_exch_rate_date                      datetime  not null,      /* The effective date for the exchange rate (date only) --  */
         a_exch_rate                           float  not null,         /* The exchange rate. --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* a_bank_recon */
+
+create table a_bank_recon (
+        a_ledger_number                       char(10)  not null,      /* ledger number for this reconciliation --  */
+        a_account_code                        char(16)  not null,      /* GL account that we're reconciling --  */
+        a_statement_id                        int(11)  not null,       /* ID used to differentiate reconciliations for the same account. --  */
+        a_period                              char(8)  not null,       /* accounting period for this reconciliation, typically calculated based on end date --  */
+        a_end_date                            datetime  not null,      /* Ending date from the bank statement --  */
+        a_start_bank_balance                  decimal(14,4)  null,     /* Starting balance from the bank statement --  */
+        a_bank_end_balance                    decimal(14,4)  not null,
+                                                                      /* Ending balance from the bank statement --  */
+        a_comment                             varchar(900)  null,      /* Comments on this account's reconciliation. --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* a_bank_recon_item */
+
+create table a_bank_recon_item (
+        a_ledger_number                       char(10)  not null,      /* ledger number for this reconciliation --  */
+        a_line_item                           integer  not null,       /* An autoincrement integer line item ID --  */
+        a_account_code                        char(16)  not null,      /* GL account that we're reconciling --  */
+        a_statement_id                        int(11)  null,           /* the reconciliation statement to associate this line item with once it is marked reconciled --  */
+        a_origin                              char(2)  null,           /* The type of line item - GL, CD, CR, DE. NULL indicates it exists only in the bank reconciliation. --  */
+        a_batch_key                           int(11)  null,           /* The batch part of the primary key of the source of the line item, such as from a_subtrx_cashdisb. --  */
+        a_group_key                           int(11)  null,           /* The group part of the primary key of the source of the line item, such as from a_subtrx_cashdisb. --  */
+        a_item_key                            int(11)  null,           /* The item part of the primary key of the source of the line item, such as from a_subtrx_cashdisb. --  */
+        a_amount                              decimal(14,4)  null,     /* The amount of the reconciliation line item --  */
+        a_is_reconciled                       bit  default 0,          /* Whether the line item is reconciled or not. --  */
+        a_comment                             varchar(255)  null,      /* Comments on the line item. --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* a_bank_recon_accts */
+
+create table a_bank_recon_accts (
+        a_ledger_number                       char(10)  not null,      /* ledger number for the account --  */
+        a_account_code                        char(16)  not null,      /* GL account to allow/disallow --  */
+        a_is_reconcilable                     bit(1)  null,            /* Whether or not the account can be reconciled --  */
+        a_is_customizable                     bit(1)  null,            /* Whether or not to allow the account to have line items that exist only in the reconciliation app. --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* a_dimension */
+
+create table a_dimension (
+        a_dimension                           char(20)  not null,      /* dimension code (alphanumeric allowed) --  */
+        a_ledger_number                       char(10)  not null,      /* ledger number that uses this fund --  */
+        a_is_posting                          bit,                     /* enables use of this dimension --  */
+        a_dim_desc                            char(32)  null,          /* short description of dimension, for reporting and UI --  */
+        a_dim_comments                        varchar(255)  null,      /* comments / long description of dimension --  */
+        a_legacy_code                         varchar(32)  null,       /* Legacy dimension code, from data import --  */
+        a_default_item                        varchar(20)  null,       /* Default item to use for this dimension. --  */
+        a_start_date                          datetime  null,          /* Starting date this dimension can be used --  */
+        a_end_date                            datetime  null,          /* Ending date this dimension can be used --  */
+        a_lock_position                       integer  null,           /* If set (1-3), locks this dimension to dimension #1, #2, or #3 in the UI, where applicable. --  */
+        a_lock_always_show                    bit  not null,           /* If position locked, always show this dimension, but leave it disabled if not applicable to the transaction. --  */
+        a_required                            bit  not null,           /* Whether this dimension must be specified, where applicable. --  */
+        a_dim_usage                           char(1)  not null,       /* What types of transactions this dimension can apply to: R = revenue only, E = expense only, B = both revenue and expense. --  */
+        a_dim_fund                            char(20)  null,          /* If specified, this dimension only applies to a specific fund. --  */
+        a_dim_fund_class                      char(3)  null,           /* If specified, this dimension only applies to a specific fund class. --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* a_dimension_item */
+
+create table a_dimension_item (
+        a_dimension                           char(20)  not null,      /* dimension code (alphanumeric allowed) --  */
+        a_ledger_number                       char(10)  not null,      /* ledger number that uses this fund --  */
+        a_dimension_item                      char(20)  not null,      /* dimension item code (alphanumeric allowed) --  */
+        a_is_posting                          bit  not null,           /* enables use of this dimension item --  */
+        a_dim_item_desc                       char(32)  null,          /* short description of dimension item, for reporting and UI --  */
+        a_dim_item_comments                   varchar(255)  null,      /* comments / long description of dimension item --  */
+        a_legacy_code                         varchar(32)  null,       /* Legacy dimension item code, from data import --  */
+        a_start_date                          datetime  null,          /* Starting date this dimension item can be used --  */
+        a_end_date                            datetime  null,          /* Ending date this dimension item can be used --  */
+        a_dim_item_usage                      char(1)  not null,       /* What types of transactions this dimension item can apply to: R = revenue only, E = expense only, B = both revenue and expense. --  */
+        a_dim_item_fund                       char(20)  null,          /* If specified, this dimension item only applies to a specific fund. --  */
+        a_dim_item_fund_class                 char(3)  null,           /* If specified, this dimension item only applies to a specific fund class. --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -3908,9 +4101,9 @@ create table i_crm_import_type_option (
         i_crm_option_class                    integer  null,           /* the classification of the option (for tags, this is the tag type ID. for tracks or requirements, the track ID. data item ID for data fields, etc.) --  */
         i_crm_option_comment                  varchar(900)  null,      /* a comment to be added for the option. This can contain substitute() function specs, to include various fields as needed. --  */
         i_crm_tag_strength                    float  null,             /* strength value for tag (default 1.0) --  */
-        i_crm_tag_strength_expr               varchar(900)  null,      /* expression to give the tag strength (provided object: "import" attribute "value", i.e. :import:value) --  */
+        i_crm_tag_strength_expr               varchar(900)  null,      /* expression to give the tag strength (provided object: "import" attribute "value", i.e. :import:value) --  */
         i_crm_tag_certainty                   float  null,             /* certainty value for tag (default 1.0) --  */
-        i_crm_tag_certainty_expr              varchar(900)  null,      /* expression to give the tag certainty (provided object: "import" attribute "value", i.e. :import:value) --  */
+        i_crm_tag_certainty_expr              varchar(900)  null,      /* expression to give the tag certainty (provided object: "import" attribute "value", i.e. :import:value) --  */
         i_crm_task_due_days                   integer  null,           /* for tasks, how soon the task will be due (in days, from the import date) --  */
         i_crm_track_step                      integer  null,           /* for tracks, this is the step to put the person in. If null, the person is put in the starting step (by e_step_sequence). If the person is already in the track, setting this moves them to this step. --  */
         i_crm_req_fulfill                     integer  null,           /* for step requirements, this is which requirement ID to fulfill (track provided in option class, step provided in i_crm_track_step) --  */
@@ -4353,6 +4546,12 @@ insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorseme
 insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:gift_manage" as s_endorsement, "Manage Gift Receipting" as s_endorsement_desc, "kardia:ledger" as s_endorsement_context_type, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
 insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:portal_manage" as s_endorsement, "Manage Missionary Portal" as s_endorsement_desc, "kardia" as s_endorsement_context_type, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
 insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:lists" as s_endorsement, "View Mailing Lists" as s_endorsement_desc, "kardia" as s_endorsement_context_type, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:dep" as s_endorsement, "View Deposit Data" as s_endorsement_desc, "kardia:ledger" as s_endorsement_context_type, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:dep_entry" as s_endorsement, "Enter Deposit Data" as s_endorsement_desc, "kardia:ledger" as s_endorsement_context_type, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:dep_manage" as s_endorsement, "Manage Deposit Data" as s_endorsement_desc, "kardia:ledger" as s_endorsement_context_type, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:recon" as s_endorsement, "View Bank Reconciliation Data" as s_endorsement_desc, "kardia:ledger" as s_endorsement_context_type, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:recon_entry" as s_endorsement, "Update Bank Recon Info" as s_endorsement_desc, "kardia:ledger" as s_endorsement_context_type, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:recon_perform" as s_endorsement, "Perform Bank Reconciliation" as s_endorsement_desc, "kardia:ledger" as s_endorsement_context_type, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
 insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:lists_manage" as s_endorsement, "Manage Mailing Lists" as s_endorsement_desc, "kardia" as s_endorsement_context_type, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
 insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:ptnr_manage" as s_endorsement, "Manage Partner System" as s_endorsement_desc, "kardia" as s_endorsement_context_type, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
 insert into s_sec_endorsement_type (s_endorsement,s_endorsement_desc,s_endorsement_context_type,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select "kardia:crm" as s_endorsement, "View CRM Data" as s_endorsement_desc, "kardia" as s_endorsement_context_type, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;

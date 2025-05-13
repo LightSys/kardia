@@ -43,3 +43,4 @@ drop table _e_collaborator_status;
 drop table _a_giving_interval;
 drop table _a_pledge_type;
 drop table _a_item_intent_code;
+drop table _a_recon_item_source;

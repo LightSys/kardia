@@ -27,13 +27,7 @@ revoke select on ra to public;
 /* p_contact_usage */
 
 
-/* p_contact_usage_type */
-
-
 /* p_partner_relationship */
-
-
-/* p_partner_relationship_type */
 
 
 /* p_church */
@@ -48,6 +42,15 @@ revoke select on ra to public;
 /* p_staff */
 
 
+/* p_banking_details */
+
+
+/* p_contact_usage_type */
+
+
+/* p_partner_relationship_type */
+
+
 /* p_bulk_postal_code */
 
 
@@ -60,9 +63,6 @@ revoke select on ra to public;
 /* p_pol_division */
 
 
-/* p_banking_details */
-
-
 /* p_banking_type */
 
 
@@ -72,13 +72,10 @@ revoke select on ra to public;
 /* p_gazetteer */
 
 
-/* p_dup_check_tmp */
+/* p_acquisition_code */
 
 
 /* p_partner_sort_tmp */
-
-
-/* p_acquisition_code */
 
 
 /* p_partner_search */
@@ -93,6 +90,9 @@ revoke select on ra to public;
 /* p_search_stage_criteria */
 
 
+/* p_dup_check_tmp */
+
+
 /* p_nondup */
 
 
@@ -100,6 +100,18 @@ revoke select on ra to public;
 
 
 /* p_merge */
+
+
+/* p_notification */
+
+
+/* p_notification_type */
+
+
+/* p_notification_method */
+
+
+/* p_notification_pref */
 
 
 /* m_list */
@@ -118,9 +130,6 @@ revoke select on ra to public;
 
 
 /* e_contact_history */
-
-
-/* e_activity */
 
 
 /* e_engagement_track */
@@ -171,6 +180,9 @@ revoke select on ra to public;
 /* e_partner_document */
 
 
+/* e_text_expansion */
+
+
 /* e_workflow_type */
 
 
@@ -210,16 +222,16 @@ revoke select on ra to public;
 /* e_data_highlight */
 
 
-/* e_ack */
-
-
-/* e_ack_type */
+/* e_activity */
 
 
 /* e_trackactivity */
 
 
-/* e_text_expansion */
+/* e_ack */
+
+
+/* e_ack_type */
 
 
 /* e_text_search_word */
@@ -364,6 +376,21 @@ revoke select on ra to public;
 
 
 /* a_currency_exch_rate */
+
+
+/* a_bank_recon */
+
+
+/* a_bank_recon_item */
+
+
+/* a_bank_recon_accts */
+
+
+/* a_dimension */
+
+
+/* a_dimension_item */
 
 
 /* a_payroll */

@@ -35,16 +35,8 @@ drop table p_contact_info;
 drop table p_contact_usage;
 
 
-/* p_contact_usage_type */
-drop table p_contact_usage_type;
-
-
 /* p_partner_relationship */
 drop table p_partner_relationship;
-
-
-/* p_partner_relationship_type */
-drop table p_partner_relationship_type;
 
 
 /* p_church */
@@ -63,6 +55,18 @@ drop table p_payee;
 drop table p_staff;
 
 
+/* p_banking_details */
+drop table p_banking_details;
+
+
+/* p_contact_usage_type */
+drop table p_contact_usage_type;
+
+
+/* p_partner_relationship_type */
+drop table p_partner_relationship_type;
+
+
 /* p_bulk_postal_code */
 drop table p_bulk_postal_code;
 
@@ -79,10 +83,6 @@ drop table p_country;
 drop table p_pol_division;
 
 
-/* p_banking_details */
-drop table p_banking_details;
-
-
 /* p_banking_type */
 drop table p_banking_type;
 
@@ -95,16 +95,12 @@ drop table p_title;
 drop table p_gazetteer;
 
 
-/* p_dup_check_tmp */
-drop table p_dup_check_tmp;
+/* p_acquisition_code */
+drop table p_acquisition_code;
 
 
 /* p_partner_sort_tmp */
 drop table p_partner_sort_tmp;
-
-
-/* p_acquisition_code */
-drop table p_acquisition_code;
 
 
 /* p_partner_search */
@@ -123,6 +119,10 @@ drop table p_partner_search_results;
 drop table p_search_stage_criteria;
 
 
+/* p_dup_check_tmp */
+drop table p_dup_check_tmp;
+
+
 /* p_nondup */
 drop table p_nondup;
 
@@ -133,6 +133,22 @@ drop table p_dup;
 
 /* p_merge */
 drop table p_merge;
+
+
+/* p_notification */
+drop table p_notification;
+
+
+/* p_notification_type */
+drop table p_notification_type;
+
+
+/* p_notification_method */
+drop table p_notification_method;
+
+
+/* p_notification_pref */
+drop table p_notification_pref;
 
 
 /* m_list */
@@ -157,10 +173,6 @@ drop table e_contact_history_type;
 
 /* e_contact_history */
 drop table e_contact_history;
-
-
-/* e_activity */
-drop table e_activity;
 
 
 /* e_engagement_track */
@@ -227,6 +239,10 @@ drop table e_document_comment;
 drop table e_partner_document;
 
 
+/* e_text_expansion */
+drop table e_text_expansion;
+
+
 /* e_workflow_type */
 drop table e_workflow_type;
 
@@ -279,20 +295,20 @@ drop table e_highlights;
 drop table e_data_highlight;
 
 
-/* e_ack */
-drop table e_ack;
-
-
-/* e_ack_type */
-drop table e_ack_type;
+/* e_activity */
+drop table e_activity;
 
 
 /* e_trackactivity */
 drop table e_trackactivity;
 
 
-/* e_text_expansion */
-drop table e_text_expansion;
+/* e_ack */
+drop table e_ack;
+
+
+/* e_ack_type */
+drop table e_ack_type;
 
 
 /* e_text_search_word */
@@ -485,6 +501,26 @@ drop table a_currency;
 
 /* a_currency_exch_rate */
 drop table a_currency_exch_rate;
+
+
+/* a_bank_recon */
+drop table a_bank_recon;
+
+
+/* a_bank_recon_item */
+drop table a_bank_recon_item;
+
+
+/* a_bank_recon_accts */
+drop table a_bank_recon_accts;
+
+
+/* a_dimension */
+drop table a_dimension;
+
+
+/* a_dimension_item */
+drop table a_dimension_item;
 
 
 /* a_payroll */
