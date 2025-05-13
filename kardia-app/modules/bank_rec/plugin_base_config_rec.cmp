@@ -73,14 +73,8 @@ plugin_base_config_rec "widget/component-decl"
 		    // select the proper image depending on value and if is clickable
 		    value=runclient(
 			condition(:account_osrc:a_is_reconcilable  >= 1, 
-			//    condition(has_endorsement('kardia:recon_perform', 'kardia:ledger:' + :account_osrc:a_ledger_number + ":"),
 				'/sys/images/checkbox_checked.gif',
-			//	'/sys/images/checkbox_checked_dis.gif'
-			//	),
-			//    condition(has_endorsement('kardia:recon_perform', 'kardia:ledger:' + :account_osrc:a_ledger_number + ":"),
 				'/sys/images/checkbox_unchecked.gif',
-			//	'/sys/images/checkbox_unchecked_dis.gif'
-			//	)
 			    )
 			); 
 		    }
@@ -112,7 +106,6 @@ plugin_base_config_rec "widget/component-decl"
 			";
 		    autoquery = never;
 		    baseobj = "/apps/kardia/data/Kardia_DB/a_bank_recon_accts/rows";
-// FIXME: the rule causes this to run every time the thing gets updated, thus we need to get params from the onclick maybe??
 		    upsert_link "widget/rule"
 			{
 			ruletype=osrc_relationship;
@@ -136,7 +129,6 @@ plugin_base_config_rec "widget/component-decl"
 		    {
 		    event=Click; target=account_osrc; action=Refresh; event_delay=runclient(0.1);
 		    event_condition=runclient(:Column == 'a_is_reconcilable'); 
-		    //event_cancel=runclient(:Column == 'a_is_reconciled' AND has_endorsement('kardia:recon_perform', 'kardia:ledger:' + :ledger:value + ":")); 
 		    }
 		}
 	    }

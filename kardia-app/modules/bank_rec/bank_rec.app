@@ -11,7 +11,6 @@ runpayroll "widget/page"
     max_requests = 7;
 
     ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
-    period "widget/parameter" { type=string; default=null; }
 
     rec_cmp "widget/component"
 	{
@@ -19,6 +18,5 @@ runpayroll "widget/page"
 	path = "/apps/kardia/modules/bank_rec/bank_rec.cmp";
 	title = "Bank Reconciliation";
 	ledger = runserver(:this:ledger);
-	period = runserver(:this:period);
 	}
     }

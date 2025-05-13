@@ -1,0 +1,30 @@
+$Version=2$
+clear_bank_rec "system/query"
+    {
+    cur_ledger "query/parameter" { type=string; }
+    cur_account "query/parameter" { type=string; }
+    cur_recon "query/parameter" { type=string; }
+
+    sql = "
+	-- unreconcile any items associated with the reconciliation that is being deleted 
+	UPDATE
+	    /apps/kardia/data/Kardia_DB/a_bank_recon_item/rows
+	SET
+	    :a_is_reconciled = 0
+	WHERE 
+	    :a_ledger_number = :parameters:cur_ledger
+	    AND :a_account_code = :parameters:cur_account
+	    AND :a_statement_id = :parameters:cur_recon
+	    AND :a_is_reconciled
+	;
+
+	-- perform the actual deletion
+	DELETE FROM 
+	    /apps/kardia/data/Kardia_DB/a_bank_recon/rows
+	WHERE
+	    :a_ledger_number = :parameters:cur_ledger
+	    AND :a_account_code = :parameters:cur_account
+	    AND :a_statement_id = :parameters:cur_recon
+	;
+	";
+    }
