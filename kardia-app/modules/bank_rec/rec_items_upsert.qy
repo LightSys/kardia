@@ -1,0 +1,130 @@
+$Version=2$
+last_bank_rec "system/query"
+    {
+    cur_ledger "query/parameter" { type=string; }
+
+    sql = "
+	-- TODO: add in the start date limiter 
+
+	-- delete all orphaned records
+	-- clean out GL
+	DELETE FROM 
+	    IDENTITY /apps/kardia/data/Kardia_DB/a_bank_recon_item/rows bi,
+	    /apps/kardia/data/Kardia_DB/a_bank_recon_accts/rows ba
+	WHERE 
+	    :bi:a_origin = 'GL'
+	    AND :bi:a_ledger_number = :parameters:cur_ledger
+	    AND :ba:a_ledger_number = :parameters:cur_ledger
+	    AND :bi:a_account_code = :ba:a_account_code
+	    AND :ba:a_is_reconcilable = 1
+	    AND (SELECT 
+		    count(1)
+		FROM 
+		    /apps/kardia/data/Kardia_DB/a_transaction/rows t 
+		WHERE 
+		    :bi:a_ledger_number = :t:a_ledger_number
+		    AND :bi:a_account_code = :t:a_account_code
+		    AND :bi:a_batch_key = :t:a_batch_number
+		    AND :bi:a_group_key = :t:a_journal_number
+		    AND :bi:a_item_key = :t:a_transaction_number
+		) = 0
+	    -- TODO: add in the date limit check
+	;
+	-- clean out CR
+	DELETE FROM 
+	    IDENTITY /apps/kardia/data/Kardia_DB/a_bank_recon_item/rows bi,
+	    /apps/kardia/data/Kardia_DB/a_bank_recon_accts/rows ba
+	WHERE 
+	    :bi:a_origin = 'CR'
+	    AND :bi:a_ledger_number = :parameters:cur_ledger
+	    AND :ba:a_ledger_number = :parameters:cur_ledger
+	    AND :bi:a_account_code = :ba:a_account_code
+	    AND :ba:a_is_reconcilable = 1
+	    AND (SELECT 
+		    count(1)
+		FROM 
+		    /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows cr
+		WHERE 
+		    :bi:a_ledger_number = :cr:a_ledger_number
+		    AND :bi:a_account_code = :cr:a_account_code
+		    AND :bi:a_batch_key = :cr:a_batch_number
+		    AND :bi:a_group_key = :cr:a_gift_number
+		    AND :bi:a_item_key = :cr:a_split_number
+		) = 0
+	    -- TODO: add in the date limit check
+	;
+
+	-- TODO: add deletes for CD and DE
+
+	-- Upsert from CR
+	INSERT INTO
+	    /apps/kardia/data/Kardia_DB/a_bank_recon_item/rows
+	SELECT
+	    a_ledger_number = :parameters:cur_ledger,
+	    a_account_code = :cr:a_account_code,
+	    a_origin = 'CR',
+	    a_batch_key = :cr:a_batch_number,
+	    a_group_key = :cr:a_gift_number,
+	    a_item_key = :cr:a_split_number,
+	    a_amount = :cr:a_amount,
+	    s_date_created = getdate(),
+	    s_created_by = user_name(),
+	    s_date_modified = getdate(),
+	    s_modified_by = user_name()
+	FROM
+	    /apps/kardia/data/Kardia_DB/a_transaction/rows gl,
+	    /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows cr,
+	    /apps/kardia/data/Kardia_DB/a_bank_recon_accts/rows ba
+	WHERE 
+	    :gl:a_ledger_number = :parameters:cur_ledger
+	    AND :cr:a_ledger_number = :parameters:cur_ledger
+	    AND :gl:a_batch_number = :cr:a_batch_number
+	    AND :ba:a_ledger_number = :parameters:cur_ledger
+	    AND :gl:a_account_code = :ba:a_account_code
+	    AND :ba:a_is_reconcilable = 1
+	GROUP BY -- the join is to only get thos in gl, but only need one of each. 
+	    :cr:a_batch_number, :cr:a_gift_number, :cr:a_split_number
+	ON DUPLICATE
+	    :a_ledger_number, :a_batch_key, :a_group_key, :a_item_key, :a_origin
+	UPDATE SET
+	    a_amount = :a_amount,
+	    s_date_modified = getdate(),
+	    s_modified_by = user_name()
+	;
+
+	-- Upsert from GL
+	INSERT INTO
+	    /apps/kardia/data/Kardia_DB/a_bank_recon_item/rows
+	SELECT
+	    a_ledger_number = :parameters:cur_ledger,
+	    a_account_code = :gl:a_account_code,
+	    a_origin = :gl:a_origin,
+	    a_batch_key = :gl:a_batch_number,
+	    a_group_key = :gl:a_journal_number,
+	    a_item_key = :gl:a_transaction_number,
+	    a_amount = :gl:a_amount,
+	    s_date_created = getdate(),
+	    s_created_by = user_name(),
+	    s_date_modified = getdate(),
+	    s_modified_by = user_name()
+	FROM
+	    /apps/kardia/data/Kardia_DB/a_transaction/rows gl,
+	    /apps/kardia/data/Kardia_DB/a_bank_recon_accts/rows ba
+	WHERE 
+	    :gl:a_ledger_number = :parameters:cur_ledger
+	    AND :gl:a_origin = 'GL'
+	    AND :ba:a_ledger_number = :parameters:cur_ledger
+	    AND :gl:a_account_code = :ba:a_account_code
+	    AND :ba:a_is_reconcilable = 1
+	ON DUPLICATE
+	    :a_ledger_number, :a_batch_key, :a_group_key, :a_item_key, :a_origin
+	UPDATE SET
+	    a_amount = :a_amount,
+	    s_date_modified = getdate(),
+	    s_modified_by = user_name()
+	;
+
+	-- TODO: add upserts for CD and DE.
+
+	";
+    }

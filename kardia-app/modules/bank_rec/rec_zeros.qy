@@ -1,0 +1,70 @@
+$Version=2$
+last_bank_rec "system/query"
+    {
+    cur_ledger "query/parameter" { type=string; }
+    cur_account "query/parameter" { type=string; }
+
+    sql = "
+	DECLARE COLLECTION rec_pairs;
+	
+	-- match reconciliations with any before it
+	DECLARE COLLECTION rec_pairs;
+
+	INSERT INTO
+	    COLLECTION rec_pairs
+	SELECT
+	    cur_rec = :r1:a_statement_id,
+	    prev_rec = (SELECT last(:r2:a_statement_id)
+		FROM /apps/kardia/data/Kardia_DB/a_bank_recon/rows r2
+		WHERE :r1:a_end_date > :r2:a_end_date
+		    AND :r2:a_ledger_number = :parameters:cur_ledger
+		    AND :r2:a_account_code = :parameters:cur_account
+		ORDER BY :r2:a_end_date ASC)
+	FROM 
+	    /apps/kardia/data/Kardia_DB/a_bank_recon/rows r1
+	WHERE 
+	    :r1:a_ledger_number = :parameters:cur_ledger
+	    AND :r1:a_account_code = :parameters:cur_account
+	;
+
+	-- now find the date and calculate the zero 
+	SELECT 
+	    :r1:a_ledger_number,
+	    :r1:a_account_code, 
+	    :r1:a_statement_id,
+	    prev_rec = :r2:a_statement_id,
+	    a_end_date = :r1:a_end_date, 
+	    a_display_end_date = dateformat(:r1:a_end_date, 'dd MMM yyyy'), 
+	    :r1:a_bank_end_balance,
+	    a_bank_start_balance = isnull(:r1:a_bank_start_balance, isnull(:r2:a_bank_end_balance, 0)),
+	    a_recon_amt = isnull(sum(:ri:a_amount), 0), 
+	    a_recon_diff = :r1:a_bank_end_balance 
+		- isnull(:r1:a_bank_start_balance, isnull(:r2:a_bank_end_balance, 0)) 
+		- (isnull(sum(:ri:a_amount), 0)),
+	    :r1:a_comment
+	    -- TODO: Flag when a GL and another boatch total doesn't match (preferably some kind if error line and a source )
+	    -- TODO: Flag and block any rows that are from unposted batches 
+	FROM
+	    IDENTITY /apps/kardia/data/Kardia_DB/a_bank_recon/rows r1,
+	    /apps/kardia/data/Kardia_DB/a_bank_recon/rows r2,
+	    COLLECTION rec_pairs rp,
+	    /apps/kardia/data/Kardia_DB/a_bank_recon_item/rows ri
+	WHERE 
+	    :r1:a_ledger_number = :parameters:cur_ledger 
+	    AND :r2:a_ledger_number = :parameters:cur_ledger
+	    AND :r1:a_account_code = :parameters:cur_account
+	    AND :r2:a_account_code = :parameters:cur_account
+	    AND :r1:a_statement_id = :rp:cur_rec
+	    AND :r2:a_statement_id =* :rp:prev_rec
+	    AND :ri:a_ledger_number =* :r1:a_ledger_number
+	    AND :ri:a_account_code =* :r1:a_account_code
+	    AND :ri:a_statement_id =* :r1:a_statement_id
+	    AND :ri:a_is_reconciled = 1
+	GROUP BY
+	    :r1:a_statement_id
+	ORDER BY 
+	    :r1:a_end_date
+	;
+	
+	";
+    }

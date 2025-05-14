@@ -153,7 +153,7 @@ sub pull_off_web() {
 #            $line=~s/".*//;
 #            @URLS[$#URLS+1]="https://myserver$line";
 #        }
-	if ($line =~ s/.*a href="(\/projects\/kardia\/wiki\/index.php\/Kardia:NewTables_[^"]*).*/$1/) {
+        if ($line =~ s/.*a href="(\/projects\/kardia\/wiki\/index.php\/Kardia:NewTables_[^"]*).*/$1/) {
 	    $line=~s/".*//;
             @URLS[$#URLS+1]="https://www.codn.net$line";
 	}
