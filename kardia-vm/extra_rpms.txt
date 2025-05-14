@@ -1,0 +1,6 @@
+#This is a list of RPMS that are often automatically installed
+#but which are not needed for this VM.  They will be automatically
+#uninstalled when we do a doCeanup.  There will be an option to 
+#install them in the menu, just in case removing them causes a problem
+linux-firmware
+iwl7260-firmware

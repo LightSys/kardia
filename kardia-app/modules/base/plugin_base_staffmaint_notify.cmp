@@ -1,0 +1,268 @@
+$Version=2$
+plugin_base_staffmaint_notify "widget/component-decl"
+    {
+    title = "Notifications";
+    height=272;
+    width=758;
+
+    sequence = 15;
+
+    Modified "widget/component-decl-event" { }
+
+    staff_osrc "widget/parameter" { type=object; find_container = "widget/osrc"; }
+    ledger "widget/parameter" { type=string; deploy_to_client = yes; }
+
+    clicked_method "widget/variable" { type=integer; default=1; }
+
+    notify_ctls "widget/component"
+	{
+	path = "/apps/kardia/modules/base/receives_notification.cmp";
+
+	on_connect "widget/connector"
+	    {
+	    event=Connected;
+	    target=notify_osrc;
+	    action=RefreshObject;
+	    }
+	on_disconnect "widget/connector"
+	    {
+	    event=Disconnected;
+	    target=notify_osrc;
+	    action=RefreshObject;
+	    }
+	}
+
+    vbox "widget/vbox"
+	{
+	x = 0;
+	y = 0;
+	width = 758;
+	height = 272;
+	spacing = 8;
+	cellsize = 20;
+
+	notify_osrc "widget/osrc"
+	    {
+	    notify_osrc_partner "widget/parameter" { param_name=p_partner_key; type=string; default=runclient(:staff_osrc:p_partner_key); }
+	    sql = runserver("
+		    SELECT
+			:nt:p_notify_type,
+			:nt:p_notify_type_label,
+			:nt:p_notify_type_desc,
+			:nt:p_object_label,
+			" + (select isnull(sum("method_" + :nm:p_notify_method + " = (select count(1) from /apps/kardia/data/Kardia_DB/p_notification_pref/rows np where :np:p_recip_partner_key = :parameters:p_partner_key and :np:p_notify_type= :nt:p_notify_type and :np:p_enabled = 1 and :np:p_notify_method = " + :nm:p_notify_method + "),\n"), "") from /apps/kardia/data/Kardia_DB/p_notification_method/rows nm) + "
+			" + (select isnull(sum("contact_" + :nm:p_notify_method + " = (select condition(:np:p_pause_until_date > getdate(), 'Paused' + condition(:np:p_pause_discard, ', Discarding', '') + '\n', condition(:np:p_pause_until_date is not null, 'Resumed\n', ''))" + " + isnull(:c:p_phone_country + ' ', '') + isnull(:c:p_phone_area_city + ' ', '') + isnull(:c:p_contact_data,'') from " + "/apps/kardia/data/Kardia_DB/p_contact_info/rows c, /apps/kardia/data/Kardia_DB/p_notification_pref/rows np where :c:p_partner_key = :parameters:p_partner_key and charindex(:c:p_contact_type, " + quote(:nm:p_allowed_contact_types) + ") > 0 and :np:p_notify_type = :nt:p_notify_type and :np:p_enabled = 1 and :np:p_notify_method = " + :nm:p_notify_method + " and :np:p_recip_contact_id = :c:p_contact_id and :np:p_recip_partner_key = :parameters:p_partner_key),\n"), "") from /apps/kardia/data/Kardia_DB/p_notification_method/rows nm) + "
+			p_partner_key = :parameters:p_partner_key
+		    FROM
+			identity /apps/kardia/data/Kardia_DB/p_notification_type/rows nt
+		    ");
+
+	    baseobj="/apps/kardia/data/Kardia_DB/p_notification_pref/rows";
+	    replicasize=25;
+	    readahead=25;
+
+	    staff_link "widget/rule"
+		{
+		ruletype=osrc_relationship;
+		target=staff_osrc;
+		key_1=p_partner_key;
+		target_key_1=p_partner_key;
+		revealed_only=yes;
+		}
+
+	    notify_form "widget/form"
+		{
+		form_txt "widget/label" { value=runclient("You can select below what notifications the staff member receives."); height=32; }
+
+		notify_pane "widget/pane"
+		    {
+		    height=256;
+		    style=flat;
+
+		    notify_vbox "widget/vbox"
+			{
+			x=0; y=0;
+			height=295;
+			width=758;
+			spacing=8;
+			cellsize = 20;
+
+			notify_table_pane "widget/pane"
+			    {
+			    height=232;
+			    widget_class=table_bgnd;
+
+			    notify_table "widget/table"
+				{
+				x=0;y=0;
+				width=756; height=230;
+				mode = dynamicrow;
+				initial_selection = no;
+
+				t_disp "widget/table-column" { title="Notification Type"; fieldname="p_notify_type_desc"; width=250; }
+				notify_methods "widget/repeat"
+				    {
+				    sql = "select * from /apps/kardia/data/Kardia_DB/p_notification_method/rows np";
+
+				    t_item "widget/table-column" { title=runserver(:notify_methods:p_notify_method_desc); fieldname=runserver('method_' + :notify_methods:p_notify_method); caption_fieldname=runserver('contact_' + :notify_methods:p_notify_method); caption_align=center; width=70; type=checkbox; align=center; }
+
+				    popover_on_click_column "widget/connector"
+					{
+					source = notify_table;
+					event=Click;
+					event_condition=runclient(:Column is not null and :ColumnValue > 0 and :Column = 'method_' + runserver(:notify_methods:p_notify_method) and not :checkbox);
+					target = popover_notify_detail;
+					action=Open;
+					PointAt=t_item;
+					PointSide=runclient("right");
+					IsModal=1;
+					}
+				    }
+
+				enable_on_click_column "widget/connector"
+				    {
+				    event=Check;
+				    event_condition=runclient(substring(:Column, 1, 7) = 'method_');
+				    event_cancel=runclient(substring(:Column, 1, 7) = 'method_');
+				    target = notify_ctls;
+				    action=ConnectNotification;
+
+				    // Parameters to ConnectNotification
+				    notify_method=runclient(convert(integer, substring(:Column, 8)));
+				    partner=runclient(:staff_osrc:p_partner_key);
+				    notify_type=runclient(:notify_osrc:p_notify_type);
+				    }
+
+				disable_on_click_column "widget/connector"
+				    {
+				    event=Uncheck;
+				    event_condition=runclient(substring(:Column, 1, 7) = 'method_');
+				    event_cancel=runclient(substring(:Column, 1, 7) = 'method_');
+				    target = notify_ctls;
+				    action=DisconnectNotification;
+
+				    // Parameters to DisconnectNotification
+				    notify_method=runclient(convert(integer, substring(:Column, 8)));
+				    partner=runclient(:staff_osrc:p_partner_key);
+				    notify_type=runclient(:notify_osrc:p_notify_type);
+				    }
+
+				update_clicked_on_change "widget/connector"
+				    {
+				    event=Click;
+				    event_condition=runclient(substring(:Column, 1, 7) = 'method_');
+				    target=clicked_method;
+				    action=SetValue;
+				    Value=runclient(convert(integer,substring(:Column, 8)));
+				    }
+				}
+			    }
+			}
+		    }
+		}
+	    }
+	}
+
+    popover_notify_detail "widget/childwindow"
+	{
+	widget_class="popover";
+	width=400; height=190;
+	x=415; y=265;
+	    
+	update_emails_on_open "widget/connector"
+	    {
+	    event=Open;
+	    target=f_contact;
+	    action=SetItems;
+	    SQL=runclient("select label = :ct:text + ': ' + isnull(:c:p_phone_country + ' ', '') + isnull(:c:p_phone_area_city + ' ', '') + isnull(:c:p_contact_data,''), value = :c:p_contact_id from /apps/kardia/data/Kardia_DB/p_contact_info/rows c, /apps/kardia/data/Kardia_DB/_p_contact_type/rows ct, /apps/kardia/data/Kardia_DB/p_notification_method/rows nm where :c:p_partner_key = " + quote(:staff_osrc:p_partner_key) + " and :c:p_contact_type = :ct:tag and charindex(:c:p_contact_type, :nm:p_allowed_contact_types) > 0 and :nm:p_notify_method = " + :clicked_method:value);
+	    }
+
+	notify_detail_vbox "widget/vbox"
+	    {
+	    x=10; y=10;
+	    width=378; height=170;
+	    spacing=10;
+
+	    notify_detail_osrc "widget/osrc"
+		{
+		nd_method "widget/parameter" { param_name=p_notify_method; type=integer; default=runclient(:clicked_method:value); }
+		sql = "	select
+			    *
+			from
+			    /apps/kardia/data/Kardia_DB/p_notification_pref/rows
+			where
+			    :p_notify_method = :parameters:p_notify_method
+			";
+		baseobj = "/apps/kardia/data/Kardia_DB/p_notification_pref/rows";
+		autoquery = oneachreveal;
+		readahead = 2;
+		replicasize = 2;
+
+		notify_detail_link "widget/rule"
+		    {
+		    ruletype=osrc_relationship;
+		    target=notify_osrc;
+		    key_1=p_notify_type;
+		    target_key_1=p_notify_type;
+		    key_2=p_recip_partner_key;
+		    target_key_2=p_partner_key;
+		    revealed_only=yes;
+		    }
+
+		notify_detail_form "widget/form"
+		    {
+		    allow_query = no;
+
+		    on_form_save_1 "widget/connector" { event=DataSaved; target=popover_notify_detail; action=Close; }
+		    on_form_save_2 "widget/connector" { event=DataSaved; target=notify_osrc; action=RefreshObject; }
+		    on_form_discard "widget/connector" { event=Discard; target=popover_notify_detail; action=Close; }
+
+		    notify_detail_title "widget/label" { height=16; font_size=14; style=bold; align=center; text="Notification Options"; }
+
+		    f_contact "widget/component" { height=20; label_width=150; path="/sys/cmp/smart_field.cmp"; text="Contact:"; ctl_type=dropdown; field=p_recip_contact_id; sql="select 1, 1 where 1 != 1"; fc_hints "widget/hints" { style=notnull; } }
+
+		    f_freq "widget/component" { height=20; label_width=150; path="/sys/cmp/smart_field.cmp"; text="Frequency:"; ctl_type=dropdown; field=p_frequency; sql="select label='Immediate', value=0; select label='Daily', value=1; select label='Weekly', value=7"; ff_hints "widget/hints" { style=notnull; } }
+		    f_pauseuntil "widget/component" { height=20; label_width=150; path="/sys/cmp/smart_field.cmp"; text="Pause Until:"; ctl_type=datetime; field=p_pause_until_date; }
+		    f_discardpause "widget/component" { height=20; label_width=150; path="/sys/cmp/smart_field.cmp"; text="Discard while Paused:"; ctl_type=checkbox; field=p_pause_discard; fd_hints "widget/hints" { style=notnull; } }
+
+		    btns_hbox "widget/hbox"
+			{
+			height=20; spacing=10;
+			align=center;
+
+			save_btn "widget/textbutton"
+			    {
+			    text = "Save";
+			    enabled = runclient(:notify_detail_form:is_savable);
+			    save_cn "widget/connector" { event=Click; target=notify_detail_form; action=Save; }
+			    }
+
+			cancel_close_btn "widget/textbutton"
+			    {
+			    text = runclient(condition(:notify_detail_form:is_discardable, "Cancel", "Close"));
+
+			    cancel_cn_1 "widget/connector"
+				{
+				event_condition=runclient(not :notify_detail_form:is_discardable);
+				event=Click;
+				target=popover_notify_detail;
+				action=Close;
+				}
+
+			    cancel_cn_2 "widget/connector"
+				{
+				event=Click;
+				event_condition=runclient(:notify_detail_form:is_discardable);
+				target=notify_detail_form;
+				action=Discard;
+				}
+			    }
+			}
+
+		    meta_fields "widget/component" { path="record_metadata_hidden.cmp"; visual=no; }
+		    }
+		}
+	    }
+	}
+    }
+

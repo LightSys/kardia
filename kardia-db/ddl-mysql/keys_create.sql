@@ -55,6 +55,15 @@ alter table p_contact_usage_type
 alter table p_partner_relationship_type
 	add constraint p_relat_type_pk primary key  (p_relation_type);
 
+alter table p_banking_details
+	add constraint p_banking_details_pk primary key  (p_banking_details_key);
+
+alter table p_contact_usage_type
+	add constraint p_contact_ut_pk primary key  (p_contact_usage_type_code);
+
+alter table p_partner_relationship_type
+	add constraint p_relat_type_pk primary key  (p_relation_type);
+
 alter table p_bulk_postal_code
 	add constraint p_bulk_code_pk primary key  (p_country_code,p_bulk_postal_code,p_bulk_code);
 
@@ -81,6 +90,8 @@ alter table p_gazetteer
 
 alter table p_acquisition_code
 	add constraint p_acqcode_pk primary key  (p_acquisition_code);
+alter table p_acquisition_code
+	add constraint p_acqcode_pk primary key  (p_acquisition_code);
 
 alter table p_partner_sort_tmp
 	add constraint p_sort_pk primary key  (p_partner_key,s_username,p_sort_session_id);
@@ -100,6 +111,9 @@ alter table p_search_stage_criteria
 alter table p_dup_check_tmp
 	add constraint p_dupcheck_pk primary key  (p_partner_key,s_username);
 
+alter table p_dup_check_tmp
+	add constraint p_dupcheck_pk primary key  (p_partner_key,s_username);
+
 alter table p_nondup
 	add constraint p_nondup_pk primary key  (p_partner_key, p_nondup_partner_key);
 
@@ -108,6 +122,18 @@ alter table p_dup
 
 alter table p_merge
 	add constraint p_merge_pk primary key  (p_partner_key_a, p_partner_key_b, p_data_source, p_data_key);
+
+alter table p_notification
+	add constraint p_notify_pk primary key  (p_notify_id);
+
+alter table p_notification_type
+	add constraint p_notify_type_pk primary key  (p_notify_type);
+
+alter table p_notification_method
+	add constraint p_notify_method_pk primary key  (p_notify_method);
+
+alter table p_notification_pref
+	add constraint p_notify_pref_pk primary key  (p_notify_type, p_notify_method, p_notify_method_item, p_recip_partner_key);
 
 alter table p_notification
 	add constraint p_notify_pk primary key  (p_notify_id);
@@ -190,6 +216,9 @@ alter table e_partner_document
 alter table e_text_expansion
 	add constraint e_exp_pk primary key  (e_exp_tag);
 
+alter table e_text_expansion
+	add constraint e_exp_pk primary key  (e_exp_tag);
+
 alter table e_workflow_type
 	add constraint e_work_pk primary key  (e_workflow_id);
 
@@ -228,6 +257,12 @@ alter table e_highlights
 
 alter table e_data_highlight
 	add constraint e_dh_pk primary key  (e_highlight_subject, e_highlight_object_type, e_highlight_object_id);
+
+alter table e_activity
+	add constraint e_act_pk primary key  (e_activity_group_id, e_activity_id);
+
+alter table e_trackactivity
+	add constraint e_trkact_pk primary key  (p_partner_key,e_username,e_sort_key);
 
 alter table e_activity
 	add constraint e_act_pk primary key  (e_activity_group_id, e_activity_id);

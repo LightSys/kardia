@@ -5,6 +5,11 @@ taskstpl "widget/template"
 
     editbox "widget/editbox" { fgcolor=white; }
 
+    dropdown "widget/dropdown"
+	{
+	textcolor=black;
+	}
+
     button "widget/textbutton"
 	{
 	widget_class=iconbutton;
@@ -44,6 +49,10 @@ taskstpl "widget/template"
 	rowhighlight_shadow_color = '#6080c0';
 	rowhighlight_shadow_location = 'inside';
 	rowhighlight_shadow_radius = 6;
+	newrow_bgcolor = "#282828";
+	newrow_shadow_color = '#c0c060';
+	newrow_shadow_location = 'inside';
+	newrow_shadow_radius = 6;
 	textcolorhighlight = white;
 	row_minheight=16;
 	row_maxheight=128;
