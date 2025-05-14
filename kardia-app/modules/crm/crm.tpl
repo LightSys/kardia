@@ -24,4 +24,9 @@ crm_tpl "widget/template"
 	image_width=24;
 	image_height=24;
 	}
+    table "widget/table"
+	{
+	row_shadow_color = null;
+	row_shadow_radius = 0;
+	}
     }

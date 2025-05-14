@@ -784,6 +784,24 @@ create  index a_fund_staff_partner_idx on a_fund_staff (p_staff_partner_key, a_l
 /* go */
 
 
+/* a_dimension */
+create  index a_dim_fund_class_idx on a_dimension (a_dim_fund_class, a_dim_fund, a_dimension, a_ledger_number);
+create  index a_dim_fund_idx on a_dimension (a_dim_fund, a_dimension, a_ledger_number);
+create  index a_dim_ledger_number_idx on a_dimension (a_ledger_number, a_dimension);
+create  index a_dim_legacy_idx on a_dimension (a_legacy_code, a_dimension, a_ledger_number);
+/* create  index a_dim_pk on a_dimension (a_dimension, a_ledger_number)*/ 
+/* go */
+
+
+/* a_dimension_item */
+create  index a_dim_item_fund_class_idx on a_dimension_item (a_dim_fund_class, a_dim_fund, a_dimension, a_ledger_number, a_dimension_item);
+create  index a_dim_item_fund_idx on a_dimension_item (a_dim_item_fund, a_dimension, a_ledger_number, a_dimension_item);
+create  index a_dim_item_ledger_number_idx on a_dimension_item (a_ledger_number, a_dimension, a_dimension_item);
+create  index a_dim_item_legacy_idx on a_dimension_item (a_legacy_code, a_dimension, a_ledger_number, a_dimension_item);
+/* create  index a_dim_item_pk on a_dimension_item (a_dimension, a_ledger_number, a_dimension_item)*/ 
+/* go */
+
+
 /* a_payroll */
 create  index a_payroll_fund_idx on a_payroll (a_ledger_number, a_fund, a_payroll_group_id, a_payroll_id);
 create  index a_payroll_payee_idx on a_payroll (a_ledger_number, p_payee_partner_key, a_payroll_group_id, a_payroll_id);

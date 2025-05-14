@@ -55,8 +55,8 @@ config_tags "widget/component-decl"
 				    :tt:e_tag_label
 				";
 			baseobj="/apps/kardia/data/Kardia_DB/e_tag_type/rows";
-			readahead=60;
-			replicasize=60;
+			readahead=200;
+			replicasize=200;
 			autoquery=onfirstreveal;
 
 			ct_list_table "widget/table"
@@ -95,8 +95,8 @@ config_tags "widget/component-decl"
 				    {
 				    interlock_with=ct_addnew_form,cti_addnew_form,cti_edit_form;
 
-				    on_modify_load_dd "widget/connector" { event=DataSaved; target=cti_addnew_dd; action=SetItems; SQL="select label=:e_tag_label, value=:e_tag_id from /apps/kardia/data/Kardia_DB/e_tag_type/rows where :e_is_active = 1 order by :e_tag_label"; }
-				    on_delete_load_dd "widget/connector" { event=DataDeleted; target=cti_addnew_dd; action=SetItems; SQL="select label=:e_tag_label, value=:e_tag_id from /apps/kardia/data/Kardia_DB/e_tag_type/rows where :e_is_active = 1 order by :e_tag_label"; }
+				    on_modify_load_dd "widget/connector" { event=DataSaved; target=cti_addnew_dd; action=SetItems; SQL="select label=:e_tag_label, value=:e_tag_id from /apps/kardia/data/Kardia_DB/e_tag_type/rows where :e_is_active = 1 order by :e_tag_label"; RowLimit=200; }
+				    on_delete_load_dd "widget/connector" { event=DataDeleted; target=cti_addnew_dd; action=SetItems; SQL="select label=:e_tag_label, value=:e_tag_id from /apps/kardia/data/Kardia_DB/e_tag_type/rows where :e_is_active = 1 order by :e_tag_label"; RowLimit=200; }
 
 				    ct_t_detail_vbox "widget/vbox"
 					{
@@ -147,7 +147,7 @@ config_tags "widget/component-decl"
 				    allow_query = no;
 				    allow_new = yes;
 
-				    on_new_load_dd "widget/connector" { event=DataSaved; target=cti_addnew_dd; action=SetItems; SQL="select label=:e_tag_label, value=:e_tag_id from /apps/kardia/data/Kardia_DB/e_tag_type/rows where :e_is_active = 1 order by :e_tag_label"; }
+				    on_new_load_dd "widget/connector" { event=DataSaved; target=cti_addnew_dd; action=SetItems; SQL="select label=:e_tag_label, value=:e_tag_id from /apps/kardia/data/Kardia_DB/e_tag_type/rows where :e_is_active = 1 order by :e_tag_label"; RowLimit=200; }
 
 				    ct_addnew_editbox "widget/component"
 					{
@@ -336,7 +336,7 @@ config_tags "widget/component-decl"
 					width=282;
 					text="Add Implication:";
 					label_width=100;
-					numdisplay=8;
+					numdisplay=12;
 					}
 				    cti_addnew_btn "widget/textbutton"
 					{

@@ -63,7 +63,7 @@ kardia "widget/template"
 	}
     tplTable "widget/table"
 	{
-	rowheight = 18;
+	rowheight = 20;
 	mode = dynamicrow;
 	}
     tplTablePane "widget/pane"

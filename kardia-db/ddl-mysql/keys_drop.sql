@@ -846,6 +846,38 @@ alter table a_bank_recon_item
 	drop primary key;
 
 
+alter table a_dimension
+	drop primary key;
+
+
+alter table a_dimension
+	drop index a_dim_legacy_idx;
+
+
+alter table a_dimension
+	drop index a_dim_fund_idx;
+
+
+alter table a_dimension
+	drop index a_dim_fund_class_idx;
+
+
+alter table a_dimension_item
+	drop primary key;
+
+
+alter table a_dimension_item
+	drop index a_dim_item_legacy_idx;
+
+
+alter table a_dimension_item
+	drop index a_dim_item_fund_idx;
+
+
+alter table a_dimension_item
+	drop index a_dim_item_fund_class_idx;
+
+
 alter table a_payroll
 	drop primary key;
 

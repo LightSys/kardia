@@ -315,6 +315,29 @@ batches "widget/component-decl"
 			    batch = runclient(:batch_osrc:a_batch_number);
 			    }
 			}
+		    trial_balance "widget/textbutton"
+			{
+			width = 172;
+			height = 40;
+			text = runclient("Trial Balance for " + :periods_osrc:a_period);
+
+			dotrialbalance_cn "widget/connector"
+			    {
+			    event=Click;
+			    target = batches;
+			    action= Launch;
+			    Multi = 1;
+			    Source = runclient("/apps/kardia/modules/gl/trial_balance.rpt");
+			    Width = 800;
+			    Height = 600;
+			    ledger = runclient(:batch_osrc:a_ledger_number);
+			    year_period = runclient(:periods_osrc:a_parent_period);
+			    ref_period = runclient(:periods_osrc:a_period);
+			    end_period = runclient(:periods_osrc:a_period);
+			    unposted = runclient(1);
+			    summchart = runclient(1);
+			    }
+			}
 		    }
 		}
 	    }

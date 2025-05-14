@@ -21,6 +21,6 @@ newuser_default "widget/template"
         }
     table "widget/table"
         {
-        rowheight = 18;
+        rowheight = 20;
         }
     }

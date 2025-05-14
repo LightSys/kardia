@@ -397,6 +397,12 @@ alter table a_bank_recon
 alter table a_bank_recon_item
 	add constraint a_recon_item_pk primary key  (a_ledger_number, a_period, a_account_code, a_line_item);
 
+alter table a_dimension
+	add constraint a_dim_pk primary key  (a_dimension, a_ledger_number);
+
+alter table a_dimension_item
+	add constraint a_dim_item_pk primary key  (a_dimension, a_ledger_number, a_dimension_item);
+
 alter table a_payroll
 	add constraint a_payroll_pk primary key  (a_ledger_number, a_payroll_group_id, a_payroll_id);
 

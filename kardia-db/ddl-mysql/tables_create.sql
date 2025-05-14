@@ -779,6 +779,7 @@ create table p_notification_method (
         p_notify_method                       integer  not null,       /* id of the notification method --  */
         p_notify_method_label                 varchar(10)  not null,   /* notification method short label --  */
         p_notify_method_desc                  varchar(255)  not null,  /* longer description of the notification method --  */
+        p_allowed_contact_types               varchar(32)  null,       /* list of p_contact_type(s) that are allowed for this notification method. --  */
         p_expects_ack                         bit  not null,           /* whether this method anticipates an message-seen acknowledgement from the recipient (0=no, 1=yes) --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
@@ -2579,6 +2580,57 @@ create table a_bank_recon_item (
         a_posted_date                         datetime  null,          /* The date the item posted on the bank account. --  */
         a_is_reconciled                       bit  default 0,          /* Whether the line item is reconciled or not. --  */
         a_comment                             varchar(255)  null,      /* Comments on the line item. --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* a_dimension */
+
+create table a_dimension (
+        a_dimension                           char(20)  not null,      /* dimension code (alphanumeric allowed) --  */
+        a_ledger_number                       char(10)  not null,      /* ledger number that uses this fund --  */
+        a_is_posting                          bit,                     /* enables use of this dimension --  */
+        a_dim_desc                            char(32)  null,          /* short description of dimension, for reporting and UI --  */
+        a_dim_comments                        varchar(255)  null,      /* comments / long description of dimension --  */
+        a_legacy_code                         varchar(32)  null,       /* Legacy dimension code, from data import --  */
+        a_default_item                        varchar(20)  null,       /* Default item to use for this dimension. --  */
+        a_start_date                          datetime  null,          /* Starting date this dimension can be used --  */
+        a_end_date                            datetime  null,          /* Ending date this dimension can be used --  */
+        a_lock_position                       integer  null,           /* If set (1-3), locks this dimension to dimension #1, #2, or #3 in the UI, where applicable. --  */
+        a_lock_always_show                    bit  not null,           /* If position locked, always show this dimension, but leave it disabled if not applicable to the transaction. --  */
+        a_required                            bit  not null,           /* Whether this dimension must be specified, where applicable. --  */
+        a_dim_usage                           char(1)  not null,       /* What types of transactions this dimension can apply to: R = revenue only, E = expense only, B = both revenue and expense. --  */
+        a_dim_fund                            char(20)  null,          /* If specified, this dimension only applies to a specific fund. --  */
+        a_dim_fund_class                      char(3)  null,           /* If specified, this dimension only applies to a specific fund class. --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* a_dimension_item */
+
+create table a_dimension_item (
+        a_dimension                           char(20)  not null,      /* dimension code (alphanumeric allowed) --  */
+        a_ledger_number                       char(10)  not null,      /* ledger number that uses this fund --  */
+        a_dimension_item                      char(20)  not null,      /* dimension item code (alphanumeric allowed) --  */
+        a_is_posting                          bit  not null,           /* enables use of this dimension item --  */
+        a_dim_item_desc                       char(32)  null,          /* short description of dimension item, for reporting and UI --  */
+        a_dim_item_comments                   varchar(255)  null,      /* comments / long description of dimension item --  */
+        a_legacy_code                         varchar(32)  null,       /* Legacy dimension item code, from data import --  */
+        a_start_date                          datetime  null,          /* Starting date this dimension item can be used --  */
+        a_end_date                            datetime  null,          /* Ending date this dimension item can be used --  */
+        a_dim_item_usage                      char(1)  not null,       /* What types of transactions this dimension item can apply to: R = revenue only, E = expense only, B = both revenue and expense. --  */
+        a_dim_item_fund                       char(20)  null,          /* If specified, this dimension item only applies to a specific fund. --  */
+        a_dim_item_fund_class                 char(3)  null,           /* If specified, this dimension item only applies to a specific fund class. --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */

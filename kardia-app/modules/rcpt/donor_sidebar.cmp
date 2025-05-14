@@ -128,23 +128,11 @@ donor_sidebar "widget/component-decl"
 
     popover_add_item "widget/childwindow"
 	{
+	widget_class="popover";
 	width=170; height=170;
 	x=415; y=265;
 	style=dialog;
 	modal=yes;
-	fl_y=0;
-	titlebar=no;
-	visible=no;
-	toplevel=yes;
-	border_style=solid;
-	border_color="#f8f8f8";
-	background=null;
-	bgcolor="#f8f8f8";
-	border_radius=12;
-	shadow_radius=4;
-	shadow_offset=2;
-	shadow_color="#808080";
-	shadow_angle=135;
 
 	add_item_vbox "widget/vbox"
 	    {
@@ -238,21 +226,9 @@ donor_sidebar "widget/component-decl"
 
     popover_partner "widget/childwindow"
 	{
+	widget_class="popover";
 	width=600; height=240;
 	x=200; y=100;
-	fl_y=0;
-	titlebar=no;
-	visible=no;
-	toplevel=yes;
-	border_style=solid;
-	border_color="#f8f8f8";
-	background=null;
-	bgcolor="#f8f8f8";
-	border_radius=12;
-	shadow_radius=4;
-	shadow_offset=2;
-	shadow_color="#808080";
-	shadow_angle=135;
 
 	onclose_close_itemlist "widget/connector" { event=Close; target=popover_add_item; action=Close; event_delay=0.05; }
 
@@ -316,21 +292,9 @@ donor_sidebar "widget/component-decl"
 
     popover_address "widget/childwindow"
 	{
+	widget_class="popover";
 	width=600; height=288;
 	x=200; y=100;
-	fl_y=0;
-	titlebar=no;
-	visible=no;
-	toplevel=yes;
-	border_style=solid;
-	border_color="#f8f8f8";
-	background=null;
-	bgcolor="#f8f8f8";
-	border_radius=12;
-	shadow_radius=4;
-	shadow_offset=2;
-	shadow_color="#808080";
-	shadow_angle=135;
 
 	onclose_close_itemlist2 "widget/connector" { event=Close; target=popover_add_item; action=Close; event_delay=0.05; }
 
@@ -399,21 +363,9 @@ donor_sidebar "widget/component-decl"
 
     popover_contact "widget/childwindow"
 	{
+	widget_class="popover";
 	width=600; height=173;
 	x=200; y=100;
-	fl_y=0;
-	titlebar=no;
-	visible=no;
-	toplevel=yes;
-	border_style=solid;
-	border_color="#f8f8f8";
-	background=null;
-	bgcolor="#f8f8f8";
-	border_radius=12;
-	shadow_radius=4;
-	shadow_offset=2;
-	shadow_color="#808080";
-	shadow_angle=135;
 
 	onclose_close_itemlist3 "widget/connector" { event=Close; target=popover_add_item; action=Close; event_delay=0.05; }
 
@@ -502,21 +454,9 @@ donor_sidebar "widget/component-decl"
 
     popover_donorinfo "widget/childwindow"
 	{
+	widget_class="popover";
 	width=600; height=144;
 	x=200; y=100;
-	fl_y=0;
-	titlebar=no;
-	visible=no;
-	toplevel=yes;
-	border_style=solid;
-	border_color="#f8f8f8";
-	background=null;
-	bgcolor="#f8f8f8";
-	border_radius=12;
-	shadow_radius=4;
-	shadow_offset=2;
-	shadow_color="#808080";
-	shadow_angle=135;
 
 	onclose_close_itemlist4 "widget/connector" { event=Close; target=popover_add_item; action=Close; event_delay=0.05; }
 

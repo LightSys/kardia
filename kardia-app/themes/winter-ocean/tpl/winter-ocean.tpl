@@ -105,14 +105,28 @@ kardia "widget/template"
 	newrow_bgcolor = "#ffff80";
 	textcolornew = "black";
 	colsep = 1;
+	//dragcols = 1;
 	colsep_bgcolor = "#d8d8d8";
+	colsep_mode = "header";
+	overlap_scrollbar=yes;
+	demand_scrollbar=yes;
+	//initial_selection = no;
+	rowheight=null;
+	cellvspacing=4;
+	inner_padding=2;
+	row_border_radius=4;
+	row_shadow_radius=2;
+	row_shadow_offset=1;
+	row_shadow_color="#a0a0a0";
+	row_shadow_angle=135;
 	}
     tplTablePane "widget/pane"
 	{
 	widget_class = "table_bgnd";
-	style=lowered;
+	//style=lowered;
+	style=flat;
 	//background="/apps/kardia/images/bg/light_bgnd2.jpg";
-	bgcolor="#d8d8d8";
+	//bgcolor="#d8d8d8";
 	//background="/apps/kardia/images/bg/95pct_1x1.png";
 	}
     tplNonLink "widget/label"
@@ -198,5 +212,22 @@ kardia "widget/template"
 	}
     tplForm "widget/form"
 	{
+	}
+    tplPopover "widget/childwindow"
+	{
+	widget_class="popover";
+	fl_y=0;
+	titlebar=no;
+	visible=no;
+	toplevel=yes;
+	border_style=solid;
+	border_color="#f8f8f8";
+	background=null;
+	bgcolor="#f8f8f8";
+	border_radius=12;
+	shadow_radius=4;
+	shadow_offset=2;
+	shadow_color="#808080";
+	shadow_angle=135;
 	}
     }
