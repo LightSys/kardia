@@ -11487,7 +11487,7 @@ a_bank_recon
 |Ending date from the bank statement -- 
 |
 |- bgcolor=silver
-|a_start_bank_balance
+|a_bank_start_balance
 |decimal(14,4)
 |null 
 |Starting balance from the bank statement -- 
@@ -11673,13 +11673,13 @@ a_bank_recon_accts
 |- bgcolor=silver
 |a_is_reconcilable
 |bit(1)
-|null 
+|default 0 null 
 |Whether or not the account can be reconciled -- 
 |
 |- bgcolor=silver
 |a_is_customizable
 |bit(1)
-|null 
+|default 0 null 
 |Whether or not to allow the account to have line items that exist only in the reconciliation app. -- 
 |
 |- bgcolor=silver

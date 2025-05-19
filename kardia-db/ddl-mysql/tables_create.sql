@@ -2553,19 +2553,13 @@ create table a_currency_exch_rate (
 
 create table a_bank_recon (
         a_ledger_number                       char(10)  not null,      /* ledger number for this reconciliation --  */
-<<<<<<< HEAD
         a_account_code                        char(16)  not null,      /* GL account that we're reconciling --  */
         a_statement_id                        int(11)  not null,       /* ID used to differentiate reconciliations for the same account. --  */
         a_period                              char(8)  not null,       /* accounting period for this reconciliation, typically calculated based on end date --  */
         a_end_date                            datetime  not null,      /* Ending date from the bank statement --  */
-        a_start_bank_balance                  decimal(14,4)  null,     /* Starting balance from the bank statement --  */
+        a_bank_start_balance                  decimal(14,4)  null,     /* Starting balance from the bank statement --  */
         a_bank_end_balance                    decimal(14,4)  not null,
                                                                       /* Ending balance from the bank statement --  */
-=======
-        a_period                              char(8)  not null,       /* accounting period for this reconciliation --  */
-        a_account_code                        char(16)  not null,      /* GL account that we're reconciling --  */
-        a_bank_balance                        decimal(14,4)  null,     /* Ending balance from the bank statement --  */
->>>>>>> master
         a_comment                             varchar(900)  null,      /* Comments on this account's reconciliation. --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
@@ -2604,8 +2598,10 @@ create table a_bank_recon_item (
 create table a_bank_recon_accts (
         a_ledger_number                       char(10)  not null,      /* ledger number for the account --  */
         a_account_code                        char(16)  not null,      /* GL account to allow/disallow --  */
-        a_is_reconcilable                     bit(1)  null,            /* Whether or not the account can be reconciled --  */
-        a_is_customizable                     bit(1)  null,            /* Whether or not to allow the account to have line items that exist only in the reconciliation app. --  */
+        a_is_reconcilable                     bit(1)  default 0  null,
+                                                                      /* Whether or not the account can be reconciled --  */
+        a_is_customizable                     bit(1)  default 0  null,
+                                                                      /* Whether or not to allow the account to have line items that exist only in the reconciliation app. --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
