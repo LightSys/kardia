@@ -776,7 +776,6 @@ create  index a_fund_staff_partner_idx on a_fund_staff (p_staff_partner_key, a_l
 
 /* a_bank_recon */
 /* create  index a_recon_pk on a_bank_recon (a_ledger_number, a_account_code, a_statement_id)*/ 
-
 /* go */
 
 
