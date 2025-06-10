@@ -31,11 +31,57 @@ plugin_base_config_rec "widget/component-decl"
 		}
 	    }
 
-	table_label "widget/label" { height=16; style=bold; text="Reconcilable Accounts:"; }
+	config_osrc "widget/osrc"
+	    {
+	    a_ledger_number "widget/parameter" { type=string; }
+	    sql = "select * from object expression('/apps/kardia/modules/gl/accounting_config.qyp/' + :parameters:a_ledger_number)";
+	    
+	    config_link "widget/rule"
+		{
+		ruletype=osrc_relationship;
+		target=ledger_osrc;
+		key_1=a_ledger_number;
+		target_key_1=a_ledger_number;
+		}
+	    
+	    config_form "widget/form"
+		{
+		allow_query=no;
+
+		config_label "widget/label" { height=16; style=bold; text="History Cut Off Date:"; }
+
+		rcpt_ckscan "widget/component" { path="/sys/cmp/smart_field.cmp"; x=24; height=24; field="ReconCutOff"; text="Update reconciliation records after:"; width=350; label_width=200; ctl_type=datetime; date_only=1; default_time='00:00:00'; recon_cutoff_hints "widget/hints" { style=notnull; } }
+		button_box "widget/hbox"
+		    {
+		    height=24;
+		    align=center;
+		    spacing=10;
+
+		    save_btn "widget/textbutton"
+			{
+			height=24; width=130;
+			text = "Save";
+			enabled=runclient(:config_form:is_savable);
+
+			on_save "widget/connector" { event=Click; target=config_form; action=Save; }
+			}
+
+		    cancel_btn "widget/textbutton"
+			{
+			height=24; width=130;
+			text = "Cancel";
+			enabled=runclient(:config_form:is_discardable);
+
+			on_cancel "widget/connector" { event=Click; target=config_form; action=Discard; }
+			}
+		    }
+		}
+
+	    }
 
 	account_osrc "widget/osrc"
 	    {
-	    a_ledger_number "widget/parameter" { type=string; }
+	    acc_ledger_number "widget/parameter" { type=string; param_name=a_ledger_number; }
 		
 	    sql = "
 		    SELECT 
@@ -56,13 +102,15 @@ plugin_base_config_rec "widget/component-decl"
 	    readahead=256;
 	    baseobj = "/apps/kardia/data/Kardia_DB/a_bank_recon_accts/rows";
 
-	    config_link "widget/rule"
+	    account_link "widget/rule"
 		{
 		ruletype=osrc_relationship;
 		target=ledger_osrc;
 		key_1=a_ledger_number;
 		target_key_1=a_ledger_number;
 		}
+
+	    account_label "widget/label" { height=16; style=bold; text="Reconcilable Accounts:"; }
 
 	    account_table "widget/table"
 		{

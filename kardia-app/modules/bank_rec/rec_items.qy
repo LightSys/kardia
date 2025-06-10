@@ -7,6 +7,17 @@ last_bank_rec "system/query"
 
     sql = "
 
+	DECLARE OBJECT cutoff;
+	SELECT 
+	    :cutoff:value = convert('datetime', isnull(first(:a_config_value), '1900-01-01'))
+	FROM
+	    /apps/kardia/data/Kardia_DB/a_config/rows
+	WHERE 
+	    :a_config_name = 'ReconCutOff'
+	    AND :a_ledger_number = :parameters:cur_ledger
+	;
+
+	-- select from GL
 	SELECT
 	    :br:a_ledger_number, 
 	    :br:a_line_item,
@@ -16,36 +27,115 @@ last_bank_rec "system/query"
 	    :br:a_batch_key,
 	    :br:a_group_key,
 	    :br:a_item_key,
-	    a_date_posted =  dateformat(condition(:br:a_origin = 'GL', isnull(:gl:a_gift_received_date, :gl:a_effective_date),
-		condition(:br:a_origin = 'CR', isnull(:cr:a_dn_gift_received_date, :crg:a_gift_received_date), NULL)), 'dd MMM yyyy'), -- TODO: link to CD and DE
-	    a_display_key = isnull(:a_origin, 'N/A') + isnull('-'+:a_batch_key, '') 
-		+ isnull('-'+:a_group_key, '') 
-		+ isnull('-'+:a_item_key, ''),
+	    a_date_posted =  dateformat(:gl:a_effective_date, 'dd MMM yyyy'), 
+	    a_display_key = 'GL-'+:a_batch_key+'-'+:a_group_key+'-'+:a_item_key,
 	    :br:a_comment,
-	    a_src_comment = condition(:br:a_origin = 'GL', :gl:a_comment, 
-		condition(:br:a_origin = 'CR', :cr:a_comment, NULL)), -- TODO: link to CD and DE
-	    a_credit = condition(:br:a_amount < 0, :br:a_amount, NULL), 
-	    a_debit = condition(:br:a_amount >= 0, :br:a_amount, NULL),
+	    a_src_comment = :gl:a_comment, 
+	    a_credit = condition(:gl:a_amount < 0, :gl:a_amount, NULL), 
+	    a_debit = condition(:gl:a_amount >= 0, :gl:a_amount, NULL),
 	    :br:a_is_reconciled
 	FROM 
-	    IDENTITY /apps/kardia/data/Kardia_DB/a_bank_recon_item/rows br,
-	    /apps/kardia/data/Kardia_DB/a_transaction/rows gl,
-	    /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows cr,
-	    /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows crg
+	    IDENTITY /apps/kardia/data/Kardia_DB/a_transaction/rows gl,
+	    /apps/kardia/data/Kardia_DB/a_bank_recon_item/rows br
 	WHERE
 	    -- everything needs to match ledger and account to be considered
 	    :parameters:cur_ledger = :br:a_ledger_number
-	    AND :br:a_ledger_number *= :gl:a_ledger_number
-	    AND :br:a_ledger_number *= :cr:a_ledger_number
+	    AND :parameters:cur_ledger = :gl:a_ledger_number
 	    AND :parameters:cur_account = :br:a_account_code
-	    AND :br:a_account_code *= :gl:a_account_code
-	    AND :br:a_account_code *= :cr:a_account_code
-	    AND :br:a_ledger_number *= :crg:a_ledger_number
-	    AND :br:a_batch_key *= :crg:a_batch_number
-	    AND :br:a_group_key = :crg:a_gift_number
+	    AND :parameters:cur_account = :gl:a_account_code
+	    -- Need to make sure that if it's been reconciled it shows up here
+	    AND ((:cutoff:value < :br:a_item_date AND :cutoff:value < :gl:a_effective_date) 
+		OR (:br:a_is_reconciled = 1))
+	    AND :br:a_origin = 'GL'
 	    AND (:parameters:cur_recon = :br:a_statement_id OR :br:a_is_reconciled = 0)
-	    AND :br:a_batch_key *= :gl:a_batch_number AND :br:a_group_key *= :gl:a_journal_number AND :br:a_item_key *= :gl:a_transaction_number
-	    AND :br:a_batch_key *= :cr:a_batch_number AND :br:a_group_key *= :cr:a_gift_number AND :br:a_item_key *= :cr:a_line_item
+	    AND :br:a_batch_key = :gl:a_batch_number 
+	    AND :br:a_group_key = :gl:a_journal_number 
+	    AND :br:a_item_key = :gl:a_transaction_number
 	;
+
+--	-- Select from CR
+--	SELECT
+--	    :br:a_ledger_number, 
+--	    :br:a_line_item,
+--	    :br:a_account_code,
+--	    :br:a_statement_id,
+--	    :br:a_origin,
+--	    :br:a_batch_key,
+--	    :br:a_group_key,
+--	    :br:a_item_key,
+--	    a_date_posted =  dateformat(isnull(:cr:a_dn_gift_received_date, :crg:a_gift_received_date), 'dd MMM yyyy'),
+--	    a_display_key = 'CR-'+:a_batch_key+'-'+:a_group_key+'-'+:a_item_key,
+--	    :br:a_comment,
+--	    a_src_comment = :cr:a_comment,
+--	    a_credit = condition(:cr:a_amount < 0, :cr:a_amount, NULL), 
+--	    a_debit = condition(:cr:a_amount >= 0, :cr:a_amount, NULL),
+--	    :br:a_is_reconciled
+--	FROM 
+--	    IDENTITY /apps/kardia/data/Kardia_DB/a_bank_recon_item/rows br,
+--	    /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows cr,
+--	    /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows crg
+--	WHERE
+--	    -- everything needs to match ledger and account to be considered
+--	    :parameters:cur_ledger = :br:a_ledger_number
+--	    AND :parameters:cur_account = :br:a_account_code
+--	    AND :br:a_origin = 'CR'
+--	    AND :parameters:cur_ledger = :cr:a_ledger_number
+--	    AND :parameters:cur_account = :cr:a_account_code
+--	    AND :parameters:cur_ledger = :crg:a_ledger_number
+--	    AND (:parameters:cur_recon = :br:a_statement_id OR :br:a_is_reconciled = 0)
+--	    AND :br:a_batch_key = :crg:a_batch_number
+--	    AND :br:a_group_key = :crg:a_gift_number
+--	    AND :crg:a_batch_number = :cr:a_batch_number 
+--	    AND :crg:a_gift_number = :cr:a_gift_number 
+--	    AND :br:a_item_key  = :cr:a_split_number
+--	    AND :cutoff:value <= isnull(:cr:a_dn_gift_received_date, :crg:a_gift_received_date)
+--	    -- TODO: current order is a_bank_recon_item > a_subtrx_gift_item, a_sub_trx_gift_group
+--	;
+--
+--	-- Select from custom
+--	SELECT
+--	    :br:a_ledger_number, 
+--	    :br:a_line_item,
+--	    :br:a_account_code,
+--	    :br:a_statement_id,
+--	    :br:a_origin,
+--	    :br:a_batch_key,
+--	    :br:a_group_key,
+--	    :br:a_item_key,
+--	    a_date_posted =  dateformat(condition(:br:a_origin = 'GL', isnull(:gl:a_gift_received_date, :gl:a_effective_date),
+--		condition(:br:a_origin = 'CR', isnull(:cr:a_dn_gift_received_date, :crg:a_gift_received_date), NULL)), 'dd MMM yyyy'), -- TODO: link to CD and DE
+--	    a_display_key = isnull(:a_origin, 'N/A') + isnull('-'+:a_batch_key, '') 
+--		+ isnull('-'+:a_group_key, '') 
+--		+ isnull('-'+:a_item_key, ''),
+--	    :br:a_comment,
+--	    a_src_comment = condition(:br:a_origin = 'GL', :gl:a_comment, 
+--		condition(:br:a_origin = 'CR', :cr:a_comment, NULL)), -- TODO: link to CD and DE
+--	    a_credit = condition(:br:a_amount < 0, :br:a_amount, NULL), 
+--	    a_debit = condition(:br:a_amount >= 0, :br:a_amount, NULL),
+--	    :br:a_is_reconciled
+--	FROM 
+--	    IDENTITY /apps/kardia/data/Kardia_DB/a_bank_recon_item/rows br,
+--	    /apps/kardia/data/Kardia_DB/a_transaction/rows gl,
+--	    /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows cr,
+--	    /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows crg
+--	WHERE
+--	    -- everything needs to match ledger and account to be considered
+--	    :parameters:cur_ledger = :br:a_ledger_number
+--	    AND :br:a_ledger_number *= :gl:a_ledger_number
+--	    AND :br:a_ledger_number *= :cr:a_ledger_number
+--	    AND :parameters:cur_account = :br:a_account_code
+--	    AND :br:a_account_code *= :gl:a_account_code
+--	    AND :br:a_account_code *= :cr:a_account_code
+--	    AND :br:a_ledger_number *= :crg:a_ledger_number
+--	    AND :br:a_batch_key *= :crg:a_batch_number
+--	    AND :br:a_group_key = :crg:a_gift_number
+--	    AND (:parameters:cur_recon = :br:a_statement_id OR :br:a_is_reconciled = 0)
+--	    AND :br:a_batch_key *= :gl:a_batch_number AND :br:a_group_key *= :gl:a_journal_number AND :br:a_item_key *= :gl:a_transaction_number
+--	    AND :br:a_batch_key *= :cr:a_batch_number AND :br:a_group_key *= :cr:a_gift_number AND :br:a_item_key *= :cr:a_line_item
+--	    AND :cutoff:value <= :br:s_date_created
+--	;
+
+	-- TODO: link to CD and DE
+
 	";
     }
