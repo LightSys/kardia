@@ -27,6 +27,23 @@ bank_rec "widget/component-decl"
 		align=left;
 		style=bold;
 		}
+	    import_osrc "widget/osrc"
+		{
+		import_ledger "widget/parameter" { type=string; param_name=ledger; default=runclient(:ledger:value); }
+		sql = "
+		    EXEC /apps/kardia/modules/bank_rec/rec_items_upsert.qy cur_ledger=:parameters:ledger;
+		";
+		autoquery=never;
+
+		import_button "widget/textbutton"
+		    {
+		    text='import';
+		    import_connector "widget/connector"
+			{
+			event=Click; target=import_osrc; action=QueryParam;
+			}
+		    }
+		}
 	    }
 	body_split "widget/hbox"
 	    {
@@ -39,7 +56,6 @@ bank_rec "widget/component-decl"
 		    {
 		    acc_ledger "widget/parameter" { type=string; param_name=ledger; default=runclient(:ledger:value); }
 		    sql = "
-			EXEC /apps/kardia/modules/bank_rec/rec_items_upsert.qy cur_ledger=:parameters:ledger;
 			EXEC /apps/kardia/modules/bank_rec/last_bank_rec.qy cur_ledger=:parameters:ledger;
 		    ";
 		    replicasize=50; 

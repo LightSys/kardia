@@ -28,7 +28,7 @@ last_bank_rec "system/query"
 	    :br:a_group_key,
 	    :br:a_item_key,
 	    a_date_posted =  dateformat(:gl:a_effective_date, 'dd MMM yyyy'), 
-	    a_display_key = 'GL-'+:a_batch_key+'-'+:a_group_key+'-'+:a_item_key,
+	    a_display_key = 'GL-'+:br:a_batch_key+'-'+:br:a_group_key+'-'+:br:a_item_key,
 	    :br:a_comment,
 	    a_src_comment = :gl:a_comment, 
 	    a_credit = condition(:gl:a_amount < 0, :gl:a_amount, NULL), 
