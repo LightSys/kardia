@@ -5,8 +5,18 @@ last_bank_rec "system/query"
     cur_account "query/parameter" { type=string; }
 
     sql = "
-	DECLARE COLLECTION rec_pairs;
-	
+
+	-- find the cutoff date
+	DECLARE OBJECT cutoff;
+          SELECT
+              :cutoff:value = convert('datetime', isnull(first(:a_config_value), '1900-01-01'))
+          FROM
+              /apps/kardia/data/Kardia_DB/a_config/rows
+          WHERE
+              :a_config_name = 'ReconCutOff'
+              AND :a_ledger_number = :parameters:cur_ledger
+ 
+
 	-- match reconciliations with any before it
 	DECLARE COLLECTION rec_pairs;
 
@@ -25,6 +35,7 @@ last_bank_rec "system/query"
 	WHERE 
 	    :r1:a_ledger_number = :parameters:cur_ledger
 	    AND :r1:a_account_code = :parameters:cur_account
+	    AND :r1:a_end_date > :cutoff:value
 	;
 
 	-- now find the date and calculate the zero 

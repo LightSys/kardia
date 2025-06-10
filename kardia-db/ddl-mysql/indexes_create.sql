@@ -780,6 +780,7 @@ create  index a_fund_staff_partner_idx on a_fund_staff (p_staff_partner_key, a_l
 
 
 /* a_bank_recon_item */
+create  index a_recon_foreign_idx on a_bank_recon_item (a_ledger_number, a_batch_key, a_group_key, a_item_key, a_account_code, a_line_item);
 /* create  index a_recon_item_pk on a_bank_recon_item (a_ledger_number, a_account_code, a_line_item)*/ 
 /* go */
 

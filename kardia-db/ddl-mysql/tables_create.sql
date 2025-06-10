@@ -2584,6 +2584,7 @@ create table a_bank_recon_item (
         a_amount                              decimal(14,4)  null,     /* The amount of the reconciliation line item --  */
         a_is_reconciled                       bit  default 0,          /* Whether the line item is reconciled or not. --  */
         a_comment                             varchar(255)  null,      /* Comments on the line item. --  */
+        a_item_date                           datetime not null,      /* Used to allow cutoff dates to improve query speed. Otherwise, reduandant. */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
