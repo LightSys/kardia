@@ -24,6 +24,7 @@ last_bank_rec "system/query"
 	WHERE 
             :bi:a_item_date > :cutoff:value
 	    AND :bi:a_origin = 'GL'
+	    AND :bi:a_is_reconciled = 0
 	    AND :bi:a_ledger_number = :parameters:cur_ledger
 	    AND :ba:a_ledger_number = :parameters:cur_ledger
 	    AND :bi:a_account_code = :ba:a_account_code
@@ -79,8 +80,8 @@ last_bank_rec "system/query"
 	UPDATE SET
 	    a_amount = :a_amount,
 	    a_item_date = :a_effective_date,
-	    s_date_modified = getdate(),
-	    s_modified_by = user_name()
+	    s_date_modified = getdate() IF MODIFIED,
+	    s_modified_by = user_name() IF MODIFIED
 	;
 
 	-- TODO: add upserts for CD and DE.
