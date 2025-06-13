@@ -1,0 +1,21 @@
+$Version=2$
+myquery "system/query"
+{
+        SURVEY_ID "query/parameter" { type=integer; } 
+	sql = "
+
+        INSERT INTO
+            /apps/kardia/data/Kardia_DB/i_crm_partner_import/rows
+        SELECT
+		*
+        FROM
+            IDENTITY
+                WILDCARD expression('/apps/kardia/modules/ex_limesurvey/connect.qy?SURVEY_ID='+:parameters:SURVEY_ID+'/response.json/responses/*') j
+                ,
+                /apps/kardia/data/Kardia_DB/i_crm_import_type/rows cit
+        WHERE
+            :cit:i_crm_import_type_id = :parameters:SURVEY_ID
+	                AND
+            :j:submitdate IS NOT NULL
+	";
+}

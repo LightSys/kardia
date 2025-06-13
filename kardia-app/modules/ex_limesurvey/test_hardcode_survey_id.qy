@@ -1,0 +1,15 @@
+$Version=2$
+myquery "system/query"
+	{
+	sql = "
+        SELECT
+            i_crm_email = :j:'A01[SQ005]'
+        FROM
+            IDENTITY
+                WILDCARD ./connect.qy?SURVEY_ID=422914/response.json/responses/* j
+                ,
+                /apps/kardia/data/Kardia_DB/i_crm_import_type/rows cit
+        WHERE
+            :cit:i_crm_import_type_id = 422914
+	";
+}

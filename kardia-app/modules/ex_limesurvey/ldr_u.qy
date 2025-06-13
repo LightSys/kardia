@@ -1,0 +1,12 @@
+$Version=2$
+myquery "system/query"
+    {
+    id "query/parameter" { type=integer; }
+
+    sql = "update identity /apps/kardia/data/Kardia_DB/i_crm_import_type/rows/ i
+
+            set 
+                :i:i_crm_field_email='A01[SQ002]'
+            where :i:i_crm_import_type_id='2'
+            ";
+    }

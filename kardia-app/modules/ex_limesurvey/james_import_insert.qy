@@ -1,0 +1,51 @@
+$Version=2$
+myquery "system/query"
+{
+        SURVEY_ID "query/parameter" { type=integer; } 
+	sql = "
+
+        INSERT INTO
+            /apps/kardia/data/Kardia_DB/i_crm_partner_import/rows
+        SELECT
+            i_crm_email = eval(\":j:'\" + :cit:i_crm_field_email + \"'\", \"O\"),
+            i_crm_comment = eval(\":j:'\" + :cit:i_crm_field_comment + \"'\", \"O\"),
+            i_crm_phone = eval(\":j:'\" + :cit:i_crm_field_phone + \"'\", \"O\"),
+            i_crm_import_status = 'Y',
+            i_crm_create_partner = 0,
+            i_crm_create_email = 0,
+            i_crm_create_phone = 0,
+            s_date_created = getdate(),
+            s_created_by = 'Dummy User',
+            s_date_modified = getdate(),
+            s_modified_by = 'Dummy User',
+            
+            -- Everything from beginning to first space is considered first name (first word in string)
+            i_crm_given_name = rtrim(ltrim(substring(
+                ltrim(eval(\":j:'\" + :cit:i_crm_field_given_name + \"'\", \"O\")),
+                1,
+                charindex(
+                    ' ',
+                    ltrim(eval(\":j:'\" + :cit:i_crm_field_given_name + \"'\", \"O\"))
+                ) - 1
+            ))),
+
+            -- Everything from the last space to the end is considered surname (final word in string)
+            i_crm_surname = rtrim(ltrim(reverse(substring(
+                reverse(rtrim(eval(\":j:'\" + :cit:i_crm_field_given_name + \"'\", \"O\"))),
+                1,
+                charindex(
+                    ' ',
+                    reverse(rtrim(eval(\":j:'\" + :cit:i_crm_field_given_name + \"'\", \"O\")))
+                ) - 1
+            ))))
+        FROM
+            IDENTITY
+                WILDCARD expression('/apps/kardia/modules/ex_limesurvey/connect.qy?SURVEY_ID='+:parameters:SURVEY_ID+'/response.json/responses/*') j
+                ,
+                /apps/kardia/data/Kardia_DB/i_crm_import_type/rows cit
+        WHERE
+            :cit:i_crm_import_type_id = :parameters:SURVEY_ID
+	                AND
+            :j:submitdate IS NOT NULL
+	";
+}
