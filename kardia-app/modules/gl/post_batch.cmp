@@ -29,6 +29,9 @@ post_batch "widget/component-decl"
 			:t:a_batch_number = :parameters:a_batch_number and
 			:t:a_ledger_number = :parameters:a_ledger_number and
 			:t:a_period = :parameters:a_period
+		;
+		-- Execute any un-post hooks
+		SELECT * FROM WILDCARD EXPRESSION ('/apps/kardia/modules/*/plugin_base_unpost_*.qy?cur_ledger='+:parameters:a_ledger_number+'&cur_batch='+:parameters:a_batch_number+'&cur_period='+:parameters:a_period)
 		";
 
 	end_unpost "widget/connector"
@@ -70,6 +73,9 @@ post_batch "widget/component-decl"
 			:t:a_batch_number = :parameters:a_batch_number and
 			:t:a_ledger_number = :parameters:a_ledger_number and
 			:t:a_period = :parameters:a_period
+		;
+		-- Execute any post hooks
+		SELECT * FROM WILDCARD EXPRESSION ('/apps/kardia/modules/*/plugin_base_post_*.qy?cur_ledger='+:parameters:a_ledger_number+'&cur_batch='+:parameters:a_batch_number+'&cur_period='+:parameters:a_period)
 		";
 
 	end_post "widget/connector"

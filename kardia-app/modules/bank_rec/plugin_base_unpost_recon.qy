@@ -1,0 +1,23 @@
+$Version=2$
+plugin_base_post_recon "system/query"
+    {
+    cur_ledger "query/parameter" { type=string; }
+    cur_batch "query/parameter" { type=integer; }
+    cur_period "query/parameter" { type=string; }
+
+    sql = "
+	DELETE FROM 
+	    IDENTITY /apps/kardia/data/Kardia_DB/a_bank_recon_item/rows bi,
+	    /apps/kardia/data/Kardia_DB/a_bank_recon_accts/rows ba
+	WHERE 
+	    :bi:a_origin = 'GL' -- TODO: see if this is needed in the long run 
+	    AND :bi:a_is_reconciled = 0
+	    AND :bi:a_ledger_number = :parameters:cur_ledger
+	    AND :ba:a_ledger_number = :parameters:cur_ledger
+	    AND :bi:a_account_code = :ba:a_account_code
+	    AND :ba:a_is_reconcilable = 1
+	    AND :bi:a_batch_key = :parameters:cur_batch
+	;
+
+	";
+    }
