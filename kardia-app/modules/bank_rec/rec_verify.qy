@@ -1,0 +1,117 @@
+$Version=2$
+last_bank_rec "system/query"
+    {
+    cur_ledger "query/parameter" { type=string; }
+
+    sql = "
+	-- TODO: add in the start date limiter 
+
+	DECLARE OBJECT cutoff;
+	SELECT 
+	    :cutoff:value = convert('datetime', isnull(first(:a_config_value), '1900-01-01'))
+	FROM
+	    /apps/kardia/data/Kardia_DB/a_config/rows
+	WHERE 
+	    :a_config_name = 'ReconCutOff'
+	    AND :a_ledger_number = :parameters:cur_ledger
+	;
+
+	-- find all orphaned records
+	-- check for items orphaned by GL
+	SELECT 
+	    ledger = :bi:a_ledger_number, 
+	    account = :bi:a_account_code,
+	    rec_item = :bi:a_line_item,
+	    origin = :bi:a_origin, 
+	    gl_batch = :bi:a_batch_key,
+	    gl_group = :bi:a_group_key, 
+	    gl_item = :bi:a_item_key,
+	    reason = 'No matching item in the GL'
+	FROM 
+	    IDENTITY /apps/kardia/data/Kardia_DB/a_bank_recon_item/rows bi,
+	    /apps/kardia/data/Kardia_DB/a_bank_recon_accts/rows ba
+	WHERE 
+            :bi:a_item_date > :cutoff:value
+	    AND :bi:a_origin = 'GL'
+	    AND :bi:a_ledger_number = :parameters:cur_ledger
+	    AND :ba:a_ledger_number = :parameters:cur_ledger
+	    AND :bi:a_account_code = :ba:a_account_code
+	    AND :ba:a_is_reconcilable = 1
+	    AND  (SELECT 
+		    count(1)
+		FROM 
+		    /apps/kardia/data/Kardia_DB/a_transaction/rows t 
+		WHERE 
+		    :t:a_effective_date > :cutoff:value
+		    AND :bi:a_ledger_number = :t:a_ledger_number
+		    AND :bi:a_account_code = :t:a_account_code
+		    AND :bi:a_batch_key = :t:a_batch_number
+		    AND :bi:a_group_key = :t:a_journal_number
+		    AND :bi:a_item_key = :t:a_transaction_number
+		) = 0
+	;
+
+
+	-- find all posted records absent from bank recon system
+	-- check for missing items from GL
+	SELECT 
+	    ledger = :gl:a_ledger_number, 
+	    account = :gl:a_account_code,
+	    rec_item = NULL,
+	    origin = 'GL', 
+	    gl_batch = :gl:a_batch_number,
+	    gl_group = :gl:a_journal_number, 
+	    gl_item = :gl:a_transaction_number,
+	    reason = 'Posted to GL but absent from bank rec'
+	FROM 
+	    IDENTITY /apps/kardia/data/Kardia_DB/a_transaction/rows gl,
+	    /apps/kardia/data/Kardia_DB/a_bank_recon_accts/rows ba
+	WHERE 
+            :gl:a_effective_date > :cutoff:value
+	    AND :gl:a_ledger_number = :parameters:cur_ledger
+	    AND :ba:a_ledger_number = :parameters:cur_ledger
+	    AND :gl:a_account_code = :ba:a_account_code
+	    AND :ba:a_is_reconcilable = 1
+	    AND :gl:a_posted = 1
+	    AND  (SELECT 
+		    count(1)
+		FROM 
+		    /apps/kardia/data/Kardia_DB/a_bank_recon_item/rows bi
+		WHERE 
+		    :bi:a_origin = 'GL'
+		    AND :bi:a_item_date > :cutoff:value
+		    AND :bi:a_ledger_number = :gl:a_ledger_number
+		    AND :bi:a_account_code = :gl:a_account_code
+		    AND :bi:a_batch_key = :gl:a_batch_number
+		    AND :bi:a_group_key = :gl:a_journal_number
+		    AND :bi:a_item_key = :gl:a_transaction_number
+		) = 0
+	;
+
+	-- TODO: other sources?
+
+	-- TODO: find items that exist but the source is unposted
+	-- find unposted from GL
+	SELECT 
+	    ledger = :bi:a_ledger_number, 
+	    account = :bi:a_account_code,
+	    rec_item = :bi:a_line_item,
+	    origin = :bi:a_origin, 
+	    gl_batch = :bi:a_batch_key,
+	    gl_group = :bi:a_group_key, 
+	    gl_item = :bi:a_item_key,
+	    reason = 'On GL despite being unposted'
+	FROM 
+	    IDENTITY /apps/kardia/data/Kardia_DB/a_bank_recon_item/rows bi,
+	    /apps/kardia/data/Kardia_DB/a_transaction/rows gl
+	WHERE 
+	    :bi:a_origin = 'GL'
+	    AND :bi:a_item_date > :cutoff:value
+	    AND :bi:a_ledger_number = :gl:a_ledger_number
+	    AND :bi:a_account_code = :gl:a_account_code
+	    AND :bi:a_batch_key = :gl:a_batch_number
+	    AND :bi:a_group_key = :gl:a_journal_number
+	    AND :bi:a_item_key = :gl:a_transaction_number
+	    AND :gl:a_posted = 0;
+	";
+    }
