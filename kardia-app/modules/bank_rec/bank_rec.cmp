@@ -95,18 +95,6 @@ bank_rec "widget/component-decl"
 			height=300; width=200; x=0; y=0;
 			t_rec_date "widget/table-column" { title="End Date"; fieldname="a_display_end_date"; }
 			t_rec_diff "widget/table-column" { title="Difference"; fieldname="a_recon_diff"; align='right'; }
-
-			rec_list_detail "widget/table-row-detail"
-			    {
-			    height = 30; 
-			    show_on_new=1;
-			    rec_list_pane "widget/pane"
-			 	{
-			 	x=10; y=5;
-			 	height = 20; width=160;
-			 	border_radius=5;
-			 	style=flat;
-			 	bgcolor="#f8f8f8";
 				// Confirm prompt for deletes contain the delete:
 				rec_list_prompt "widget/childwindow"
 				    {
@@ -230,17 +218,44 @@ bank_rec "widget/component-decl"
 					    }
 					}
 				    }
-				f_rec_delete_btn "widget/textbutton"
-				    {
-				    x=0; y=0; width=60;
-				    text="Delete";
-				    enabled=runclient(NOT :rec_form:is_discardable);
-				    form=rec_form;
-				    delete_rec_prompt "widget/connector" { event=Click; target=rec_list_prompt; action=Open; event_delay=0.1; }
+			}
+		    // menu across the bottom for the reconciliation table
+		    recon_menu "widget/pane"
+			{
+			x=0; y=0; height=20;
+			style="bordered";
+			bgcolor = "#9abcde"; //"/apps/kardia/images/bg/light_bgnd2.jpg"; //"#abcdef";
+			border_color = "#FFFFFF";
+			border_radius=5;
+
+			recon_menu_box "widget/hbox"
+			    {
+			    align=right;
+			    recon_menu_new "widget/imagebutton"
+				{
+				x=0;y=0;width=18;height=18;
+				image="/sys/images/ico25a.gif";
+				pointimage="/sys/images/ico25b.gif";
+				clickimage="/sys/images/ico25c.gif";
+				disabledimage="/sys/images/ico25d.gif";
+				tooltip = runserver("Create a new recon item");
+				enabled = runclient(:rec_form:is_newable);
+				recon_cnNew "widget/connector" { event="Click"; target=rec_form; action="New"; }
+				}
+			    recon_menu_delete "widget/imagebutton"
+				{
+				x=0;y=0;width=18;height=18;
+				image="/sys/images/ico24a.gif";
+				pointimage="/sys/images/ico24b.gif";
+				clickimage="/sys/images/ico24c.gif";
+				disabledimage="/sys/images/ico24d.gif";
+				tooltip = runserver("Delete this recon item");
+				enabled = runclient(:rec_form:is_editable);
+				delete_rec_prompt "widget/connector" { event=Click; target=rec_list_prompt; action=Open; event_delay=0.1; }
 				    delete_rec_confirm_clear "widget/connector" { event=Click; target=f_unrec_editbox; action=SetValue; Value=runclient(""); }
 				    delete_rec_query "widget/connector" { event=Click; target=prompt_calc_osrc; action=QueryParam; }
-				    }
 				}
+			    recon_menu_spacer "widget/autolayoutspacer" { width=5; }
 			    }
 			}
 		    }
@@ -251,7 +266,7 @@ bank_rec "widget/component-decl"
 		// Reconciliation Form
 		rec_pane "widget/pane"
 		    {
-		    x=5; y=0; height=100;
+		    x=0; y=0; height=100;
 		    style="bordered";
 		    bgcolor = "#d0d0d0";
 		    border_color = "#abcdef";
@@ -330,13 +345,6 @@ bank_rec "widget/component-decl"
 				    text='Comment:';
 				    label_width=120;
 				    }
-				f_rec_new_btn "widget/textbutton"
-				    {
-				    width=80;
-				    text = "New";
-				    enabled=runclient(:rec_form:is_newable);
-				    new_rec "widget/connector" { event=Click; target=rec_form; action=New; }
-				    }
 			
 			// TODO: new items need to be able to handle ledger, account, statement, and period 
 				f_rec_save_btn "widget/textbutton"
@@ -358,7 +366,7 @@ bank_rec "widget/component-decl"
 				    }
 				}
 			    // fields abstracted from the user
-			    f_rec_meta_period "widget/variable" { fieldname="a_period"; meta_period_hints "widget/hints" { default=runclient('oooof'); } }
+			    f_rec_meta_period "widget/variable" { fieldname="a_period"; meta_period_hints "widget/hints" { default=NULL; } }
 			    f_rec_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
 			    
 			    period_update_osrc "widget/osrc"
@@ -405,7 +413,7 @@ bank_rec "widget/component-decl"
 		    item_account "widget/parameter" { type=string; param_name=a_account_code; }
 		    item_statement "widget/parameter" { type=string; param_name=a_statement_id; }
 
-		    sql = "EXEC /apps/kardia/modules/bank_rec/rec_items.qy cur_ledger=:parameters:a_ledger_number, cur_account=:parameters:a_account_code, cur_recon=:parameters:a_statement_id";
+		    sql = "SELECT * FROM expression('/apps/kardia/modules/bank_rec/rec_items.qy?cur_ledger='+:parameters:a_ledger_number+'&cur_account='+:parameters:a_account_code+'&cur_recon='+:parameters:a_statement_id)";
 
 		    baseobj = "/apps/kardia/data/Kardia_DB/a_bank_recon_item/rows";
 		    replicasize=50; 
@@ -425,7 +433,7 @@ bank_rec "widget/component-decl"
 
 		    rec_item_table "widget/table"
 			{
-			height=450;  x=0; y=0;
+			height=440;  x=0; y=0;
 			t_rec_src_key "widget/table-column" { title="Source Key"; fieldname="a_display_key"; width=10; }
 			t_rec_posted "widget/table-column" { title="Date Posted"; fieldname="a_date_posted"; width=10; }
 			t_rec_gl_comment "widget/table-column" { title="Source Comment"; fieldname="a_src_comment"; width=30; }
@@ -459,20 +467,180 @@ bank_rec "widget/component-decl"
 			    event=Click; target=recon_osrc; action=Refresh; event_delay=runclient(0.1);
 			    event_condition=runclient(:Column == 'a_is_reconciled' AND has_endorsement('kardia:recon_perform', 'kardia:ledger:' + :ledger:value + ":"));
 			    }
+
+			// Limited form for normal items
+			rec_item_limited_detail "widget/table-row-detail"
+			    {
+			    height = 20;
+			    show_on_new=1;
+			    display_for=runclient(:item_osrc:a_origin IS NOT NULL);
+			    rec_item_limited_form "widget/form"
+				{
+				objectsource=item_osrc;
+				item_limited_form_box "widget/hbox" 
+				    {
+				    y = 0;
+				    spacing = 5;
+				    // only include the feilds that make sense to set/edit
+				    f_lim_spacer_1 "widget/autolayoutspacer" { width=5; }
+				    f_lim_a_date_posted "widget/component"
+					{
+					path="/sys/cmp/smart_field.cmp";
+					width=210;
+					field='a_item_date';
+					ctl_type='datetime'; 
+					label_width=75;
+					text="Date Posted:";
+					height = 18;
+					}
+				    f_lim_a_comment "widget/component"
+					{
+					path="/sys/cmp/smart_field.cmp";
+					width=350;
+					field = 'a_comment';
+					ctl_type=editbox; 
+					label_width=75;
+					text="Comment:";
+					height = 18;
+					}
+				    f_lim_a_amount "widget/component"
+					{
+					path="/sys/cmp/smart_field.cmp";
+					width=210; height = 18;
+					ctl_type=editbox; 
+					align=right;
+					label_width=75;
+					text="Amount:";
+					field = 'a_amount';
+					}
+				    // fields abstracted from the user
+				    f_lim_rec_item_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
+				
+				    // control buttons
+				    f_lim_rec_item_save_btn "widget/textbutton"
+					{
+					width=80;
+					text = "Save";
+					enabled = runclient(:rec_item_form:is_savable);
+
+					f_lim_rec_item_save "widget/connector" { event=Click; target=rec_item_form; action=Save; }
+					}
+				    f_lim_rec_item_cancel_btn "widget/textbutton"
+					{
+					width=80;
+					text = "Cancel";
+					enabled = runclient(:rec_item_form:is_discardable);
+
+					f_lim_rec_item_cancel "widget/connector" { event=Click; target=rec_item_form; action=Discard; }
+					}
+				    }
+				}
+			    }
+		
+			// form to show when working with custom items
 			rec_item_detail "widget/table-row-detail"
 			    {
-			    height = 30; 
-			    show_on_new=0;
-			    display_for=runclient(:item_osrc:a_origin is null);
+			    height = 20;
+			    show_on_new=1;
+			    display_for=runclient(:item_osrc:a_origin IS NULL);
+			    rec_item_form "widget/form"
+				{
+				objectsource=item_osrc;
+				item_form_box "widget/hbox" 
+				    {
+				    y = 0;
+				    spacing = 5;
+				    // only include the feilds that make sense to set/edit
+				    f_spacer_1 "widget/autolayoutspacer" { width=5; }
+				    f_a_date_posted "widget/component"
+					{
+					path="/sys/cmp/smart_field.cmp";
+					width=210;
+					field='a_item_date';
+					ctl_type='datetime'; 
+					label_width=75;
+					text="Date Posted:";
+					height = 18;
+					}
+				    f_a_comment "widget/component"
+					{
+					path="/sys/cmp/smart_field.cmp";
+					width=350;
+					field = 'a_comment';
+					ctl_type=editbox; 
+					label_width=75;
+					text="Comment:";
+					height = 18;
+					}
+				    f_a_amount "widget/component"
+					{
+					path="/sys/cmp/smart_field.cmp";
+					width=210; height = 18;
+					ctl_type=editbox; 
+					align=right;
+					label_width=75;
+					text="Amount:";
+					field = 'a_amount';
+					}
+				    // fields abstracted from the user
+				    f_rec_item_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
+				
+				    // control buttons
+				    f_rec_item_save_btn "widget/textbutton"
+					{
+					width=80;
+					text = "Save";
+					enabled = runclient(:rec_item_form:is_savable);
 
-			    rec_item_pane "widget/pane"
-			 	{
-			 	x=10; y=5;
-			 	height = 20; width=1000;
-			 	border_radius=5;
-			 	style=flat;
-			 	bgcolor="#f8f8f8";
+					f_rec_item_save "widget/connector" { event=Click; target=rec_item_form; action=Save; }
+					}
+				    f_rec_item_cancel_btn "widget/textbutton"
+					{
+					width=80;
+					text = "Cancel";
+					enabled = runclient(:rec_item_form:is_discardable);
+
+					f_rec_item_cancel "widget/connector" { event=Click; target=rec_item_form; action=Discard; }
+					}
+				    }
 				}
+			    }
+			}
+		    // Controls for the recon items table along the bottom of the table
+		    rec_item_menu "widget/pane"
+			{
+			x=0; y=0; height=20;
+			style="bordered";
+			bgcolor = "#9abcde"; //"/apps/kardia/images/bg/light_bgnd2.jpg"; //"#abcdef";
+			border_color = "#FFFFFF";
+			border_radius=5;
+
+			rec_item_menu_box "widget/hbox"
+			    {
+			    align=right;
+			    rec_item_new "widget/imagebutton"
+				{
+				x=0;y=0;width=18;height=18;
+				image="/sys/images/ico25a.gif";
+				pointimage="/sys/images/ico25b.gif";
+				clickimage="/sys/images/ico25c.gif";
+				disabledimage="/sys/images/ico25d.gif";
+				tooltip = runserver("Create a new recon item");
+				enabled = runclient(:rec_item_form:is_newable AND :account_osrc:a_is_customizable AND :recon_osrc:a_statement_id IS NOT NULL);
+				cnNew "widget/connector" { event="Click"; target=rec_item_form; action="New"; }
+				}
+			    rec_item_delete "widget/imagebutton"
+				{
+				x=0;y=0;width=18;height=18;
+				image="/sys/images/ico24a.gif";
+				pointimage="/sys/images/ico24b.gif";
+				clickimage="/sys/images/ico24c.gif";
+				disabledimage="/sys/images/ico24d.gif";
+				tooltip = runserver("Delete this recon item");
+				enabled = runclient(:rec_item_form:is_editable AND :account_osrc:a_is_customizable);
+				cnDelete "widget/connector" { event="Click"; target=rec_item_form; action="Delete"; }
+				}
+				rec_item_menu_spacer "widget/autolayoutspacer" { width=5; }
 			    }
 			}
 		    }
