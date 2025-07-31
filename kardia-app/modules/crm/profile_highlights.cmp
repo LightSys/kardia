@@ -22,7 +22,38 @@ profile_highlights "widget/component-decl"
     partner_osrc "widget/parameter" { type=object; find_container="widget/osrc"; }
 
     onRefresh "widget/connector" { event=Refresh; target=highlights_osrc; action=Refresh; }
-    
+
+		// New osrc to insert e_data_highlight
+    highlight_vote_osrc "widget/osrc"
+		{
+			autoquery=never;
+
+			c_who_key "widget/parameter" { type=string; }
+			p_partner_key "widget/parameter" { type=string; }
+			highlight_id "widget/parameter" { type=string; }
+			highlight_type "widget/parameter" { type=string; }
+			vote_strength "widget/parameter" { type=integer; }
+			collab_role "widget/parameter" { type=string; }
+
+			sql = "
+			INSERT INTO /apps/kardia/data/Kardia_DB/e_data_highlight/rows
+			SELECT
+				e_highlight_subject					= substitute('[:parameters:collab_role]:[:parameters:c_who_key]'),
+				e_highlight_object_type					= :parameters:highlight_type,
+				e_highlight_object_id					= :parameters:highlight_id,
+				p_partner_key							= :parameters:p_partner_key,
+				e_highlight_specificity					= 'item',
+				e_highlight_importance_level			= constrain(:parameters:vote_strength, 0, 4),
+				e_highlight_precedence					= 1.0,
+				s_date_created							= getdate(),
+				s_created_by							= :parameters:c_who_key,
+				s_date_modified							= getdate(),
+				s_modified_by							= :parameters:c_who_key
+			ON DUPLICATE :e_highlight_object_id 
+				UPDATE SET :e_highlight_importance_level = constrain(:e_highlight_importance_level + :parameters:vote_strength, 0, 4), :s_date_modified = getdate()
+			";
+		}
+
     profile_highlights_vbox "widget/vbox"
 	{
 	x=0; y=0;
@@ -64,6 +95,8 @@ profile_highlights "widget/component-decl"
 		refresh_on_partner_change "widget/connector" { source=partner_osrc; event=EndQuery; action=ChangeSource; Source=runclient("/apps/kardia/modules/crm/highlights.qy?partner_key=" + :partner_osrc:p_partner_key + "&my_fundlist=" + :collaborator_osrc:fundlist + "&my_role=" + isnull(:partner_osrc:collab_role,'None') + "&my_id=" + isnull(:collaborator_osrc:p_partner_key, '')); }
 
 		refresh_on_options_change "widget/connector" { source=iconbar; event=TypesChange; action=Refresh; }
+
+		refresh_on_vote "widget/connector" { source=highlight_vote_osrc; event=EndQuery; target=highlights_osrc; action=Refresh; }
 
 		highlights_table "widget/table"
 		    {
@@ -151,40 +184,68 @@ profile_highlights "widget/component-decl"
 				height=24; width=232;
 				justify=all;
 				spacing=10;
-
-				thumbs_label "widget/label" { y=6; width=156; text="Important to You?"; align=right; style=italic; font_size=11; }
+				
+				thumbs_label "widget/label" { y=6; width=156; value="Important to You?"; align=right; style=italic; font_size=11; }
 				thumbs_up "widget/imagebutton"
 				    {
 				    y=2; width=18; height=18;
 				    image="/apps/kardia/images/icons/openiconic-thumb-up.svg"; 
 
-				    on_up "widget/connector"
-					{
-					event=Click;
-					target=profile_highlights;
-					action=TuneHighlights;
-					direction=runclient("up");
-					origin=detail_thumbs_pane;
-					hname=runclient(:highlights_osrc:e_highlight_name);
-					htype=runclient(:highlights_osrc:e_highlight_type);
-					}
-				    }
+					// open tune highlights popup
+				    // on_up "widget/connector"
+					// {
+					// event=Click;
+					// target=profile_highlights;
+					// action=TuneHighlights;
+					// direction=runclient("up");
+					// origin=detail_thumbs_pane;
+					// hname=runclient(:highlights_osrc:e_highlight_name);
+					// htype=runclient(:highlights_osrc:e_highlight_type);
+					// }
+
+						on_up "widget/connector"
+						{
+							event=Click;
+							target=highlight_vote_osrc;
+							action=QueryParam;
+							p_partner_key=runclient(:partner_osrc:p_partner_key);
+							c_who_key=runclient(:collaborator_osrc:p_partner_key);
+							highlight_id=runclient(:highlights_osrc:name);
+							highlight_type=runclient(:highlights_osrc:e_highlight_type);
+							vote_strength=1;
+							collab_role=runclient(:partner_osrc:collab_role);
+						}
+				     }
 
 				thumbs_down "widget/imagebutton"
 				    {
 				    y=8; width=18; height=18;
 				    image="/apps/kardia/images/icons/openiconic-thumb-down.svg"; 
+					// open tune highlights popup
+				  	//   on_down "widget/connector"
+					// {
+					// event=Click;
+					// target=profile_highlights;
+					// action=TuneHighlights;
+					// direction=runclient("up");
+					// origin=detail_thumbs_pane;
+					// hname=runclient(:highlights_osrc:e_highlight_name);
+					// htype=runclient(:highlights_osrc:e_highlight_type);
+					// }
 
-				    on_down "widget/connector"
+					on_down "widget/connector"
 					{
-					event=Click;
-					target=profile_highlights;
-					action=TuneHighlights;
-					direction=runclient("up");
-					origin=detail_thumbs_pane;
-					hname=runclient(:highlights_osrc:e_highlight_name);
-					htype=runclient(:highlights_osrc:e_highlight_type);
+						event=Click;
+						target=highlight_vote_osrc;
+						action=QueryParam;
+						p_partner_key=runclient(:partner_osrc:p_partner_key);
+						c_who_key=runclient(:collaborator_osrc:p_partner_key);
+						highlight_id=runclient(:highlights_osrc:name);
+						highlight_type=runclient(:highlights_osrc:e_highlight_type);
+						vote_strength=-1;
+						collab_role=runclient(:partner_osrc:collab_role);
 					}
+
 				    }
 				}
 			    }
