@@ -11,7 +11,8 @@ last_bank_rec "system/query"
 	    COLLECTION acc_rec_pairs
 	SELECT
 	    :ba:a_account_code, 
-	    a_end_date = :br:a_end_date --isnull(:br:a_end_date, '---')
+	    a_end_date = :br:a_end_date, --isnull(:br:a_end_date, '---')
+	    :ba:a_is_customizable
 	FROM 
 	    /apps/kardia/data/Kardia_DB/a_bank_recon/rows br,
 	    IDENTITY /apps/kardia/data/Kardia_DB/a_bank_recon_accts/rows ba
@@ -25,7 +26,8 @@ last_bank_rec "system/query"
 	SELECT 
 	    :a_account_code, 
 	    a_end_date = isnull(dateformat(first(:a_end_date), 'dd MMM yyyy'), '---'),
-	    a_ledger_number = :parameters:cur_ledger
+	    a_ledger_number = :parameters:cur_ledger,
+	    :a_is_customizable
 	FROM
 	    COLLECTION acc_rec_pairs 
 	GROUP BY

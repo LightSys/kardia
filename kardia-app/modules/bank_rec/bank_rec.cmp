@@ -95,47 +95,114 @@ bank_rec "widget/component-decl"
 			height=300; width=200; x=0; y=0;
 			t_rec_date "widget/table-column" { title="End Date"; fieldname="a_display_end_date"; }
 			t_rec_diff "widget/table-column" { title="Difference"; fieldname="a_recon_diff"; align='right'; }
-
-			rec_list_detail "widget/table-row-detail"
+			// Confirm prompt for deletes
+			rec_list_prompt "widget/childwindow"
 			    {
-			    height = 30; 
-			    show_on_new=1;
-			    rec_list_pane "widget/pane"
-			 	{
-			 	x=10; y=5;
-			 	height = 20; width=160;
-			 	border_radius=5;
-			 	style=flat;
-			 	bgcolor="#f8f8f8";
-				// Confirm prompt for deletes contain the delete:
-				rec_list_prompt "widget/childwindow"
+			    x=0; y=0; height=200; width=400;
+			    style=dialog;
+			    modal=yes;
+			    toplevel=yes;
+			    visible=false;
+			    title="Confirm Delete";
+
+			    prompt_calc_osrc "widget/osrc"
+				{
+				calc_ledger "widget/parameter" { type=string; param_name=a_ledger_number; }
+				calc_account "widget/parameter" { type=string; param_name=a_account_code; }
+				calc_statement "widget/parameter" { type=string; param_name=a_statement_id; }
+
+				sql = "
+				    SELECT
+					cnt = 'Completing this action will unreconcile '+count(1)+' item(s)'
+				    FROM
+					/apps/kardia/data/Kardia_DB/a_bank_recon_item/rows
+				    WHERE 
+					:a_ledger_number = :parameters:a_ledger_number
+					AND :a_account_code = :parameters:a_account_code
+					AND :a_statement_id = :parameters:a_statement_id
+					AND :a_is_reconciled
+				    ;";
+				autoquery=never;
+				calc_link "widget/rule"
 				    {
-				    x=0; y=0; height=200; width=400;
-				    style=dialog;
-				    modal=yes;
-				    toplevel=yes;
-				    visible=false;
-				    title="Confirm Delete";
-
-				    prompt_calc_osrc "widget/osrc"
+				    ruletype=osrc_relationship;
+				    target=recon_osrc;
+				    autoquery=false;
+				    key_1=a_ledger_number;
+				    target_key_1=a_ledger_number;
+				    key_2=a_account_code;
+				    target_key_2=a_account_code;
+				    key_3=a_statement_id;
+				    target_key_3=a_statement_id;
+				    }	
+				calc_vbox "widget/vbox"
+				    {
+				    prompt_message "widget/label"
 					{
-					calc_ledger "widget/parameter" { type=string; param_name=a_ledger_number; }
-					calc_account "widget/parameter" { type=string; param_name=a_account_code; }
-					calc_statement "widget/parameter" { type=string; param_name=a_statement_id; }
+					height=20; width = 400;
+					align=center;
+					text='Delete this reconcilation?';
+					label_width=120;
+					}
+				    prompt_calc_form "widget/form"
+					{
+					f_unrec_cnt "widget/component"
+					    {
+					    path="/sys/cmp/smart_field.cmp";
+					    field = 'cnt';
+					    ctl_type=label; 
+					    text='';
+					    label_width=0;
+					    height = 20;
+					    }
+					}
+				    prompt_instructions "widget/label"
+					{
+					height=20; width = 400;
+					align=left;
+					text='To delete the reconcilation, please type "DELETE" in the box below:';
+					label_width=120;
+					}
+				    f_unrec_editbox "widget/component"
+					{
+					path="/sys/cmp/smart_field.cmp";
+					ctl_type=editbox; 
+					text='';
+					label_width=0;
+					height = 20;
+					}
+					
+				    f_unrec_buttons_hbox "widget/hbox"
+					{
+					f_unrec_cancel_btn "widget/textbutton"
+					    {
+					    x=0; y=0; width=60;
+					    text="Cancel";
+					    close_rec_prompt1 "widget/connector" { event=Click; target=rec_list_prompt; action=Close; }
+					    }
+					f_rec_confirm_btn "widget/textbutton"
+					    {
+					    x=0; y=0; width=60;
+					    text="Delete";
+					    enabled=runclient(:f_unrec_editbox:value = 'DELETE');
+					    close_rec_prompt2 "widget/connector" { event=Click; target=rec_list_prompt; action=Close; }
+					    refresh_rec "widget/connector" { event=Click; target=recon_osrc; action=QueryParam; event_delay=0.1; }
+					    clear_rec "widget/connector" { event=Click; target=prompt_clear_osrc; action=QueryParam; }
+					    }
+					}
+					
+					// privide functionality to clear and delete a reconciliation 
+				    prompt_clear_osrc "widget/osrc"
+					{
+					clear_ledger "widget/parameter" { type=string; param_name=a_ledger_number; }
+					clear_account "widget/parameter" { type=string; param_name=a_account_code; }
+					clear_statement "widget/parameter" { type=string; param_name=a_statement_id; }
 
-					sql = "
-					    SELECT
-						cnt = 'Completing this action will unreconcile '+count(1)+' item(s)'
-					    FROM
-						/apps/kardia/data/Kardia_DB/a_bank_recon_item/rows
-					    WHERE 
-						:a_ledger_number = :parameters:a_ledger_number
-						AND :a_account_code = :parameters:a_account_code
-						AND :a_statement_id = :parameters:a_statement_id
-						AND :a_is_reconciled
-					    ;";
+					sql = "EXEC /apps/kardia/modules/bank_rec/rec_clear.qy cur_ledger=:parameters:a_ledger_number, cur_account=:parameters:a_account_code, cur_recon=:parameters:a_statement_id";
+
+					baseobj = "/apps/kardia/data/Kardia_DB/a_bank_recon_item/rows";
 					autoquery=never;
-					calc_link "widget/rule"
+					clear_link "widget/rule"
 					    {
 					    ruletype=osrc_relationship;
 					    target=recon_osrc;
@@ -146,266 +213,276 @@ bank_rec "widget/component-decl"
 					    target_key_2=a_account_code;
 					    key_3=a_statement_id;
 					    target_key_3=a_statement_id;
-					    }	
-					calc_vbox "widget/vbox"
-					    {
-					    prompt_message "widget/label"
-						{
-						height=20; width = 400;
-						align=center;
-						text='Delete this reconcilation?';
-						label_width=120;
-						}
-					    prompt_calc_form "widget/form"
-						{
-						f_unrec_cnt "widget/component"
-						    {
-						    path="/sys/cmp/smart_field.cmp";
-						    field = 'cnt';
-						    ctl_type=label; 
-						    text='';
-						    label_width=0;
-						    height = 20;
-						    }
-						}
-					    prompt_instructions "widget/label"
-						{
-						height=20; width = 400;
-						align=left;
-						text='To delete the reconcilation, please type "DELETE" in the box below:';
-						label_width=120;
-						}
-					    f_unrec_editbox "widget/component"
-						{
-						path="/sys/cmp/smart_field.cmp";
-						ctl_type=editbox; 
-						text='';
-						label_width=0;
-						height = 20;
-						}
-						
-					    f_unrec_buttons_hbox "widget/hbox"
-						{
-						f_unrec_cancel_btn "widget/textbutton"
-						    {
-						    x=0; y=0; width=60;
-						    text="Cancel";
-						    close_rec_prompt1 "widget/connector" { event=Click; target=rec_list_prompt; action=Close; }
-						    }
-						f_rec_confirm_btn "widget/textbutton"
-						    {
-						    x=0; y=0; width=60;
-						    text="Delete";
-						    enabled=runclient(:f_unrec_editbox:value = 'DELETE');
-						    close_rec_prompt2 "widget/connector" { event=Click; target=rec_list_prompt; action=Close; }
-						    refresh_rec "widget/connector" { event=Click; target=recon_osrc; action=QueryParam; event_delay=0.1; }
-						    clear_rec "widget/connector" { event=Click; target=prompt_clear_osrc; action=QueryParam; }
-						    }
-						}
-						
-						// privide functionality to clear and delete a reconciliation 
-					    prompt_clear_osrc "widget/osrc"
-						{
-						clear_ledger "widget/parameter" { type=string; param_name=a_ledger_number; }
-						clear_account "widget/parameter" { type=string; param_name=a_account_code; }
-						clear_statement "widget/parameter" { type=string; param_name=a_statement_id; }
-
-						sql = "EXEC /apps/kardia/modules/bank_rec/rec_clear.qy cur_ledger=:parameters:a_ledger_number, cur_account=:parameters:a_account_code, cur_recon=:parameters:a_statement_id";
-
-						baseobj = "/apps/kardia/data/Kardia_DB/a_bank_recon_item/rows";
-						autoquery=never;
-						clear_link "widget/rule"
-						    {
-						    ruletype=osrc_relationship;
-						    target=recon_osrc;
-						    autoquery=false;
-						    key_1=a_ledger_number;
-						    target_key_1=a_ledger_number;
-						    key_2=a_account_code;
-						    target_key_2=a_account_code;
-						    key_3=a_statement_id;
-						    target_key_3=a_statement_id;
-						    }
-						}
 					    }
 					}
 				    }
-				f_rec_delete_btn "widget/textbutton"
-				    {
-				    x=0; y=0; width=60;
-				    text="Delete";
-				    enabled=runclient(NOT :rec_form:is_discardable);
-				    form=rec_form;
-				    delete_rec_prompt "widget/connector" { event=Click; target=rec_list_prompt; action=Open; event_delay=0.1; }
+				}
+			    }
+			}
+		    // menu across the bottom for the reconciliation table
+		    recon_menu "widget/pane"
+			{
+			x=0; y=0; height=20;
+			style="bordered";
+			bgcolor = "#9abcde"; 
+			border_color = "#FFFFFF";
+			border_radius=5;
+
+			recon_menu_box "widget/hbox"
+			    {
+			    align=right;
+
+			    // New recon button
+			    recon_menu_new "widget/imagebutton"
+				{
+				x=0;y=0;width=18;height=18;
+				image="/sys/images/ico25a.gif";
+				pointimage="/sys/images/ico25b.gif";
+				clickimage="/sys/images/ico25c.gif";
+				disabledimage="/sys/images/ico25d.gif";
+				tooltip = runserver("Create a new reconciliation");
+				enabled = runclient(:rec_form:is_newable);
+				recon_cnNew "widget/connector" { event="Click"; target=rec_form; action="New"; }
+				}
+			    //Delete recon button
+			    recon_menu_delete "widget/imagebutton"
+				{
+				x=0;y=0;width=18;height=18;
+				image="/sys/images/ico24a.gif";
+				pointimage="/sys/images/ico24b.gif";
+				clickimage="/sys/images/ico24c.gif";
+				disabledimage="/sys/images/ico24d.gif";
+				tooltip = runserver("Delete this reconciliation");
+				enabled = runclient(:rec_form:is_editable);
+				delete_rec_prompt "widget/connector" { event=Click; target=rec_list_prompt; action=Open; event_delay=0.1; }
 				    delete_rec_confirm_clear "widget/connector" { event=Click; target=f_unrec_editbox; action=SetValue; Value=runclient(""); }
 				    delete_rec_query "widget/connector" { event=Click; target=prompt_calc_osrc; action=QueryParam; }
-				    }
 				}
+			    recon_menu_spacer "widget/autolayoutspacer" { width=5; }
 			    }
 			}
 		    }
 		}
 	
+	    // main body of the app
 	    main_box "widget/vbox"
 		{
-		// Reconciliation Form
-		rec_pane "widget/pane"
+		// top menu
+		rec_menu_box "widget/hbox"
 		    {
-		    x=5; y=0; height=100;
-		    style="bordered";
-		    bgcolor = "#d0d0d0";
-		    border_color = "#abcdef";
-
-		    rec_form "widget/form"
+		    x=0; y=0; height=100;
+		    // Reconciliation Form
+		    rec_pane "widget/pane"
 			{
-			objectsource = recon_osrc;
-			rec_form_box "widget/vbox"
+			x=0; y=0; height=100; width = 850;
+			style="bordered";
+			bgcolor = "#d0d0d0";
+			border_color = "#abcdef";
+
+			rec_form "widget/form"
 			    {
-			    y=10;
-			    rec_top_row_box "widget/hbox" 
+			    objectsource = recon_osrc;
+			    rec_form_box "widget/vbox"
 				{
-				x=300; height=30;
-			// TODO: if no match prev, flag it
-				f_rec_start_bal "widget/component"
+				y=10;
+				rec_top_row_box "widget/hbox" 
 				    {
-				    height=20; width = 300;
-				    path="/sys/cmp/smart_field.cmp";
-				    field = 'a_bank_start_balance';
-				    ctl_type=editbox; 
-				    text='Start Balance:';
-				    label_width=120;
+				    x=50; height=30;
+				    f_rec_title "widget/label"
+					{
+					width=250;
+					text='Current Reconciliation';
+					style=bold;
+					font_size=14;
+					}
+			// TODO: if start does not match prev end, flag it
+				    f_rec_start_bal "widget/component"
+					{
+					height=20; width = 300;
+					path="/sys/cmp/smart_field.cmp";
+					field = 'a_bank_start_balance';
+					ctl_type=editbox; 
+					text='Start Balance:';
+					label_width=120;
+					}
+				    f_rec_amt "widget/component"
+					{
+					height=20; width = 300;
+					path="/sys/cmp/smart_field.cmp";
+					field = 'a_recon_amt';
+					ctl_type=label; 
+					text='Reconcile Amount:';
+					label_width=120;
+					}
 				    }
-				f_rec_amt "widget/component"
+				rec_mid_row_box "widget/hbox"
 				    {
-				    height=20; width = 300;
-				    path="/sys/cmp/smart_field.cmp";
-				    field = 'a_recon_amt';
-				    ctl_type=label; 
-				    text='Reconcile Amount:';
-				    label_width=120;
-				    }
-				}
-			    rec_mid_row_box "widget/hbox"
-				{
-				x=0; y=40; height=30; width=1000;
+				    x=0; y=40; height=30; width=1000;
 
-				f_rec_end_date "widget/component"
-				    {
-				    height = 20; width = 300;
-				    path="/sys/cmp/smart_field.cmp";
-				    field = 'a_end_date';
-				    ctl_type=datetime; 
-				    text='End Date:';
-				    label_width=120;
+				    f_rec_end_date "widget/component"
+					{
+					height = 20; width = 300;
+					path="/sys/cmp/smart_field.cmp";
+					field = 'a_end_date';
+					ctl_type=datetime;
+					text='End Date:';
+					label_width=120;
+					}
+				    f_rec_end_bal "widget/component"
+					{
+					height = 20; width = 300;
+					path="/sys/cmp/smart_field.cmp";
+					field = 'a_bank_end_balance';
+					ctl_type=editbox; 
+					text='End Balance:';
+					label_width=120;
+					}
+				    f_rec_diff "widget/component"
+					{
+					height = 20; width = 300;
+					path="/sys/cmp/smart_field.cmp";
+					field = 'a_recon_diff';
+					ctl_type=label; 
+					text='Difference:';
+					label_width=120;
+					}
 				    }
-				f_rec_end_bal "widget/component"
+				rec_bot_row_box "widget/hbox" 
 				    {
-				    height = 20; width = 300;
-				    path="/sys/cmp/smart_field.cmp";
-				    field = 'a_bank_end_balance';
-				    ctl_type=editbox; 
-				    text='End Balance:';
-				    label_width=120;
-				    }
-				f_rec_diff "widget/component"
-				    {
-				    height = 20; width = 300;
-				    path="/sys/cmp/smart_field.cmp";
-				    field = 'a_recon_diff';
-				    ctl_type=label; 
-				    text='Difference:';
-				    label_width=120;
-				    }
-				}
-			    rec_bot_row_box "widget/hbox" 
-				{
-				height=30;
-				width=1000;
-				f_rec_comment "widget/component"
-				    {
-				    height = 20; width = 600;
-				    path="/sys/cmp/smart_field.cmp";
-				    field = 'a_comment';
-				    ctl_type=editbox; 
-				    text='Comment:';
-				    label_width=120;
-				    }
-				f_rec_new_btn "widget/textbutton"
-				    {
-				    width=80;
-				    text = "New";
-				    enabled=runclient(:rec_form:is_newable);
-				    new_rec "widget/connector" { event=Click; target=rec_form; action=New; }
-				    }
-			
-			// TODO: new items need to be able to handle ledger, account, statement, and period 
-				f_rec_save_btn "widget/textbutton"
-				    {
-				    width=80;
-				    text = "Save";
-				    enabled = runclient(:rec_form:is_savable);
+				    height=30;
+				    width=1000;
+				    f_rec_comment "widget/component"
+					{
+					height = 20; width = 600;
+					path="/sys/cmp/smart_field.cmp";
+					field = 'a_comment';
+					ctl_type=editbox; 
+					text='Comment:';
+					label_width=120;
+					}
+				    f_rec_spacer_1 "widget/autolayoutspacer" { width=20; }
+				    f_rec_save_btn "widget/textbutton"
+					{
+					width=80;
+					text = "Save";
+					enabled = runclient(:rec_form:is_savable);
 
-				    f_rec_save "widget/connector" { event=Click; target=rec_form; action=Save; }
-				    }
+					f_rec_save "widget/connector" { event=Click; target=rec_form; action=Save; }
+					}
+				    f_rec_spacer_2 "widget/autolayoutspacer" { width=10; }
 			// TODO: warn if the coresponding period does not exist 
-				f_rec_cancel_btn "widget/textbutton"
-				    {
-				    width=80;
-				    text = "Cancel";
-				    enabled = runclient(:rec_form:is_discardable);
+				    f_rec_cancel_btn "widget/textbutton"
+					{
+					width=80;
+					text = "Cancel";
+					enabled = runclient(:rec_form:is_discardable);
 
-				    f_rec_cancel "widget/connector" { event=Click; target=rec_form; action=Discard; }
+					f_rec_cancel "widget/connector" { event=Click; target=rec_form; action=Discard; }
+					}
+				    }
+				// fields abstracted from the user
+				f_rec_meta_period "widget/variable" { fieldname="a_period"; meta_period_hints "widget/hints" { default=NULL; } }
+				f_rec_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
+				
+				period_update_osrc "widget/osrc"
+				    {
+				    period_date "widget/parameter" { type=datetime; }
+				    sql="
+					SELECT
+					    a_period = first(:a_period) 
+					FROM 
+					    /apps/kardia/data/Kardia_DB/a_period/rows 
+					WHERE 
+					    :parameters:period_date <= :a_end_date
+					    AND :parameters:period_date >= :a_start_date
+					    AND :a_parent_period IS NOT NULL
+					;";
+				    autoquery=never;
+				    }
+				// keep the period field up to date by runing query on change and setting value after
+				f_rec_find_period "widget/connector" 
+				    {
+				    source=f_rec_end_date;
+				    target=period_update_osrc;
+				    event=DataChange;
+				    action=QueryParam;
+				    period_date=runclient(:f_rec_end_date:value);
+				    }
+				f_rec_set_period "widget/connector" 
+				    {
+				    source=period_update_osrc;
+				    target=f_rec_meta_period;
+				    event=EndQuery;
+				    action=SetValue;
+				    Value=runclient(:period_update_osrc:a_period);
 				    }
 				}
-			    // fields abstracted from the user
-			    f_rec_meta_period "widget/variable" { fieldname="a_period"; meta_period_hints "widget/hints" { default=runclient('oooof'); } }
-			    f_rec_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
-			    
-			    period_update_osrc "widget/osrc"
-			    	{
-				period_date "widget/parameter" { type=datetime; }
-				sql="
-				    SELECT
-					a_period = first(:a_period) 
-				    FROM 
-					/apps/kardia/data/Kardia_DB/a_period/rows 
-				    WHERE 
-					:parameters:period_date <= :a_end_date
-					AND :parameters:period_date >= :a_start_date
-					AND :a_parent_period IS NOT NULL
-				    ;";
-				autoquery=never;
-				}
-			    // keep the period field up to date by runing query on change and setting value after
-			    f_rec_find_period "widget/connector" 
+			    }
+			}
+		    // options for the bank reconciliation table
+		    options_pane "widget/pane"
+			{
+			x=0; y=0; width = 330;
+			style="bordered";
+			bgcolor = "#d0d0d0";
+			border_color = "#abcdef";
+			opt_top_row_box "widget/hbox" 
+			    {
+			    x=10; y=10; height=30;
+			    option_title "widget/label"
 				{
-				source=f_rec_end_date;
-				target=period_update_osrc;
-				event=DataChange;
-				action=QueryParam;
-				period_date=runclient(:f_rec_end_date:value);
+				width=75;
+				text='Options';
+				style=bold;
+				font_size=14;
 				}
-			    f_rec_set_period "widget/connector" 
+			    // control whether all reconciled items are shown or just the recent ones
+			    opt_hide_reconciled_label "widget/label"
 				{
-				source=period_update_osrc;
-				target=f_rec_meta_period;
-				event=EndQuery;
-				action=SetValue;
-				Value=runclient(:period_update_osrc:a_period);
+				width=150;
+				text='Limit Rec Items to recent: ';
 				}
-
+			    opt_hide_reconciled_check "widget/checkbox"
+				{
+				width=100;
+				checked = yes;
+				height = 18;
+				hide_reconciled_check_hints "widget/hints" { style=notnull; }
+				opt_hide_reconciled_refresh "widget/connector" { event=DataChange; action=QueryParam; target=item_osrc; }
+				}
+			    }
+			opt_mid_row_box "widget/hbox" 
+			    {
+			    height=30; x=70; y=40;
+			    opt_hide_cutoff_label "widget/label"
+				{
+				width=80;
+				text='Recent cut off: ';
+				}
+			    // need a form to make the datetime widget be able to trigger DataChange event
+			    opt_hide_placeholder_form "widget/form" {}
+			    opt_hide_cutoff_datetime "widget/datetime"
+				{
+				width=125;
+				height=18;
+				default_time="00:00:00";
+				initialdate=runserver(convert('string',getdate()));
+				form=opt_hide_placeholder_form;
+				opt_hide_cutoff_refresh "widget/connector" { source=opt_hide_cutoff_datetime; event=DataChange; action=QueryParam; target=item_osrc; }
+				}
 			    }
 			}
 		    }
-		
 		// Line Item Table
 		item_osrc "widget/osrc" 
 		    {
 		    item_ledger "widget/parameter" { type=string; param_name=a_ledger_number; }
 		    item_account "widget/parameter" { type=string; param_name=a_account_code; }
 		    item_statement "widget/parameter" { type=string; param_name=a_statement_id; }
+		    item_hide_cutoff "widget/parameter" { type=datetime; default=runclient(:opt_hide_cutoff_datetime:value); param_name=hide_cutoff; }
+		    item_hide_reconciled "widget/parameter" { type=integer; default=runclient(:opt_hide_reconciled_check:value); param_name=hide_reconciled; }
 
-		    sql = "EXEC /apps/kardia/modules/bank_rec/rec_items.qy cur_ledger=:parameters:a_ledger_number, cur_account=:parameters:a_account_code, cur_recon=:parameters:a_statement_id";
+		    sql = "SELECT * FROM expression('/apps/kardia/modules/bank_rec/rec_items.qy?cur_ledger='+:parameters:a_ledger_number+'&cur_account='+:parameters:a_account_code+'&cur_recon='+:parameters:a_statement_id+'&hide_cutoff='+:parameters:hide_cutoff+'&hide_reconciled='+:parameters:hide_reconciled)";
 
 		    baseobj = "/apps/kardia/data/Kardia_DB/a_bank_recon_item/rows";
 		    replicasize=50; 
@@ -425,7 +502,7 @@ bank_rec "widget/component-decl"
 
 		    rec_item_table "widget/table"
 			{
-			height=450;  x=0; y=0;
+			height=440;  x=0; y=0;
 			t_rec_src_key "widget/table-column" { title="Source Key"; fieldname="a_display_key"; width=10; }
 			t_rec_posted "widget/table-column" { title="Date Posted"; fieldname="a_date_posted"; width=10; }
 			t_rec_gl_comment "widget/table-column" { title="Source Comment"; fieldname="a_src_comment"; width=30; }
@@ -452,6 +529,8 @@ bank_rec "widget/component-decl"
 			    event=Click; target=item_osrc; action=Modify;
 			    a_is_reconciled=runclient(condition(:item_osrc:a_is_reconciled = 1, 0, 1));
 			    a_statement_id=runclient(:item_osrc:a_statement_id); // gets overwritten by the rule, but set it correctly anyway 
+			    s_date_modified=runclient(getdate());
+			    s_modified_by=runclient(user_name());
 			    event_condition=runclient(:Column == 'a_is_reconciled' AND has_endorsement('kardia:recon_perform', 'kardia:ledger:' + :ledger:value + ":")); 
 			    }
 			short_update_acc "widget/connector" 
@@ -459,20 +538,156 @@ bank_rec "widget/component-decl"
 			    event=Click; target=recon_osrc; action=Refresh; event_delay=runclient(0.1);
 			    event_condition=runclient(:Column == 'a_is_reconciled' AND has_endorsement('kardia:recon_perform', 'kardia:ledger:' + :ledger:value + ":"));
 			    }
+
+			// Limited form for normal items
+			rec_item_limited_detail "widget/table-row-detail"
+			    {
+			    height = 0;
+			    show_on_new=0;
+			    display_for=runclient(:item_osrc:a_origin IS NOT NULL);
+			    // TODO: add check for endorsement 
+			    // TODO: consider adding in pane, and hiding all of the normal info so can just display?
+			    rec_item_limited_form "widget/form"
+				{
+				objectsource=item_osrc;
+				item_limited_form_box "widget/hbox" 
+				    {
+				    y = -15;
+				    spacing = 5;
+				    // only include the feilds that make sense to set/edit
+				    f_lim_spacer_1 "widget/autolayoutspacer" { width=475; }
+	
+				    f_lim_a_comment "widget/component"
+					{
+					path="/sys/cmp/smart_field.cmp";
+					width=400;
+					field = 'a_comment';
+					ctl_type=editbox; 
+					label_width=75;
+					text="";
+					height = 18;
+					}
+				    // fields abstracted from the user
+				    f_lim_rec_item_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
+				    }
+				}
+			    }
+		
+			// form to show when working with custom items
 			rec_item_detail "widget/table-row-detail"
 			    {
-			    height = 30; 
-			    show_on_new=0;
-			    display_for=runclient(:item_osrc:a_origin is null);
-
-			    rec_item_pane "widget/pane"
-			 	{
-			 	x=10; y=5;
-			 	height = 20; width=1000;
-			 	border_radius=5;
-			 	style=flat;
-			 	bgcolor="#f8f8f8";
+			    height = 0;
+			    show_on_new=1;
+			    display_for=runclient(:item_osrc:a_origin IS NULL);
+			    rec_item_form "widget/form"
+				{
+				objectsource=item_osrc;
+				item_form_box "widget/hbox" 
+				    {
+				    y = -15;
+				    spacing = 5;
+				    // only include the feilds that make sense to set/edit
+				    f_spacer_1 "widget/autolayoutspacer" { width=100; }
+				    f_a_date_posted "widget/component"
+					{
+					path="/sys/cmp/smart_field.cmp";
+					width=115;
+					field='a_item_date';
+					ctl_type='datetime'; 
+					label_width=1;
+					text="";
+					height = 18;
+					}
+				    f_spacer_2 "widget/autolayoutspacer" { width=325; }
+				    f_a_comment "widget/component"
+					{
+					path="/sys/cmp/smart_field.cmp";
+					width=325;
+					field = 'a_comment';
+					ctl_type=editbox; 
+					label_width=1;
+					text="";
+					height = 18;
+					}
+				    f_a_amount "widget/component"
+					{
+					path="/sys/cmp/smart_field.cmp";
+					width=225; height = 18;
+					ctl_type=editbox; 
+					align=right;
+					label_width=1;
+					text="Amount:";
+					field = 'a_amount';
+					}
+				    // fields abstracted from the user
+				    f_rec_item_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
+				    }
 				}
+			    }
+			}
+		    // Controls for the recon items table along the bottom of the table
+		    rec_item_menu "widget/pane"
+			{
+			x=0; y=0; height=20;
+			style="bordered";
+			bgcolor = "#9abcde"; //"/apps/kardia/images/bg/light_bgnd2.jpg"; //"#abcdef";
+			border_color = "#FFFFFF";
+			border_radius=5;
+
+			rec_item_menu_box "widget/hbox"
+			    {
+			    align=right;
+			    // save line item
+			    rec_item_save "widget/imagebutton"
+				{
+				x=0;y=0;width=18;height=18;
+				image="/sys/images/ico20a.gif";
+				pointimage="/sys/images/ico20b.gif";
+				clickimage="/sys/images/ico20c.gif";
+				disabledimage="/sys/images/ico20d.gif";
+				tooltip = runserver("Save changes to line item");
+				enabled = runclient(:rec_item_form:is_savable OR :rec_item_limited_form:is_savable);
+				item_save "widget/connector" { event="Click"; event_condition=runclient(:rec_item_form:is_savable); target=rec_item_form; action="Save"; }
+				item_limit_save "widget/connector" { event="Click"; event_condition=runclient(:rec_item_limited_form:is_savable); target=rec_item_limited_form; action="Save"; }
+				}
+			    // cancel line item changes
+			    rec_item_cancel "widget/imagebutton"
+				{
+				x=0;y=0;width=18;height=18;
+				image="/sys/images/ico22a.gif";
+				pointimage="/sys/images/ico22b.gif";
+				clickimage="/sys/images/ico22c.gif";
+				disabledimage="/sys/images/ico22d.gif";
+				tooltip = runserver("Cancel changes to line item");
+				enabled = runclient(:rec_item_form:is_discardable OR :rec_item_limited_form:is_discardable);
+				item_cancel "widget/connector" { event="Click"; event_condition=runclient(:rec_item_form:is_discardable); target=rec_item_form; action="Discard"; }
+				item_limit_cancel "widget/connector" { event="Click"; event_condition=runclient(:rec_item_limited_form:is_discardable); target=rec_item_limited_form; action="Discard"; }
+				}
+			    // create new line item
+			    rec_item_new "widget/imagebutton"
+				{
+				x=0;y=0;width=18;height=18;
+				image="/sys/images/ico25a.gif";
+				pointimage="/sys/images/ico25b.gif";
+				clickimage="/sys/images/ico25c.gif";
+				disabledimage="/sys/images/ico25d.gif";
+				tooltip = runserver("Create a new line item");
+				enabled = runclient(:rec_item_form:is_newable AND :account_osrc:a_is_customizable AND :recon_osrc:a_statement_id IS NOT NULL);
+				cnNew "widget/connector" { event="Click"; target=rec_item_form; action="New"; }
+				}
+			    // delete line item 
+			    rec_item_delete "widget/imagebutton"
+				{
+				x=0;y=0;width=18;height=18;
+				image="/sys/images/ico24a.gif";
+				pointimage="/sys/images/ico24b.gif";
+				clickimage="/sys/images/ico24c.gif";
+				disabledimage="/sys/images/ico24d.gif";
+				tooltip = runserver("Delete this line item");
+				enabled = runclient(:rec_item_form:is_editable AND :account_osrc:a_is_customizable);
+				cnDelete "widget/connector" { event="Click"; target=rec_item_form; action="Delete"; }
+				}
+				rec_item_menu_spacer "widget/autolayoutspacer" { width=5; }
 			    }
 			}
 		    }
