@@ -4,6 +4,8 @@ last_bank_rec "system/query"
     cur_ledger "query/parameter" { type=string; }
     cur_account "query/parameter" { type=string; }
     cur_recon "query/parameter" { type=string; }
+    hide_cutoff "query/parameter" { type=datetime; }
+    hide_reconciled "query/parameter" { type=integer; }
 
     sql = "
 
@@ -35,6 +37,8 @@ last_bank_rec "system/query"
 	    a_credit = condition(:gl:a_amount < 0, :gl:a_amount, NULL), 
 	    a_debit = condition(:gl:a_amount >= 0, :gl:a_amount, NULL),
 	    :br:a_amount,
+	    :br:s_date_modified,
+	    :br:s_modified_by,
 	    :br:a_is_reconciled
 	FROM 
 	    IDENTITY /apps/kardia/data/Kardia_DB/a_transaction/rows gl,
@@ -53,6 +57,7 @@ last_bank_rec "system/query"
 	    AND :br:a_batch_key = :gl:a_batch_number 
 	    AND :br:a_group_key = :gl:a_journal_number 
 	    AND :br:a_item_key = :gl:a_transaction_number
+	    AND (:parameters:hide_cutoff < :br:s_date_modified OR :br:a_is_reconciled = 0 OR :parameters:hide_reconciled = 0)
 	;
 
 --	-- Select from CR
