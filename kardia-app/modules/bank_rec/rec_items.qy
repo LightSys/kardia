@@ -80,6 +80,8 @@ last_bank_rec "system/query"
 	    a_credit = condition(:br:a_amount < 0, :br:a_amount, NULL), 
 	    a_debit = condition(:br:a_amount >= 0, :br:a_amount, NULL),
 	    :br:a_amount,
+	    :br:s_date_modified,
+	    :br:s_modified_by,
 	    :br:a_is_reconciled
 	FROM 
 	    IDENTITY /apps/kardia/data/Kardia_DB/a_bank_recon_item/rows br
