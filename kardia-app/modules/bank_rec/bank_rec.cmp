@@ -419,56 +419,89 @@ bank_rec "widget/component-decl"
 				}
 			    }
 			}
-		    // options for the bank reconciliation table
-		    options_pane "widget/pane"
+		    // sidebar next to the main reconcilation form 
+		    sidebar_box "widget/vbox" 
 			{
-			x=0; y=0; width = 330;
-			style="bordered";
-			bgcolor = "#d0d0d0";
-			border_color = "#abcdef";
-			opt_top_row_box "widget/hbox" 
+			y=0;x=0;width=500;height=100;
+			// options for the bank reconciliation table
+			options_pane "widget/pane"
 			    {
-			    x=10; y=10; height=30;
-			    option_title "widget/label"
+			    x=0; y=0; height=65; width = 330;
+			    style="bordered";
+			    bgcolor = "#d0d0d0";
+			    border_color = "#abcdef";
+			    opt_top_row_box "widget/hbox" 
 				{
-				width=75;
-				text='Options';
-				style=bold;
-				font_size=14;
+				x=10; y=10; height=30;
+				option_title "widget/label"
+				    {
+				    width=75;
+				    text='Options';
+				    style=bold;
+				    font_size=14;
+				    }
+				// control whether all reconciled items are shown or just the recent ones
+				opt_hide_reconciled_label "widget/label"
+				    {
+				    width=150;
+				    text='Limit Rec Items to recent: ';
+				    }
+				opt_hide_reconciled_check "widget/checkbox"
+				    {
+				    width=100;
+				    checked = yes;
+				    height = 18;
+				    hide_reconciled_check_hints "widget/hints" { style=notnull; }
+				    opt_hide_reconciled_refresh "widget/connector" { event=DataChange; action=QueryParam; target=item_osrc; }
+				    }
 				}
-			    // control whether all reconciled items are shown or just the recent ones
-			    opt_hide_reconciled_label "widget/label"
+			    opt_mid_row_box "widget/hbox" 
 				{
-				width=150;
-				text='Limit Rec Items to recent: ';
-				}
-			    opt_hide_reconciled_check "widget/checkbox"
-				{
-				width=100;
-				checked = yes;
-				height = 18;
-				hide_reconciled_check_hints "widget/hints" { style=notnull; }
-				opt_hide_reconciled_refresh "widget/connector" { event=DataChange; action=QueryParam; target=item_osrc; }
+				height=30; x=85; y=40;
+				opt_hide_cutoff_label "widget/label"
+				    {
+				    width=80;
+				    text='Recent cut off: ';
+				    }
+				// need a form to make the datetime widget be able to trigger DataChange event
+				opt_hide_placeholder_form "widget/form" {}
+				opt_hide_cutoff_datetime "widget/datetime"
+				    {
+				    width=125;
+				    height=18;
+				    default_time="00:00:00";
+				    initialdate=runserver(convert('string',getdate()));
+				    form=opt_hide_placeholder_form;
+				    opt_hide_cutoff_refresh "widget/connector" { source=opt_hide_cutoff_datetime; event=DataChange; action=QueryParam; target=item_osrc; }
+				    }
 				}
 			    }
-			opt_mid_row_box "widget/hbox" 
+			info_pane "widget/pane"
 			    {
-			    height=30; x=70; y=40;
-			    opt_hide_cutoff_label "widget/label"
+			    x=0; y=0; width = 330; height=35;
+			    style="bordered";
+			    bgcolor = "#d0d0d0";
+			    border_color = "#abcdef";
+			    inf_top_row_box "widget/hbox"
 				{
-				width=80;
-				text='Recent cut off: ';
-				}
-			    // need a form to make the datetime widget be able to trigger DataChange event
-			    opt_hide_placeholder_form "widget/form" {}
-			    opt_hide_cutoff_datetime "widget/datetime"
-				{
-				width=125;
-				height=18;
-				default_time="00:00:00";
-				initialdate=runserver(convert('string',getdate()));
-				form=opt_hide_placeholder_form;
-				opt_hide_cutoff_refresh "widget/connector" { source=opt_hide_cutoff_datetime; event=DataChange; action=QueryParam; target=item_osrc; }
+				x=10; y=10; height=30;
+				info_title "widget/label"
+				    {
+				    width=60;
+				    text='Info';
+				    style=bold;
+				    font_size=14;
+				    }
+				inf_recon_progress "widget/component"
+				    {
+				    path="/sys/cmp/smart_field.cmp";
+				    field = 'recon_progress';
+				    form=rec_form;
+				    ctl_type=label; 
+				    text='Reconciliation Progress: ';
+				    label_width=150;
+				    height = 20;
+				    }
 				}
 			    }
 			}
@@ -503,12 +536,15 @@ bank_rec "widget/component-decl"
 		    rec_item_table "widget/table"
 			{
 			height=440;  x=0; y=0;
-			t_rec_src_key "widget/table-column" { title="Source Key"; fieldname="a_display_key"; width=10; }
+			t_rec_src_key "widget/table-column" { title="Source Key"; fieldname="a_display_key"; width=10; 
+			    textcolor=runclient(condition(:item_osrc:a_origin == 'GL', '#5499ddff', 'black')); 
+			    style=runclient(condition(:item_osrc:a_origin == 'GL', underline, NULL));
+			    }
 			t_rec_posted "widget/table-column" { title="Date Posted"; fieldname="a_date_posted"; width=10; }
 			t_rec_gl_comment "widget/table-column" { title="Source Comment"; fieldname="a_src_comment"; width=30; }
 			t_rec_rec_comment "widget/table-column" { title="Reconciliation Comment"; fieldname="a_comment"; width=30; }
 			t_rec_debit "widget/table-column" { title="Debit (+)"; fieldname="a_debit"; align='right'; width=10; }
-			t_rec_credit "widget/table-column" { title="Credit (-)"; fieldname="a_credit"; align='right'; textcolor=runclient('#ff0000'); width=10; }
+			t_rec_credit "widget/table-column" { title="Credit (-)"; fieldname="a_credit"; align='right'; textcolor='#ff0000'; width=10; }
 			t_rec_isrec "widget/table-column" { type="image"; title="rec?"; fieldname="a_is_reconciled"; width=5; 
 			    // select the proper image depending on value and if is clickable
 			    value=runclient(
@@ -537,6 +573,20 @@ bank_rec "widget/component-decl"
 			    {
 			    event=Click; target=recon_osrc; action=Refresh; event_delay=runclient(0.1);
 			    event_condition=runclient(:Column == 'a_is_reconciled' AND has_endorsement('kardia:recon_perform', 'kardia:ledger:' + :ledger:value + ":"));
+			    }
+			lookup_shortcut "widget/connector"
+			    {
+			    event=Click;
+			    action=Launch;
+			    target=bank_rec;
+			    Multi = 1;
+			    Width=800;
+			    Height=600;
+			    Source = runclient("/apps/kardia/modules/gl/journal_entry.app");
+			    ledger=runclient(:item_osrc:a_ledger_number);
+			    batch=runclient(:item_osrc:a_batch_key);
+			    send_refresh=bank_rec;
+			    event_condition=runclient(:Column == 'a_display_key' AND :item_osrc:a_origin == 'GL'); 
 			    }
 
 			// Limited form for normal items
