@@ -128,6 +128,8 @@ plugin_base_config_rec "widget/component-decl"
 		    }
 
 		// need to perform an upsert before refresh runs.
+		//FIXME: just have it pull everything in once and then display the results; shouldn't be enough accounts to matter
+		//FIXME: make this part of the normal form using the repeat widget
 		upsert_osrc "widget/osrc"
 		    {
 		    upsert_ledger "widget/parameter" { type=string; }
