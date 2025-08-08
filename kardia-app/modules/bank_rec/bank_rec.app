@@ -3,7 +3,7 @@ runpayroll "widget/page"
     {
     title = "Bank Reconciliation - Kardia";
     width=1400;
-    height=600;
+    height=650;
     widget_template = "/apps/kardia/tpl/kardia-system.tpl", runserver("/apps/kardia/tpl/" + user_name() + ".tpl");
     background="/apps/kardia/images/bg/light_bgnd.jpg";
     require_endorsements="kardia:recon";

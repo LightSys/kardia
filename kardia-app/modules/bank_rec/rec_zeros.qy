@@ -52,9 +52,20 @@ last_bank_rec "system/query"
 	    a_recon_diff = :r1:a_bank_end_balance 
 		- isnull(:r1:a_bank_start_balance, isnull(:r2:a_bank_end_balance, 0)) 
 		- (isnull(sum(:ri:a_amount), 0)),
-	    recon_progress = convert('string',count(:ri:a_amount))+'/'+(select count(1) from /apps/kardia/data/Kardia_DB/a_bank_recon_item/rows ri2 where :ri2:a_ledger_number =* :r1:a_ledger_number AND :ri2:a_account_code =* :r1:a_account_code AND (:ri2:a_statement_id =* :r1:a_statement_id OR :ri2:a_is_reconciled = 0)),
+	    recon_progress = convert('string',count(:ri:a_amount))+'/'+(
+		select count(1) 
+		from /apps/kardia/data/Kardia_DB/a_bank_recon_item/rows ri2 
+		where :ri2:a_ledger_number =* :r1:a_ledger_number 
+		    AND :ri2:a_account_code =* :r1:a_account_code 
+		    AND (:ri2:a_statement_id =* :r1:a_statement_id OR :ri2:a_is_reconciled = 0)),
+	    error_message = condition((:r1:a_bank_start_balance IS NOT NULL 
+		AND :r2:a_bank_end_balance IS NOT NULL 
+		AND :r1:a_bank_start_balance != :r2:a_bank_end_balance),
+		'WARNING: The indicated Start Balance does not line up with the previous End Balance',
+		''),
+	    :r1:a_period,
 	    :r1:a_comment
-	    -- TODO: Flag when a GL and another boatch total doesn't match (preferably some kind if error line and a source )
+	    -- TODO: Flag when a GL and another batch total doesn't match (preferably some kind of error line and a source )
 	    -- TODO: Flag and block any rows that are from unposted batches 
 	FROM
 	    IDENTITY /apps/kardia/data/Kardia_DB/a_bank_recon/rows r1,

@@ -27,6 +27,15 @@ bank_rec "widget/component-decl"
 		align=left;
 		style=bold;
 		}
+	    header_spacer "widget/autolayoutspacer" { width=960; }
+	    refresh_all_button "widget/textbutton" 
+		{
+		    x=0; y=0; width=60;
+		    text="Refresh";
+		    refresh_acct "widget/connector" { event=Click; target=account_osrc; action=Refresh; }
+		    refresh_recon "widget/connector" { event=Click; target=recon_osrc; action=Refresh; }
+		    refresh_item "widget/connector" { event=Click; target=item_osrc; action=Refresh; }
+		}
 	    }
 	body_split "widget/hbox"
 	    {
@@ -54,7 +63,7 @@ bank_rec "widget/component-decl"
 			}
 		    acc_list_table "widget/table"
 			{
-			height=200; width = 200; x=0; y=0;
+			height=225; width = 200; x=0; y=0;
 			t_acc_code "widget/table-column" { title="Acct."; fieldname="a_account_code"; width=15; }
 			t_acc_date "widget/table-column" { title="Last Reconciliation"; fieldname="a_end_date"; width=50; }
 			}
@@ -92,7 +101,7 @@ bank_rec "widget/component-decl"
 			}
 		    rec_list_table "widget/table"
 			{
-			height=300; width=200; x=0; y=0;
+			height=325; width=200; x=0; y=0;
 			t_rec_date "widget/table-column" { title="End Date"; fieldname="a_display_end_date"; }
 			t_rec_diff "widget/table-column" { title="Difference"; fieldname="a_recon_diff"; align='right'; }
 			// Confirm prompt for deletes
@@ -270,11 +279,11 @@ bank_rec "widget/component-decl"
 		// top menu
 		rec_menu_box "widget/hbox"
 		    {
-		    x=0; y=0; height=100;
+		    x=0; y=0; height=125;
 		    // Reconciliation Form
 		    rec_pane "widget/pane"
 			{
-			x=0; y=0; height=100; width = 850;
+			x=0; y=0; height=125; width = 850;
 			style="bordered";
 			bgcolor = "#d0d0d0";
 			border_color = "#abcdef";
@@ -285,7 +294,8 @@ bank_rec "widget/component-decl"
 			    rec_form_box "widget/vbox"
 				{
 				y=10;
-				rec_top_row_box "widget/hbox" 
+				// first row with title, start, and recon amount
+				rec_row_1_box "widget/hbox" 
 				    {
 				    x=50; height=30;
 				    f_rec_title "widget/label"
@@ -295,7 +305,6 @@ bank_rec "widget/component-decl"
 					style=bold;
 					font_size=14;
 					}
-			// TODO: if start does not match prev end, flag it
 				    f_rec_start_bal "widget/component"
 					{
 					height=20; width = 300;
@@ -315,7 +324,8 @@ bank_rec "widget/component-decl"
 					label_width=120;
 					}
 				    }
-				rec_mid_row_box "widget/hbox"
+				// second row with date, balence, and difference
+				rec_row_2_box "widget/hbox"
 				    {
 				    x=0; y=40; height=30; width=1000;
 
@@ -347,7 +357,8 @@ bank_rec "widget/component-decl"
 					label_width=120;
 					}
 				    }
-				rec_bot_row_box "widget/hbox" 
+				// third row with comment and save/cancel options
+				rec_row_3_box "widget/hbox" 
 				    {
 				    height=30;
 				    width=1000;
@@ -380,6 +391,20 @@ bank_rec "widget/component-decl"
 					f_rec_cancel "widget/connector" { event=Click; target=rec_form; action=Discard; }
 					}
 				    }
+				// 4th row with warning about start balance not matching previous end balance
+				rec_row_4_box "widget/hbox"
+				    {
+				    x=60; y=0; height=30; width=1000;
+				    warning_label "widget/label" 
+					{
+					width=900;
+					form=rec_form;
+					fieldname=error_message;
+					style=bold;
+					textcolor=red;
+					}
+				    }
+
 				// fields abstracted from the user
 				f_rec_meta_period "widget/variable" { fieldname="a_period"; meta_period_hints "widget/hints" { default=NULL; } }
 				f_rec_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
@@ -415,6 +440,14 @@ bank_rec "widget/component-decl"
 				    event=EndQuery;
 				    action=SetValue;
 				    Value=runclient(:period_update_osrc:a_period);
+				    }
+				f_rec_period_failed "widget/connector" 
+				    {
+				    source=period_update_osrc;
+				    target=warning_label;
+				    event=EndQuery;
+				    action=SetValue;
+				    Value=runclient(condition(:period_update_osrc:a_period IS NULL, "ERROR: End Date lies outside of a valid peroid", :recon_osrc:error_message));
 				    }
 				}
 			    }
@@ -478,13 +511,13 @@ bank_rec "widget/component-decl"
 			    }
 			info_pane "widget/pane"
 			    {
-			    x=0; y=0; width = 330; height=35;
+			    x=0; y=0; width = 330; height=60;
 			    style="bordered";
 			    bgcolor = "#d0d0d0";
 			    border_color = "#abcdef";
 			    inf_top_row_box "widget/hbox"
 				{
-				x=10; y=10; height=30;
+				x=10; y=10; height=55;
 				info_title "widget/label"
 				    {
 				    width=60;
@@ -535,7 +568,7 @@ bank_rec "widget/component-decl"
 
 		    rec_item_table "widget/table"
 			{
-			height=440;  x=0; y=0;
+			height=465;  x=0; y=0;
 			t_rec_src_key "widget/table-column" { title="Source Key"; fieldname="a_display_key"; width=10; 
 			    textcolor=runclient(condition(:item_osrc:a_origin == 'GL', '#5499ddff', 'black')); 
 			    style=runclient(condition(:item_osrc:a_origin == 'GL', underline, NULL));
