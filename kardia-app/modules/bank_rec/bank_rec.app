@@ -3,7 +3,7 @@ runpayroll "widget/page"
     {
     title = "Bank Reconciliation - Kardia";
     width=1400;
-    height=650;
+    height=660;
     widget_template = "/apps/kardia/tpl/kardia-system.tpl", runserver("/apps/kardia/tpl/" + user_name() + ".tpl");
     background="/apps/kardia/images/bg/light_bgnd.jpg";
     require_endorsements="kardia:recon";
@@ -14,7 +14,7 @@ runpayroll "widget/page"
 
     rec_cmp "widget/component"
 	{
-	x=10; y=10; width=1380; height=580;
+	x=10; y=10; width=1400; height=660;
 	path = "/apps/kardia/modules/bank_rec/bank_rec.cmp";
 	title = "Bank Reconciliation";
 	ledger = runserver(:this:ledger);
