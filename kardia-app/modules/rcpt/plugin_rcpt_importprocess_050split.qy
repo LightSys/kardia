@@ -23,7 +23,7 @@ plugin_rcpt_importprocess_050splitTrx "system/query"
 		    /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows 
 		WHERE 
 		    :i_eg_gift_amount < :i_eg_deposit_gross_amt -- make sure was split into multiple
-		    AND substring(:i_eg_postprocess, 1, 1) != 'S'
+		    AND substring(isnull(:i_eg_postprocess, ''), 1, 1) != 'S'
 		    AND :i_eg_desig_notes IS NOT NULL
 		GROUP BY
 		    :i_eg_donor_uuid, :i_eg_deposit_amt, 
@@ -65,7 +65,7 @@ plugin_rcpt_importprocess_050splitTrx "system/query"
 		    :s:i_eg_donor_country,
 		    :s:i_eg_donor_phone,
 		    :s:i_eg_donor_email,
-		    i_eg_gift_amount = :i:i_eg_gift_amount,
+		    :i:i_eg_gift_amount,
 		    :i:i_eg_net_amount,
 		    :s:i_eg_deposit_gross_amt,
 		    :s:i_eg_deposit_amt,
@@ -162,6 +162,18 @@ plugin_rcpt_importprocess_050splitTrx "system/query"
 		GROUP BY 
 		    :s:i_eg_trx_uuid
 		;
+
+		-- Delete any transactions that have already been split. (i.e. have an id in trx_uuid)
+		DELETE 
+		FROM
+		    IDENTITY /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows i,
+		    COLLECTION trx_uuids u
+		WHERE 
+		    substring(:i_eg_postprocess, 1, 1) = 'S' -- all of the new items won't start with S
+		    AND :i:i_eg_trx_uuid = :u:i_eg_trx_uuid  -- limits to just the items worked on
+		    AND :i:i_eg_gift_amount = :i:i_eg_deposit_gross_amt -- will be a single transaction
+		    AND :i:i_eg_net_amount = :i:i_eg_deposit_amt
+		;
 	
 		-- write the new columns to the table
 		INSERT INTO
@@ -202,18 +214,6 @@ plugin_rcpt_importprocess_050splitTrx "system/query"
 		    :i_eg_gift_settlement_date = :s:i_eg_gift_settlement_date,
 		    :s_date_modified = getdate() IF MODIFIED,
 		    :s_modified_by = user_name() IF MODIFIED
-		;
-	
-		-- Delete any transactions that have already been split. (i.e. have an id in trx_uuid)
-		DELETE 
-		FROM
-		    IDENTITY /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows i,
-		    COLLECTION trx_uuids u
-		WHERE 
-		    substring(:i_eg_postprocess, 1, 1) = 'S' -- all of the new items won't start with S
-		    AND :i:i_eg_trx_uuid = :u:i_eg_trx_uuid  -- limits to just the items worked on
-		    AND :i:i_eg_gift_amount = :i:i_eg_deposit_gross_amt -- will be a single transaction
-		    AND :i:i_eg_net_amount = :i:i_eg_deposit_amt
 		;
 	
 		-- If it still has an S, can assume does not need it
