@@ -293,7 +293,7 @@ gift_import "widget/component-decl"
 					:eg:a_fund,
 					:eg:a_account_code,
 					:eg:a_batch_number,
-					:eg:i_eg_donormap_confidence, 
+					:eg:i_eg_donormap_confidence,
 					:eg:i_eg_fundmap_confidence,
 					:eg:i_eg_acctmap_confidence,
 					:eg:i_eg_donormap_future,
@@ -441,8 +441,6 @@ gift_import "widget/component-decl"
 					    qa_donorconf_var "widget/variable" { fieldname=i_eg_donormap_confidence; type=integer; }
 					    qa_fundconf_var "widget/variable" { fieldname=i_eg_fundmap_confidence; type=integer; }
 					    qa_acctconf_var "widget/variable" { fieldname=i_eg_acctmap_confidence; type=integer; }
-					    f_desig_name_var "widget/variable" { fieldname='i_eg_desig_name'; type=string; }
-					    f_desig_uuid_var "widget/variable" { fieldname='i_eg_desig_uuid'; type=string; }
 					    f_provides_desig_var "widget/variable" { fieldname='provides_designations'; type=string; }
 
 					    qa_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; form=qa_form; visual=no; }
@@ -599,24 +597,44 @@ gift_import "widget/component-decl"
 							Value = runclient(2);
 							}
 
-						    // update the desig name whenever the a_fund changes
-						    set_desig_name "widget/connector"
+						    // osrc to look up what to change the i_eg_desig_name value to (if at all) when the a_fund value is changed in the UI
+						    desig_update_osrc "widget/osrc"
 							{
-							event = DataChange;
-							event_condition = runclient((not :FromOSRC) AND isnull(:f_provides_desig_var:value, 1) == 0);
-							target = f_desig_name_var;
-							action = SetValue;
-							Value = runclient(:f_desig_cc:value);
+							desig_update_ledger "widget/parameter" { type=string; default=runserver(:this:ledger); }
+							desig_update_fund "widget/parameter" { type=string; }
+							desig_update_desig "widget/parameter" { type=string; }
+							desig_update_tag "widget/parameter" { type=string; }
+							sql = "
+								SELECT desig = first(:desig) 
+								FROM WILDCARD EXPRESSION ('/apps/kardia/modules/*/plugin_rcpt_desigsplit*.qy?ledger='+:parameters:desig_update_ledger+'&fund='+:parameters:desig_update_fund+'&desig='+:parameters:desig_update_desig)
+								WHERE :tag = :parameters:desig_update_tag
+								;";
+							autoquery = never;
 							}
 
-						    // update the desig name whenever the a_fund changes
-						    set_desig_uuid "widget/connector"
+						    // find any potential alternate fund names to use for desig name, if the processor allows it
+						    // FIXME: this can break if the user just hits enter while in the textbox
+						    query_desig_update_osrc "widget/connector"
 							{
 							event = DataChange;
 							event_condition = runclient((not :FromOSRC) AND isnull(:f_provides_desig_var:value, 1) == 0);
-							target = f_desig_uuid_var;
+							target = desig_update_osrc;
+							action=QueryParam;
+							desig_update_fund=runclient(:f_desig_cc:value);
+							desig_update_ledger=runclient(:gift_import:ledger);
+							desig_update_desig=runclient(:gift_import_osrc:i_eg_desig_uuid);
+							desig_update_tag=runclient(:gift_import_osrc:i_eg_service);
+							}
+
+						    // update the desig name whenever the a_fund changes, if the processor allows it
+						    set_desig_name "widget/connector"
+							{
+							source=desig_update_osrc;
+							event = EndQuery;
+							event_condition = runclient((not :FromOSRC) AND isnull(:f_provides_desig_var:value, 1) == 0 AND :desig_update_osrc:desig IS NOT NULL);
+							target = gs_desig;
 							action = SetValue;
-							Value = runclient(:f_desig_cc:value);
+							Value = runclient(:desig_update_osrc:desig);
 							}
 						    }
 						remember_cc "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field=i_eg_fundmap_future; ctl_type=checkboxleft; text="Remember this designation"; x=62; remember_cc_hints "widget/hints" { default=runclient(1); style=notnull; } }
@@ -1319,6 +1337,7 @@ gift_import "widget/component-decl"
 		id_depid "widget/component" { path="/sys/cmp/smart_field.cmp"; field=i_eg_deposit_uuid; text="Deposit ID:"; ctl_type=label; }
 		id_desig "widget/component" { path="/sys/cmp/smart_field.cmp"; field=i_eg_desig_name; text="Designation:"; ctl_type=label; }
 		id_anon "widget/component" { path="/sys/cmp/smart_field.cmp"; field=i_eg_anonymous; text="Anonymous?"; ctl_type=label; }
+		id_processor "widget/component" { path="/sys/cmp/smart_field.cmp"; field=i_eg_processor; text="Gift Processor:"; ctl_type=label; }
 		id_notes "widget/component" { path="/sys/cmp/smart_field.cmp"; field=i_eg_desig_notes; text="Notes:"; ctl_type=label; }
 		}
 	    }
