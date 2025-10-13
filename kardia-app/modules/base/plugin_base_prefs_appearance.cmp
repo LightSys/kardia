@@ -26,7 +26,7 @@ plugin_base_prefs_appearance "widget/component-decl"
 	    autoquery=onload;
 	    replicasize=2;
 	    readahead=1;
-	    sql = runserver("select :font_size, :font_name, :show_diagnostics from /apps/kardia/tpl/" + user_name() + ".tpl where :name = 'page'");
+	    sql = runserver("select :font_size, :font_name, :show_diagnostics, :dpi_scaling from /apps/kardia/tpl/" + user_name() + ".tpl where :name = 'page'");
 
 	    pg_form "widget/form"
 		{
@@ -57,6 +57,16 @@ plugin_base_prefs_appearance "widget/component-decl"
 			}
 		    }
 		f_showdiag "widget/component" { x=30; width=350; text="Show Diagnostics:"; path="/sys/cmp/smart_field.cmp"; ctl_type=checkbox; field=show_diagnostics; label_width=140; }
+		f_dpiscaling "widget/component"
+		    {
+		    x = 30; width = 350; label_width = 140;
+		    text = "DPI Scaling:";
+		    path = "/sys/cmp/smart_field.cmp";
+		    ctl_type = checkbox;
+		    field = dpi_scaling;
+		    
+		    dpi_hints "widget/hints" { style = notnull; }
+		    }
 		}
 	    }
 
