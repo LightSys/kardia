@@ -286,9 +286,11 @@ gift_import "widget/component-decl"
 					kardia_donor_info = :eg:p_donor_partner_key + isnull(' ' + :p:p_org_name, '') + isnull(' ' + :p:p_given_name,'') + isnull(' ' + :p:p_surname,'') + isnull(' (' + :l:p_city + isnull(', ' + :l:p_state_province, '') + ')', ''),
 					kardia_donor_name = isnull(' ' + :p:p_org_name, '') + isnull(' ' + :p:p_given_name,'') + isnull(' ' + :p:p_surname,''),
 					has_donor_rec = (select count(1) from /apps/kardia/data/Kardia_DB/p_donor/rows d where :d:a_gl_ledger_number = :eg:a_ledger_number and :d:p_partner_key = :eg:p_donor_partner_key),
+					gs_code = isnull(:eg:i_eg_service, ''),
 					gs_desig_info = :eg:i_eg_desig_name,
 					kardia_desig_info = :eg:a_fund + isnull(' ' + :c:a_fund_desc,''),
 					amount = :eg:i_eg_gift_amount,
+					id_gs = isnull(:eg:i_eg_processor, '') + isnull(' (' + :eg:i_eg_service + ')',''),
 					:eg:p_donor_partner_key,
 					:eg:a_fund,
 					:eg:a_account_code,
@@ -403,6 +405,7 @@ gift_import "widget/component-decl"
 			    st_stat "widget/table-column" { width=48; fieldname=import_status; title="Status"; type=image; }
 			    st_date "widget/table-column" { width=96; fieldname=trx_date; title="Date"; }
 			    st_gsdon "widget/table-column" { width=246; fieldname=gs_donor_info; title="Giving Service Donor/Designation"; caption_fieldname=gs_desig_info; }
+			    st_gscode "widget/table-column" { width=48; fieldname=gs_code; title="Serv."; }
 			    st_qadon "widget/table-column" { width=24; fieldname=qa_status; title="QA"; type=image; }
 			    //st_kdon "widget/table-column" { width=170; fieldname=kardia_donor_info; title="Kardia Donor"; }
 			    //st_qades "widget/table-column" { width=24; fieldname=desig_qa_status; title="QA"; type=image; }
@@ -979,6 +982,7 @@ gift_import "widget/component-decl"
 							    )
 							),
 				    deposit_date = substring(convert(string,:eg:i_eg_deposit_date),1,11) + condition(:eg:i_eg_deposit_date > :per:a_end_date or :eg:i_eg_deposit_date < :per:a_start_date, ' *', ''),
+				    :eg:i_eg_service,
 				    :eg:i_eg_deposit_date,
 				    :eg:i_eg_deposit_uuid,
 				    gift_date_range = substring(convert(string,min(:eg:i_eg_gift_trx_date)),1,11) + ' - ' + substring(convert(string,max(:eg:i_eg_gift_trx_date)),1,11),
@@ -1020,6 +1024,7 @@ gift_import "widget/component-decl"
 			    ORDER BY
 				    :eg:i_eg_deposit_date desc
 			    GROUP BY
+				    :eg:i_eg_service,
 				    :eg:i_eg_deposit_date desc,
 				    isnull(:eg:i_eg_deposit_uuid, -1)
 			    ");
@@ -1118,6 +1123,8 @@ gift_import "widget/component-decl"
 				    target = dep_import_osrc;
 				    key_1 = i_eg_deposit_uuid;
 				    target_key_1 = i_eg_deposit_uuid;
+				    key_2 = i_eg_service;
+				    target_key_2 = i_eg_service;
 				    master_norecs_action = norecs;
 				    master_null_action = nullisvalue;
 				    }
@@ -1290,6 +1297,7 @@ gift_import "widget/component-decl"
 		id_settdate "widget/component" { path="/sys/cmp/smart_field.cmp"; field=i_eg_gift_settlement_date; text="Settlement:"; ctl_type=label; }
 		id_depdate "widget/component" { path="/sys/cmp/smart_field.cmp"; field=i_eg_deposit_date; text="Deposited:"; ctl_type=label; }
 		id_depid "widget/component" { path="/sys/cmp/smart_field.cmp"; field=i_eg_deposit_uuid; text="Deposit ID:"; ctl_type=label; }
+		id_gs "widget/component" { path="/sys/cmp/smart_field.cmp"; field=id_gs; text="Giving Service:"; ctl_type=label; }
 		id_desig "widget/component" { path="/sys/cmp/smart_field.cmp"; field=i_eg_desig_name; text="Designation:"; ctl_type=label; }
 		id_anon "widget/component" { path="/sys/cmp/smart_field.cmp"; field=i_eg_anonymous; text="Anonymous?"; ctl_type=label; }
 		id_notes "widget/component" { path="/sys/cmp/smart_field.cmp"; field=i_eg_desig_notes; text="Notes:"; ctl_type=label; }
@@ -1365,6 +1373,7 @@ gift_import "widget/component-decl"
 				-- :eg:a_batch_number is not null and
 				:eg:a_batch_number_deposit is null
 			group by
+				:i_eg_service,
 				:i_eg_deposit_uuid
 			");
 
@@ -1498,6 +1507,7 @@ gift_import "widget/component-decl"
 					(:eg2:i_eg_deposit_date < :eg:i_eg_deposit_date or
 					    (:eg2:i_eg_deposit_date = :eg:i_eg_deposit_date and :eg2:i_eg_deposit_uuid < :eg:i_eg_deposit_uuid))
 				  group by
+					:eg2:i_eg_service,
 					:eg2:i_eg_deposit_uuid
 				)
 					
@@ -1624,6 +1634,7 @@ gift_import "widget/component-decl"
 				-- :eg:a_batch_number is not null and
 				:eg:a_batch_number_fees is null
 			group by
+				:i_eg_service,
 				:i_eg_deposit_uuid
 			");
 
@@ -1757,6 +1768,7 @@ gift_import "widget/component-decl"
 					(:eg2:i_eg_deposit_date < :eg:i_eg_deposit_date or
 					    (:eg2:i_eg_deposit_date = :eg:i_eg_deposit_date and :eg2:i_eg_deposit_uuid < :eg:i_eg_deposit_uuid))
 				  group by
+					:eg2:i_eg_service,
 					:eg2:i_eg_deposit_uuid
 				)
 					
