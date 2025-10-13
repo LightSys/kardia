@@ -1,0 +1,48 @@
+
+
+$Version=2$
+desigsplit "system/query"
+    {
+    ledger "query/parameter" { type=string; }
+    fund "query/parameter" { type=string; }
+    desig "query/parameter" { type=string; }
+    sql = "
+	-- Handle reassigning gifts designated as 0_multiple previously only
+	-- store into a collection first to make checking desig_split's value easier
+	DECLARE COLLECTION desig;
+	INSERT INTO
+	    COLLECTION desig
+	SELECT
+	    desig = parse_str_list('|', :f:a_legacy_code, 3)
+	FROM
+	    /apps/kardia/data/Kardia_DB/a_fund/rows f
+	WHERE 
+	    :f:a_ledger_number = :parameters:ledger
+	    AND :f:a_fund = :parameters:fund
+	    AND '0_multiple' = :parameters:desig
+	;
+	
+	-- need to return a value for any fund not in the a_fund table but still has 0_multiple 
+	INSERT INTO
+	    COLLECTION desig
+	SELECT
+	    desig = :parameters:fund
+	WHERE 
+	    '0_multiple' = :parameters:desig
+	    AND (SELECT count(1)
+		FROM /apps/kardia/data/Kardia_DB/a_fund/rows 
+		WHERE :a_fund = :parameters:fund 
+		    AND :a_ledger_number = :parameters:ledger
+		) = 0
+	;
+
+	-- return the determined desig. This will return nothing if the designation does not match
+	SELECT
+	    ledger = :parameters:ledger,
+	    tag = 'VPMX',
+	    fund = :parameters:fund,
+	    desig = condition(char_length(:desig) > 0, :desig, :parameters:fund)
+	FROM 
+	    COLLECTION desig
+	";
+    }
