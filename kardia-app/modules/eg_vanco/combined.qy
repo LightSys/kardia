@@ -258,8 +258,8 @@ myquery "system/query"
 		i_eg_gift_trx_date = convert('datetime', :t:ProcessDate),
 		i_eg_gift_settlement_date = convert('datetime', :t:SettlementDate), 
 		i_eg_gift_lastfour = substring(:p:AccountNumber, char_length(:p:AccountNumber) - 3),
-		i_eg_desig_name = :t:FundID, -- FIXME: currently the name and uuid need to be set the same. :t:FundName is lost for now? 
-		i_eg_desig_notes = condition(char_length(:t:FundNote) < 1, NULL, :t:FundNote) -- potentially include :t:FundName?
+		i_eg_desig_name = :t:FundName,
+		i_eg_desig_notes = condition(char_length(:t:FundNote) < 1, NULL, :t:FundNote)
 	    FROM
 		IDENTITY COLLECTION transactions t,
 		COLLECTION customers c,

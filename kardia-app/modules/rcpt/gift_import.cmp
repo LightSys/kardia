@@ -442,6 +442,7 @@ gift_import "widget/component-decl"
 					    qa_fundconf_var "widget/variable" { fieldname=i_eg_fundmap_confidence; type=integer; }
 					    qa_acctconf_var "widget/variable" { fieldname=i_eg_acctmap_confidence; type=integer; }
 					    f_provides_desig_var "widget/variable" { fieldname='provides_designations'; type=string; }
+					    f_desiguuid_var "widget/variable" { fieldname=i_eg_desig_uuid; type=string; }
 
 					    qa_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; form=qa_form; visual=no; }
 
@@ -622,7 +623,7 @@ gift_import "widget/component-decl"
 							action=QueryParam;
 							desig_update_fund=runclient(:f_desig_cc:value);
 							desig_update_ledger=runclient(:gift_import:ledger);
-							desig_update_desig=runclient(:gift_import_osrc:i_eg_desig_uuid);
+							desig_update_desig=runclient(:gift_import_osrc:i_eg_desig_name); // split logic updates i_eg_desig_uuid but not i_eg_desig_name
 							desig_update_tag=runclient(:gift_import_osrc:i_eg_service);
 							}
 
@@ -632,7 +633,7 @@ gift_import "widget/component-decl"
 							source=desig_update_osrc;
 							event = EndQuery;
 							event_condition = runclient((not :FromOSRC) AND isnull(:f_provides_desig_var:value, 1) == 0 AND :desig_update_osrc:desig IS NOT NULL);
-							target = gs_desig;
+							target = f_desiguuid_var; // TODO: once jason's changes are merged in, point to the UI visible field instead
 							action = SetValue;
 							Value = runclient(:desig_update_osrc:desig);
 							}
