@@ -599,45 +599,98 @@ gift_import "widget/component-decl"
 							}
 
 						    // osrc to look up what to change the i_eg_desig_name value to (if at all) when the a_fund value is changed in the UI
-						    desig_update_osrc "widget/osrc"
+						    desig_osrc "widget/osrc"
 							{
 							desig_update_ledger "widget/parameter" { type=string; default=runserver(:this:ledger); }
 							desig_update_fund "widget/parameter" { type=string; }
 							desig_update_desig "widget/parameter" { type=string; }
 							desig_update_tag "widget/parameter" { type=string; }
 							sql = "
-								SELECT desig = first(:desig) 
-								FROM WILDCARD EXPRESSION ('/apps/kardia/modules/*/plugin_rcpt_desigsplit*.qy?ledger='+:parameters:desig_update_ledger+'&fund='+:parameters:desig_update_fund+'&desig='+:parameters:desig_update_desig)
-								WHERE :tag = :parameters:desig_update_tag
-								;";
+							    SELECT desig = first(:desig) 
+							    FROM WILDCARD EXPRESSION ('/apps/kardia/modules/*/plugin_rcpt_desigsplit*.qy?ledger='+:parameters:desig_update_ledger+'&fund='+:parameters:desig_update_fund+'&desig='+:parameters:desig_update_desig)
+							    WHERE :tag = :parameters:desig_update_tag
+							    ;";
 							autoquery = never;
+							
+							// Update the desig name, if allowed by the payment processor.
+							desig_osrc_result "widget/connector"
+							    {
+							    event = EndQuery;
+							    event_condition = runclient(                        // Event only fires if:
+								(not :FromOSRC)                                 // OSRC is loaded (I think?).
+								AND isnull(:f_provides_desig_var:value, 1) == 0 // AND this update is allowed.
+								AND :desig_osrc:desig IS NOT NULL               // AND an alternate desig value is found.
+							    );
+							    
+							    // Update the hidden field with the fetched value.
+							    target = f_desiguuid_var; // TODO: Should point to a UI visible field (once Jason's changes are merged).
+							    action = SetValue;
+							    Value = runclient(:desig_osrc:desig);
+							    }
 							}
+						    
+						    desig_osrc_update_enabled "widget/variable" { type = integer; value = 1; }
 
 						    // find any potential alternate fund names to use for desig name, if the processor allows it
-						    // FIXME: this can break if the user just hits enter while in the textbox
-						    query_desig_update_osrc "widget/connector"
+						    desig_osrc_update "widget/connector"
 							{
-							event = DataChange;
-							event_condition = runclient((not :FromOSRC) AND isnull(:f_provides_desig_var:value, 1) == 0);
-							target = desig_update_osrc;
-							action=QueryParam;
-							desig_update_fund=runclient(:f_desig_cc:value);
-							desig_update_ledger=runclient(:gift_import:ledger);
-							desig_update_desig=runclient(:gift_import_osrc:i_eg_desig_name); // split logic updates i_eg_desig_uuid but not i_eg_desig_name
-							desig_update_tag=runclient(:gift_import_osrc:i_eg_service);
+							event = BeforeSave;
+							event_condition = runclient(                                   // Event only fires if:
+							    (not :FromOSRC)                                            // OSRC is loaded (I think?).
+							    AND isnull(:f_provides_desig_var:value, 1) == 0            // Hidden field should be updated.
+							    AND :f_desig_cc:value != :gift_import_osrc:i_eg_desig_name // User has changed designation name.
+							    AND :desig_osrc_update_enabled:value == 1                  // This event is enabled.
+							);
+							source = qa_form;
+							target = desig_osrc;
+							action = QueryParam;
+							
+							// Repeat the entire condition above because event_cancel applies even if the event_condition is false,
+							// for some reason. Make sure this code matches the code above.
+							event_cancel = runclient(                                      // Event is only cancelled if:
+							    (not :FromOSRC)                                            // OSRC is loaded (I think?).
+							    AND isnull(:f_provides_desig_var:value, 1) == 0            // Hidden field should be updated.
+							    AND :f_desig_cc:value != :gift_import_osrc:i_eg_desig_name // User has changed designation name.
+							    AND :desig_osrc_update_enabled:value == 1                  // This event is enabled.
+							);
+							
+							desig_update_fund = runclient(:f_desig_cc:value);
+							desig_update_ledger = runclient(:gift_import:ledger);
+							desig_update_desig = runclient(:gift_import_osrc:i_eg_desig_name); // split logic updates i_eg_desig_uuid but not i_eg_desig_name
+							desig_update_tag = runclient(:gift_import_osrc:i_eg_service);
 							}
 
-						    // update the desig name whenever the a_fund changes, if the processor allows it
-						    set_desig_name "widget/connector"
+						    // Prevent desig_osrc_update from running if it just ran.
+						    desig_osrc_update_disable "widget/connector"
 							{
-							source=desig_update_osrc;
+							source = desig_osrc;
 							event = EndQuery;
-							event_condition = runclient((not :FromOSRC) AND isnull(:f_provides_desig_var:value, 1) == 0 AND :desig_update_osrc:desig IS NOT NULL);
-							target = f_desiguuid_var; // TODO: once jason's changes are merged in, point to the UI visible field instead
+							target = desig_osrc_update_enabled;
 							action = SetValue;
-							Value = runclient(:desig_update_osrc:desig);
+							Value = 0;
+							}
+						    
+						    // Resend the save event once the desig name is done being updated.
+						    desig_osrc_update_done "widget/connector"
+							{
+							source = desig_osrc;
+							event = EndQuery;
+							event_delay = 0.001; // Wait for desig_osrc_update_disable to run.
+							target = qa_form;
+							action = Save;
+							}
+						    
+						    // Allow desig_osrc_update to run again.
+						    desig_osrc_update_enable "widget/connector"
+							{
+							source = qa_form;
+							event = DataSaved;
+							target = desig_osrc_update_enabled;
+							action = SetValue;
+							Value = 1;
 							}
 						    }
+						
 						remember_cc "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field=i_eg_fundmap_future; ctl_type=checkboxleft; text="Remember this designation"; x=62; remember_cc_hints "widget/hints" { default=runclient(1); style=notnull; } }
 						f_desig_acct_dd "widget/component"
 						    {
@@ -2457,4 +2510,3 @@ gift_import "widget/component-decl"
 	    }
 	}
     }
-
