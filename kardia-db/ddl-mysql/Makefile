@@ -61,4 +61,4 @@ countries:
 	mysql $(MYSQLOPTS) < 2011countries.sql
 
 gazetteer:
-	gzip -d < gazetteer-mysql.sql.gz | mysql $(MYSQLOPTS) Kardia_DB
+	gzip -d < gazetteer-mysql.sql.gz | (if [ -f /usr/bin/pv ]; then pv; else cat; fi) | mysql $(MYSQLOPTS) Kardia_DB

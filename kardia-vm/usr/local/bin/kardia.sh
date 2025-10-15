@@ -1,8 +1,8 @@
 #!/bin/bash
 #
 # kardia.sh - manage the Kardia / Centrallix VM appliance
-# version: 1.0.10
-# os: centos_7
+# version: 1.0.11
+# os: rocky_8
 
 # Some housekeeping stuff.  We may be running under a user account, but
 # called by the superuser.  Don't give the user account too much control.
@@ -49,7 +49,7 @@ K_KEY="kardia.git.sourceforge.net ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAoMesJ60dow
 # using firewalld, then firewalling must be done entirely manually instead
 # of by this script.
 #
-USE_FIREWALLD=$(systemctl list-unit-files | sed -n 's/^firewalld.service[      ]*//p')
+USE_FIREWALLD=$(systemctl list-unit-files | sed -n 's/^firewalld.service[      ]*//p' | sed 's/\s//g')
 
 # Boolean detectors
 function isYes
@@ -198,11 +198,20 @@ if [ "$HAS_GRPS" = "" ]; then
 	systemctl enable chronyd
     fi
     #
-    insertLine /root/.vimrc "set ai"
-    insertLine /root/.vimrc "set shiftwidth=4"
-    insertLine /root/.vimrc "set cino={1s,:0,t0,f1s"
-    insertLine /root/.vimrc "set sts=4"
+    updateVimrc /root/.vimrc
+    #done by updateVimrc above
+    #insertLine /root/.vimrc "set ai"
+    #insertLine /root/.vimrc "set shiftwidth=4"
+    #insertLine /root/.vimrc "set cino={1s,:0,t0,f1s"
+    #insertLine /root/.vimrc "set sts=4"
     #
+
+    #do gdbinit
+    insertLine /root/.gdbinit "set history save on"
+    insertLine /root/.gdbinit "set history size 999"
+    insertLine /root/.gdbinit "handle SIGHUP noprint nostop"
+    insertLine /root/.gdbinit "handle SIG33 noprint nostop"
+
     insertLine /root/.bashrc "alias vi=/usr/bin/vim"
     setsebool -P samba_enable_home_dirs on
 fi
@@ -475,6 +484,29 @@ function checkCert
     fi
     }
 
+
+#This should update the contents of the vimrc file.
+#It should be called with: updateVimrc [filename]
+function updateVimrc
+    {
+    local N_FILE="$1"
+    if [ -f "$N_FILE" ]; then
+	#insert some basic items
+	insertLine $N_FILE "set ai"
+	insertLine $N_FILE "set shiftwidth=4"
+	insertLine $N_FILE "set cino={1s,:0,t0,f1s"
+	insertLine $N_FILE "set sts=4"
+
+	#now, insert the contents of cx-git/centrallix-dev-tools/.vimrc 
+	if [ -f  $CXSRC/centrallix-dev-tools/.vimrc ]; then
+	    cat $CXSRC/centrallix-dev-tools/.vimrc |sed 's/vim70/vim??/' | while read line; do
+		insertLine "$N_FILE" "$line"
+	    done
+	fi
+    fi
+    }
+
+
 #
 # Add a new user:  addUser username realname [nopass|pass] [uid] [gid]
 #
@@ -539,10 +571,18 @@ function addUser
 
     updateFirewall
 
-    insertLine /home/$N_USER/.vimrc "set ai"
-    insertLine /home/$N_USER/.vimrc "set shiftwidth=4"
-    insertLine /home/$N_USER/.vimrc "set cino={1s,:0,t0,f1s"
-    insertLine /home/$N_USER/.vimrc "set sts=4"
+    updateVimrc /home/$N_USER/.vimrc
+    #done by updateVimrc above
+    #insertLine /home/$N_USER/.vimrc "set ai"
+    #insertLine /home/$N_USER/.vimrc "set shiftwidth=4"
+    #insertLine /home/$N_USER/.vimrc "set cino={1s,:0,t0,f1s"
+    #insertLine /home/$N_USER/.vimrc "set sts=4"
+
+    #do gdbinit
+    insertLine /home/$N_USER/.gdbinit "set history save on"
+    insertLine /home/$N_USER/.gdbinit "set history size 999"
+    insertLine /home/$N_USER/.gdbinit "handle SIGHUP noprint nostop"
+    insertLine /home/$N_USER/.gdbinit "handle SIG33 noprint nostop"
 
     insertLine /home/$N_USER/.bashrc "alias vi=/usr/bin/vim"
 
@@ -847,12 +887,28 @@ function doUpdates
     yum update --skip-broken
     }
 
+function installExtraPackages
+    {
+    if [ -f /usr/local/src/kardia-git/kardia-vm/extra_rpms.txt ]; then
+	echo "Installing unnecessary packages"
+	for a in $( cat /usr/local/src/kardia-git/kardia-vm/extra_rpms.txt | grep -v "^#" ); do
+		dnf -y install $a
+	done
+    fi
+    }
+
 # Check to see if the required packages are installed
 function checkAndInstallRequiredPackages
     {
 	#Go through and check to see if every package in the list is installed
 	if [ ! -e /usr/local/src/kardia-git/kardia-vm/rpms_needed.txt ]; then
 	    exit 2; #The file we need does not exist.  Cannot check
+	fi
+	if [ -f /usr/local/src/kardia-git/kardia-vm/extra_rpms.txt ]; then
+	    echo "Removing unnecessary packages"
+	    for a in $( cat /usr/local/src/kardia-git/kardia-vm/extra_rpms.txt | grep -v "^#" ); do
+		    dnf -y remove $a
+	    done
 	fi
 	YUMTMPFILE="$$-YUM.tmp"
 	rpm -qa > $YUMTMPFILE
@@ -872,6 +928,12 @@ function checkAndInstallRequiredPackages
 		yum -y install $a
 	    fi
 	done
+
+	#At this point in time, we hopefully have vim installed
+	if [ -f /usr/local/src/cx-git/centrallix-dev-tools/cx.vim ]; then
+	    cp /usr/local/src/cx-git/centrallix-dev-tools/cx.vim /usr/share/vim/vim??/syntax/ 
+	fi
+
 	rm -f $YUMTMPFILE
     }
 
@@ -964,6 +1026,12 @@ function menuSystem
 	DSTR="$DSTR RootShell 'Get a Root Shell'"
 	DSTR="$DSTR RootPass 'Change Root Password'"
 	DSTR="$DSTR Updates 'Download and Install OS Updates'"
+	if [ -f /usr/local/src/kardia-git/kardia-vm/extra_rpms.txt ]; then
+	    first=$( cat /usr/local/src/kardia-git/kardia-vm/extra_rpms.txt | grep -v "^#" | head -1)
+	    if [ -z "`rpm -q $first | grep -v 'not installed'`"  ]; then
+		DSTR="$DSTR Extra 'Install unnecessary packages'"
+	    fi
+	fi
 	DSTR="$DSTR Timezone 'Set the System Time Zone'"
 	DSTR="$DSTR Resize 'Resize the Virtual Machine'"
 	DSTR="$DSTR Autossh 'Configure Autossh'"
@@ -1001,6 +1069,9 @@ function menuSystem
 		;;
 	    Updates)
 		doUpdates
+		;;
+	    Extra)
+		installExtraPackages
 		;;
 	    Hostname)
 		setHostname
@@ -1367,6 +1438,10 @@ function repoInitUser
     cd cx-git/centrallix-os/apps
     ln -s ../../../kardia-git/kardia-app kardia
 
+    #mark git directories as trusted
+    git config --global --add safe.directory /home/$RUSER/cx-git
+    git config --global --add safe.directory /home/$RUSER/kardia-git
+
     setGitEmail "/home/$RUSER"
     }
 
@@ -1409,6 +1484,11 @@ function repoInitShared
     cd ../kardia-git
     doGit config receive.denyCurrentBranch ignore
     cd ..
+
+    #mark git directories as trusted
+    git config --global --add safe.directory $BASEDIR/src/cx-git
+    git config --global --add safe.directory $BASEDIR/src/kardia-git
+
     #make user tpl files
     doMakeTplFiles
     }
@@ -1628,6 +1708,49 @@ function menuIndRepo
     done
     }
 
+function verifyLinksigningKey
+    {
+    lookupStatus
+    if [ -z "`grep link_signing_key $CXCONF`" ]; then
+	linksigningfile="$(dirname $CXCONF)/linksigningkey.txt"
+	if [ -f $linksigningfile ]; then
+	    #echo found link signing $linksigningfile
+	    lkey=`cat $linksigningfile`
+	else
+	    #echo Making linksigning key file
+	    lkey=$(dd if=/dev/urandom bs=32 count=1 2>/dev/null| sha256sum | cut -c1-32)
+	    echo $lkey > $linksigningfile
+	    if [ -z "echo $CXCONF | grep home" ]; then
+		#We are doing it in the home directory - permissions for user
+		chown $USER.$USER $linksigningfile
+		chmod 600 $linksigningfile
+	    else
+		chown root.root $linksigningfile
+		#it is going to be /usr/local/etc.  chown to root
+		chmod 600 $linksigningfile
+	    fi
+	fi
+	#echo not found
+	lineno=$(grep -n "upload_tmpdir" $CXCONF | sed 's/:.*//')
+	if [ $lineno -lt 10 ]; then #Use a backup location for inserting the link-signing key
+	    lineno=$(grep -n "accept_localhost_only" $CXCONF | sed 's/:.*//')
+	fi
+	if [ $lineno -gt 10 ]; then #only install it if we have found a spot in the config
+	    lineno=$((lineno + 1))
+
+	    sed -i "${lineno}i\/\/" $CXCONF
+	    sed -i "${lineno}ilink_signing_sites = \"http:\/\/localhost:800\/\", \"http:\/\/localhost:1800\/\", \"\/\";" $CXCONF
+	    sed -i "${lineno}ilink_signing_key = \"$lkey\";" $CXCONF
+	    sed -i "${lineno}i\/\/ Signed links..." $CXCONF
+	    sed -i "${lineno}i\/\/" $CXCONF
+	else
+	    #We cannot install the link-signing key yet.
+	    #delete the file so it will try to regen it later
+	    rm $linksigningfile
+	fi
+    fi
+    }
+
 
 # Rebuild / reinstall Centrallix - as user, individual repositories.
 function doBuildAsSeparateUser
@@ -1718,6 +1841,8 @@ function doBuildAsSeparateUser
 	echo -e "\"application/vnd.oasis.opendocument.text\"\t\t\"OpenDocument Text\"\t\todt\t\t\"\"\t\t\"application/octet-stream\"" >> $INSTDIR/etc/centrallix/types.cfg
     fi
     sed "s/\/var\/centrallix\/os/\/home\/$USER\/cx-git\/centrallix-os/" < etc/rootnode > "$INSTDIR/etc/centrallix/rootnode"
+
+    verifyLinksigningKey
 
     # Create user template for Kardia?
     if [ ! -f "$KSRC/kardia-app/tpl/$USER.tpl" ]; then
@@ -1832,6 +1957,8 @@ function doBuildAsUser
     /bin/cp -a etc/types.cfg ~/cxinst/etc/centrallix/
     /bin/cp -a etc/useragent.cfg ~/cxinst/etc/centrallix/
 
+    verifyLinksigningKey
+
     # Create user template for Kardia?
     if [ ! -f "$KSRC/kardia-app/tpl/$USER.tpl" ]; then
 	cp "$KSRC/kardia-app/tpl/newuser_default.tpl" "$KSRC/kardia-app/tpl/$USER.tpl"
@@ -1940,6 +2067,8 @@ function doBuildAsRoot
 	echo -e "\"application/vnd.oasis.opendocument.spreadsheet\"\t\t\"OpenDocument Spreadsheet\"\t\tods\t\t\"\"\t\t\"application/octet-stream\"" >> /usr/local/etc/centrallix/types.cfg
 	echo -e "\"application/vnd.oasis.opendocument.text\"\t\t\"OpenDocument Text\"\t\todt\t\t\"\"\t\t\"application/octet-stream\"" >> /usr/local/etc/centrallix/types.cfg
     fi
+
+    verifyLinksigningKey
 
     # Set rootnode
     sed 's/\/var\/centrallix\/os/\/usr\/local\/src\/cx-git\/centrallix-os/' < /usr/local/etc/centrallix/rootnode > /usr/local/etc/centrallix/rootnode.new
@@ -2437,6 +2566,7 @@ function menuWorkflowMode
 
     if [ "$SEL" != "" ]; then
 	echo "$SEL" > $BASEDIR/src/.cx_wkfmode
+	[ -f /usr/local/src/.initialized ] || touch $BASEDIR/src/.initialized
     else
 	return 0
     fi
@@ -2870,18 +3000,20 @@ function menuDevel
 #	if [ "$WKFMODE" != shared -a "$USER" != root ]; then
 #	    DSTR="$DSTR MyRepo 'Individual Repository Management'"
 #	fi
-	if [ "$USER" != root -o "$DEVMODE" != users ]; then
-	    StartStoppable && DSTR="$DSTR '---' ''"
-	    if [ "$CXRUNNING" = "" ]; then
-		StartStoppable && DSTR="$DSTR Start 'Start Centrallix (ip:$IPADDR port:$CXPORT/$CXSSLPORT)'"
-	    else
-		StartStoppable && DSTR="$DSTR Restart 'Restart Centrallix'"
-		StartStoppable && DSTR="$DSTR Stop 'Stop Centrallix (ip:$IPADDR port:$CXPORT/$CXSSLPORT)'"
+	if [ -f "$CXBIN" ]; then #if the centrallix binary exists, then we can start/stop/restart it
+	    if [ "$USER" != root -o "$DEVMODE" != users ]; then
+		StartStoppable && DSTR="$DSTR '---' ''"
+		if [ "$CXRUNNING" = "" ]; then
+		    StartStoppable && DSTR="$DSTR Start 'Start Centrallix (ip:$IPADDR port:$CXPORT/$CXSSLPORT)'"
+		else
+		    StartStoppable && DSTR="$DSTR Restart 'Restart Centrallix'"
+		    StartStoppable && DSTR="$DSTR Stop 'Stop Centrallix (ip:$IPADDR port:$CXPORT/$CXSSLPORT)'"
+		fi
+		StartStoppable && DSTR="$DSTR Console 'View Centrallix Console'"
+		StartStoppable && DSTR="$DSTR Log 'View Centrallix Console Log'"
+		[ $DEVMODE = "root" ] && ! systemctl is-enabled centrallix >/dev/null && DSTR="$DSTR Enable 'Enable Centrallix start at boot'"
+		[ $DEVMODE = "root" ] && systemctl is-enabled centrallix >/dev/null && DSTR="$DSTR Disable 'Disable Centrallix start at boot'"
 	    fi
-	    StartStoppable && DSTR="$DSTR Console 'View Centrallix Console'"
-	    StartStoppable && DSTR="$DSTR Log 'View Centrallix Console Log'"
-	    [ $DEVMODE = "root" ] && ! systemctl is-enabled centrallix >/dev/null && DSTR="$DSTR Enable 'Enable Centrallix start at boot'"
-	    [ $DEVMODE = "root" ] && systemctl is-enabled centrallix >/dev/null && DSTR="$DSTR Disable 'Disable Centrallix start at boot'"
 	fi
 	DSTR="$DSTR '---' ''"
 	DSTR="$DSTR Quit 'Exit Kardia / Centrallix Management'"
@@ -3662,11 +3794,11 @@ function vm_prep_cleanSSH
 # Clean up the contents of history and other files
 function vm_prep_cleanFiles
 {
-    cxfiles="/usr/local/sbin/centrallix /usr/local/sbin/cxpasswd /usr/local/etc/centrallix /usr/local/etc/kardia_pw.txt"
+    cxfiles="/usr/local/sbin/centrallix /usr/local/sbin/cxpasswd /usr/local/etc/centrallix /usr/local/etc/kardia_pw.txt /usr/local/etc/centrallix/kardia-auth"
     cxlibs="/usr/local/lib/StPar* /usr/local/centrallix/ /usr/local/libCentrallix*"
     cxinc="/usr/local/include/cxlib/"
     cxetc="/etc/init.d/centrallix"
-    kardiash="/usr/local/src/.initialized /usr/local/src/.cx* /usr/local/src/.mysqlaccess /usr/local/etc/autossh.conf /usr/local/etc/centrallix.conf /usr/local/etc/cifs.conf /usr/local/etc/duplicity.conf /usr/local/etc/rc.d/"
+    kardiash="/usr/local/src/.initialized /usr/local/src/.cx* /usr/local/src/.mysqlaccess /usr/local/etc/autossh.conf /usr/local/etc/centrallix.conf /usr/local/etc/linksigningkey.txt /usr/local/etc/cifs.conf /usr/local/etc/duplicity.conf /usr/local/etc/rc.d/"
     gitfiles="/usr/local/src/cx-git /usr/local/src/kardia-git"
 	echo "Cleaning up Filesystem"
 	echo "  Cleaning up history"
@@ -3681,6 +3813,9 @@ function vm_prep_cleanFiles
 	echo > /root/.lesshst
 	echo "  Cleaning root vim history"
 	echo > /root/.viminfo
+
+	#clean out all the crontabs we added using kardia
+	cleanKardiaCrontabs
 
 	#remove the file that says Kardia has been initialized
 	rm /usr/local/src/.initialized 2> /dev/null
@@ -3707,8 +3842,15 @@ function vm_prep_cleanFiles
 function vm_prep_cleanKernel
 {
     echo "Uninstalling old kernel versions"
-    local RESCUE="kernel-3.10.0-123"
-    rpm -q kernel | grep -v `uname -r` | grep -v $RESCUE | while read line; do 
+    echo "We will try twice to fix dependancies"
+    local LATEST="kernel-3.10.0-123"
+    cd /boot
+    LATEST=$(ls vmlinuz-* | grep -v rescue | sed 's/vmlinuz-//;s/.el.*//' | sort -n | tail -1)
+    rpm -qa kernel* | grep -v $LATEST | while read line; do 
+	echo "Removing package: $line"
+	rpm -e $line; 
+    done
+    rpm -qa kernel* | grep -v $LATEST | while read line; do 
 	echo "Removing package: $line"
 	rpm -e $line; 
     done
@@ -3840,6 +3982,7 @@ function doCreateKardiaUnixUser
 	    #store the password
 	    echo $KARDPW > /usr/local/etc/kardia_pw.txt
 	    chmod 400 /usr/local/etc/kardia_pw.txt
+	    ln -s /usr/local/etc/kardia_pw.txt /usr/local/etc/centrallix/kardia-auth
 	    #create the kardia user
 	    useradd -r kardia
 	    #set the password for the kardia user
@@ -3847,6 +3990,45 @@ function doCreateKardiaUnixUser
 	    #grant the kardia user sysadmin privs so they can do cron
 	    doGiveUserKardiaSysadmin kardia
 	fi
+    }
+
+#
+# addKardiaCrontabs - add the crontabs listed in kardia-git/kardia-scripts/cron 
+#
+function addKardiaCrontabs
+    {
+	for onefile in /usr/local/src/kardia-git/kardia-scripts/cron/*; do
+	    echo $onefile
+	    if [ -f $onefile ]; then
+		c_name=$( (grep NAME $onefile || echo $onefile) | sed 's/^#.* //')
+		c_minute=$( (grep MINUTE $onefile || echo \* ) | sed 's/^#.* //')
+		c_hour=$( (grep HOUR $onefile || echo \* ) | sed 's/^#.* //')
+		c_dom=$( (grep DOM $onefile || echo \*) | sed 's/^#.* //')
+		c_month=$( (grep MONTH $onefile || echo \* )| sed 's/^#.* //')
+		c_day=$( (grep DAY $onefile || echo \*) | sed 's/^#.* //')
+		c_who=$( (grep WHO $onefile || echo root) | sed 's/^#.* //')
+
+		#echo "$c_name" "$c_minute" "$c_hour" "$c_dom" "$c_mon" "$c_day" "$c_who" "$onefile"
+		addNewCron "$c_name" "$c_minute" "$c_hour" "$c_dom" "$c_month" "$c_day" "$c_who" "$onefile"
+	    fi
+	done
+
+    }
+
+#
+# cleanKardiaCrontabs - remove all the kardia crontabs, most of which call files in kardia-git
+#
+function cleanKardiaCrontabs
+    {
+    echo cleaning crontabs
+    for onefile in /etc/cron.d/*; do
+	if [ -n "`grep -i kardia $onefile`" ]; then
+	    echo $onefile is kardia
+	    rm $onefile
+	else
+	    echo $onefile is not kardia
+	fi
+    done
     }
 
 #
@@ -4004,11 +4186,13 @@ function writeCron
 
     if [ -n "$cronFile" ]; then
 	#make the directory if it does not yet exist
-	cronDir=`basename $cronFile`
+	cronDir=`dirname $cronFile`
+	#echo "Making crondir $cronDir for cronfile $cronFile"
 	mkdir -p $cronDir
 
 #Make sure we have the paths set up for the cron and other default info
 cat > $cronFile << EOF
+#A Kardia cron file
 SHELL=/bin/bash
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
 MAILTO=root
@@ -5559,6 +5743,8 @@ function sg08InitRepo
     value=$?
     if [ "$value" == 0 ]; then
 	repoInitShared
+	#since these crons are in the repo, add them
+	addKardiaCrontabs
     fi
     if [ "$value" == 1 ]; then
 	return 1

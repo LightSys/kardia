@@ -1,0 +1,140 @@
+$Version=2$
+receives_notification "widget/component-decl"
+    {
+    // Connect a notification with a partner via a method.
+    ConnectNotification "widget/component-decl-action" { }
+    Connected "widget/component-decl-event" { }
+    connect_cn "widget/connector"
+	{
+	event=ConnectNotification;
+	target=connect_osrc;
+	action=QueryParam;
+	notify_type=runclient(:notify_type);
+	partner=runclient(:partner);
+	notify_method=runclient(:notify_method);
+	}
+
+    connect_osrc "widget/osrc"
+	{
+	cn_type "widget/parameter"		{ param_name=notify_type; type=string; }
+	cn_partner "widget/parameter"		{ param_name=partner; type=string; }
+	cn_method "widget/parameter"		{ param_name=notify_method; type=integer; }
+
+	replicasize=1; readahead=1; autoquery=never;
+	sql = " DECLARE OBJECT info;
+
+		SELECT
+			:info:cur_contact = :p_recip_contact_id
+		FROM	
+			/apps/kardia/data/Kardia_DB/p_notification_pref/rows
+		WHERE 
+			:p_notify_type = :parameters:notify_type and
+			:p_notify_method = :parameters:notify_method and
+			:p_notify_method_item = 1 and
+			:p_recip_partner_key = :parameters:partner
+		;
+
+		SELECT
+			:info:pref_email = :p_preferred_email_id
+		FROM
+			/apps/kardia/data/Kardia_DB/p_staff/rows
+		WHERE
+			:p_partner_key = :parameters:partner
+		;
+
+		SELECT
+			:info:select_contact = :c:p_contact_id
+		FROM
+			/apps/kardia/data/Kardia_DB/p_contact_info/rows c,
+			/apps/kardia/data/Kardia_DB/p_notification_method/rows nm
+		WHERE
+			:c:p_partner_key = :parameters:partner and
+			:c:p_record_status_code = 'A' and 
+			charindex(:c:p_contact_type, :nm:p_allowed_contact_types) > 0 and 
+			:nm:p_notify_method = :parameters:notify_method
+		ORDER BY
+			condition(:c:p_contact_id = :info:cur_contact, 0, 1) asc,
+			condition(:c:p_contact_id = :info:pref_email, 0, 1) asc,
+			:c:s_date_modified desc
+		LIMIT
+			1
+		;
+
+		INSERT
+			/apps/kardia/data/Kardia_DB/p_notification_pref/rows
+		SELECT
+			p_notify_type = :parameters:notify_type,
+			p_notify_method = :parameters:notify_method,
+			p_notify_method_item = 1,
+			p_recip_partner_key = :parameters:partner,
+			p_recip_contact_id = :info:select_contact,
+			p_enabled = 1,
+			p_frequency = 1,
+			p_pause_discard = 1,
+			s_date_created = getdate(),
+			s_created_by = user_name(),
+			s_date_modified = getdate(),
+			s_modified_by = user_name()
+		HAVING
+			(select count(1) from /apps/kardia/data/Kardia_DB/p_notification_pref/rows where :p_notify_type = :parameters:notify_type and :p_notify_method = :parameters:notify_method and :p_notify_method_item = 1 and :p_recip_partner_key = :parameters:partner) = 0
+		;
+
+		UPDATE
+			IDENTITY /apps/kardia/data/Kardia_DB/p_notification_pref/rows np
+		SET
+			:np:p_enabled = 1,
+			:np:p_recip_contact_id = :info:select_contact
+		WHERE
+			:p_notify_type = :parameters:notify_type and
+			:p_notify_method = :parameters:notify_method and
+			:p_notify_method_item = 1 and
+			:p_recip_partner_key = :parameters:partner
+		";
+
+	end_connect "widget/connector"
+	    { 
+	    event=EndQuery;
+	    target=receives_notification;
+	    action=Connected;
+	    }
+	}
+
+    // Disconnect a notification from a partner without param.
+    DisconnectNotification "widget/component-decl-action" { }
+    Disconnected "widget/component-decl-event" { }
+    disconnect_cn "widget/connector"
+	{
+	event=DisconnectNotification;
+	target=disconnect_osrc;
+	action=QueryParam;
+	notify_type=runclient(:notify_type);
+	partner=runclient(:partner);
+	notify_method=runclient(:notify_method);
+	}
+
+    disconnect_osrc "widget/osrc"
+	{
+	dn_type "widget/parameter"		{ param_name=notify_type; type=string; }
+	dn_partner "widget/parameter"		{ param_name=partner; type=string; }
+	dn_method "widget/parameter"		{ param_name=notify_method; type=integer; }
+
+	replicasize=1; readahead=1; autoquery=never;
+	sql = " UPDATE
+			IDENTITY /apps/kardia/data/Kardia_DB/p_notification_pref/rows
+		SET
+			:p_enabled = 0
+		WHERE
+			:p_notify_type = :parameters:notify_type and
+			:p_notify_method = :parameters:notify_method and
+			:p_notify_method_item = 1 and
+			:p_recip_partner_key = :parameters:partner
+		";
+
+	end_disconnect "widget/connector"
+	    { 
+	    event=EndQuery;
+	    target=receives_notification;
+	    action=Disconnected;
+	    }
+	}
+    }

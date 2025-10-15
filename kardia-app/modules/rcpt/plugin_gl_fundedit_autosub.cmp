@@ -1,8 +1,8 @@
 $Version=2$
 plugin_gl_fundedit_autosub "widget/component-decl"
     {
-    width=490;
-    height=292;
+    width=640;
+    height=367;
     title = "Subscribe";
 
     Modified "widget/component-decl-event" { }
@@ -14,8 +14,8 @@ plugin_gl_fundedit_autosub "widget/component-decl"
 	{
 	x = 0;
 	y = 0;
-	width = 490;
-	height = 292;
+	width = 640;
+	height = 367;
 	spacing = 8;
 	cellsize = 20;
 
@@ -57,13 +57,13 @@ plugin_gl_fundedit_autosub "widget/component-decl"
 
 		as_table_pane "widget/pane"
 		    {
-		    height=102;
+		    height=177;
 		    widget_class=table_bgnd;
 
 		    as_table "widget/table"
 			{
 			x=0;y=0;
-			width=488; height=100;
+			width=638; height=175;
 			mode = dynamicrow;
 
 			t_list "widget/table-column" { title="List"; fieldname="m_list_code"; width=60; }

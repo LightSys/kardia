@@ -59,20 +59,10 @@ create  index p_contact_idx on p_contact_info (p_contact_data, p_phone_area_city
 /* go */
 
 
-/* p_contact_usage_type */
-/* create  index p_contact_ut_pk on p_contact_usage_type (p_contact_usage_type_code)*/ 
-/* go */
-
-
 /* p_partner_relationship */
 /* create  index p_partner_relationship_pk on p_partner_relationship (p_partner_key, p_relation_type, p_relation_key)*/ 
 /* go */
 create  index p_relate_reverse_idx on p_partner_relationship (p_relation_key, p_relation_type, p_partner_key);
-
-
-/* p_partner_relationship_type */
-/* create  index p_relat_type_pk on p_partner_relationship_type (p_relation_type)*/ 
-/* go */
 
 
 /* p_church */
@@ -99,6 +89,24 @@ create  index p_staff_login_idx on p_staff (p_kardia_login, p_partner_key);
 create  index p_staff_weblogin_idx on p_staff (p_kardiaweb_login, p_partner_key);
 
 
+/* p_banking_details */
+create  index p_bankd_acct_idx on p_banking_details (a_ledger_number, a_account_code, p_banking_details_key);
+create  index p_bankd_bpartner_idx on p_banking_details (p_bank_partner_id, p_banking_details_key);
+create  index p_bankd_partner_idx on p_banking_details (p_partner_id, p_banking_details_key);
+/* create  index p_banking_details_pk on p_banking_details (p_banking_details_key)*/ 
+/* go */
+
+
+/* p_contact_usage_type */
+/* create  index p_contact_ut_pk on p_contact_usage_type (p_contact_usage_type_code)*/ 
+/* go */
+
+
+/* p_partner_relationship_type */
+/* create  index p_relat_type_pk on p_partner_relationship_type (p_relation_type)*/ 
+/* go */
+
+
 /* p_bulk_postal_code */
 /* create  index p_bulk_code_pk on p_bulk_postal_code (p_country_code,p_bulk_postal_code,p_bulk_code)*/ 
 /* go */
@@ -116,14 +124,6 @@ create  index p_staff_weblogin_idx on p_staff (p_kardiaweb_login, p_partner_key)
 
 /* p_pol_division */
 /* create  index p_poldiv_pk on p_pol_division (p_country_code, p_pol_division)*/ 
-/* go */
-
-
-/* p_banking_details */
-create  index p_bankd_acct_idx on p_banking_details (a_ledger_number, a_account_code, p_banking_details_key);
-create  index p_bankd_bpartner_idx on p_banking_details (p_bank_partner_id, p_banking_details_key);
-create  index p_bankd_partner_idx on p_banking_details (p_partner_id, p_banking_details_key);
-/* create  index p_banking_details_pk on p_banking_details (p_banking_details_key)*/ 
 /* go */
 
 
@@ -148,19 +148,13 @@ create  index p_gaz_type_idx on p_gazetteer (p_feature_type, p_country_code, p_f
 /* go */
 
 
-/* p_dup_check_tmp */
-create  index p_dc_username_idx on p_dup_check_tmp (s_username, p_partner_key);
-/* create  index p_dupcheck_pk on p_dup_check_tmp (p_partner_key,s_username)*/ 
+/* p_acquisition_code */
+/* create  index p_acqcode_pk on p_acquisition_code (p_acquisition_code)*/ 
 /* go */
 
 
 /* p_partner_sort_tmp */
 /* create  index p_sort_pk on p_partner_sort_tmp (p_partner_key,s_username,p_sort_session_id)*/ 
-/* go */
-
-
-/* p_acquisition_code */
-/* create  index p_acqcode_pk on p_acquisition_code (p_acquisition_code)*/ 
 /* go */
 
 
@@ -185,6 +179,12 @@ create  index p_search_stage_idx on p_partner_search_results (s_username,p_searc
 /* go */
 
 
+/* p_dup_check_tmp */
+create  index p_dc_username_idx on p_dup_check_tmp (s_username, p_partner_key);
+/* create  index p_dupcheck_pk on p_dup_check_tmp (p_partner_key,s_username)*/ 
+/* go */
+
+
 /* p_nondup */
 /* create  index p_nondup_pk on p_nondup (p_partner_key, p_nondup_partner_key)*/ 
 /* go */
@@ -201,6 +201,30 @@ create  index p_dup_rev_idx on p_dup (p_dup_partner_key, p_partner_key);
 /* create  index p_merge_pk on p_merge (p_partner_key_a, p_partner_key_b, p_data_source, p_data_key)*/ 
 /* go */
 create  index p_merge_rev_idx on p_merge (p_partner_key_b, p_partner_key_a, p_data_source, p_data_key);
+
+
+/* p_notification */
+/* create  index p_notify_pk on p_notification (p_notify_id)*/ 
+/* go */
+create  index p_notify_recip_idx on p_notification (p_recip_partner_key, p_notify_id);
+create  index p_notify_source_idx on p_notification (p_source_partner_key, p_notify_id);
+create  index p_notify_type_idx on p_notification (p_notify_type, p_object_id, p_recip_partner_key, p_notify_method, p_notify_method_item, p_notify_id);
+
+
+/* p_notification_type */
+/* create  index p_notify_type_pk on p_notification_type (p_notify_type)*/ 
+/* go */
+
+
+/* p_notification_method */
+/* create  index p_notify_method_pk on p_notification_method (p_notify_method)*/ 
+/* go */
+
+
+/* p_notification_pref */
+create  index p_notify_partner_idx on p_notification_pref (p_recip_partner_key, p_notify_type, p_notify_method, p_notify_method_item);
+/* create  index p_notify_pref_pk on p_notification_pref (p_notify_type, p_notify_method, p_notify_method_item, p_recip_partner_key)*/ 
+/* go */
 
 
 /* m_list */
@@ -239,14 +263,6 @@ create  index e_cnt_hist_par_idx on e_contact_history (p_partner_key, e_contact_
 /* go */
 create  index e_cnt_hist_type_idx on e_contact_history (e_contact_history_type, p_partner_key, e_contact_history_id);
 create  index e_cnt_hist_whom_idx on e_contact_history (e_whom, p_partner_key, e_contact_history_type, e_contact_history_id);
-
-
-/* e_activity */
-create  index e_act_par_idx on e_activity (p_partner_key, e_activity_group_id, e_activity_id);
-/* create  index e_act_pk on e_activity (e_activity_group_id, e_activity_id)*/ 
-/* go */
-create  index e_act_sort_idx on e_activity (e_sort_key, e_activity_group_id, e_activity_id);
-create  index e_act_type_idx on e_activity (e_activity_type, e_activity_group_id, e_activity_id);
 
 
 /* e_engagement_track */
@@ -353,6 +369,11 @@ create  index e_pardoc_rev_idx on e_partner_document (p_partner_key, e_document_
 create  index e_pardoc_work_idx on e_partner_document (e_workflow_instance_id, p_partner_key, e_document_id, e_pardoc_assoc_id);
 
 
+/* e_text_expansion */
+/* create  index e_exp_pk on e_text_expansion (e_exp_tag)*/ 
+/* go */
+
+
 /* e_workflow_type */
 /* create  index e_work_pk on e_workflow_type (e_workflow_id)*/ 
 /* go */
@@ -438,6 +459,19 @@ create  index e_dh_obj_idx on e_data_highlight (e_highlight_object_type, e_highl
 /* go */
 
 
+/* e_activity */
+create  index e_act_par_idx on e_activity (p_partner_key, e_activity_group_id, e_activity_id);
+/* create  index e_act_pk on e_activity (e_activity_group_id, e_activity_id)*/ 
+/* go */
+create  index e_act_sort_idx on e_activity (e_sort_key, e_activity_group_id, e_activity_id);
+create  index e_act_type_idx on e_activity (e_activity_type, e_activity_group_id, e_activity_id);
+
+
+/* e_trackactivity */
+/* create  index e_trkact_pk on e_trackactivity (p_partner_key,e_username,e_sort_key)*/ 
+/* go */
+
+
 /* e_ack */
 create  index e_ack_obj_idx on e_ack (e_object_type,e_object_id,e_ack_type,e_whom,e_ack_id);
 create  index e_ack_par2_idx on e_ack (p_dn_partner_key,e_ack_type,e_object_type,e_object_id,e_ack_id);
@@ -449,16 +483,6 @@ create  index e_ack_par_idx on e_ack (e_whom,e_ack_type,e_object_type,e_object_i
 
 /* e_ack_type */
 /* create  index e_ackt_pk on e_ack_type (e_ack_type)*/ 
-/* go */
-
-
-/* e_trackactivity */
-/* create  index e_trkact_pk on e_trackactivity (p_partner_key,e_username,e_sort_key)*/ 
-/* go */
-
-
-/* e_text_expansion */
-/* create  index e_exp_pk on e_text_expansion (e_exp_tag)*/ 
 /* go */
 
 
@@ -747,6 +771,34 @@ create  index a_fund_staff_partner_idx on a_fund_staff (p_staff_partner_key, a_l
 
 /* a_currency_exch_rate */
 /* create  index a_curr_pk on a_currency_exch_rate (a_ledger_number, a_base_currency_code, a_foreign_currency_code, a_exch_rate_date)*/ 
+/* go */
+
+
+/* a_bank_recon */
+/* create  index a_recon_pk on a_bank_recon (a_ledger_number, a_period, a_account_code)*/ 
+/* go */
+
+
+/* a_bank_recon_item */
+/* create  index a_recon_item_pk on a_bank_recon_item (a_ledger_number, a_period, a_account_code, a_line_item)*/ 
+/* go */
+
+
+/* a_dimension */
+create  index a_dim_fund_class_idx on a_dimension (a_dim_fund_class, a_dim_fund, a_dimension, a_ledger_number);
+create  index a_dim_fund_idx on a_dimension (a_dim_fund, a_dimension, a_ledger_number);
+create  index a_dim_ledger_number_idx on a_dimension (a_ledger_number, a_dimension);
+create  index a_dim_legacy_idx on a_dimension (a_legacy_code, a_dimension, a_ledger_number);
+/* create  index a_dim_pk on a_dimension (a_dimension, a_ledger_number)*/ 
+/* go */
+
+
+/* a_dimension_item */
+create  index a_dim_item_fund_class_idx on a_dimension_item (a_dim_fund_class, a_dim_fund, a_dimension, a_ledger_number, a_dimension_item);
+create  index a_dim_item_fund_idx on a_dimension_item (a_dim_item_fund, a_dimension, a_ledger_number, a_dimension_item);
+create  index a_dim_item_ledger_number_idx on a_dimension_item (a_ledger_number, a_dimension, a_dimension_item);
+create  index a_dim_item_legacy_idx on a_dimension_item (a_legacy_code, a_dimension, a_ledger_number, a_dimension_item);
+/* create  index a_dim_item_pk on a_dimension_item (a_dimension, a_ledger_number, a_dimension_item)*/ 
 /* go */
 
 
@@ -1153,6 +1205,7 @@ create  index t_sprint_idx on t_sprint (t_sprint_id);
 /* t_sprint_project */
 /* create  index t_sprintproj_pk on t_sprint_project (t_project_id, t_sprint_id)*/ 
 /* go */
+create  index t_sprintproj_rev_idx on t_sprint_project (t_sprint_id, t_project_id);
 
 
 /* t_sprint_time */

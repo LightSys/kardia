@@ -63,7 +63,7 @@ button_generic "widget/component-decl"
 		disable_color="#334466";
 		background=null;
 		widget_class=crm_iconbutton;
-		enabled=runclient(:button_generic:enabled);
+		enabled=runclient(:enabled:value);
 		}
 	    number_label "widget/label"
 		{

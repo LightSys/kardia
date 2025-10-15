@@ -31,14 +31,8 @@ alter table p_contact_info
 alter table p_contact_usage
 	add constraint p_contact_usg_pk primary key  (p_partner_key, p_contact_usage_type_code, p_contact_or_location, p_contact_location_id);
 
-alter table p_contact_usage_type
-	add constraint p_contact_ut_pk primary key  (p_contact_usage_type_code);
-
 alter table p_partner_relationship
 	add constraint p_partner_relationship_pk primary key  (p_partner_key, p_relation_type, p_relation_key);
-
-alter table p_partner_relationship_type
-	add constraint p_relat_type_pk primary key  (p_relation_type);
 
 alter table p_church
 	add constraint p_church_pk primary key  (p_partner_key);
@@ -52,6 +46,15 @@ alter table p_payee
 alter table p_staff
 	add constraint p_staff_pk primary key  (p_partner_key);
 
+alter table p_banking_details
+	add constraint p_banking_details_pk primary key  (p_banking_details_key);
+
+alter table p_contact_usage_type
+	add constraint p_contact_ut_pk primary key  (p_contact_usage_type_code);
+
+alter table p_partner_relationship_type
+	add constraint p_relat_type_pk primary key  (p_relation_type);
+
 alter table p_bulk_postal_code
 	add constraint p_bulk_code_pk primary key  (p_country_code,p_bulk_postal_code,p_bulk_code);
 
@@ -63,9 +66,6 @@ alter table p_country
 
 alter table p_pol_division
 	add constraint p_poldiv_pk primary key  (p_country_code, p_pol_division);
-
-alter table p_banking_details
-	add constraint p_banking_details_pk primary key  (p_banking_details_key);
 
 alter table p_banking_type
 	add constraint p_banking_type_pk primary key  (p_banking_type);
@@ -79,14 +79,11 @@ alter table p_gazetteer
 alter table p_gazetteer
 	add constraint p_gaz_name_clustered_idx unique  (p_feature_name, p_country_code, p_feature_type, p_feature_id);
 
-alter table p_dup_check_tmp
-	add constraint p_dupcheck_pk primary key  (p_partner_key,s_username);
+alter table p_acquisition_code
+	add constraint p_acqcode_pk primary key  (p_acquisition_code);
 
 alter table p_partner_sort_tmp
 	add constraint p_sort_pk primary key  (p_partner_key,s_username,p_sort_session_id);
-
-alter table p_acquisition_code
-	add constraint p_acqcode_pk primary key  (p_acquisition_code);
 
 alter table p_partner_search
 	add constraint p_search_pk primary key  (p_search_id);
@@ -100,6 +97,9 @@ alter table p_partner_search_results
 alter table p_search_stage_criteria
 	add constraint p_stage_criteria_pk primary key  (p_search_id,p_search_stage_id,p_criteria_name);
 
+alter table p_dup_check_tmp
+	add constraint p_dupcheck_pk primary key  (p_partner_key,s_username);
+
 alter table p_nondup
 	add constraint p_nondup_pk primary key  (p_partner_key, p_nondup_partner_key);
 
@@ -108,6 +108,18 @@ alter table p_dup
 
 alter table p_merge
 	add constraint p_merge_pk primary key  (p_partner_key_a, p_partner_key_b, p_data_source, p_data_key);
+
+alter table p_notification
+	add constraint p_notify_pk primary key  (p_notify_id);
+
+alter table p_notification_type
+	add constraint p_notify_type_pk primary key  (p_notify_type);
+
+alter table p_notification_method
+	add constraint p_notify_method_pk primary key  (p_notify_method);
+
+alter table p_notification_pref
+	add constraint p_notify_pref_pk primary key  (p_notify_type, p_notify_method, p_notify_method_item, p_recip_partner_key);
 
 alter table m_list
 	add constraint m_list_pk primary key  (m_list_code);
@@ -126,9 +138,6 @@ alter table e_contact_history_type
 
 alter table e_contact_history
 	add constraint e_cnt_hist_pk primary key  (e_contact_history_id);
-
-alter table e_activity
-	add constraint e_act_pk primary key  (e_activity_group_id, e_activity_id);
 
 alter table e_engagement_track
 	add constraint e_trk_pk primary key  (e_track_id);
@@ -178,6 +187,9 @@ alter table e_document_comment
 alter table e_partner_document
 	add constraint e_pardoc_pk primary key  (e_document_id, p_partner_key, e_pardoc_assoc_id);
 
+alter table e_text_expansion
+	add constraint e_exp_pk primary key  (e_exp_tag);
+
 alter table e_workflow_type
 	add constraint e_work_pk primary key  (e_workflow_id);
 
@@ -217,17 +229,17 @@ alter table e_highlights
 alter table e_data_highlight
 	add constraint e_dh_pk primary key  (e_highlight_subject, e_highlight_object_type, e_highlight_object_id);
 
+alter table e_activity
+	add constraint e_act_pk primary key  (e_activity_group_id, e_activity_id);
+
+alter table e_trackactivity
+	add constraint e_trkact_pk primary key  (p_partner_key,e_username,e_sort_key);
+
 alter table e_ack
 	add constraint e_ack_pk primary key  (e_ack_id);
 
 alter table e_ack_type
 	add constraint e_ackt_pk primary key  (e_ack_type);
-
-alter table e_trackactivity
-	add constraint e_trkact_pk primary key  (p_partner_key,e_username,e_sort_key);
-
-alter table e_text_expansion
-	add constraint e_exp_pk primary key  (e_exp_tag);
 
 alter table e_text_search_word
 	add constraint e_tsw_pk primary key  (e_word_id);
@@ -378,6 +390,18 @@ alter table a_currency
 
 alter table a_currency_exch_rate
 	add constraint a_curr_pk primary key  (a_ledger_number, a_base_currency_code, a_foreign_currency_code, a_exch_rate_date);
+
+alter table a_bank_recon
+	add constraint a_recon_pk primary key  (a_ledger_number, a_period, a_account_code);
+
+alter table a_bank_recon_item
+	add constraint a_recon_item_pk primary key  (a_ledger_number, a_period, a_account_code, a_line_item);
+
+alter table a_dimension
+	add constraint a_dim_pk primary key  (a_dimension, a_ledger_number);
+
+alter table a_dimension_item
+	add constraint a_dim_item_pk primary key  (a_dimension, a_ledger_number, a_dimension_item);
 
 alter table a_payroll
 	add constraint a_payroll_pk primary key  (a_ledger_number, a_payroll_group_id, a_payroll_id);
