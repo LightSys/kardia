@@ -52,6 +52,7 @@ plugin_rcpt_importprocess_200caseFix "system/query"
 			AND upper(isnull(:i_eg_donor_city,'')) = isnull(:i_eg_donor_city,'')
 			AND upper(isnull(:i_eg_donor_prefix,'')) = isnull(:i_eg_donor_prefix,'')
 			AND upper(isnull(:i_eg_donor_suffix,'')) = isnull(:i_eg_donor_suffix,'')
+			AND :a_ledger_number = :parameters:ledger
 		;
 
 		-- Mark these items complete.
@@ -61,5 +62,6 @@ plugin_rcpt_importprocess_200caseFix "system/query"
 			:i_eg_postprocess = substring(:i_eg_postprocess, 2, 99)
 		where
 			substring(:i_eg_postprocess, 1, 1) = 'C'
+			AND :a_ledger_number = :parameters:ledger
 	    ";
     }

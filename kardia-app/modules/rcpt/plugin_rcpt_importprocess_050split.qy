@@ -18,16 +18,17 @@ plugin_rcpt_importprocess_050splitTrx "system/query"
 		SELECT
 		    transaction_id = first(:i_eg_trx_uuid),
 		    :i_eg_donor_uuid, :i_eg_deposit_amt, 
-		    :i_eg_deposit_gross_amt, :i_eg_desig_notes
+		    :i_eg_deposit_gross_amt, :i_eg_desig_notes, :i_eg_service
 		FROM 
 		    /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows 
 		WHERE 
 		    :i_eg_gift_amount < :i_eg_deposit_gross_amt -- make sure was split into multiple
 		    AND substring(isnull(:i_eg_postprocess, ''), 1, 1) != 'S'
 		    AND :i_eg_desig_notes IS NOT NULL
+		    AND :a_ledger_number = :parameters:ledger
 		GROUP BY
 		    :i_eg_donor_uuid, :i_eg_deposit_amt, 
-		    :i_eg_deposit_gross_amt, :i_eg_desig_notes
+		    :i_eg_deposit_gross_amt, :i_eg_desig_notes, :i_eg_service
 		;
 
 		
@@ -81,7 +82,7 @@ plugin_rcpt_importprocess_050splitTrx "system/query"
 		    :s:i_eg_gift_trx_date,
 		    :s:i_eg_gift_settlement_date, 
 		    :s:i_eg_gift_lastfour,
-		    :i:i_eg_desig_name,
+		    :s:i_eg_desig_name,
 		    :s:i_eg_desig_notes,
 		    i_eg_postprocess = substring(:s:i_eg_postprocess, 2),	-- may need post processing from later modules
 		    :s:i_eg_service,
@@ -104,7 +105,8 @@ plugin_rcpt_importprocess_050splitTrx "system/query"
 		    COLLECTION match m 							-- the guide for what to match with
 		WHERE
 		    :m:transaction_id = :i:i_eg_trx_uuid
-		    AND i_eg_desig_notes IS NOT NULL
+		    AND :s:a_ledger_number = :parameters:ledger
+		    AND :i:a_ledger_number = :parameters:ledger
 		    AND substring(:s:i_eg_postprocess, 1, 1) = 'S'
 		    AND isnull(:s:i_eg_desig_notes, '') = isnull(:m:i_eg_desig_notes,'') -- make sure what donor sent was the same
 		    AND :s:i_eg_donor_uuid = :m:i_eg_donor_uuid -- make sure was the same donor
@@ -112,6 +114,7 @@ plugin_rcpt_importprocess_050splitTrx "system/query"
 		    AND :s:i_eg_deposit_gross_amt = :m:i_eg_deposit_gross_amt
 		    AND isnull(:s:i_eg_deposit_amt, 0) = isnull(:s:i_eg_net_amount, 0) -- make sure only one item in transaction to be split
 		    AND :s:i_eg_deposit_gross_amt = :s:i_eg_gift_amount
+		    AND :s:i_eg_service = :m:i_eg_service
 		;
 
 		-- add a checksum in case an assumption was violated
@@ -140,6 +143,8 @@ plugin_rcpt_importprocess_050splitTrx "system/query"
 		    :a:i_eg_postprocess = :a:i_eg_postprocess + 'S' -- add an extra 'S'; first 'S' is handled later
 		WHERE 
 		    :a:i_eg_trx_uuid = :i:i_eg_trx_uuid
+		    AND :a:i_eg_service = :i:i_eg_service
+		    AND :a:a_ledger_number = :parameters:ledger
 		;
 
 		-- now remove invalid from split
@@ -156,7 +161,8 @@ plugin_rcpt_importprocess_050splitTrx "system/query"
 		INSERT INTO
 		    COLLECTION trx_uuids
 		SELECT
-		    :s:i_eg_trx_uuid
+		    :s:i_eg_trx_uuid,
+		    :s:i_eg_service
 		FROM
 		    COLLECTION split s
 		GROUP BY 
@@ -170,7 +176,9 @@ plugin_rcpt_importprocess_050splitTrx "system/query"
 		    COLLECTION trx_uuids u
 		WHERE 
 		    substring(:i_eg_postprocess, 1, 1) = 'S' -- all of the new items won't start with S
+		    AND :i:a_ledger_number = :parameters:ledger
 		    AND :i:i_eg_trx_uuid = :u:i_eg_trx_uuid  -- limits to just the items worked on
+		    AND :i:i_eg_service = :u:i_eg_service
 		    AND :i:i_eg_gift_amount = :i:i_eg_deposit_gross_amt -- will be a single transaction
 		    AND :i:i_eg_net_amount = :i:i_eg_deposit_amt
 		;
@@ -201,7 +209,7 @@ plugin_rcpt_importprocess_050splitTrx "system/query"
 		FROM 
 		    COLLECTION split s
 		ON DUPLICATE
-		    :a_ledger_number, :i_eg_trx_uuid, :i_eg_desig_uuid, :i_eg_line_item
+		    :a_ledger_number, :i_eg_trx_uuid, :i_eg_desig_uuid, :i_eg_line_item, :i_eg_service
 		UPDATE SET
 		    :i_eg_deposit_date = :s:i_eg_deposit_date,
 		    :i_eg_deposit_uuid = :s:i_eg_deposit_uuid,
@@ -223,6 +231,7 @@ plugin_rcpt_importprocess_050splitTrx "system/query"
 		    :i_eg_postprocess = substring(:i_eg_postprocess, 2)
 		WHERE 
 		    substring(:i_eg_postprocess, 1, 1) = 'S'
+		    AND :a_ledger_number = :parameters:ledger
 		;
     ";
     }

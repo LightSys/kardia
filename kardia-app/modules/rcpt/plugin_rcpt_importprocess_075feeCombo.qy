@@ -28,12 +28,13 @@ plugin_rcpt_importprocess_075feeCombo "system/query"
 	SELECT
 	    :i_eg_trx_uuid, :i_eg_desig_uuid, :i_eg_gift_amount, 
 	    :i_eg_net_amount, :i_eg_deposit_gross_amt, :i_eg_deposit_amt,
-	    :a_ledger_number, :i_eg_line_item, :i_eg_postprocess
+	    :a_ledger_number, :i_eg_line_item, :i_eg_postprocess, :i_eg_service
 	FROM 
 	    /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows
 	WHERE 
 	    :i_eg_postprocess IS NOT NULL 
 	    AND substring(:i_eg_postprocess, 1, 1) == 'F'
+	    AND :a_ledger_number = :parameters:ledger
 	;
 
 	-- get all of the fees and the transactions that go with them
@@ -43,7 +44,7 @@ plugin_rcpt_importprocess_075feeCombo "system/query"
 	SELECT 
 	    :t:i_eg_trx_uuid, :t:i_eg_desig_uuid, :t:i_eg_gift_amount, 
 	    :t:i_eg_net_amount, :t:i_eg_deposit_gross_amt, :t:i_eg_deposit_amt,
-	    :t:a_ledger_number, :t:i_eg_line_item, 
+	    :t:a_ledger_number, :t:i_eg_line_item, :t:i_eg_service,
 	    fee_trx = :f:i_eg_trx_uuid, 
 	    fee_desig = :f:i_eg_desig_uuid, 
 	    fee_grs = :f:i_eg_gift_amount, 
@@ -61,8 +62,8 @@ plugin_rcpt_importprocess_075feeCombo "system/query"
 	WHERE 
 	    :f:i_eg_desig_uuid = :feeDesig:value
 	    AND :t:i_eg_trx_uuid = :f:i_eg_trx_uuid
+	    AND :t:i_eg_service = :f:i_eg_service
 	    AND :t:i_eg_desig_uuid != :feeDesig:value
-	    AND substring(:f:i_eg_postprocess, 1, 1) = 'F'
 	    AND :f:i_eg_deposit_amt IS NOT NULL
 	    AND :f:i_eg_net_amount IS NOT NULL
 	;
@@ -74,10 +75,10 @@ plugin_rcpt_importprocess_075feeCombo "system/query"
 	SELECT
 	    grs = convert('integer', round(100 * (:fee_grs - sum(truncate(:i:fee_share_grs, 2))), 0)),
 	    net = convert('integer', round(100 * (:fee_net - sum(truncate(:i:fee_share_net, 2))), 0)),
-	    :i:i_eg_trx_uuid
+	    :i:i_eg_trx_uuid, :i:i_eg_service
 	FROM COLLECTION feeSets i
 	GROUP BY
-	    :i:i_eg_trx_uuid
+	    :i:i_eg_trx_uuid, :i:i_eg_service
 	;
 
 	-- join leftover data to the feeSets
@@ -89,6 +90,7 @@ plugin_rcpt_importprocess_075feeCombo "system/query"
 	    :f:cents_net = :l:net
 	WHERE
 	    :l:i_eg_trx_uuid = :f:i_eg_trx_uuid	
+	    AND :l:i_eg_service = :f:i_eg_service
 	;
 	
 	-- no longer needed so clear
@@ -99,10 +101,11 @@ plugin_rcpt_importprocess_075feeCombo "system/query"
 	INSERT INTO 
 	    COLLECTION grossIndex
 	SELECT 
-	    ind = row_number(:i_eg_trx_uuid),
+	    ind = row_number(:i_eg_trx_uuid+:i_eg_service),
 	    :i_eg_desig_uuid,
 	    :i_eg_trx_uuid,
-	    :i_eg_line_item
+	    :i_eg_line_item,
+	    :i_eg_service
 	FROM 
 	    COLLECTION feeSets
 	WHERE 
@@ -114,10 +117,11 @@ plugin_rcpt_importprocess_075feeCombo "system/query"
 	INSERT INTO 
 	    COLLECTION netIndex
 	SELECT 
-	    ind = row_number(:i_eg_trx_uuid),
+	    ind = row_number(:i_eg_trx_uuid+:i_eg_service),
 	    :i_eg_desig_uuid,
 	    :i_eg_trx_uuid,
-	    :i_eg_line_item
+	    :i_eg_line_item,
+	    :i_eg_service
 	FROM 
 	    COLLECTION feeSets
 	WHERE 
@@ -136,9 +140,11 @@ plugin_rcpt_importprocess_075feeCombo "system/query"
 	    :f:i_eg_trx_uuid *= :g:i_eg_trx_uuid
 	    AND :f:i_eg_desig_uuid *= :g:i_eg_desig_uuid
 	    AND :f:i_eg_line_item *= :g:i_eg_line_item
+	    AND :f:i_eg_service *= :g:i_eg_service
 	    AND :f:i_eg_trx_uuid *= :n:i_eg_trx_uuid
 	    AND :f:i_eg_desig_uuid *= :n:i_eg_desig_uuid
 	    AND :f:i_eg_line_item *= :n:i_eg_line_item
+	    AND :f:i_eg_service *= :n:i_eg_service
 	;
 
 	-- clear out uneeded collections
@@ -174,11 +180,13 @@ plugin_rcpt_importprocess_075feeCombo "system/query"
 	   net_sum = sum(:i_eg_net_amount),
 	   :i_eg_deposit_gross_amt,
 	   :i_eg_deposit_amt,
-	   :i_eg_trx_uuid
+	   :i_eg_trx_uuid,
+	   :i_eg_service
 	FROM 
 	    COLLECTION feeSets
 	GROUP BY
-	    :i_eg_trx_uuid
+	    :i_eg_trx_uuid,
+	    :i_eg_service
 	;
 
 	-- Remove any transactions that don't sum properly 
@@ -187,6 +195,7 @@ plugin_rcpt_importprocess_075feeCombo "system/query"
 	    COLLECTION checksum c
 	WHERE
 	    :f:i_eg_trx_uuid = :c:i_eg_trx_uuid
+	    AND :f:i_eg_service = :c:i_eg_service
 	    AND (:c:i_eg_deposit_gross_amt != :c:grs_sum 
 		OR :c:i_eg_deposit_amt != :c:net_sum)
 	;
@@ -203,6 +212,7 @@ plugin_rcpt_importprocess_075feeCombo "system/query"
 	    AND :i:a_ledger_number = :f:a_ledger_number
 	    AND :i:i_eg_desig_uuid = :f:i_eg_desig_uuid
 	    AND :i:i_eg_line_item = :f:i_eg_line_item
+	    AND :i:i_eg_service = :f:i_eg_service
 	;
 	
 
@@ -213,11 +223,12 @@ plugin_rcpt_importprocess_075feeCombo "system/query"
 	WHERE 
 	    :i:i_eg_trx_uuid = :f:i_eg_trx_uuid 
 	    AND :i:a_ledger_number = :f:a_ledger_number
+	    AND :i:i_eg_service = :f:i_eg_service
 	    AND substring(:i:i_eg_postprocess, 1, 1) = 'F'
 	    AND :i:i_eg_desig_uuid = :feeDesig:value
 	GROUP BY
 	    -- only want to try and delete it once
-	    :i:i_eg_trx_uuid
+	    :i:i_eg_trx_uuid, :i:i_eg_service
 	;
 
 	 -- remove the F if could have run, and move to back if waiting on net amounts
@@ -230,6 +241,7 @@ plugin_rcpt_importprocess_075feeCombo "system/query"
 		)
 	where
 	    substring(:i_eg_postprocess, 1, 1) = 'F'
+	    AND :a_ledger_number = :parameters:ledger
 	
     ";
     }
