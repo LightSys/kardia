@@ -63,7 +63,7 @@ plugin_rcpt_importprocess_100match "system/query"
 				from 
 				    /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e2
 				where
-				    upper(:e1:i_eg_desig_name) = upper(:e2:i_eg_desig_name) and
+				    upper(:e1:i_eg_desig_uuid) = upper(:e2:i_eg_desig_uuid) and
 				    :e1:a_ledger_number = :e2:a_ledger_number and
 				    :e2:i_eg_fundmap_future = 1 and
 				    :e2:i_eg_fundmap_confidence = 2 and
@@ -77,7 +77,7 @@ plugin_rcpt_importprocess_100match "system/query"
 				    from
 					/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e2
 				    where
-					upper(:e1:i_eg_desig_name) = upper(:e2:i_eg_desig_name) and
+					upper(:e1:i_eg_desig_uuid) = upper(:e2:i_eg_desig_uuid) and
 					:e1:a_ledger_number = :e2:a_ledger_number and
 					:e2:i_eg_fundmap_future = 1 and
 					:e2:i_eg_fundmap_confidence = 2 and
@@ -108,7 +108,7 @@ plugin_rcpt_importprocess_100match "system/query"
 				from
 				    /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e2
 				where
-				    upper(:e1:i_eg_desig_name) = upper(:e2:i_eg_desig_name) and
+				    upper(:e1:i_eg_desig_uuid) = upper(:e2:i_eg_desig_uuid) and
 				    :e1:a_ledger_number = :e2:a_ledger_number and
 				    :e1:a_fund = :e2:a_fund and 
 				    :e2:i_eg_acctmap_future = 1 and 
@@ -125,7 +125,7 @@ plugin_rcpt_importprocess_100match "system/query"
 				    from
 					/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e2
 				    where
-					upper(:e1:i_eg_desig_name) = upper(:e2:i_eg_desig_name) and
+					upper(:e1:i_eg_desig_uuid) = upper(:e2:i_eg_desig_uuid) and
 					:e1:a_ledger_number = :e2:a_ledger_number and
 					:e1:a_fund = :e2:a_fund and
 					:e2:i_eg_acctmap_future = 1 and
@@ -156,7 +156,7 @@ plugin_rcpt_importprocess_100match "system/query"
 				from
 				    /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e2
 				where
-				    upper(:e1:i_eg_desig_name) = upper(:e2:i_eg_desig_name) and
+				    upper(:e1:i_eg_desig_uuid) = upper(:e2:i_eg_desig_uuid) and
 				    :e1:a_ledger_number = :e2:a_ledger_number and
 				    :e1:a_fund = :e2:a_fund and
 				    :e2:i_eg_acctmap_future = 1 and
@@ -172,7 +172,7 @@ plugin_rcpt_importprocess_100match "system/query"
 				    from
 					/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows e2
 				    where
-					upper(:e1:i_eg_desig_name) = upper(:e2:i_eg_desig_name) and
+					upper(:e1:i_eg_desig_uuid) = upper(:e2:i_eg_desig_uuid) and
 					:e1:a_ledger_number = :e2:a_ledger_number and 
 					:e1:a_fund = :e2:a_fund and
 					:e2:i_eg_acctmap_future = 1 and
