@@ -291,6 +291,7 @@ gift_import "widget/component-decl"
 					kardia_desig_info = :eg:a_fund + isnull(' ' + :c:a_fund_desc,''),
 					amount = :eg:i_eg_gift_amount,
 					id_gs = isnull(:eg:i_eg_processor, '') + isnull(' (' + :eg:i_eg_service + ')',''),
+					gs_detail_label = 'Information from Giving Service' + condition(char_length(isnull(:eg:i_eg_service, '')) > 0, ' ' + :eg:i_eg_service, '') + ':',
 					:eg:p_donor_partner_key,
 					:eg:a_fund,
 					:eg:a_account_code,
@@ -454,7 +455,7 @@ gift_import "widget/component-decl"
 						width=271;
 						spacing=4;
 
-						import_desc "widget/label" { height=16; style=bold; text="Information from Giving Service:"; align=center; }
+						import_desc "widget/label" { height=16; style=bold; fieldname=gs_detail_label; align=center; }
 						disp_pane "widget/pane"
 						    {
 						    height=72;
@@ -1080,6 +1081,7 @@ gift_import "widget/component-decl"
 								'/sys/images/red_x.gif')
 							    )
 							),
+				    gs_code = isnull(:eg:i_eg_service, ''),
 				    deposit_date = substring(convert(string,:eg:i_eg_deposit_date),1,11) + condition(:eg:i_eg_deposit_date > :per:a_end_date or :eg:i_eg_deposit_date < :per:a_start_date, ' *', ''),
 				    :eg:i_eg_service,
 				    :eg:i_eg_deposit_date,
@@ -1151,6 +1153,7 @@ gift_import "widget/component-decl"
 
 			dep_st_stat "widget/table-column" { width=34; fieldname=dep_import_status; title="Dep."; type=image; }
 			dep_st_feestat "widget/table-column" { width=34; fieldname=fee_import_status; title="Fees"; type=image; }
+			dep_st_gscode "widget/table-column" { width=48; fieldname=gs_code; title="Serv."; }
 			dep_st_date "widget/table-column" { width=94; fieldname=deposit_date; title="Deposited"; }
 			dep_st_giftdates "widget/table-column" { width=238; fieldname=gift_date_range; title="Gift Dates"; }
 			dep_st_numgift "widget/table-column" { width=64; fieldname=gift_cnt; title="#Gifts"; }
