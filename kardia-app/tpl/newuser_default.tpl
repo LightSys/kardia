@@ -6,6 +6,7 @@ newuser_default "widget/template"
         font_name =  "Arial" ;
         font_size = 12;
         show_diagnostics = 0;
+        dpi_scaling = 0;
         }
     page_style "widget/page"
 	{
