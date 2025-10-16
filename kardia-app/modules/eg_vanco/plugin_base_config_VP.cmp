@@ -51,7 +51,7 @@ plugin_base_config_ss "widget/component-decl"
 		vp_label_0 "widget/label" { height=10; text="Select this checkbox to allow Kardia to import data from Vanco Payments using Kardia's Gift Import tool."; }
 		enab_hbox "widget/hbox"
 		    {
-		    height=24; spacing=10;
+		    height=20; spacing=10;
 		    vp_enab "widget/component" { path="/sys/cmp/smart_field.cmp"; height=25; field="GiftImport_VP"; width=120; text="Enabled:"; ctl_type=checkbox; enab_hints "widget/hints" { style=notnull; } }
 		    vp_enab_pmx "widget/component" { path="/sys/cmp/smart_field.cmp"; height=25; field="GiftImport_VPMX"; text="Enable PMX:"; ctl_type=checkbox; enab_vp_hints "widget/hints" { style=notnull; } }
 		    }
@@ -63,7 +63,7 @@ plugin_base_config_ss "widget/component-decl"
 		vp_pmx_host "widget/component" { path="/sys/cmp/smart_field.cmp"; height=15; field="VP_PMX_Site"; text="PMX Hostname:"; width=500; ctl_type=editbox; }
 		vp_pmx_id "widget/component" { path="/sys/cmp/smart_field.cmp"; height=15; field="VP_PMX_Username"; text="PMX API ID:"; width=300; ctl_type=editbox; }
 		vp_pmx_secret "widget/component" { path="/sys/cmp/smart_field.cmp"; height=15; field="VP_PMX_Secret"; text="PMX API Secret:"; width=500; ctl_type=editbox; }
-		vp_pmx_client "widget/component" { path="/sys/cmp/smart_field.cmp"; height=25; field="VP_PMX_Client"; text="PMX API Client ID:"; width=500; ctl_type=editbox; }
+		vp_pmx_client "widget/component" { path="/sys/cmp/smart_field.cmp"; height=22; field="VP_PMX_Client"; text="PMX API Client ID:"; width=500; ctl_type=editbox; }
 
 		vp_label_2 "widget/label" { height=35; text="The Lookback controls how many days back Kardia looks at when it connects to Vanco to examine the online giving data for new and changed gift information.  Set this to at least a day longer than the number of days between gift imports. Be careful not to set the lookback to too long; the process will be slowed."; }
 		lb_settle_hbox "widget/hbox" { height=25; spacing=10; ss_lookback "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="VP_Lookback"; text="Lookback:"; width=200; ctl_type=editbox; } }
@@ -100,4 +100,3 @@ plugin_base_config_ss "widget/component-decl"
 	    }
 	}
     }
-

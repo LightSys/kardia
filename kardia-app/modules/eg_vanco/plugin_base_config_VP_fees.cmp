@@ -1,0 +1,216 @@
+$Version=2$
+plugin_base_config_fees "widget/component-decl"
+    {
+    width = 828;
+    height = 490;
+    
+    title = "Vanco Return Fees";
+    description = "Configure return fees for the electronic giving integration with Vanco's online giving service. This integration allows donations to be easily imported into the Kardia receipting and finance system. These fee numbers allow the integration to keep the ledger correctly updated.";
+    sequence = 1002;
+    
+    vbox "widget/vbox"
+	{
+	x = 0; y = 0;
+	width = 828; height = 490;
+	spacing = 7;
+	
+	ledger_lbl "widget/label" { height = 16; style = bold; text="Accounting Ledger Selection:"; }
+	
+	// Ledger selection dropdown.
+	ledger_osrc "widget/osrc"
+	    {
+	    sql = "
+		select
+		    :name,
+		    label = :a_ledger_number + ' - ' + :a_ledger_desc,
+		    :a_ledger_number
+		from
+		    /apps/kardia/data/Kardia_DB/a_ledger/rows
+		";
+	    
+	    ledger_drop_down "widget/dropdown"
+		{
+		height = 24; width = 300;
+		mode = objectsource;
+		fieldname = label;
+		numdisplay = 12;
+		}
+	    }
+	
+	sep1 "widget/autolayoutspacer" { height = 1; }
+	
+	config_lbl "widget/label" { height = 16; style = bold; text = "Vanco Return Fees Configuration:"; }
+	
+	// Fee entry fields.
+	config_osrc "widget/osrc"
+	    {
+	    a_ledger_number "widget/parameter" { type = string; }
+	    sql = "
+		select *
+		from object expression('/apps/kardia/modules/gl/accounting_config.qyp/' + :parameters:a_ledger_number)
+		";
+	    
+	    // Link the ledger number variable to the ledger dropdown (above).
+	    config_link "widget/rule"
+		{
+		ruletype = osrc_relationship;
+		target = ledger_osrc;
+		key_1 = a_ledger_number;
+		target_key_1 = a_ledger_number;
+		}
+	    
+	    config_form "widget/form"
+		{
+		allow_query = no;
+		
+		hbox1 "widget/hbox"
+		    {
+		    height = 25;
+		    spacing = 4;
+		    
+		    // American Express Fee Field
+		    vp_amex "widget/component"
+			{
+			width = 200; label_width = 150;
+			path = "/sys/cmp/smart_field.cmp";
+			ctl_type = editbox;
+			
+			text = "American Express Fee:";
+			field = "VP_Fee_Text_AMEX";
+			}
+		    label_amex "widget/label"
+			{
+			y = 3;
+			width = 11;
+			text = "%";
+			}
+		    
+		    // Data processing and validation.
+		    var_amex "widget/variable" { fieldname = "VP_Fee_AMEX"; type = string; }
+		    connector_amex "widget/connector"
+			{
+			event = BeforeSave;
+			source = config_form;
+			target = var_amex;
+			action = SetValue;
+			Value = runclient(convert(string, convert(integer, :vp_amex:value) / 100.0));
+			}
+		    validate_var_amex "widget/connector"
+			{
+			event = BeforeSave;
+			event_condition = runclient(:var_amex:value == "NaN");
+			event_cancel = runclient(:var_amex:value == "NaN");
+			source = config_form;
+			
+			// Display error to user.
+			target = plugin_base_config_fees;
+			action = Alert;
+			Message = runclient("Invalid American Express Fee: " + :vp_amex:value);
+			}
+		    }
+		
+		hbox2 "widget/hbox"
+		    {
+		    height = 25;
+		    spacing = 4;
+		    
+		    // Default Fee Field
+		    vp_default "widget/component"
+			{
+			width = 200; label_width = 150;
+			path = "/sys/cmp/smart_field.cmp";
+			ctl_type = editbox;
+			
+			text = "Default Fee:";
+			field = "VP_Fee_Text_Def";
+			}
+		    label_default "widget/label"
+			{
+			y = 3;
+			width = 11;
+			text = "%";
+			}
+		    
+		    // Data processing and validation.
+		    var_default "widget/variable" { type = string; fieldname = "VP_Fee_Default"; }
+		    connector_default "widget/connector"
+			{
+			event = BeforeSave;
+			source = config_form;
+			target = var_default;
+			action = SetValue;
+			Value = runclient(convert(string, convert(integer, :vp_default:value) / 100.0));
+			}
+		    validate_var_default "widget/connector"
+			{
+			event = BeforeSave;
+			event_condition = runclient(:var_default:value == "NaN");
+			event_cancel = runclient(:var_default:value == "NaN");
+			source = config_form;
+			
+			// Display error to user.
+			target = plugin_base_config_fees;
+			action = Alert;
+			Message = runclient("Invalid Default Fee: " + :vp_default:value);
+			}
+		    }
+		
+		hbox3 "widget/hbox"
+		    {
+		    height = 20;
+		    spacing = 5;
+		    
+		    // Flat Rate Field
+		    vp_flat_rate "widget/component"
+			{
+			width = 200; label_width = 150;
+			path = "/sys/cmp/smart_field.cmp";
+			ctl_type = editbox;
+			
+			text = "Flat Rate Fee: $";
+			field = "VP_Fee_Flat";
+			}
+		    
+		    // Data processing and validation.
+		    validate_vp_flat_rate "widget/connector"
+			{
+			event = BeforeSave;
+			event_condition = runclient(convert(string, convert(integer, :vp_flat_rate:value) / 1.0) == "NaN");
+			event_cancel = runclient(convert(string, convert(integer, :vp_flat_rate:value) / 1.0) == "NaN");
+			source = config_form;
+			
+			// Display error to user.
+			target = plugin_base_config_fees;
+			action = Alert;
+			Message = runclient("Invalid Flat Rate: " + :vp_flat_rate:value);
+			}
+		    }
+		}
+	    }
+	
+	controls_hbox "widget/hbox"
+	    {
+	    height = 24;
+	    spacing = 10;
+	    align = center;
+	    
+	    save_button "widget/textbutton"
+		{
+		height = 24; width = 130;
+		text = "Save";
+		enabled = runclient(:config_form:is_savable);
+		
+		on_save "widget/connector" { event = Click; target = config_form; action = Save; }
+		}
+	    
+	    cancel_button "widget/textbutton"
+		{
+		height = 24; width = 130;
+		text = "Cancel";
+		enabled = runclient(:config_form:is_discardable);
+		
+		on_cancel "widget/connector" { event = Click; target = config_form; action = Discard; }
+		}
+	    }
+	}
+    }
