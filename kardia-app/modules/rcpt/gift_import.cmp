@@ -188,7 +188,7 @@ gift_import "widget/component-decl"
 				cx__case_insensitive=1;
 				//use_having=1;
 				objname=runclient("eg");
-				field_list="*i_eg_donor_name*,*i_eg_desig_name*,*i_eg_desig_notes*,p_donor_partner_key,*i_eg_donor_email*,i_eg_donor_city*,i_eg_donor_state";
+				field_list="*i_eg_donor_name*,*i_eg_desig_name*,*i_eg_desig_uuid*,*i_eg_desig_notes*,p_donor_partner_key,*i_eg_donor_email*,i_eg_donor_city*,i_eg_donor_state";
 				query=runclient(:search_eb:content);
 				}
 			    }
@@ -286,7 +286,7 @@ gift_import "widget/component-decl"
 					kardia_donor_info = :eg:p_donor_partner_key + isnull(' ' + :p:p_org_name, '') + isnull(' ' + :p:p_given_name,'') + isnull(' ' + :p:p_surname,'') + isnull(' (' + :l:p_city + isnull(', ' + :l:p_state_province, '') + ')', ''),
 					kardia_donor_name = isnull(' ' + :p:p_org_name, '') + isnull(' ' + :p:p_given_name,'') + isnull(' ' + :p:p_surname,''),
 					has_donor_rec = (select count(1) from /apps/kardia/data/Kardia_DB/p_donor/rows d where :d:a_gl_ledger_number = :eg:a_ledger_number and :d:p_partner_key = :eg:p_donor_partner_key),
-					gs_desig_info = :eg:i_eg_desig_name,
+					gs_desig_info = :eg:i_eg_desig_uuid + isnull(' ' + :eg:i_eg_desig_name, ''),
 					kardia_desig_info = :eg:a_fund + isnull(' ' + :c:a_fund_desc,''),
 					amount = :eg:i_eg_gift_amount,
 					:eg:p_donor_partner_key,
@@ -467,7 +467,9 @@ gift_import "widget/component-decl"
 
 						gs_email "widget/component" { height=16; path="/sys/cmp/smart_field.cmp"; field=i_eg_donor_email; ctl_type=label; text="Email:"; label_width=60; label_valign=top; }
 						gs_phone "widget/component" { height=16; path="/sys/cmp/smart_field.cmp"; field=i_eg_donor_phone; ctl_type=label; text="Phone:"; label_width=60; label_valign=top; }
-						gs_desig "widget/component" { height=22; path="/sys/cmp/smart_field.cmp"; field=i_eg_desig_name; ctl_type=label; text="Desig.:"; label_width=60; label_valign=top; }
+						gs_desig_name "widget/component" { height=16; path="/sys/cmp/smart_field.cmp"; field=i_eg_desig_name; ctl_type=label; text="Desig.:"; label_width=60; label_valign=top; }
+						gs_desig_uuid "widget/component" { height=22; path="/sys/cmp/smart_field.cmp"; field=i_eg_desig_uuid; ctl_type=label; text=""; label_width=60; label_valign=top; }
+
 						gs_notes "widget/component" { height=70; path="/sys/cmp/smart_field.cmp"; field=i_eg_desig_notes; ctl_type=label; text="Notes:"; label_width=60; label_valign=top; }
 						}
 
@@ -1075,7 +1077,7 @@ gift_import "widget/component-decl"
 					SELECT
 						trx_date = substring(convert(string,:eg:i_eg_gift_trx_date),1,11),
 						:eg:a_fund,
-						cctext = isnull(:eg:a_fund + ' - ' + isnull(:c:a_fund_desc, '**INVALID**'), 'Needs QA: ' + :eg:i_eg_desig_name),
+						cctext = isnull(:eg:a_fund + ' - ' + isnull(:c:a_fund_desc, '**INVALID**'), 'Needs QA: ' + :eg:i_eg_desig_uuid + isnull(' ' + :eg:i_eg_desig_name, '')),
 						:eg:i_eg_gift_amount,
 						:eg:i_eg_net_amount,
 						:eg:a_batch_number,
@@ -1290,7 +1292,8 @@ gift_import "widget/component-decl"
 		id_settdate "widget/component" { path="/sys/cmp/smart_field.cmp"; field=i_eg_gift_settlement_date; text="Settlement:"; ctl_type=label; }
 		id_depdate "widget/component" { path="/sys/cmp/smart_field.cmp"; field=i_eg_deposit_date; text="Deposited:"; ctl_type=label; }
 		id_depid "widget/component" { path="/sys/cmp/smart_field.cmp"; field=i_eg_deposit_uuid; text="Deposit ID:"; ctl_type=label; }
-		id_desig "widget/component" { path="/sys/cmp/smart_field.cmp"; field=i_eg_desig_name; text="Designation:"; ctl_type=label; }
+		id_desig_name "widget/component" { path="/sys/cmp/smart_field.cmp"; field=i_eg_desig_name; text="Designation:"; ctl_type=label; }
+		id_desig_uuid "widget/component" { path="/sys/cmp/smart_field.cmp"; field=i_eg_desig_uuid; text=""; ctl_type=label; }
 		id_anon "widget/component" { path="/sys/cmp/smart_field.cmp"; field=i_eg_anonymous; text="Anonymous?"; ctl_type=label; }
 		id_notes "widget/component" { path="/sys/cmp/smart_field.cmp"; field=i_eg_desig_notes; text="Notes:"; ctl_type=label; }
 		}
