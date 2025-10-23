@@ -1,4 +1,3 @@
-
 $Version=2$
 myquery "system/query"
     {
@@ -12,20 +11,33 @@ myquery "system/query"
 		    from /apps/kardia/data/Kardia_DB/a_config/rows
 		    where :a_config_name = 'VP_Lookback'
 		    )),
-		:vancoKey:fromDate = dateformat(
-		    dateadd('day', 
-			-1 * convert( 'integer', (
-			    select first(:a_config_value)
-			    from /apps/kardia/data/Kardia_DB/a_config/rows
-			    where :a_config_name = 'VP_Lookback'
-			    )),
-			convert('datetime', isnull((select first(:a_config_value) from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'VP_StartDate'),getdate()))
-		    ),
-		    'yyyy-MM-dd'),
-		:vancoKey:toDate = dateformat(isnull((select first(:a_config_value) from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'VP_StartDate'), getdate()), 'yyyy-MM-dd')
+		:vancoKey:toDate = dateformat(getdate(), 'yyyy-MM-dd')
             FROM
                 /apps/kardia/modules/eg_vanco/egvapi_login.http
             ;
+
+	    DECLARE OBJECT config_values;
+	    SELECT
+		:config_values:amex_fee = round(convert('double', (
+		    select first(:a_config_value)
+		    from /apps/kardia/data/Kardia_DB/a_config/rows
+		    where :a_config_name = 'VP_Fee_Amex'
+		)) / 100.0, 6),
+		:config_values:default_fee = round(convert('double', (
+		    select first(:a_config_value)
+		    from /apps/kardia/data/Kardia_DB/a_config/rows
+		    where :a_config_name = 'VP_Fee_Default'
+		)) / 100.0, 6),
+		:config_values:flat_fee = convert('money', (
+		    select first(:a_config_value)
+		    from /apps/kardia/data/Kardia_DB/a_config/rows
+		    where :a_config_name = 'VP_Fee_Flat'
+		)),
+		:config_values:use_depo = (
+		    select first(:a_config_value) 
+		    from /apps/kardia/data/Kardia_DB/a_config/rows 
+		    where :a_config_name = 'VP_UseDepo')
+	    ;
 
 	    -- get the fund histories
 	    DECLARE COLLECTION dataQuery;
@@ -197,7 +209,7 @@ myquery "system/query"
 		-- set status to pending if the deposit date is in the future
 		i_eg_status = condition((:t:CCStatus == 'P' AND char_length(:t:ReturnCode) <= 0) OR (char_length(:t:CCStatus) <= 0), 
 				condition(datediff('day', getdate(), convert('datetime', 
-					condition((select first(:a_config_value) from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'VP_UseDepo') == '1',
+					condition(:config_values:use_depo == '1',
 					:t:DepositDate, :t:SettlementDate)
 				)) <= 0, 'paid', 'pending'),
 			'returned'), -- either return code exists or CCStatus was E or F. Either way, mark as a return 
