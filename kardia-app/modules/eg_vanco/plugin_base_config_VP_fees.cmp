@@ -76,7 +76,7 @@ plugin_base_config_fees "widget/component-decl"
 			ctl_type = editbox;
 			
 			text = "American Express Fee:";
-			field = "VP_Fee_Text_AMEX";
+			field = "VP_Fee_Amex";
 			}
 		    label_amex "widget/label"
 			{
@@ -85,21 +85,12 @@ plugin_base_config_fees "widget/component-decl"
 			text = "%";
 			}
 		    
-		    // Data processing and validation.
-		    var_amex "widget/variable" { fieldname = "VP_Fee_AMEX"; type = string; }
-		    connector_amex "widget/connector"
-			{
-			event = BeforeSave;
-			source = config_form;
-			target = var_amex;
-			action = SetValue;
-			Value = runclient(convert(string, convert(integer, :vp_amex:value) / 100.0));
-			}
+		    // Data Validation.
 		    validate_var_amex "widget/connector"
 			{
 			event = BeforeSave;
-			event_condition = runclient(:var_amex:value == "NaN");
-			event_cancel = runclient(:var_amex:value == "NaN");
+			event_condition = runclient(convert(string, convert(double, :vp_amex:value) / 1.0) == "NaN");
+			event_cancel = runclient(convert(string, convert(double, :vp_amex:value) / 1.0) == "NaN");
 			source = config_form;
 			
 			// Display error to user.
@@ -122,7 +113,7 @@ plugin_base_config_fees "widget/component-decl"
 			ctl_type = editbox;
 			
 			text = "Default Fee:";
-			field = "VP_Fee_Text_Def";
+			field = "VP_Fee_Default";
 			}
 		    label_default "widget/label"
 			{
@@ -132,20 +123,11 @@ plugin_base_config_fees "widget/component-decl"
 			}
 		    
 		    // Data processing and validation.
-		    var_default "widget/variable" { type = string; fieldname = "VP_Fee_Default"; }
-		    connector_default "widget/connector"
-			{
-			event = BeforeSave;
-			source = config_form;
-			target = var_default;
-			action = SetValue;
-			Value = runclient(convert(string, convert(integer, :vp_default:value) / 100.0));
-			}
 		    validate_var_default "widget/connector"
 			{
 			event = BeforeSave;
-			event_condition = runclient(:var_default:value == "NaN");
-			event_cancel = runclient(:var_default:value == "NaN");
+			event_condition = runclient(convert(string, convert(double, :vp_default:value) / 1.0) == "NaN");
+			event_cancel = runclient(convert(string, convert(double, :vp_default:value) / 1.0) == "NaN");
 			source = config_form;
 			
 			// Display error to user.
@@ -175,8 +157,8 @@ plugin_base_config_fees "widget/component-decl"
 		    validate_vp_flat_rate "widget/connector"
 			{
 			event = BeforeSave;
-			event_condition = runclient(convert(string, convert(integer, :vp_flat_rate:value) / 1.0) == "NaN");
-			event_cancel = runclient(convert(string, convert(integer, :vp_flat_rate:value) / 1.0) == "NaN");
+			event_condition = runclient(convert(string, convert(double, :vp_flat_rate:value) / 1.0) == "NaN");
+			event_cancel = runclient(convert(string, convert(double, :vp_flat_rate:value) / 1.0) == "NaN");
 			source = config_form;
 			
 			// Display error to user.
