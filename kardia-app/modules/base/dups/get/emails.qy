@@ -1,0 +1,18 @@
+$Version=2$
+dups_test_query "system/query"
+    {
+    sql = "
+	print 'get/emails.qy start'
+	SELECT
+	    key = :p:p_partner_key,
+	    email = :c:p_contact_data
+	FROM
+	    identity /apps/kardia/data/Kardia_DB/p_partner/rows p,
+	    /apps/kardia/data/Kardia_DB/p_contact_info/rows c
+	WHERE
+	    :p:p_partner_key = :c:p_partner_key
+	    AND :c:p_contact_type = 'E'
+	;
+	print 'get/emails.qy end'
+    ";
+    }

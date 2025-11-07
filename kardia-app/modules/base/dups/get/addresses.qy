@@ -1,0 +1,25 @@
+$Version=2$
+dups_test_query "system/query"
+    {
+    sql = "
+	print 'get/addresses.qy start'
+	SELECT
+	    key = :p:p_partner_key,
+	    address = ''
+		+ isnull(:l:p_in_care_of, '')
+		+ isnull(:l:p_address_1, '')
+		+ isnull(:l:p_address_2, '')
+		+ isnull(:l:p_address_3, '')
+		+ isnull(:l:p_city, '')
+		+ isnull(:l:p_state_province, '')
+		+ isnull(:l:p_country_code, '')
+		+ isnull(:l:p_postal_code, '')
+	FROM
+	    identity /apps/kardia/data/Kardia_DB/p_partner/rows p,
+	    /apps/kardia/data/Kardia_DB/p_location/rows l
+	WHERE
+	    :p:p_partner_key = :l:p_partner_key
+	;
+	print 'get/addresses.qy end'
+    ";
+    }

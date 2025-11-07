@@ -1,0 +1,56 @@
+$Version=2$
+dups_test_query "system/query"
+    {
+    sql = "
+	print 'get/concats.qy start'
+	SELECT
+	    key = :p:p_partner_key,
+	    data = ''
+		-- Name
+		+ isnull(:p_given_name, '')
+		+ isnull(condition(
+		        char_length(isnull(:p_given_name, '')) > 1
+		    AND char_length(isnull(:p_surname, '')) > 1
+		    AND :p_given_name != :p_preferred_name
+		    AND :p_surname != :p_preferred_name,
+		    :p_preferred_name,
+		    ''
+		), '')
+		+ isnull(:p_surname, '')
+		+ isnull(:p_org_name, '')
+		+ '; '
+		
+	        -- Email
+		+ isnull(:e:p_contact_data, '')
+		+ '; '
+		
+	        -- Phone
+		+ isnull(:ph:p_phone_country, '')
+		+ isnull(:ph:p_phone_area_city, '')
+		+ isnull(:ph:p_contact_data, '')
+		+ '; '
+		
+		-- Address
+		+ isnull(:l:p_in_care_of, '')
+		+ isnull(:l:p_address_1, '')
+		+ isnull(:l:p_address_2, '')
+		+ isnull(:l:p_address_3, '')
+		+ isnull(:l:p_city, '')
+		+ isnull(:l:p_state_province, '')
+		+ isnull(:l:p_country_code, '')
+		+ isnull(:l:p_postal_code, '')
+	FROM
+	    identity /apps/kardia/data/Kardia_DB/p_partner/rows p,
+	    /apps/kardia/data/Kardia_DB/p_contact_info/rows e,
+	    /apps/kardia/data/Kardia_DB/p_contact_info/rows ph,
+	    /apps/kardia/data/Kardia_DB/p_location/rows l
+	WHERE
+	    :p:p_partner_key *= :e:p_partner_key
+	AND :p:p_partner_key *= :ph:p_partner_key
+	AND :p:p_partner_key *= :l:p_partner_key
+	AND :e:p_contact_type = 'E'
+	AND (:ph:p_contact_type = 'P' OR :ph:p_contact_type = 'C')
+	;
+	print 'get/concats.qy end'
+    ";
+    }

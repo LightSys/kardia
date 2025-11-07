@@ -1,0 +1,52 @@
+$Version=2$
+get_dups "system/cluster"
+    {
+    algorithm "cluster/parameter" { type = string; style = notnull; }
+    k "cluster/parameter" { type = integer; style = notnull; }
+    field "cluster/parameter" { type = string; style = notnull; }
+    data "cluster/parameter" { type = string; style = notnull; }
+    
+    source = runserver('/apps/kardia/modules/base/dups/get/' + :parameters:field + '.qy');
+    key_attr = "key";
+    data_attr = runserver(:parameters:data);
+    
+    kmeans "cluster/cluster"
+	{
+	algorithm = "k-means";
+	similarity_measure = "cosine";
+	num_clusters = runserver(:parameters:k);
+	min_improvement = 0.0001;
+	max_iterations = 32;
+	}
+	
+    none "cluster/cluster"
+	{
+	algorithm = "none";
+	}
+    
+    dups "cluster/search"
+	{
+	source = runserver(:parameters:algorithm);
+	similarity_measure = "cosine";
+	threshold = 0.7;
+	}
+	
+    phone_dups "cluster/search"
+	{
+	source = runserver(:parameters:algorithm);
+	similarity_measure = "levenshtein";
+	threshold = 0.7;
+	}
+    
+    concat_dups "cluster/search"
+	{
+	source = runserver(:parameters:algorithm);
+	similarity_measure = "cosine";
+	threshold = 0.65;
+	}
+    }
+
+
+// --\'sql = " -- Syntax highlighting.
+// --"sql = " -- Syntax highlighting.
+// '// '" // Terminate highlighting hacks.

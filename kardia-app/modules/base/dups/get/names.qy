@@ -1,0 +1,25 @@
+$Version=2$
+dups_test_query "system/query"
+    {
+    sql = "
+	print 'get/names.qy start'
+	SELECT
+	    key = :p_partner_key,
+	    name = ''
+		+ isnull(:p_given_name, '')
+		+ isnull(condition(
+		        char_length(isnull(:p_given_name, '')) > 1
+		    AND char_length(isnull(:p_surname, '')) > 1
+		    AND :p_given_name != :p_preferred_name
+		    AND :p_surname != :p_preferred_name,
+		    :p_preferred_name,
+		    ''
+		), '')
+		+ isnull(:p_surname, '')
+		+ isnull(:p_org_name, '')
+	FROM
+	    /apps/kardia/data/Kardia_DB/p_partner/rows
+	;
+	print 'get/names.qy end'
+    ";
+    }

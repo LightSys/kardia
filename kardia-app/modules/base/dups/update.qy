@@ -1,0 +1,350 @@
+$Version=2$
+update_duplicates "system/query"
+    {
+    // db "query/parameter" { type=string; default="/apps/kardia/data/Kardia_DB"; }
+    
+    sql = "
+	-- Get collections for each set of possible dups.
+	-- These collections are used by the following scripts (such as
+	-- dups/name.qy, dups/email.qy, etc.), avoiding the need to reopen
+	-- the query file over and over again.
+	DECLARE collection names scope application;
+	DECLARE collection emails scope application;
+	DECLARE collection phones scope application;
+	DECLARE collection addresses scope application;
+	DELETE FROM collection names;
+	DELETE FROM collection emails;
+	DELETE FROM collection phones;
+	DELETE FROM collection addresses;
+	INSERT INTO collection names     SELECT :key, :name    FROM /apps/kardia/modules/base/dups/get/names.qy ;
+	INSERT INTO collection emails    SELECT :key, :email   FROM /apps/kardia/modules/base/dups/get/emails.qy ;
+	INSERT INTO collection phones    SELECT :key, :phone   FROM /apps/kardia/modules/base/dups/get/phones.qy ;
+	INSERT INTO collection addresses SELECT :key, :address FROM /apps/kardia/modules/base/dups/get/addresses.qy ;
+    
+	-- Get dups for each field (name, email, phone, address).
+	DECLARE collection name_dups;
+	DECLARE collection email_dups;
+	DECLARE collection phone_dups;
+	DECLARE collection address_dups;
+	INSERT INTO collection name_dups    SELECT :key1, :key2, :sim FROM /apps/kardia/modules/base/dups/name.qy ;
+	INSERT INTO collection email_dups   SELECT :key1, :key2, :sim FROM /apps/kardia/modules/base/dups/email.qy ;
+	INSERT INTO collection phone_dups   SELECT :key1, :key2, :sim FROM /apps/kardia/modules/base/dups/phone.qy ;
+	INSERT INTO collection address_dups SELECT :key1, :key2, :sim FROM /apps/kardia/modules/base/dups/address.qy ;
+		
+	-- [name_dups <- email_dups] Add an entry to name_dups for each entry in email_dups.
+	INSERT INTO
+	    collection name_dups
+	SELECT
+	    key1 = :email:key1,
+	    key2 = :email:key2,
+	    sim = condition(:name:sim > 0.0,
+		:name:sim,
+		isnull(cos_compare(:n1:name, :n2:name), -1.0) -- Negative value will be dropped from the average.
+	    )
+	FROM
+	    identity collection email_dups email,
+	    collection name_dups name,
+	    collection names n1,
+	    collection names n2
+	WHERE
+	    :email:key1 *= :name:key1
+	AND :email:key2 *= :name:key2
+	AND :email:key1 *= :n1:key
+	AND :email:key2 *= :n2:key
+	ON duplicate -- Skip entries that already exist in name_dups.
+	    :key1,
+	    :key2
+	UPDATE SET
+	    :sim = condition(:name:sim > 0.0,
+		:name:sim,
+		isnull(cos_compare(:n1:name, :n2:name), -1.0) -- Negative value will be dropped from the average.
+	    )
+	;
+	
+	-- [name_dups <- phone_dups] Add an entry to name_dups for each entry in phone_dups.
+	INSERT INTO
+	    collection name_dups
+	SELECT
+	    key1 = :phone:key1,
+	    key2 = :phone:key2,
+	    sim = condition(:name:sim > 0.0,
+		:name:sim,
+		max(isnull(cos_compare(:n1:name, :n2:name), -1.0)) -- Negative value will be dropped from the average.
+	    )
+	FROM
+	    identity collection phone_dups phone,
+	    collection name_dups name,
+	    collection names n1,
+	    collection names n2
+	WHERE
+	    :phone:key1 *= :name:key1
+	AND :phone:key2 *= :name:key2
+	AND :phone:key1 *= :n1:key
+	AND :phone:key2 *= :n2:key
+	GROUP BY
+	    :name:key1,
+	    :name:key2
+	ON duplicate -- Skip entries that already exist in name_dups.
+	    :key1,
+	    :key2
+	UPDATE SET
+	    :sim = condition(:name:sim > 0.0,
+		:name:sim,
+		max(isnull(cos_compare(:n1:name, :n2:name), -1.0)) -- Negative value will be dropped from the average.
+	    )
+	;
+	
+	-- [name_dups <- address_dups] Add an entry to name_dups for each entry in address_dups.
+	INSERT INTO
+	    collection name_dups
+	SELECT
+	    key1 = :address:key1,
+	    key2 = :address:key2,
+	    sim = condition(:name:sim > 0.0,
+		:name:sim,
+		max(isnull(cos_compare(:n1:name, :n2:name), -1.0)) -- Negative value will be dropped from the average.
+	    )
+	FROM
+	    identity collection address_dups address,
+	    collection name_dups name,
+	    collection names n1,
+	    collection names n2
+	WHERE
+	    :address:key1 *= :name:key1
+	AND :address:key2 *= :name:key2
+	AND :address:key1 *= :n1:key
+	AND :address:key2 *= :n2:key
+	GROUP BY
+	    :name:key1,
+	    :name:key2
+	ON duplicate -- Skip entries that already exist in name_dups.
+	    :key1,
+	    :key2
+	UPDATE SET
+	    :sim = condition(:name:sim > 0.0,
+		:name:sim,
+		max(isnull(cos_compare(:n1:name, :n2:name), -1.0)) -- Negative value will be dropped from the average.
+	    )
+	;
+	
+	
+	-- [email_dups <- name_dups] Add an entry to email_dups for each entry in name_dups.
+	INSERT INTO
+	    collection email_dups
+	SELECT
+	    key1 = :name:key1,
+	    key2 = :name:key2,
+	    sim = condition(:email:sim > 0.0,
+		:email:sim,
+		max(isnull(cos_compare(:e1:email, :e2:email), -1.0)) -- Negative value will be dropped from the average.
+	    )
+	FROM
+	    identity collection name_dups name,
+	    collection email_dups email,
+	    collection emails e1,
+	    collection emails e2
+	WHERE
+	    :name:key1 *= :email:key1
+	AND :name:key2 *= :email:key2
+	AND :name:key1 *= :e1:key
+	AND :name:key2 *= :e2:key
+	GROUP BY
+	    :name:key1,
+	    :name:key2
+	ON duplicate -- Skip duplicate entries.
+	    :key1,
+	    :key2
+	UPDATE SET
+	    :sim = condition(:email:sim > 0.0,
+		:email:sim,
+		max(isnull(cos_compare(:e1:email, :e2:email), -1.0)) -- Negative value will be dropped from the average.
+	    )
+	;
+	
+	-- [phone_dups <- name_dups] Add an entry to phone_dups for each entry in name_dups.
+	INSERT INTO
+	    collection phone_dups
+	SELECT
+	    key1 = :name:key1,
+	    key2 = :name:key2,
+	    sim = condition(:phone:sim > 0.0,
+		:phone:sim,
+		max(isnull(cos_compare(:ph1:phone, :ph2:phone), -1.0)) -- Negative value will be dropped from the average.
+	    )
+	FROM
+	    identity collection name_dups name,
+	    collection phone_dups phone,
+	    collection phones ph1,
+	    collection phones ph2
+	WHERE
+	    :name:key1 *= :phone:key1
+	AND :name:key2 *= :phone:key2
+	AND :name:key1 *= :ph1:key
+	AND :name:key2 *= :ph2:key
+	GROUP BY
+	    :name:key1,
+	    :name:key2
+	ON duplicate -- Skip duplicate entries.
+	    :key1,
+	    :key2
+	UPDATE SET
+	    :sim = condition(:phone:sim > 0.0,
+		:phone:sim,
+		max(isnull(cos_compare(:ph1:phone, :ph2:phone), -1.0)) -- Negative value will be dropped from the average.
+	    )
+	;
+	
+	-- [address_dups <- name_dups] Add an entry to address_dups for each entry in name_dups.
+	INSERT INTO
+	    collection address_dups
+	SELECT
+	    key1 = :name:key1,
+	    key2 = :name:key2,
+	    sim = condition(:address:sim > 0.0,
+		:address:sim,
+		max(isnull(cos_compare(:l1:address, :l2:address), -1.0)) -- Negative value will be dropped from the average.
+	    )
+	FROM
+	    identity collection name_dups name,
+	    collection address_dups address,
+	    collection addresses l1,
+	    collection addresses l2
+	WHERE
+	    :name:key1 *= :address:key1
+	AND :name:key2 *= :address:key2
+	AND :name:key1 *= :l1:key
+	AND :name:key2 *= :l2:key
+	GROUP BY
+	    :name:key1,
+	    :name:key2
+	ON duplicate -- Skip duplicate entries.
+	    :key1,
+	    :key2
+	UPDATE SET
+	    :sim = condition(:address:sim > 0.0,
+		:address:sim,
+		max(isnull(cos_compare(:l1:address, :l2:address), -1.0)) -- Negative value will be dropped from the average.
+	    )
+	;
+	
+	DECLARE collection all_dups;
+	
+	-- Aggregate dups.
+	INSERT INTO
+	    collection all_dups
+	SELECT
+	    key1 = :name:key1,
+	    key2 = :name:key2,
+	    sim = aggregate_similarities(
+		:name:sim,
+		:email:sim,
+		:phone:sim,
+		:address:sim,
+		:name:key1 + ' ' + :name:name1,
+		:name:key2 + ' ' + :name:name2
+	    ),
+	    reason = ''
+		+ condition(:name:sim > 0.0, 'Name (' + round(:name:sim * 100, 2) + '%)\\n', '')
+		+ condition(:email:sim > 0.0, 'Email (' + round(:email:sim * 100, 2) + '%)\\n', '')
+		+ condition(:phone:sim > 0.0, 'Phone (' + round(:phone:sim * 100, 2) + '%)\\n', '')
+		+ condition(:address:sim > 0.0, 'Address (' + round(:address:sim * 100, 2) + '%)\\n', '')
+		- '\\n'
+	FROM
+	    identity collection name_dups name,
+	    collection email_dups email,
+	    collection phone_dups phone,
+	    collection address_dups address
+	WHERE
+	    :name:key1 = :email:key1
+	AND :name:key2 = :email:key2
+	AND :name:key1 = :phone:key1
+	AND :name:key2 = :phone:key2
+	AND :name:key1 = :address:key1
+	AND :name:key2 = :address:key2
+	ON duplicate
+	    :key1,
+	    :key2
+	UPDATE SET
+	    :sim = :sim,
+	    :reason = :reason,
+	    :s_date_modified = getdate(),
+	    :s_modified_by = user_name()
+	;
+	
+	
+	-- Full Concat Dups
+	DECLARE collection concat_dups;
+	insert into collection concat_dups select * from /apps/kardia/modules/base/dups/concat.qy ;
+	INSERT INTO
+	    collection all_dups
+	SELECT
+	    key1 = :concat:key1,
+	    key2 = :concat:key2,
+	    sim = :concat:sim,
+	    reason = 'All (' + round(:concat:sim * 100, 2) + '%)!'
+	FROM
+	    identity collection concat_dups concat
+	WHERE
+	    :concat:key1 != :concat:key2
+	ON duplicate
+	    :key1,
+	    :key2
+	UPDATE SET
+	    :sim = condition(:sim > :concat:sim, :sim, :concat:sim),
+	    :reason = 'All (' + round(:concat:sim * 100, 2) + '%)\\n' + :reason,
+	    :s_date_modified = getdate(),
+	    :s_modified_by = user_name()
+	;
+	
+	
+	-- Free application-scoped collections.
+	DELETE FROM collection names;
+	DELETE FROM collection emails;
+	DELETE FROM collection phones;
+	DELETE FROM collection addresses;
+	
+	-- Remove all data from the dups table (for debugging).
+	delete from /apps/kardia/data/Kardia_DB/p_dup/rows ;
+	
+	-- Insert dups into p_dup table.
+	INSERT INTO
+	    /apps/kardia/data/Kardia_DB/p_dup/rows
+	SELECT
+	    p_partner_key = :key1,
+	    p_dup_partner_key = :key2,
+	    p_match_quality = :sim,
+	    p_reason = :reason,
+	    
+	    -- Required fields.
+	    s_date_created = getdate(),
+	    s_created_by = user_name(),
+	    s_date_modified = getdate(),
+	    s_modified_by = user_name()
+	FROM
+	    collection all_dups
+	WHERE
+	    :sim > 0.6
+	ON duplicate
+	    :p_partner_key,
+	    :p_dup_partner_key
+	UPDATE SET
+	    :p_match_quality = :sim,
+	    :p_reason = :reason,
+	    :s_date_modified = getdate(),
+	    :s_modified_by = user_name()
+	;
+	
+	-- Remove stale data from the dups table.
+--	delete
+--	from 
+--	    identity /apps/kardia/data/Kardia_DB/p_dup/rows d,
+--	    /apps/kardia/data/Kardia_DB/p_partner/rows p1,
+--	    /apps/kardia/data/Kardia_DB/p_partner/rows p2
+--	where
+--	    :d:p_partner_key *= :p1:p_partner_key
+--	AND :d:p_dup_partner_key *= :p2:p_partner_key
+--	AND(:d:s_date_modified < isnull(:p1:s_date_modified, getdate())
+--	    OR :d:s_date_modified < isnull(:p2:s_date_modified, getdate()))
+--	;
+    ";
+    }

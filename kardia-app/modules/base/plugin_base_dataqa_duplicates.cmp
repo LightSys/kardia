@@ -112,31 +112,53 @@ plugin_base_dataqa_duplicates "widget/component-decl"
 			:d:p_partner_key,
 			:d:p_dup_partner_key,
 			:d:p_match_quality,
-			--match = convert(integer, round(:d:p_match_quality * 100)),
-			match = round(:d:p_match_quality, 3),
-			disp_name_1 = condition(char_length(rtrim(:p1:p_org_name)) > 0, :p1:p_org_name + ' ' + condition(char_length(:p1:p_given_name + :p1:p_surname) > 0, '- ', ''), '') + isnull(:p1:p_given_name + ' ','') + isnull(:p1:p_surname + ' ',''),
-			disp_name_2 = condition(char_length(rtrim(:p2:p_org_name)) > 0, :p2:p_org_name + ' ' + condition(char_length(:p2:p_given_name + :p2:p_surname) > 0, '- ', ''), '') + isnull(:p2:p_given_name + ' ','') + isnull(:p2:p_surname + ' ',''),
+			match = round(:d:p_match_quality, 4),
+			disp_name_1 = '' 
+			    + condition(char_length(rtrim(:p1:p_org_name)) > 0,
+				:p1:p_org_name + ' ' + condition(char_length(:p1:p_given_name + :p1:p_surname) > 0, '- ', ''),
+				'')
+			    + isnull(:p1:p_given_name + ' ', '')
+			    + isnull(:p1:p_surname + ' ', ''),
+			disp_name_2 = ''
+			    + condition(char_length(rtrim(:p2:p_org_name)) > 0,
+				:p2:p_org_name + ' ' + condition(char_length(:p2:p_given_name + :p2:p_surname) > 0, '- ', ''),
+				'')
+			    + isnull(:p2:p_given_name + ' ', '')
+			    + isnull(:p2:p_surname + ' ', ''),
 			stat_1 = :p1:p_status_code,
 			stat_2 = :p2:p_status_code,
-			--loc_1 = :l1:p_city + ', ' + :l1:p_state_province,
-			--loc_2 = :l2:p_city + ', ' + :l2:p_state_province,
-			--contact_1 = isnull(:c1:p_phone_country + ' ','') + isnull(:c1:p_phone_area_city + ' ','') + isnull(:c1:p_contact_data,''),
-			--contact_2 = isnull(:c2:p_phone_country + ' ','') + isnull(:c2:p_phone_area_city + ' ','') + isnull(:c2:p_contact_data,''),
 			ploc_1 = substitute(isnull(:af1:p_format, '[:p_in_care_of]\n[:p_address_1]\n[:p_address_2]\n[:p_address_3]\n[:p_city], [:p_state_province] [:p_postal_code]\n[:p_country_name]'), 'l=pl1,p=p1,ctry1'),
 			ploc_2 = substitute(isnull(:af2:p_format, '[:p_in_care_of]\n[:p_address_1]\n[:p_address_2]\n[:p_address_3]\n[:p_city], [:p_state_province] [:p_postal_code]\n[:p_country_name]'), 'l=pl2,p=p2,ctry2'),
-			type = condition(:d:p_partner_key != :d:p_dup_partner_key, 'Duplicate Partner', condition(:d:p_contact_id is not null, 'Duplicate Contact',  condition(:d:p_location_id is not null, 'Duplicate Address', ''))),
+			
+			-- Dupe type info.
+			reason = :d:p_reason,
 			nondup = condition(:nd:p_partner_key is not null, 1, 0),
-			associated = condition(:p1:p_parent_key = :p2:p_partner_key or :p1:p_partner_key = :p2:p_parent_key or :p1:p_parent_key = :p2:p_parent_key, 1, 0),
-			merged = condition(:p1:p_merged_with = :p2:p_partner_key or :p1:p_partner_key = :p2:p_merged_with, 1, 0),
-			relation = (select condition(:r:p_partner_key = :d:p_partner_key, :rt:p_relation_type_label + '/' + :rt:p_relation_type_rev_label, :rt:p_relation_type_rev_label + '/' + :rt:p_relation_type_label) from collection rels r, collection reltype rt where ((:r:p_partner_key = :d:p_partner_key and :r:p_relation_key = :d:p_dup_partner_key) or (:r:p_partner_key = :d:p_dup_partner_key and :r:p_relation_key = :d:p_partner_key)) and :rt:p_relation_type = :r:p_relation_type )
+			associated = condition(
+			    :p1:p_parent_key = :p2:p_partner_key
+			    or :p1:p_partner_key = :p2:p_parent_key
+			    or :p1:p_parent_key = :p2:p_parent_key,
+			1, 0),
+			merged = condition(
+			    :p1:p_merged_with = :p2:p_partner_key
+			    or :p1:p_partner_key = :p2:p_merged_with,
+			1, 0),
+			relation = (
+			    select
+			        condition(:r:p_partner_key = :d:p_partner_key,
+				    :rt:p_relation_type_label + '/' + :rt:p_relation_type_rev_label,
+				    :rt:p_relation_type_rev_label + '/' + :rt:p_relation_type_label
+				)
+			    from
+			        collection rels r,
+				collection reltype rt
+			    where :rt:p_relation_type = :r:p_relation_type
+			    and ((:r:p_partner_key = :d:p_partner_key     and :r:p_relation_key = :d:p_dup_partner_key) or
+			         (:r:p_partner_key = :d:p_dup_partner_key and :r:p_relation_key = :d:p_partner_key    ))
+		        )
 		    from
 			identity /apps/kardia/data/Kardia_DB/p_dup/rows d,
 			/apps/kardia/data/Kardia_DB/p_partner/rows p1,
 			/apps/kardia/data/Kardia_DB/p_partner/rows p2,
-			--/apps/kardia/data/Kardia_DB/p_location/rows l1,
-			--/apps/kardia/data/Kardia_DB/p_location/rows l2,
-			--/apps/kardia/data/Kardia_DB/p_contact_info/rows c1,
-			--/apps/kardia/data/Kardia_DB/p_contact_info/rows c2,
 			/apps/kardia/data/Kardia_DB/p_location/rows pl1,
 			/apps/kardia/data/Kardia_DB/p_location/rows pl2,
 			/apps/kardia/data/Kardia_DB/p_country/rows ctry1,
@@ -148,16 +170,6 @@ plugin_base_dataqa_duplicates "widget/component-decl"
 			(:info:partnerlist is null or charindex(',' + rtrim(:d:p_partner_key) + ',', ',' + :info:partnerlist + ',') > 0 or charindex(',' + rtrim(:d:p_dup_partner_key) + ',', ',' + :info:partnerlist + ',') > 0) and
 			:p1:p_partner_key = :d:p_partner_key and
 			:p2:p_partner_key = :d:p_dup_partner_key and
-			--:l1:p_partner_key =* :d:p_partner_key and
-			--:l1:p_location_id =* :d:p_location_id and
-			--:l1:p_revision_id =* :d:p_revision_id and
-			--:l2:p_partner_key =* :d:p_dup_partner_key and
-			--:l2:p_location_id =* :d:p_dup_location_id and
-			--:l2:p_revision_id =* :d:p_dup_revision_id and
-			--:c1:p_partner_key =* :d:p_partner_key and
-			--:c1:p_contact_id =* :d:p_contact_id and
-			--:c2:p_partner_key =* :d:p_dup_partner_key and
-			--:c2:p_contact_id =* :d:p_dup_contact_id and
 			:pl1:p_partner_key =* :d:p_partner_key and
 			:pl2:p_partner_key =* :d:p_dup_partner_key and
 			:pl1:p_country_code *= :ctry1:p_country_code and
@@ -167,7 +179,7 @@ plugin_base_dataqa_duplicates "widget/component-decl"
 			:af2:p_country_code =* :ctry2:p_country_code and
 			:af2:p_address_set = 'STANDARD' and
 			:nd:p_partner_key =* :d:p_partner_key and
-			:nd:p_nondup_partner_key =* :p_dup_partner_key
+			:nd:p_nondup_partner_key =* :d:p_dup_partner_key
 		    group by
 			:d:p_match_quality desc,
 			:d:p_partner_key,
@@ -209,11 +221,69 @@ plugin_base_dataqa_duplicates "widget/component-decl"
 		row_shadow_angle=135;
 		nodata_message="(no duplicates to show)";
 
-		//t_match "widget/table-column" { title="%"; value=runclient(:dupsosrc:match + '%'); width=60; style=bold; }
-		t_match "widget/table-column" { width=80; title = "%"; type=progress; padding=4; style=bold; fieldname=match; bar_color=runclient(condition(:dupsosrc:match >= 0.90, '#59b550', condition(:dupsosrc:match < 0.80, '#d96066', '#DDB261'))); bar_padding=3; bar_textcolor=black; }
-		t_type "widget/table-column" { title="%"; value=runclient(:dupsosrc:type + condition(:dupsosrc:merged, '\nAlready Merged', '') + condition(:dupsosrc:associated, '\nAssociated', '') + condition(:dupsosrc:relation is not null, '\nRelated: ' + :dupsosrc:relation, '')); width=180; style=bold; align=center; wrap=yes; }
-		t_par2 "widget/table-column" { title="Partner"; value=runclient(:dupsosrc:p_dup_partner_key + ' ' + :dupsosrc:disp_name_2); width=250; style=bold; caption_value=runclient(isnull(:dupsosrc:ploc_2 + '\n', '') + condition(:dupsosrc:stat_2 = 'O', '(obsolete)', '') - '\n'); wrap=yes; }
-		t_par1 "widget/table-column" { title="Partner"; value=runclient(condition(:dupsosrc:p_partner_key = :dupsosrc:p_dup_partner_key, '', :dupsosrc:p_partner_key + ' ' + :dupsosrc:disp_name_1)); width=250; style=bold; caption_value=runclient(condition(:dupsosrc:p_partner_key = :dupsosrc:p_dup_partner_key, '', isnull(:dupsosrc:ploc_1 + '\n', '') + condition(:dupsosrc:stat_1 = 'O', '(obsolete)', '') - '\n')); wrap=yes; }
+		// Similarity progress bar.
+		t_match "widget/table-column"
+		    {
+		    width = 80;
+		    style = bold;
+		    padding = 4;
+		    title = "%";
+		    
+		    type = progress;
+		    fieldname = match;
+		    
+		    bar_color = runclient(condition(:dupsosrc:match >= 0.90, '#59b550', condition(:dupsosrc:match < 0.80, '#d96066', '#DDB261')));
+		    bar_padding = 3;
+		    bar_textcolor = black;
+		    }
+		
+		// Dulicate reason, and other information about the type of duplicate.
+		t_type "widget/table-column"
+		    {
+		    width = 180;
+		    style = bold;
+		    align = center;
+		    wrap = yes;
+		    title = "%";
+		    
+		    value = runclient(
+			:dupsosrc:reason
+			+ condition(:dupsosrc:merged, '\nAlready Merged', '')
+			+ condition(:dupsosrc:associated, '\nAssociated', '')
+			+ condition(:dupsosrc:relation is not null, '\nRelated: ' + :dupsosrc:relation, '')
+		    );
+		    }
+		
+		// Duplicate record 1.
+		t_dup1 "widget/table-column"
+		    {
+		    width = 250;
+		    style = bold;
+		    wrap = yes;
+		    title = "Partner";
+		    
+		    value = runclient(:dupsosrc:p_dup_partner_key + ' ' + :dupsosrc:disp_name_2);
+		    caption_value = runclient(isnull(:dupsosrc:ploc_2 + '\n', '') + condition(:dupsosrc:stat_2 = 'O', '(obsolete)', '') - '\n');
+		    }
+		
+		// Duplicate record 2.
+		t_dup2 "widget/table-column"
+		    {
+		    width = 250;
+		    style = bold;
+		    wrap = yes;
+		    title = "Partner";
+		    
+		    /// TODO: Israel - Remove comment below.
+		    // This code used to check :dupsosrc:p_partner_key = :dupsosrc:p_dup_partner_key.
+		    // The new algorithm verifies that this condition is always false, so it was removed.
+		    value = runclient(:dupsosrc:p_partner_key + ' ' + :dupsosrc:disp_name_1);
+		    caption_value = runclient(
+			isnull(:dupsosrc:ploc_1 + '\n', '')
+			+ condition(:dupsosrc:stat_1 = 'O', '(obsolete)', '')
+			- '\n'
+		    );
+		    }
 
 		ops_detail "widget/table-row-detail"
 		    {
