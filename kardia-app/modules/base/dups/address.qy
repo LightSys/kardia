@@ -51,8 +51,6 @@ dups_test_query "system/query"
 	AND :p2:p_partner_key = :l2:p_partner_key
 	AND :p1:p_partner_key = :d:key1
 	AND :p2:p_partner_key = :d:key2
-	AND :d:sim is not null AND :d:sim is not null AND :d:sim is not null -- Query optimization
-	AND :d:sim is not null AND :d:sim is not null AND :d:sim is not null -- Query optimization
 	GROUP BY
 	    :p1:p_partner_key,
 	    :p2:p_partner_key

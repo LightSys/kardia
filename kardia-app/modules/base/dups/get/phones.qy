@@ -15,6 +15,8 @@ dups_test_query "system/query"
 	WHERE
 	    :p:p_partner_key = :c:p_partner_key
 	AND ((:c:p_contact_type = 'P') + (:c:p_contact_type = 'C'))
+	AND :p:p_contact_data is not null
+	AND :p:p_contact_data != ''
 	;
 	print 'get/phones.qy end'
     ";

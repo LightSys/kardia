@@ -53,8 +53,6 @@ dups_test_query "system/query"
 	AND :p2:p_partner_key = :d:key2
 	AND :c1:p_contact_type = 'E'
 	AND :c2:p_contact_type = 'E'
-	AND :d:sim is not null AND :d:sim is not null AND :d:sim is not null -- Query optimization
-	AND :d:sim is not null AND :d:sim is not null AND :d:sim is not null -- Query optimization
 	GROUP BY
 	    :p1:p_partner_key,
 	    :p2:p_partner_key

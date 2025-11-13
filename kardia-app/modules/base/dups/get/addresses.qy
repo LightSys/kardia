@@ -19,6 +19,8 @@ dups_test_query "system/query"
 	    /apps/kardia/data/Kardia_DB/p_location/rows l
 	WHERE
 	    :p:p_partner_key = :l:p_partner_key
+	AND :l:p_address_1 is not null
+	AND :l:p_address_1 != ''
 	;
 	print 'get/addresses.qy end'
     ";

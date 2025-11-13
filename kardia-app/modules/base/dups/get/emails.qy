@@ -11,7 +11,9 @@ dups_test_query "system/query"
 	    /apps/kardia/data/Kardia_DB/p_contact_info/rows c
 	WHERE
 	    :p:p_partner_key = :c:p_partner_key
-	    AND :c:p_contact_type = 'E'
+	AND :c:p_contact_type = 'E'
+	AND :c:p_contact_data is not null
+	AND :c:p_contact_data != ''
 	;
 	print 'get/emails.qy end'
     ";

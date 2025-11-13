@@ -3,10 +3,17 @@ dups_test_query "system/query"
     {
     sql = "
 	print 'get/concats.qy start'
+	
+	declare object value;
+	SELECT :value:boundary_character = '`';
+	
+	declare collection temp;
+	
+	INSERT INTO
+	    collection temp
 	SELECT
 	    key = :p:p_partner_key,
-	    data = ''
-		-- Name
+	    name = ''
 		+ isnull(:p_given_name, '')
 		+ isnull(condition(
 		        char_length(isnull(:p_given_name, '')) > 1
@@ -17,20 +24,24 @@ dups_test_query "system/query"
 		    ''
 		), '')
 		+ isnull(:p_surname, '')
-		+ isnull(:p_org_name, '')
-		+ '; '
-		
-	        -- Email
-		+ isnull(:e:p_contact_data, '')
-		+ '; '
-		
-	        -- Phone
-		+ isnull(:ph:p_phone_country, '')
+		+ isnull(:p_org_name, ''),
+	    name_meta = ''
+		+ isnull(metaphone(:p_given_name), '')
+		+ isnull(condition(
+		        char_length(isnull(:p_given_name, '')) > 1
+		    AND char_length(isnull(:p_surname, '')) > 1
+		    AND :p_given_name != :p_preferred_name
+		    AND :p_surname != :p_preferred_name,
+		    metaphone(:p_preferred_name),
+		    ''
+		), '')
+		+ isnull(metaphone(:p_surname), ''),
+	    email = isnull(:e:p_contact_data, ''),
+	    phone = ''
+	        + isnull(:ph:p_phone_country, '')
 		+ isnull(:ph:p_phone_area_city, '')
-		+ isnull(:ph:p_contact_data, '')
-		+ '; '
-		
-		-- Address
+		+ isnull(:ph:p_contact_data, ''),
+	    address = ''
 		+ isnull(:l:p_in_care_of, '')
 		+ isnull(:l:p_address_1, '')
 		+ isnull(:l:p_address_2, '')
@@ -51,6 +62,24 @@ dups_test_query "system/query"
 	AND :e:p_contact_type = 'E'
 	AND (:ph:p_contact_type = 'P' OR :ph:p_contact_type = 'C')
 	;
+	
+	-- Nonzero numbers are used as boundary markers for the meta parts
+	-- because they do not appear in metaphones. This helps to reduce
+	-- false positives from boundary characters falsely matching.
+	SELECT
+	    key = :key,
+	    data = ''
+		+ :name + :value:boundary_character
+		+ :name_meta + '1'
+		+ :name_meta + '1'
+		+ :name_meta + '1'
+		+ :name_meta + '1'
+		+ :email + :value:boundary_character
+		+ :phone + :value:boundary_character
+		+ :address
+	FROM
+	    collection temp
+	
 	print 'get/concats.qy end'
     ";
     }

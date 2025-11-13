@@ -1,15 +1,18 @@
 $Version=2$
 get_dups "system/cluster"
     {
+    // Declare parameters.
     algorithm "cluster/parameter" { type = string; style = notnull; }
     k "cluster/parameter" { type = integer; style = notnull; }
     field "cluster/parameter" { type = string; style = notnull; }
     data "cluster/parameter" { type = string; style = notnull; }
     
+    // Declare data source.
     source = runserver('/apps/kardia/modules/base/dups/get/' + :parameters:field + '.qy');
     key_attr = "key";
     data_attr = runserver(:parameters:data);
     
+    // A cluster for searching with clustering.
     kmeans "cluster/cluster"
 	{
 	algorithm = "k-means";
@@ -18,19 +21,34 @@ get_dups "system/cluster"
 	min_improvement = 0.0001;
 	max_iterations = 32;
 	}
-	
+    
+    // A "cluster" for searching without clustering.
     none "cluster/cluster"
 	{
 	algorithm = "none";
 	}
     
+    // Default duplicate search, used for names, emails, and addresses.
     dups "cluster/search"
 	{
 	source = runserver(:parameters:algorithm);
 	similarity_measure = "cosine";
 	threshold = 0.7;
 	}
-	
+    
+    // Double Metaphone search.
+    // Double Metaphone is prone to false positives, so it uses a higher
+    // threshold to make them slightly less bad.
+    meta_dups "cluster/search"
+	{
+	source = runserver(:parameters:algorithm);
+	similarity_measure = "levenshtein";
+	threshold = 0.8;
+	}
+    
+    // Phone search.
+    // Searching for duplicate phone numbers uses edit distance similarity
+    // instead of cosine to give more accurate results.
     phone_dups "cluster/search"
 	{
 	source = runserver(:parameters:algorithm);
@@ -38,6 +56,9 @@ get_dups "system/cluster"
 	threshold = 0.7;
 	}
     
+    // Concat search.
+    // The concatenation strategy is faster than the aggregation strategy, so
+    // we can use a slightly lower threshold to detect just a few more dups.
     concat_dups "cluster/search"
 	{
 	source = runserver(:parameters:algorithm);
@@ -45,8 +66,3 @@ get_dups "system/cluster"
 	threshold = 0.65;
 	}
     }
-
-
-// --\'sql = " -- Syntax highlighting.
-// --"sql = " -- Syntax highlighting.
-// '// '" // Terminate highlighting hacks.

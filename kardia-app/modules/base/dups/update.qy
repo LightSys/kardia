@@ -1,45 +1,98 @@
 $Version=2$
 update_duplicates "system/query"
     {
-    // db "query/parameter" { type=string; default="/apps/kardia/data/Kardia_DB"; }
-    
     sql = "
+	DECLARE object value;
+	
+	-- The number of places to show after the decimal point for reason
+	-- similarity percentages.
+	SELECT :value:reason_decimals = 1;
+	
+	-- The minimum similarity for a attributes to be considered one of
+	-- the reasons that two records were matched as duplicates.
+	SELECT :value:min_reason_sim = 0.10;
+	
+	-- The minimum aggregated similarity threshold that must be reached
+	-- for a duplicate to be added to the table and displayed to the user.
+	-- Duplicates which aggregate to a lower similarity than this do are
+	-- dropped before being added even if one attribute happens to have a
+	-- has high similarity.
+	-- For other similarity thresholds, see `dups.cluster`.
+	SELECT :value:min_total_sim = 0.60;
+	
+	
 	-- Get collections for each set of possible dups.
 	-- These collections are used by the following scripts (such as
 	-- dups/name.qy, dups/email.qy, etc.), avoiding the need to reopen
 	-- the query file over and over again.
 	DECLARE collection names scope application;
+	DECLARE collection name_metas scope application;
 	DECLARE collection emails scope application;
 	DECLARE collection phones scope application;
 	DECLARE collection addresses scope application;
 	DELETE FROM collection names;
+	DELETE FROM collection name_metas;
 	DELETE FROM collection emails;
 	DELETE FROM collection phones;
 	DELETE FROM collection addresses;
-	INSERT INTO collection names     SELECT :key, :name    FROM /apps/kardia/modules/base/dups/get/names.qy ;
-	INSERT INTO collection emails    SELECT :key, :email   FROM /apps/kardia/modules/base/dups/get/emails.qy ;
-	INSERT INTO collection phones    SELECT :key, :phone   FROM /apps/kardia/modules/base/dups/get/phones.qy ;
-	INSERT INTO collection addresses SELECT :key, :address FROM /apps/kardia/modules/base/dups/get/addresses.qy ;
-    
+	INSERT INTO collection names      SELECT :key, :name      FROM /apps/kardia/modules/base/dups/get/names.qy ;
+	INSERT INTO collection name_metas SELECT :key, :name_meta FROM /apps/kardia/modules/base/dups/get/name_metas.qy ;
+	INSERT INTO collection emails     SELECT :key, :email     FROM /apps/kardia/modules/base/dups/get/emails.qy ;
+	INSERT INTO collection phones     SELECT :key, :phone     FROM /apps/kardia/modules/base/dups/get/phones.qy ;
+	INSERT INTO collection addresses  SELECT :key, :address   FROM /apps/kardia/modules/base/dups/get/addresses.qy ;
+	
 	-- Get dups for each field (name, email, phone, address).
 	DECLARE collection name_dups;
+	DECLARE collection name_meta_dups;
 	DECLARE collection email_dups;
 	DECLARE collection phone_dups;
 	DECLARE collection address_dups;
-	INSERT INTO collection name_dups    SELECT :key1, :key2, :sim FROM /apps/kardia/modules/base/dups/name.qy ;
-	INSERT INTO collection email_dups   SELECT :key1, :key2, :sim FROM /apps/kardia/modules/base/dups/email.qy ;
-	INSERT INTO collection phone_dups   SELECT :key1, :key2, :sim FROM /apps/kardia/modules/base/dups/phone.qy ;
-	INSERT INTO collection address_dups SELECT :key1, :key2, :sim FROM /apps/kardia/modules/base/dups/address.qy ;
-		
+	INSERT INTO collection name_dups      SELECT :key1, :key2, :sim FROM /apps/kardia/modules/base/dups/name.qy ;
+	INSERT INTO collection name_meta_dups SELECT :key1, :key2, :sim FROM /apps/kardia/modules/base/dups/name_meta.qy ;
+	INSERT INTO collection email_dups     SELECT :key1, :key2, :sim FROM /apps/kardia/modules/base/dups/email.qy ;
+	INSERT INTO collection phone_dups     SELECT :key1, :key2, :sim FROM /apps/kardia/modules/base/dups/phone.qy ;
+	INSERT INTO collection address_dups   SELECT :key1, :key2, :sim FROM /apps/kardia/modules/base/dups/address.qy ;
+	
+	
+	-- [name_dups <- name_meta_dups] Add an entry to name_dups for each entry in name_meta_dups.
+	INSERT INTO
+	    collection name_dups
+	SELECT
+	    key1 = :name_meta:key1,
+	    key2 = :name_meta:key2,
+	    sim = condition(:name:sim >= 0.0,
+		:name:sim,
+		isnull(cos_compare(:n1:name, :n2:name), -1.0)
+	    )
+	FROM
+	    identity collection name_meta_dups name_meta,
+	    collection name_dups name,
+	    collection names n1,
+	    collection names n2
+	WHERE
+	    :name_meta:key1 *= :name:key1
+	AND :name_meta:key2 *= :name:key2
+	AND :name_meta:key1 *= :n1:key
+	AND :name_meta:key2 *= :n2:key
+	ON duplicate -- Update entries that already exist (in case we have a cross-cluster match).
+	    :key1,
+	    :key2
+	UPDATE SET
+	    :sim = condition(:name:sim >= 0.0,
+		:name:sim,
+		isnull(cos_compare(:n1:name, :n2:name), -1.0)
+	    )
+	;
+	
 	-- [name_dups <- email_dups] Add an entry to name_dups for each entry in email_dups.
 	INSERT INTO
 	    collection name_dups
 	SELECT
 	    key1 = :email:key1,
 	    key2 = :email:key2,
-	    sim = condition(:name:sim > 0.0,
+	    sim = condition(:name:sim >= 0.0,
 		:name:sim,
-		isnull(cos_compare(:n1:name, :n2:name), -1.0) -- Negative value will be dropped from the average.
+		isnull(cos_compare(:n1:name, :n2:name), -1.0)
 	    )
 	FROM
 	    identity collection email_dups email,
@@ -51,13 +104,13 @@ update_duplicates "system/query"
 	AND :email:key2 *= :name:key2
 	AND :email:key1 *= :n1:key
 	AND :email:key2 *= :n2:key
-	ON duplicate -- Skip entries that already exist in name_dups.
+	ON duplicate -- Update entries that already exist (in case we have a cross-cluster match).
 	    :key1,
 	    :key2
 	UPDATE SET
-	    :sim = condition(:name:sim > 0.0,
+	    :sim = condition(:name:sim >= 0.0,
 		:name:sim,
-		isnull(cos_compare(:n1:name, :n2:name), -1.0) -- Negative value will be dropped from the average.
+		isnull(cos_compare(:n1:name, :n2:name), -1.0)
 	    )
 	;
 	
@@ -67,9 +120,9 @@ update_duplicates "system/query"
 	SELECT
 	    key1 = :phone:key1,
 	    key2 = :phone:key2,
-	    sim = condition(:name:sim > 0.0,
+	    sim = condition(:name:sim >= 0.0,
 		:name:sim,
-		max(isnull(cos_compare(:n1:name, :n2:name), -1.0)) -- Negative value will be dropped from the average.
+		max(isnull(cos_compare(:n1:name, :n2:name), -1.0))
 	    )
 	FROM
 	    identity collection phone_dups phone,
@@ -84,13 +137,13 @@ update_duplicates "system/query"
 	GROUP BY
 	    :name:key1,
 	    :name:key2
-	ON duplicate -- Skip entries that already exist in name_dups.
+	ON duplicate -- Update entries that already exist (in case we have a cross-cluster match).
 	    :key1,
 	    :key2
 	UPDATE SET
-	    :sim = condition(:name:sim > 0.0,
+	    :sim = condition(:name:sim >= 0.0,
 		:name:sim,
-		max(isnull(cos_compare(:n1:name, :n2:name), -1.0)) -- Negative value will be dropped from the average.
+		max(isnull(cos_compare(:n1:name, :n2:name), -1.0))
 	    )
 	;
 	
@@ -100,9 +153,9 @@ update_duplicates "system/query"
 	SELECT
 	    key1 = :address:key1,
 	    key2 = :address:key2,
-	    sim = condition(:name:sim > 0.0,
+	    sim = condition(:name:sim >= 0.0,
 		:name:sim,
-		max(isnull(cos_compare(:n1:name, :n2:name), -1.0)) -- Negative value will be dropped from the average.
+		max(isnull(cos_compare(:n1:name, :n2:name), -1.0))
 	    )
 	FROM
 	    identity collection address_dups address,
@@ -117,16 +170,49 @@ update_duplicates "system/query"
 	GROUP BY
 	    :name:key1,
 	    :name:key2
-	ON duplicate -- Skip entries that already exist in name_dups.
+	ON duplicate -- Update entries that already exist (in case we have a cross-cluster match).
 	    :key1,
 	    :key2
 	UPDATE SET
-	    :sim = condition(:name:sim > 0.0,
+	    :sim = condition(:name:sim >= 0.0,
 		:name:sim,
-		max(isnull(cos_compare(:n1:name, :n2:name), -1.0)) -- Negative value will be dropped from the average.
+		max(isnull(cos_compare(:n1:name, :n2:name), -1.0))
 	    )
 	;
 	
+	
+	-- [name_meta_dups <- name_dups] Add an entry to name_meta_dups for each entry in name_dups.
+	INSERT INTO
+	    collection name_meta_dups
+	SELECT
+	    key1 = :name:key1,
+	    key2 = :name:key2,
+	    sim = condition(:name_meta:sim >= 0.0,
+		:name_meta:sim,
+		isnull(lev_compare(:nm1:name_meta, :nm2:name_meta), -1.0)
+	    )
+	FROM
+	    identity collection name_dups name,
+	    collection name_meta_dups name_meta,
+	    collection name_metas nm1,
+	    collection name_metas nm2
+	WHERE
+	    :name:key1 *= :name_meta:key1
+	AND :name:key2 *= :name_meta:key2
+	AND :name:key1 *= :nm1:key
+	AND :name:key2 *= :nm2:key
+	GROUP BY
+	    :name:key1,
+	    :name:key2
+	ON duplicate -- Skip duplicate entries.
+	    :key1,
+	    :key2
+	UPDATE SET
+	    :sim = condition(:name_meta:sim >= 0.0,
+		:name_meta:sim,
+		isnull(lev_compare(:nm1:name_meta, :nm2:name_meta), -1.0)
+	    )
+	;
 	
 	-- [email_dups <- name_dups] Add an entry to email_dups for each entry in name_dups.
 	INSERT INTO
@@ -134,9 +220,9 @@ update_duplicates "system/query"
 	SELECT
 	    key1 = :name:key1,
 	    key2 = :name:key2,
-	    sim = condition(:email:sim > 0.0,
+	    sim = condition(:email:sim >= 0.0,
 		:email:sim,
-		max(isnull(cos_compare(:e1:email, :e2:email), -1.0)) -- Negative value will be dropped from the average.
+		max(isnull(cos_compare(:e1:email, :e2:email), -1.0))
 	    )
 	FROM
 	    identity collection name_dups name,
@@ -155,9 +241,9 @@ update_duplicates "system/query"
 	    :key1,
 	    :key2
 	UPDATE SET
-	    :sim = condition(:email:sim > 0.0,
+	    :sim = condition(:email:sim >= 0.0,
 		:email:sim,
-		max(isnull(cos_compare(:e1:email, :e2:email), -1.0)) -- Negative value will be dropped from the average.
+		max(isnull(cos_compare(:e1:email, :e2:email), -1.0))
 	    )
 	;
 	
@@ -167,9 +253,9 @@ update_duplicates "system/query"
 	SELECT
 	    key1 = :name:key1,
 	    key2 = :name:key2,
-	    sim = condition(:phone:sim > 0.0,
+	    sim = condition(:phone:sim >= 0.0,
 		:phone:sim,
-		max(isnull(cos_compare(:ph1:phone, :ph2:phone), -1.0)) -- Negative value will be dropped from the average.
+		max(isnull(lev_compare(:ph1:phone, :ph2:phone), -1.0))
 	    )
 	FROM
 	    identity collection name_dups name,
@@ -188,9 +274,9 @@ update_duplicates "system/query"
 	    :key1,
 	    :key2
 	UPDATE SET
-	    :sim = condition(:phone:sim > 0.0,
+	    :sim = condition(:phone:sim >= 0.0,
 		:phone:sim,
-		max(isnull(cos_compare(:ph1:phone, :ph2:phone), -1.0)) -- Negative value will be dropped from the average.
+		max(isnull(lev_compare(:ph1:phone, :ph2:phone), -1.0))
 	    )
 	;
 	
@@ -200,9 +286,9 @@ update_duplicates "system/query"
 	SELECT
 	    key1 = :name:key1,
 	    key2 = :name:key2,
-	    sim = condition(:address:sim > 0.0,
+	    sim = condition(:address:sim >= 0.0,
 		:address:sim,
-		max(isnull(cos_compare(:l1:address, :l2:address), -1.0)) -- Negative value will be dropped from the average.
+		max(isnull(cos_compare(:l1:address, :l2:address), -1.0))
 	    )
 	FROM
 	    identity collection name_dups name,
@@ -221,9 +307,9 @@ update_duplicates "system/query"
 	    :key1,
 	    :key2
 	UPDATE SET
-	    :sim = condition(:address:sim > 0.0,
+	    :sim = condition(:address:sim >= 0.0,
 		:address:sim,
-		max(isnull(cos_compare(:l1:address, :l2:address), -1.0)) -- Negative value will be dropped from the average.
+		max(isnull(cos_compare(:l1:address, :l2:address), -1.0))
 	    )
 	;
 	
@@ -235,63 +321,63 @@ update_duplicates "system/query"
 	SELECT
 	    key1 = :name:key1,
 	    key2 = :name:key2,
-	    sim = aggregate_similarities(
-		:name:sim,
-		:email:sim,
-		:phone:sim,
-		:address:sim,
-		:name:key1 + ' ' + :name:name1,
-		:name:key2 + ' ' + :name:name2
+	    sim = (0.0
+		+ condition(constrain(:name:sim, :name_meta:sim * 0.9, 1.0) >= 0.0, constrain(:name:sim, :name_meta:sim * 0.9, 1.0), 0.0)
+		+ condition(:email:sim >= 0.0, :email:sim, 0.0)
+		+ condition(:phone:sim >= 0.0, :phone:sim, 0.0)
+		+ condition(:address:sim >= 0.0, :address:sim, 0.0)
+	    ) / (constrain(0.0 -- Constrain to prevent divide by 0 when NANs wander into the data from alternate dimensions.
+		+ condition(:name:sim >= 0.0 OR :name_meta:sim >= 0.0, 1.0, 0.0)
+		+ condition(:email:sim >= 0.0, 1.0, 0.0)
+		+ condition(:phone:sim >= 0.0, 1.0, 0.0)
+		+ condition(:address:sim >= 0.0, 1.0, 0.0)
+		, 0.0000001, convert(double, NULL)) -- Necessary because centrallix devision does not handle NAN properly.
 	    ),
 	    reason = ''
-		+ condition(:name:sim > 0.0, 'Name (' + round(:name:sim * 100, 2) + '%)\\n', '')
-		+ condition(:email:sim > 0.0, 'Email (' + round(:email:sim * 100, 2) + '%)\\n', '')
-		+ condition(:phone:sim > 0.0, 'Phone (' + round(:phone:sim * 100, 2) + '%)\\n', '')
-		+ condition(:address:sim > 0.0, 'Address (' + round(:address:sim * 100, 2) + '%)\\n', '')
+		+ condition(:name:sim > :value:min_reason_sim, 'Name (' + round(:name:sim * 100, :value:reason_decimals) + '%)\\n', '')
+		+ condition(:name_meta:sim > :value:min_reason_sim AND :name_meta:sim > :name:sim, 'Phonetic Name (' + round(:name_meta:sim * 100, :value:reason_decimals) + '%)\\n', '')
+		+ condition(:email:sim > :value:min_reason_sim, 'Email (' + round(:email:sim * 100, :value:reason_decimals) + '%)\\n', '')
+		+ condition(:phone:sim > :value:min_reason_sim, 'Phone (' + round(:phone:sim * 100, :value:reason_decimals) + '%)\\n', '')
+		+ condition(:address:sim > :value:min_reason_sim, 'Address (' + round(:address:sim * 100, :value:reason_decimals) + '%)\\n', '')
 		- '\\n'
 	FROM
 	    identity collection name_dups name,
+	    collection name_meta_dups name_meta,
 	    collection email_dups email,
 	    collection phone_dups phone,
 	    collection address_dups address
 	WHERE
-	    :name:key1 = :email:key1
+	    :name:key1 = :name_meta:key1
+	AND :name:key2 = :name_meta:key2
+	AND :name:key1 = :email:key1
 	AND :name:key2 = :email:key2
 	AND :name:key1 = :phone:key1
 	AND :name:key2 = :phone:key2
 	AND :name:key1 = :address:key1
 	AND :name:key2 = :address:key2
-	ON duplicate
-	    :key1,
-	    :key2
-	UPDATE SET
-	    :sim = :sim,
-	    :reason = :reason,
-	    :s_date_modified = getdate(),
-	    :s_modified_by = user_name()
 	;
 	
 	
 	-- Full Concat Dups
 	DECLARE collection concat_dups;
-	insert into collection concat_dups select * from /apps/kardia/modules/base/dups/concat.qy ;
+	INSERT INTO collection concat_dups select * from /apps/kardia/modules/base/dups/concat.qy ;
 	INSERT INTO
 	    collection all_dups
 	SELECT
 	    key1 = :concat:key1,
 	    key2 = :concat:key2,
 	    sim = :concat:sim,
-	    reason = 'All (' + round(:concat:sim * 100, 2) + '%)!'
+	    reason = 'All (' + round(:concat:sim * 100, :value:reason_decimals) + '%)'
 	FROM
 	    identity collection concat_dups concat
-	WHERE
+	WHERE -- We should never get identical dups, but somehow we do. This fixes that.
 	    :concat:key1 != :concat:key2
 	ON duplicate
 	    :key1,
 	    :key2
 	UPDATE SET
 	    :sim = condition(:sim > :concat:sim, :sim, :concat:sim),
-	    :reason = 'All (' + round(:concat:sim * 100, 2) + '%)\\n' + :reason,
+	    :reason = 'All (' + round(:concat:sim * 100, :value:reason_decimals) + '%)\\n' + :reason,
 	    :s_date_modified = getdate(),
 	    :s_modified_by = user_name()
 	;
@@ -323,7 +409,7 @@ update_duplicates "system/query"
 	FROM
 	    collection all_dups
 	WHERE
-	    :sim > 0.6
+	    :sim > :value:min_total_sim
 	ON duplicate
 	    :p_partner_key,
 	    :p_dup_partner_key
@@ -335,12 +421,12 @@ update_duplicates "system/query"
 	;
 	
 	-- Remove stale data from the dups table.
---	delete
---	from 
+--	DELETE
+--	FROM
 --	    identity /apps/kardia/data/Kardia_DB/p_dup/rows d,
 --	    /apps/kardia/data/Kardia_DB/p_partner/rows p1,
 --	    /apps/kardia/data/Kardia_DB/p_partner/rows p2
---	where
+--	WHERE
 --	    :d:p_partner_key *= :p1:p_partner_key
 --	AND :d:p_dup_partner_key *= :p2:p_partner_key
 --	AND(:d:s_date_modified < isnull(:p1:s_date_modified, getdate())
