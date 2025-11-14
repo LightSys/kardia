@@ -13,7 +13,7 @@ plugin_base_config_rec "widget/component-decl"
 	width=828; height=490;
 	spacing=7;
 
-	ledger_label "widget/label" { height=16; style=bold; text="Accounting Ledger Selection:"; }
+	ledger_label "widget/label" { height=16; width=300; style=bold; text="Accounting Ledger Selection:"; }
 
 	// ledger selection
 	ledger_osrc "widget/osrc"
@@ -30,9 +30,10 @@ plugin_base_config_rec "widget/component-decl"
 		fieldname=label;
 		numdisplay=12;
 		}
+	    ledger_spacer "widget/autolayoutspacer" { height=5; }
 	    }
 	
-	// Define config form here so fields can be spread throughout page as needed
+	// Config Settings
 	config_osrc "widget/osrc"
 	    {
 	    config_ledger_number "widget/parameter" { type=string;  param_name=a_ledger_number; }
@@ -45,155 +46,208 @@ plugin_base_config_rec "widget/component-decl"
 		key_1=a_ledger_number;
 		target_key_1=a_ledger_number;
 		}
-	    // form for all a_config fields
-	    config_form "widget/form"{ } // leave form empty so can mix fields throughout page.
-	    }
-	// Query pivot for all of the a_is_reconcilable account fields
-	recon_osrc "widget/osrc"
-	    {
-	    recon_ledger_number "widget/parameter" { type=string;  param_name=a_ledger_number; }
-	    sql = "select * from object expression('/apps/kardia/modules/bank_rec/bank_rec_reconcilable.qyp/' + :parameters:a_ledger_number)";
-	    
-	    recon_link "widget/rule"
+	    // form for all a_config fields - In this case, just one
+	    config_form "widget/form"
 		{
-		ruletype=osrc_relationship;
-		target=ledger_osrc;
-		key_1=a_ledger_number;
-		target_key_1=a_ledger_number;
-		}
-	    // form for all a_config fields
-	    recon_form "widget/form"{ } // leave form empty so can mix fields throughout page.
-	    }
-	// Query pivot for all of the a_is_customizable fields
-	custom_osrc "widget/osrc"
-	    {
-	    custom_ledger_number "widget/parameter" { type=string;  param_name=a_ledger_number; }
-	    sql = "select * from object expression('/apps/kardia/modules/bank_rec/bank_rec_customizable.qyp/' + :parameters:a_ledger_number)";
-	    
-	    custom_link "widget/rule"
-		{
-		ruletype=osrc_relationship;
-		target=ledger_osrc;
-		key_1=a_ledger_number;
-		target_key_1=a_ledger_number;
-		}
-	    // form for all customizable fields
-	    custom_form "widget/form"{ } // leave form empty so can mix fields throughout page.
-	    }
-	
-	// date cuttoff for queries
-	config_label "widget/label" { height=16; style=bold; form = config_form; text="History Cut Off Date:"; }
-	f_cutoff_date "widget/component" 
-	    { 
-	    path="/sys/cmp/smart_field.cmp"; 
-	    x=24; height=24; 
-	    form=config_form;
-	    field="ReconCutOff"; 
-	    text="Update reconciliation records after:"; 
-	    width=350; label_width=200; 
-	    ctl_type=datetime; 
-	    date_only=1; 
-	    default_time='00:00:00'; 
-	    recon_cutoff_hints "widget/hints" { style=notnull; } 
-	    }
-	
-	account_header_label "widget/label" { height=20; style=bold; text="Account Settings:"; }
-
-	// Each ledger needs a hidden tab so can switch between. Each tab needs a separate form for each account
-	ledger_tab "widget/tab"
-	    {
-	    x=0; y=0; height=300;
-	    // have the selected tab change with the drop down
-	    ledger_select "widget/connector" { event=DataFocusChanged; action=SetTab; target=ledger_tab; source=ledger_osrc; TabIndex=runclient(:ledger_osrc:row_num); }
-	    tab_location=none;
-
-	    // each ledger needs its own tab
-	    ledger_repeat "widget/repeat"
-		{
-		sql="SELECT * FROM /apps/kardia/data/Kardia_DB/a_ledger/rows;";
-
-		account_tabpage "widget/tabpage"
+		config_label "widget/label" { height=16; width=300; style=bold; form = config_form; text="History Cut Off Date:"; }
+		config_box "widget/hbox"
 		    {
-		    title = runserver(convert('string', :ledger_repeat:a_ledger_number));
-		    type=string;
-		    accounts_box "widget/vbox"
+		    height=20;
+		    align=left;
+		    spacing=10;
+		    
+		    // date cuttoff for queries
+		    config_cutoff_date "widget/component" 
+			{ 
+			path="/sys/cmp/smart_field.cmp"; 
+			x=24; height=24; 
+			form=config_form;
+			field="ReconCutOff"; 
+			text="Update reconciliation records after:"; 
+			width=350; label_width=190; 
+			ctl_type=datetime; 
+			date_only=1; 
+			default_time='00:00:00'; 
+			recon_cutoff_hints "widget/hints" { style=notnull; } 
+			}
+
+		    config_save_btn "widget/imagebutton"
 			{
-			// headers for the form feilds
-			headers_box "widget/hbox"
-			    {
-			    height=30;
-			    account_header "widget/label" { height=20; width=70; style=bold; text="Account:"; }
-			    recon_header "widget/label"   { height=20; width=50; style=bold; text="Recon:"; }
-			    custom_header "widget/label"  { height=20; width=50; style=bold; text="Custom:"; }
-			    }
-
-			// each account needs own label and fields. 
-			accounts_repeat "widget/repeat"
-			    {
-			    sql = runserver("
-				INSERT INTO
-				    /apps/kardia/data/Kardia_DB/a_bank_recon_accts/rows
-				SELECT
-				    :a_ledger_number, :a_account_code, 
-				    s_date_created  = getdate(), s_created_by  = user_name(), 
-				    s_date_modified = getdate(), s_modified_by = user_name()
-				FROM
-				    /apps/kardia/data/Kardia_DB/a_account/rows
-				ON DUPLICATE -- use upsert to avoid failing early on older values
-				:a_ledger_number, :a_account_code 
-				UPDATE SET
-				:a_account_code = :a_account_code
-				;
-
-				SELECT 
-				    *
-				FROM
-				    IDENTITY /apps/kardia/data/Kardia_DB/a_bank_recon_accts/rows 
-				WHERE 
-				    :a_ledger_number = "+:ledger_repeat:a_ledger_number+" 
-				;");
-
-			    // should work with just prexisting forms...?
-			    account_box "widget/hbox"
-				    {
-				    height=15;
-				    account_label "widget/label" {height=15; width=70; text=runserver(:accounts_repeat:a_account_code);}
-				    account_rec_check "widget/checkbox" {height=15; width=50; form=recon_form; fieldname=runserver('x'+to_hex(:accounts_repeat:a_account_code)); accts_rec_hints "widget/hints" { style=notnull; } }
-				    account_cust_check "widget/checkbox" {height=15; width=50; form=custom_form; fieldname=runserver('x'+to_hex(:accounts_repeat:a_account_code)); accts_cust_hints "widget/hints" { style=notnull; } }
-				    }
-			    }
+			x=0;y=0;width=18;height=18;
+			image="/sys/images/ico20a.gif";
+			pointimage="/sys/images/ico20b.gif";
+			clickimage="/sys/images/ico20c.gif";
+			disabledimage="/sys/images/ico20d.gif";
+			tooltip = runserver("Save changes");
+			enabled = runclient(:config_form:is_savable);
+			config_save "widget/connector" { event=Click; target=config_form; event_condition=runclient(:config_form:is_savable); action=Save; }
+			}
+		    config_cancel_btn "widget/imagebutton"
+			{
+			x=0;y=0;width=18;height=18;
+			image="/sys/images/ico22a.gif";
+			pointimage="/sys/images/ico22b.gif";
+			clickimage="/sys/images/ico22c.gif";
+			disabledimage="/sys/images/ico22d.gif";
+			tooltip = runserver("Cancel changes");
+			enabled = runclient(:config_form:is_discardable);
+			config_cancel "widget/connector" { event=Click; target=config_form; event_condition=runclient(:config_form:is_discardable); action=Discard; }
 			}
 		    }
 		}
 	    }
-	// Buttons: 
-	button_box "widget/hbox"
+
+	account_header_label "widget/label" { height=15; width=300; style=bold; text="Account Settings:"; }
+
+	search_box "widget/hbox"
 	    {
-	    height=1;
-	    align=center;
-	    spacing=10;
+	    height = 20; spacing = 5;
+	    search_label "widget/label" { align=right; y=6; x=0; width=45; text="Search:"; }
+	    search_field "widget/editbox"
+		{
+		width=150; height=25;
 
-	    save_btn "widget/textbutton"
-		{
-		y=0; height=24; width=130;
-		text = "Save";
-		enabled=runclient(:config_form:is_savable OR :recon_form:is_savable OR :custom_form:is_savable);
+		do_search "widget/connector"
+		    {
+		    event=ReturnPressed;
+		    target=account_osrc;
+		    action=QueryText;
+		    cx__case_insensitive=1;
+		    objname=runclient("a");
+		    field_list="*a_account_code*,*a_acct_desc*";
+		    query=runclient(:search_field:content);
+		    }
 		}
-	    config_save "widget/connector" { event=Click; source=save_btn; target=config_form; event_condition=runclient(:config_form:is_savable); action=Save; }
-	    recon_save "widget/connector" { event=Click; source=save_btn; target=recon_form; event_condition=runclient(:recon_form:is_savable); action=Save; }
-	    custom_save "widget/connector" { event=Click; source=save_btn; target=custom_form; event_condition=runclient(:custom_form:is_savable); action=Save; }
-	    cancel_btn "widget/textbutton"
+	    // which account types to show
+	    account_type_label "widget/label" { align=right; y=6; x=0; width=90; text="Account Type:"; }
+	    acct_type_dd "widget/dropdown"
 		{
-		y=0; height=24; width=130;
-		text = "Cancel";
-		enabled=runclient(:config_form:is_discardable OR :recon_form:is_discardable OR :custom_form:is_discardable);
+		width=120;
+		bgcolor=white; 
+		mode=static;
+		hilight="#d0d0d0";
+		numdisplay=7;
+		acct_type_dd_hints "widget/hints" { style=notnull; }
+		refresh_on_account_type_change "widget/connector" { event=DataChange; target=account_osrc; action=QueryParam; }
+
+		acct_type_default "widget/dropdownitem" { label="Asset and Liability"; value="AL"; selected=yes; }
+		acct_type_all "widget/dropdownitem" { label="All"; value="ALQRE"; }
+		acct_type_asset "widget/dropdownitem" { label="Asset"; value="A"; }
+		acct_type_liability "widget/dropdownitem" { label="Liability"; value="L"; }
+		acct_type_equity "widget/dropdownitem" { label="Equity"; value="Q"; }
+		acct_type_revenue "widget/dropdownitem" { label="Revenue"; value="R"; }
+		acct_type_expense "widget/dropdownitem" { label="Expense"; value="E"; }
 		}
-	    config_cancel "widget/connector" { event=Click; source=cancel_btn; target=config_form; event_condition=runclient(:config_form:is_discardable); action=Discard; }
-	    recon_cancel "widget/connector" { event=Click; source=cancel_btn; target=recon_form; event_condition=runclient(:recon_form:is_discardable); action=Discard; }
-	    custom_cancel "widget/connector" { event=Click; source=cancel_btn; target=custom_form; event_condition=runclient(:custom_form:is_discardable); action=Discard; }
+
+	    // show all, reconcilable, or unreconcilable 
+	    acct_recon_label "widget/label" { align=right; y=6; x=0; width=60; text="Recon.:"; }
+	    acct_recon_dd "widget/dropdown"
+		{
+		width=120;
+		bgcolor=white; 
+		mode=static;
+		hilight="#d0d0d0";
+		numdisplay=3;
+		acct_recon_dd_hints "widget/hints" { style=notnull; }
+		refresh_on_acct_recon_change "widget/connector" { event=DataChange; target=account_osrc; action=QueryParam; }
+
+		acct_recon_all "widget/dropdownitem" { label="All"; value='2'; selected=yes; }
+		acct_recon_reconcilable "widget/dropdownitem" { label="Reconcilable"; value='1'; }
+		acct_recon_unreconcilable "widget/dropdownitem" { label="Unreconcilable"; value='0'; }
+		}
+
+	    // show all, reconcilable, or unreconcilable 
+	    account_custom_label "widget/label" { align=right; y=6; x=0; width=60; text="Custom.:"; }
+	    acct_custom_dd "widget/dropdown"
+		{
+		width=120;
+		bgcolor=white; 
+		mode=static;
+		hilight="#d0d0d0";
+		numdisplay=3;
+		acct_custom_dd_hints "widget/hints" { style=notnull; }
+		refresh_on_acct_custom_change "widget/connector" { event=DataChange; target=account_osrc; action=QueryParam; }
+
+		acct_custom_all "widget/dropdownitem" { label="All"; value='2'; selected=yes; }
+		acct_custom_customizable "widget/dropdownitem" { label="Customizable"; value='1'; }
+		acct_custom_uncustomizable "widget/dropdownitem" { label="Uncustomizable"; value='0'; }
+		}
+
 	    }
-	
 
+
+	// Make sure the a_bank_recon_accts table is up to date
+	account_update_osrc "widget/osrc"
+	    {
+	    sql= "
+		INSERT INTO 
+		    /apps/kardia/data/Kardia_DB/a_bank_recon_accts/rows 
+		SELECT 
+		    :a_ledger_number, :a_account_code, 
+		    s_date_created = getdate(), s_created_by = user_name(), 
+		    s_date_modified = getdate(), s_modified_by = user_name()
+		FROM
+		    /apps/kardia/data/Kardia_DB/a_account/rows
+		-- Prevent duplicates from causing errors - no real update needed
+		ON DUPLICATE
+		    :a_ledger_number, :a_account_code
+		UPDATE SET
+		    :a_ledger_number = :a_ledger_number
+		";
+	    // make sure the new items show up the first time
+	    refresh_account_osrc "widget/connector" { event=EndQuery; target=account_osrc; action=Refresh; }
+	    }
+
+	// display the config settings as checkboxes
+	account_osrc "widget/osrc"
+	    {
+	    account_ledger_number "widget/parameter" { type=string; param_name=a_ledger_number; default=runclient(:ledger_osrc:a_ledger_number); }
+	    account_type "widget/parameter" { type=string; param_name=acct_type; default=runclient(:acct_type_dd:value); }
+	    account_recon "widget/parameter" { type=string; param_name=reconcilable; default=runclient(:acct_recon_dd:value); }
+	    account_custom "widget/parameter" { type=string; param_name=customizable; default=runclient(:acct_custom_dd:value); }
+	    sql = "
+		SELECT 
+		    :a:a_ledger_number, :a:a_account_code, :a:a_acct_desc, 
+		    :b:a_is_reconcilable, :b:a_is_customizable
+		FROM 
+		    /apps/kardia/data/Kardia_DB/a_account/rows a, 
+		    /apps/kardia/data/Kardia_DB/a_bank_recon_accts/rows b
+		WHERE 
+		    :a:a_ledger_number = :parameters:a_ledger_number 
+		    AND :a:a_ledger_number = :b:a_ledger_number 
+		    AND :a:a_account_code = :b:a_account_code
+		    AND charindex(:a:a_acct_type, :parameters:acct_type) != 0
+		    AND condition(:parameters:reconcilable = '2', 1, :parameters:reconcilable = :b:a_is_reconcilable)
+		    AND condition(:parameters:customizable = '2', 1, :parameters:customizable = :b:a_is_customizable)
+		ORDER BY 
+		    :a:a_account_code
+		";
+	    baseobj = '/apps/kardia/data/Kardia_DB/a_bank_recon_accts/rows';
+	    readahead=256;
+
+	    // Link widgets interfere with the search functionality, so a connector is used instead
+	    account_ledger_match "widget/connector"
+		{
+		source=ledger_osrc;
+		event=DataFocusChanged;
+		target=account_osrc;
+		action=QueryParam;
+		}
+
+	    account_table "widget/table"
+		{
+		x=3; y=3; width=820; height=330;
+		mode="static";
+		
+		acct_tbl_code "widget/table-column" { title="Account Code"; fieldname="a_account_code"; width=10; }
+		acct_tbl_desc "widget/table-column" { title="Account Description"; fieldname="a_acct_desc"; width=50; }
+		acct_tbl_isrec "widget/table-column" { type="checkbox"; title="rec?"; fieldname="a_is_reconcilable";   width=5; } 
+		acct_tbl_isCust "widget/table-column" { type="checkbox"; title="cust?"; fieldname="a_is_customizable"; width=5; }
+
+		update_rec "widget/connector" { source= account_table; target=account_osrc; event=Click; action=Modify; a_is_reconcilable=runclient(condition(:a_is_reconcilable == 0, 1, 0)); event_condition=runclient(:Column == 'a_is_reconcilable'); }
+		update_cust "widget/connector" { source= account_table; target=account_osrc; event=Click; action=Modify; a_is_customizable=runclient(condition(:a_is_customizable == 0, 1, 0)); event_condition=runclient(:Column == 'a_is_customizable'); }
+		}
+	    }
 	}
     }
 
