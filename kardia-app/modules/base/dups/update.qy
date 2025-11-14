@@ -392,6 +392,7 @@ update_duplicates "system/query"
 	-- Remove all data from the dups table (for debugging).
 	delete from /apps/kardia/data/Kardia_DB/p_dup/rows ;
 	
+	-- TODO: Greg - We should fix this upsert.
 	-- Insert dups into p_dup table.
 	INSERT INTO
 	    /apps/kardia/data/Kardia_DB/p_dup/rows
