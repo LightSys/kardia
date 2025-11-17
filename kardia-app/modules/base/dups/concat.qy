@@ -1,8 +1,7 @@
 $Version=2$
-dups_test_query "system/query"
+concat_duplicates "system/query"
     {
     sql = "
-	print 'concat.qy start'
 	declare object value;
 	
 	-- Count data.
@@ -57,6 +56,5 @@ dups_test_query "system/query"
 	    :p1:p_partner_key,
 	    :p2:p_partner_key
 	;
-	print 'concat.qy done'
     ";
     }

@@ -1,8 +1,7 @@
 $Version=2$
-dups_test_query "system/query"
+get_names "system/query"
     {
     sql = "
-	print 'get/names.qy start'
 	SELECT
 	    key = :p_partner_key,
 	    name = ''
@@ -20,6 +19,5 @@ dups_test_query "system/query"
 	FROM
 	    /apps/kardia/data/Kardia_DB/p_partner/rows
 	;
-	print 'get/names.qy end'
     ";
     }

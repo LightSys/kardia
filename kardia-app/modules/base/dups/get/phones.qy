@@ -1,8 +1,7 @@
 $Version=2$
-dups_test_query "system/query"
+get_phones "system/query"
     {
     sql = "
-	print 'get/phones.qy start'
 	SELECT
 	    key = :p:p_partner_key,
 	    phone = ''
@@ -18,6 +17,5 @@ dups_test_query "system/query"
 	AND :p:p_contact_data is not null
 	AND :p:p_contact_data != ''
 	;
-	print 'get/phones.qy end'
     ";
     }

@@ -2,12 +2,10 @@ $Version=2$
 dups_test_query "system/query"
     {
     sql = "
-	print 'phone.qy start'
-	
 	-- Get the list of phones we will be searching for duplicates.
 	DECLARE collection phones scope application;
 	
-	-- Assume the listof phones was already computed by the caller.
+	-- Assume the list of phones was already computed by the caller.
 	-- INSERT INTO collection phones SELECT :key, :name FROM /apps/kardia/modules/base/dups/get/phones.qy ;
 	
 	-- Declare an object for storing values locally.
@@ -55,6 +53,5 @@ dups_test_query "system/query"
 	    :p1:p_partner_key,
 	    :p2:p_partner_key
 	;
-	print 'phone.qy done'
     ";
     }

@@ -1,5 +1,5 @@
 $Version=2$
-get_dups "system/cluster"
+cluster_dups "system/cluster"
     {
     // Declare parameters.
     algorithm "cluster/parameter" { type = string; style = notnull; }

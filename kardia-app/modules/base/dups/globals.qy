@@ -1,5 +1,5 @@
 $Version=2$
-dups_test_query "system/query"
+duplicate_checking_globals "system/query"
     {
     num_data "query/parameter" { type = integer; style = strnull; min=1; }
     

@@ -1,8 +1,7 @@
 $Version=2$
-dups_test_query "system/query"
+get_addresses "system/query"
     {
     sql = "
-	print 'get/addresses.qy start'
 	SELECT
 	    key = :p:p_partner_key,
 	    address = ''
@@ -22,6 +21,5 @@ dups_test_query "system/query"
 	AND :l:p_address_1 is not null
 	AND :l:p_address_1 != ''
 	;
-	print 'get/addresses.qy end'
     ";
     }

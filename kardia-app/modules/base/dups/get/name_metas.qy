@@ -1,8 +1,7 @@
 $Version=2$
-dups_test_query "system/query"
+get_name_metas "system/query"
     {
     sql = "
-	print 'get/name_metas.qy start'
 	SELECT
 	    key = :p_partner_key,
 	    name_meta = ''
@@ -20,6 +19,5 @@ dups_test_query "system/query"
 	    char_length(isnull(:p_given_name, '')) > 1
 	AND char_length(isnull(:p_surname, '')) > 1
 	;
-	print 'get/name_metas.qy end'
     ";
     }

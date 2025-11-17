@@ -1,8 +1,7 @@
 $Version=2$
-dups_test_query "system/query"
+get_emails "system/query"
     {
     sql = "
-	print 'get/emails.qy start'
 	SELECT
 	    key = :p:p_partner_key,
 	    email = :c:p_contact_data
@@ -15,6 +14,5 @@ dups_test_query "system/query"
 	AND :c:p_contact_data is not null
 	AND :c:p_contact_data != ''
 	;
-	print 'get/emails.qy end'
     ";
     }

@@ -1,13 +1,11 @@
 $Version=2$
-dups_test_query "system/query"
+address_duplicates "system/query"
     {
     sql = "
-	print 'address.qy start'
-	
 	-- Get the list of addresses we will be searching for duplicates.
 	DECLARE collection addresses scope application;
 	
-	-- Assume the listof addresses was already computed by the caller.
+	-- Assume the list of addresses was already computed by the caller.
 	-- INSERT INTO collection addresses SELECT :key, :name FROM /apps/kardia/modules/base/dups/get/addresses.qy ;
 	
 	-- Declare an object for storing values locally.
@@ -55,6 +53,5 @@ dups_test_query "system/query"
 	    :p1:p_partner_key,
 	    :p2:p_partner_key
 	;
-	print 'address.qy done'
     ";
     }
