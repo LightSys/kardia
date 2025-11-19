@@ -1,16 +1,53 @@
 $Version=2$
 update_duplicates "system/query"
     {
+    // This script updates the p_dup table (/apps/kardia/data/Kardia_DB/p_dup/rows)
+    // by detecting duplicates using two strategies (aggregation and concatenation)
+    // and then upserting the results into the table.
+    // 
+    // The aggregation strategy first searches for dups on several groups of fields
+    // which it fetches using name.qy, name_metas.qy, emails.qy, phones.qy, and
+    // addresses.qy.  We invoke the dups.cluster file to get a list of dups for each
+    // of these field groups (name_dups, email_dups, etc.).  Then, add each dup found
+    // by the other strategies to name_dups by computing its name similarity.  Next,
+    // we add each dup in name_dups to each other collection by computing the
+    // similarity of the respective fields.  Thus, every dup exists in all five
+    // collections.  Finally, we aggregate these collections using this equation:
+    // `average(max(name_sim, name_meta_sim * 0.9), email_sim, phone_sim, address_sim)`
+    // If a field is missing (e.g. either possible dup record doesn't have an email),
+    // we use a value of -1, and all values less than 0 are ignored by the average.
+    // (This avoids overlooking records that are missing a lot of data.)
+    // 
+    // The concatenation strategy is simpler.  We simply concatenate all relevant
+    // fields (collection concats), then search for dups (collection concat_dups)
+    // on the concatinated data.
+    // 
+    // Each strategy has pros and cons.
+    //   - Aggregation avoids overlooking records when one is missing information.
+    //   - Aggregation provides clearer reasoning to the database administrator.
+    //   - Aggregation can use Levenstein for some fields (name meta and phone),
+    //     and cosine for others.  Contamination uses the same measure for everything.
+    //   - Concatenation finds dups where someone's email is similar to another
+    //     person's name, which can tip us off to relationships we'd otherwise miss.
+    //   - Concatenation is slightly faster, so it can be run with a lower threshold,
+    //     making it more sensitive to near dups in some cases. 
+    //   - Concatenation is prone to cryptic false positives.
+    // 
+    // In short, aggregation gives us more control, allowing us to find far more dups,
+    // but it comes at a cost of greater complexity, slower compute times, and missing
+    // certain specific cases of duplicates.
+    // 
+    // Note: If concat_dups detects a dup, we also run run the other field checks on it
+    //       even though concatenation similarity is not used in the aggregation equation.
+    //       This is because it helps to enhance the reason field with additional info
+    //       that the database administrator can see at a glace.
+    
     sql = "
 	DECLARE object value;
 	
 	-- The number of places to show after the decimal point for reason
 	-- similarity percentages.
 	SELECT :value:reason_decimals = 1;
-	
-	-- The minimum similarity for a attributes to be considered one of
-	-- the reasons that two records were matched as duplicates.
-	SELECT :value:min_reason_sim = 0.10;
 	
 	-- The minimum aggregated similarity threshold that must be reached
 	-- for a duplicate to be added to the table and displayed to the user.
@@ -20,40 +57,189 @@ update_duplicates "system/query"
 	-- For other similarity thresholds, see `dups.cluster`.
 	SELECT :value:min_total_sim = 0.60;
 	
-	
+	print 'Getting data...'
 	-- Get collections for each set of possible dups.
-	-- These collections are used by the following scripts (such as
-	-- dups/name.qy, dups/email.qy, etc.), avoiding the need to reopen
-	-- the query file over and over again.
-	DECLARE collection names scope application;
-	DECLARE collection name_metas scope application;
-	DECLARE collection emails scope application;
-	DECLARE collection phones scope application;
-	DECLARE collection addresses scope application;
-	DELETE FROM collection names;
-	DELETE FROM collection name_metas;
-	DELETE FROM collection emails;
-	DELETE FROM collection phones;
-	DELETE FROM collection addresses;
+	DECLARE collection names;
+	DECLARE collection name_metas;
+	DECLARE collection emails;
+	DECLARE collection phones;
+	DECLARE collection addresses;
+	DECLARE collection concats;
 	INSERT INTO collection names      SELECT :key, :name      FROM /apps/kardia/modules/base/dups/get/names.qy ;
 	INSERT INTO collection name_metas SELECT :key, :name_meta FROM /apps/kardia/modules/base/dups/get/name_metas.qy ;
 	INSERT INTO collection emails     SELECT :key, :email     FROM /apps/kardia/modules/base/dups/get/emails.qy ;
 	INSERT INTO collection phones     SELECT :key, :phone     FROM /apps/kardia/modules/base/dups/get/phones.qy ;
 	INSERT INTO collection addresses  SELECT :key, :address   FROM /apps/kardia/modules/base/dups/get/addresses.qy ;
+	INSERT INTO collection concats    SELECT :key, :data      FROM /apps/kardia/modules/base/dups/get/concats.qy ;
 	
-	-- Get dups for each field (name, email, phone, address).
+	print 'Counting data...'
+	-- Count data.
+	SELECT :value:names_count      = count(1) FROM collection names;
+	SELECT :value:name_metas_count = count(1) FROM collection name_metas;
+	SELECT :value:emails_count     = count(1) FROM collection emails;
+	SELECT :value:phones_count     = count(1) FROM collection phones;
+	SELECT :value:addresses_count  = count(1) FROM collection addresses;
+	SELECT :value:concats_count    = count(1) FROM collection concats;
+	
+	print 'Computing search parameters...'
+	-- Compute searching parameters.
+	SELECT
+	    :value:names_algorithm = :names:algorithm,
+	    :value:name_metas_algorithm = :name_metas:algorithm,
+	    :value:emails_algorithm = :emails:algorithm,
+	    :value:phones_algorithm = :phones:algorithm,
+	    :value:addresses_algorithm = :addresses:algorithm,
+	    :value:concats_algorithm = :concats:algorithm,
+	    :value:names_k = :names:k,
+	    :value:name_metas_k = :name_metas:k,
+	    :value:emails_k = :emails:k,
+	    :value:phones_k = :phones:k,
+	    :value:addresses_k = :addresses:k,
+	    :value:concats_k = :concats:k
+	FROM
+	    expression ('/apps/kardia/modules/base/dups/cluster_params.qy?num_data=' + :value:names_count) names,
+	    expression ('/apps/kardia/modules/base/dups/cluster_params.qy?num_data=' + :value:name_metas_count) name_metas,
+	    expression ('/apps/kardia/modules/base/dups/cluster_params.qy?num_data=' + :value:emails_count) emails,
+	    expression ('/apps/kardia/modules/base/dups/cluster_params.qy?num_data=' + :value:phones_count) phones,
+	    expression ('/apps/kardia/modules/base/dups/cluster_params.qy?num_data=' + :value:addresses_count) addresses,
+	    expression ('/apps/kardia/modules/base/dups/cluster_params.qy?num_data=' + :value:concats_count) concats
+	;
+	
+	
+	print 'Searching for name dups...'
+	-- Get name_dups using the dups.cluster file.
 	DECLARE collection name_dups;
+	INSERT INTO
+	    collection name_dups
+	SELECT
+	    :key1,
+	    :key2,
+	    :sim
+	FROM
+	    identity expression (
+		'/apps/kardia/modules/base/dups/dups.cluster'
+		    + '?algorithm=' + :value:names_algorithm
+		    + '&k=' + :value:names_k
+		    + '&field=names'
+		    + '&data=name'
+		+ '/dups'
+	    )
+	;
+	
+	print 'Searching for name_meta dups...'
+	-- Get name_meta_dups using the dups.cluster file.
 	DECLARE collection name_meta_dups;
+	INSERT INTO
+	    collection name_meta_dups
+	SELECT
+	    key1 = :key1,
+	    key2 = :key2,
+	    sim = :sim
+	FROM
+	    identity expression (
+		'/apps/kardia/modules/base/dups/dups.cluster'
+		    + '?algorithm=' + :value:name_metas_algorithm
+		    + '&k=' + :value:name_metas_k
+		    + '&field=name_metas'
+		    + '&data=name_meta'
+		+ '/meta_dups'
+	    )
+	;
+	
+	print 'Searching for email dups...'
+	-- Get email_dups using the dups.cluster file.
 	DECLARE collection email_dups;
+	INSERT INTO
+	    collection email_dups
+	SELECT
+	    key1 = :d:key1,
+	    key2 = :d:key2,
+	    sim = max(:d:sim)
+	FROM
+	    identity expression (
+		'/apps/kardia/modules/base/dups/dups.cluster'
+		    + '?algorithm=' + :value:emails_algorithm
+		    + '&k=' + :value:emails_k
+		    + '&field=emails'
+		    + '&data=email'
+		+ '/dups'
+	    ) d
+	GROUP BY
+	    :d:key1,
+	    :d:key2
+	;
+	
+	print 'Searching for phone dups...'
+	-- Get email_dups using the dups.cluster file.
 	DECLARE collection phone_dups;
+	INSERT INTO
+	    collection phone_dups
+	SELECT
+	    key1 = :d:key1,
+	    key2 = :d:key2,
+	    sim = max(:d:sim)
+	FROM
+	    expression (
+		'/apps/kardia/modules/base/dups/dups.cluster'
+		    + '?algorithm=' + :value:phones_algorithm
+		    + '&k=' + :value:phones_k
+		    + '&field=phones'
+		    + '&data=phone'
+		+ '/phone_dups'
+	    ) d
+	GROUP BY
+	    :d:key1,
+	    :d:key2
+	;
+	
+	print 'Searching for address dups...'
+	-- Get address_dups using the dups.cluster file.
 	DECLARE collection address_dups;
-	INSERT INTO collection name_dups      SELECT :key1, :key2, :sim FROM /apps/kardia/modules/base/dups/name.qy ;
-	INSERT INTO collection name_meta_dups SELECT :key1, :key2, :sim FROM /apps/kardia/modules/base/dups/name_meta.qy ;
-	INSERT INTO collection email_dups     SELECT :key1, :key2, :sim FROM /apps/kardia/modules/base/dups/email.qy ;
-	INSERT INTO collection phone_dups     SELECT :key1, :key2, :sim FROM /apps/kardia/modules/base/dups/phone.qy ;
-	INSERT INTO collection address_dups   SELECT :key1, :key2, :sim FROM /apps/kardia/modules/base/dups/address.qy ;
+	INSERT INTO
+	    collection address_dups
+	SELECT
+	    key1 = :d:key1,
+	    key2 = :d:key2,
+	    sim = max(:d:sim)
+	FROM
+	    identity expression (
+		'/apps/kardia/modules/base/dups/dups.cluster'
+		    + '?algorithm=' + :value:addresses_algorithm
+		    + '&k=' + :value:addresses_k
+		    + '&field=addresses'
+		    + '&data=address'
+		+ '/dups'
+	    ) d
+	GROUP BY
+	    :d:key1,
+	    :d:key2
+	;
+	
+	print 'Searching for concat dups...'
+	-- Get concat_dups using the dups.cluster file.
+	DECLARE COLLECTION concat_dups;
+	INSERT INTO
+	    collection concat_dups
+	SELECT
+	    key1 = :d:key1,
+	    key2 = :d:key2,
+	    sim = max(:d:sim)
+	FROM
+	    identity expression (
+		'/apps/kardia/modules/base/dups/dups.cluster'
+		    + '?algorithm=' + :value:concats_algorithm
+		    + '&k=' + :value:concats_k
+		    + '&field=concats'
+		    + '&data=data'
+		+ '/concat_dups'
+	    ) d
+	GROUP BY
+	    :d:key1,
+	    :d:key2
+	;
 	
 	
+	print 'Adding other collections dups to name dups...'
 	-- [name_dups <- name_meta_dups] Add an entry to name_dups for each entry in name_meta_dups.
 	INSERT INTO
 	    collection name_dups
@@ -180,7 +366,41 @@ update_duplicates "system/query"
 	    )
 	;
 	
+	-- [name_dups <- concat_dups] Add an entry to name_dups for each entry in concat_dups.
+	-- This isn't strictly necessary because concat_dups isn't used in the final aggregation.
+	-- However, it can sometimes provide additional information in the 'reason' column of the
+	-- UI, so this feels like it's worth the small cost in extra computation. 
+	INSERT INTO
+	    collection name_dups
+	SELECT
+	    key1 = :concat:key1,
+	    key2 = :concat:key2,
+	    sim = condition(:name:sim >= 0.0,
+		:name:sim,
+		isnull(cos_compare(:n1:name, :n2:name), -1.0)
+	    )
+	FROM
+	    identity collection concat_dups concat,
+	    collection name_dups name,
+	    collection names n1,
+	    collection names n2
+	WHERE
+	    :concat:key1 *= :name:key1
+	AND :concat:key2 *= :name:key2
+	AND :concat:key1 *= :n1:key
+	AND :concat:key2 *= :n2:key
+	ON duplicate -- Update entries that already exist (in case we have a cross-cluster match).
+	    :key1,
+	    :key2
+	UPDATE SET
+	    :sim = condition(:name:sim >= 0.0,
+		:name:sim,
+		isnull(cos_compare(:n1:name, :n2:name), -1.0)
+	    )
+	;
 	
+	
+	print 'Adding name dups to other collections...'
 	-- [name_meta_dups <- name_dups] Add an entry to name_meta_dups for each entry in name_dups.
 	INSERT INTO
 	    collection name_meta_dups
@@ -313,8 +533,17 @@ update_duplicates "system/query"
 	    )
 	;
 	
+	-- Free application-scoped collections.
+	DELETE FROM collection names;
+	DELETE FROM collection name_metas;
+	DELETE FROM collection emails;
+	DELETE FROM collection phones;
+	DELETE FROM collection addresses;
+	
+	-- Declare a collection to hold all dups found by both strategies (aggregation and concatenation).
 	DECLARE collection all_dups;
 	
+	print 'Aggregating dups...'
 	-- Aggregate dups.
 	INSERT INTO
 	    collection all_dups
@@ -334,11 +563,11 @@ update_duplicates "system/query"
 		, 0.0000001, convert(double, NULL)) -- Necessary because centrallix devision does not handle NAN properly.
 	    ),
 	    reason = ''
-		+ condition(:name:sim > :value:min_reason_sim, 'Name (' + round(:name:sim * 100, :value:reason_decimals) + '%)\\n', '')
-		+ condition(:name_meta:sim > :value:min_reason_sim AND :name_meta:sim > :name:sim, 'Phonetic Name (' + round(:name_meta:sim * 100, :value:reason_decimals) + '%)\\n', '')
-		+ condition(:email:sim > :value:min_reason_sim, 'Email (' + round(:email:sim * 100, :value:reason_decimals) + '%)\\n', '')
-		+ condition(:phone:sim > :value:min_reason_sim, 'Phone (' + round(:phone:sim * 100, :value:reason_decimals) + '%)\\n', '')
-		+ condition(:address:sim > :value:min_reason_sim, 'Address (' + round(:address:sim * 100, :value:reason_decimals) + '%)\\n', '')
+		+ condition(:name:sim > 0.0, 'Name (' + round(:name:sim * 100, :value:reason_decimals) + '%)\\n', '')
+		+ condition(:name_meta:sim > 0.0 AND (:name_meta:sim - 0.00001) > :name:sim, 'Phonetic Name (' + round(:name_meta:sim * 100, :value:reason_decimals) + '%)\\n', '')
+		+ condition(:email:sim > 0.0, 'Email (' + round(:email:sim * 100, :value:reason_decimals) + '%)\\n', '')
+		+ condition(:phone:sim > 0.0, 'Phone (' + round(:phone:sim * 100, :value:reason_decimals) + '%)\\n', '')
+		+ condition(:address:sim > 0.0, 'Address (' + round(:address:sim * 100, :value:reason_decimals) + '%)\\n', '')
 		- '\\n'
 	FROM
 	    identity collection name_dups name,
@@ -358,9 +587,8 @@ update_duplicates "system/query"
 	;
 	
 	
+	print 'Adding concatenation dups...'
 	-- Full Concat Dups
-	DECLARE collection concat_dups;
-	INSERT INTO collection concat_dups select * from /apps/kardia/modules/base/dups/concat.qy ;
 	INSERT INTO
 	    collection all_dups
 	SELECT
@@ -370,8 +598,6 @@ update_duplicates "system/query"
 	    reason = 'All (' + round(:concat:sim * 100, :value:reason_decimals) + '%)'
 	FROM
 	    identity collection concat_dups concat
-	WHERE -- We should never get identical dups, but somehow we do. This fixes that.
-	    :concat:key1 != :concat:key2
 	ON duplicate
 	    :key1,
 	    :key2
@@ -383,15 +609,10 @@ update_duplicates "system/query"
 	;
 	
 	
-	-- Free application-scoped collections.
-	DELETE FROM collection names;
-	DELETE FROM collection emails;
-	DELETE FROM collection phones;
-	DELETE FROM collection addresses;
-	
 	-- Remove all data from the dups table (for debugging).
 	delete from /apps/kardia/data/Kardia_DB/p_dup/rows ;
 	
+	print 'Storing dups...'
 	-- TODO: Greg - We should fix this upsert.
 	-- Insert dups into p_dup table.
 	INSERT INTO
@@ -409,8 +630,9 @@ update_duplicates "system/query"
 	    s_modified_by = user_name()
 	FROM
 	    collection all_dups
-	WHERE
-	    :sim > :value:min_total_sim
+	WHERE -- We should never get identical dups, but somehow we do. This fixes that issue.
+	    :all_dups:key1 != :all_dups:key2
+	AND :sim > :value:min_total_sim
 	ON duplicate
 	    :p_partner_key,
 	    :p_dup_partner_key
@@ -433,5 +655,6 @@ update_duplicates "system/query"
 --	AND(:d:s_date_modified < isnull(:p1:s_date_modified, getdate())
 --	    OR :d:s_date_modified < isnull(:p2:s_date_modified, getdate()))
 --	;
+	print 'Update complete'
     ";
     }

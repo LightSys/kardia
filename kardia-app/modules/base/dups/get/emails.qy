@@ -1,18 +1,19 @@
 $Version=2$
 get_emails "system/query"
     {
+    // The email field is incredibly simple to get.  We simply query for all
+    // p_contact_info records with a p_contact_type of E (for email) and read
+    // the email directly from the p_contact_data field.  If this field is null
+    // or does not exist, the 'email' is ignored.
     sql = "
 	SELECT
-	    key = :p:p_partner_key,
-	    email = :c:p_contact_data
+	    key = :p_partner_key,
+	    email = :p_contact_data
 	FROM
-	    identity /apps/kardia/data/Kardia_DB/p_partner/rows p,
-	    /apps/kardia/data/Kardia_DB/p_contact_info/rows c
+	    identity /apps/kardia/data/Kardia_DB/p_contact_info/rows
 	WHERE
-	    :p:p_partner_key = :c:p_partner_key
-	AND :c:p_contact_type = 'E'
-	AND :c:p_contact_data is not null
-	AND :c:p_contact_data != ''
+	    :p_contact_type = 'E'
+	AND char_length(isnull(:p_contact_data, '')) > 1
 	;
     ";
     }

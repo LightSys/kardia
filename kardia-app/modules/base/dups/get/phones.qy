@@ -1,21 +1,25 @@
 $Version=2$
 get_phones "system/query"
     {
+    // The phone field can be found by querying for all p_contact_info records
+    // with a p_contact_type of P (for phone) or C (for cellphone), both of
+    // which we treat the same for the purposes of this algorithm.  Then, we
+    // read the country code / area code from the p_phone_country field, the
+    // second 3digit code from the p_phone_area_city field, and finally the
+    // last four digits form the p_contact_data field.  If this field is null
+    // or does not exist, the 'phone number' is ignored.
     sql = "
 	SELECT
-	    key = :p:p_partner_key,
+	    key = :p_partner_key,
 	    phone = ''
-		+ isnull(:c:p_phone_country, '')
-		+ isnull(:c:p_phone_area_city, '')
-		+ isnull(:c:p_contact_data, '')
+		+ isnull(:p_phone_country, '')
+		+ isnull(:p_phone_area_city, '')
+		+ isnull(:p_contact_data, '')
 	FROM
-	    identity /apps/kardia/data/Kardia_DB/p_partner/rows p,
-	    /apps/kardia/data/Kardia_DB/p_contact_info/rows c
+	    identity /apps/kardia/data/Kardia_DB/p_contact_info/rows
 	WHERE
-	    :p:p_partner_key = :c:p_partner_key
-	AND ((:c:p_contact_type = 'P') + (:c:p_contact_type = 'C'))
-	AND :p:p_contact_data is not null
-	AND :p:p_contact_data != ''
+	    ((:p_contact_type = 'P') + (:p_contact_type = 'C'))
+	AND char_length(isnull(:p_contact_data, '')) > 1
 	;
     ";
     }

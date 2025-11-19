@@ -1,6 +1,14 @@
 $Version=2$
 get_names "system/query"
     {
+    // We concatenate four fields to produce the name: p_given_name,
+    // p_preferred_name, p_surname, and p_org_name.  p_preferred_name is
+    // ignored if it adds no new information because it matches the given
+    // name or the surname, and it is also ignored for organizations.  We
+    // detect organizations because they do not have a p_given_name or a
+    // p_surname value and only the p_org_name field is considered for them
+    // (it's long enough on it's own, anyway).  However, p_org_name is still
+    // considered for people, too.
     sql = "
 	SELECT
 	    key = :p_partner_key,
