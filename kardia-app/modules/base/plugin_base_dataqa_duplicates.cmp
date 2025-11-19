@@ -44,15 +44,25 @@ plugin_base_dataqa_duplicates "widget/component-decl"
 	width=958;
 	height=633;
 	spacing=10;
-
-	dupslbl "widget/component"
+	
+	dups_label "widget/pane"
 	    {
-	    path="/apps/kardia/modules/base/section_label.cmp";
-	    height=26;
-	    fl_height=0;
-	    text = runclient("Potential Duplicate Partners...");
+	    height = 32; width = 958;
+	    fl_height = 0;
+	    border_radius = 8;
+	    widget_class = "label";
+	    
+	    lbl "widget/label"
+		{
+		x = 6; y = 6;
+		width = 190; height = 18;
+		font_size = 13;
+		
+		widget_class = "label";
+		text = "Potential Duplicate Partners...";
+		}
 	    }
-
+	
 	dupsosrc "widget/osrc"
 	    {
 	    showobs "widget/parameter" { type=integer; default=runclient(:show_obs:value); }
@@ -132,7 +142,7 @@ plugin_base_dataqa_duplicates "widget/component-decl"
 			
 			-- Dupe type info.
 			reason = :d:p_reason,
-			nondup = condition(:nd:p_partner_key is not null, 1, 0),
+			nondup = condition(char_length(isnull(:nd:p_partner_key, '')) > 1 and char_length(isnull(:nd:p_nondup_partner_key, '')) > 1, 1, 0),
 			associated = condition(
 			    :p1:p_parent_key = :p2:p_partner_key
 			    or :p1:p_partner_key = :p2:p_parent_key
@@ -168,20 +178,19 @@ plugin_base_dataqa_duplicates "widget/component-decl"
 			/apps/kardia/data/Kardia_DB/p_nondup/rows nd
 		    where
 			(:info:partnerlist is null or charindex(',' + rtrim(:d:p_partner_key) + ',', ',' + :info:partnerlist + ',') > 0 or charindex(',' + rtrim(:d:p_dup_partner_key) + ',', ',' + :info:partnerlist + ',') > 0) and
-			:p1:p_partner_key = :d:p_partner_key and
-			:p2:p_partner_key = :d:p_dup_partner_key and
-			:pl1:p_partner_key =* :d:p_partner_key and
-			:pl2:p_partner_key =* :d:p_dup_partner_key and
-			:pl1:p_country_code *= :ctry1:p_country_code and
-			:af1:p_country_code =* :ctry1:p_country_code and
-			:af1:p_address_set = 'STANDARD' and
-			:pl2:p_country_code *= :ctry2:p_country_code and
-			:af2:p_country_code =* :ctry2:p_country_code and
-			:af2:p_address_set = 'STANDARD' and
-			:nd:p_partner_key =* :d:p_partner_key and
-			:nd:p_nondup_partner_key =* :d:p_dup_partner_key
+			:d:p_partner_key      = :p1:p_partner_key and
+			:d:p_dup_partner_key  = :p2:p_partner_key and
+			:d:p_partner_key     *= :pl1:p_partner_key and
+			:d:p_dup_partner_key *= :pl2:p_partner_key and
+			:d:p_partner_key     *= :nd:p_partner_key and
+			:d:p_dup_partner_key *= :nd:p_nondup_partner_key and
+			:pl1:p_country_code  *= :ctry1:p_country_code and
+			:pl2:p_country_code  *= :ctry2:p_country_code and
+			:af1:p_country_code  =* :ctry1:p_country_code and
+			:af2:p_country_code  =* :ctry2:p_country_code and
+			:af1:p_address_set   = 'STANDARD' and
+			:af2:p_address_set   = 'STANDARD'
 		    group by
-			:d:p_match_quality desc,
 			:d:p_partner_key,
 			:d:p_dup_partner_key
 		    order by
@@ -219,7 +228,7 @@ plugin_base_dataqa_duplicates "widget/component-decl"
 		row_shadow_offset=1;
 		row_shadow_color="#a0a0a0";
 		row_shadow_angle=135;
-		nodata_message="(no duplicates to show)";
+		nodata_message="(no duplicates to show, congrats!)";
 
 		// Similarity progress bar.
 		t_match "widget/table-column"
@@ -291,7 +300,7 @@ plugin_base_dataqa_duplicates "widget/component-decl"
 		    title = "%";
 		    
 		    value = runclient(
-			:dupsosrc:reason
+			isnull(:dupsosrc:reason, "Reason missing")
 			+ condition(:dupsosrc:merged, '\nAlready Merged', '')
 			+ condition(:dupsosrc:associated, '\nAssociated', '')
 			+ condition(:dupsosrc:relation is not null, '\nRelated: ' + :dupsosrc:relation, '')
@@ -469,6 +478,32 @@ plugin_base_dataqa_duplicates "widget/component-decl"
 			on_merge_change "widget/connector" { event=DataChange; target=dupsosrc; action=Refresh; }
 			}
 		    }
+		}
+	    }
+	}
+    
+    last_computed_osrc "widget/osrc"
+	{
+	sql = "
+	    SELECT
+		display = 'Last updated:\n' + max(:s_date_modified),
+		dif_days = datediff(day, max(:s_date_modified), getdate())
+	    FROM
+		/apps/kardia/data/Kardia_DB/p_dup/rows
+	    ;
+	";
+	
+	last_computed_form "widget/form"
+	    {
+	    dups_last_updated_label "widget/label"
+		{
+		x = 840; y = 0;
+		height = 32; width = 110;
+		font_size = 11;
+		align = left; valign = middle;
+		fgcolor = runclient(condition(:last_computed_osrc:dif_days > 7, "#FF1133", "#CCCCCC"));
+		style = runclient(condition(:last_computed_osrc:dif_days > 7, bold, none));
+		fieldname = display;
 		}
 	    }
 	}
