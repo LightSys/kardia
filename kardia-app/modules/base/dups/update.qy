@@ -240,6 +240,7 @@ update_duplicates "system/query"
 	
 	
 	print 'Adding other collections dups to name dups...'
+	print '[name_dups <- name_meta_dups]'
 	-- [name_dups <- name_meta_dups] Add an entry to name_dups for each entry in name_meta_dups.
 	INSERT INTO
 	    collection name_dups
@@ -270,6 +271,7 @@ update_duplicates "system/query"
 	    )
 	;
 	
+	print '[name_dups <- email_dups]'
 	-- [name_dups <- email_dups] Add an entry to name_dups for each entry in email_dups.
 	INSERT INTO
 	    collection name_dups
@@ -300,6 +302,7 @@ update_duplicates "system/query"
 	    )
 	;
 	
+	print '[name_dups <- phone_dups]'
 	-- [name_dups <- phone_dups] Add an entry to name_dups for each entry in phone_dups.
 	INSERT INTO
 	    collection name_dups
@@ -333,6 +336,7 @@ update_duplicates "system/query"
 	    )
 	;
 	
+	print '[name_dups <- address_dups]'
 	-- [name_dups <- address_dups] Add an entry to name_dups for each entry in address_dups.
 	INSERT INTO
 	    collection name_dups
@@ -366,6 +370,7 @@ update_duplicates "system/query"
 	    )
 	;
 	
+	print '[name_dups <- concat_dups]'
 	-- [name_dups <- concat_dups] Add an entry to name_dups for each entry in concat_dups.
 	-- This isn't strictly necessary because concat_dups isn't used in the final aggregation.
 	-- However, it can sometimes provide additional information in the 'reason' column of the
@@ -401,6 +406,7 @@ update_duplicates "system/query"
 	
 	
 	print 'Adding name dups to other collections...'
+	print '[name_meta_dups <- name_dups]'
 	-- [name_meta_dups <- name_dups] Add an entry to name_meta_dups for each entry in name_dups.
 	INSERT INTO
 	    collection name_meta_dups
@@ -434,6 +440,7 @@ update_duplicates "system/query"
 	    )
 	;
 	
+	print '[email_dups <- name_dups]'
 	-- [email_dups <- name_dups] Add an entry to email_dups for each entry in name_dups.
 	INSERT INTO
 	    collection email_dups
@@ -467,6 +474,7 @@ update_duplicates "system/query"
 	    )
 	;
 	
+	print '[phone_dups <- name_dups]'
 	-- [phone_dups <- name_dups] Add an entry to phone_dups for each entry in name_dups.
 	INSERT INTO
 	    collection phone_dups
@@ -500,6 +508,7 @@ update_duplicates "system/query"
 	    )
 	;
 	
+	print '[address_dups <- name_dups]'
 	-- [address_dups <- name_dups] Add an entry to address_dups for each entry in name_dups.
 	INSERT INTO
 	    collection address_dups
