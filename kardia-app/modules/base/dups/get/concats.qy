@@ -9,6 +9,10 @@ get_concats "system/query"
     // database.  Each record can have up to one email, phone number, and
     // address, so multiple records are produced for a given p_partner record
     // if various combonations of this contact information are possible.
+    // 
+    // Note: Don't make the mistake of calling an attribute "name" or it might
+    // accidentally become the canonical name of that object in the object
+    // system, causing a ton of stuff to break in subtle and confusing ways.
     sql = "
 	declare collection temp;
 	
@@ -16,7 +20,7 @@ get_concats "system/query"
 	    collection temp
 	SELECT
 	    key = :p:p_partner_key,
-	    name = ''
+	    name_str = ''
 		+ isnull(:p_given_name, '')
 		+ isnull(condition(
 		        char_length(isnull(:p_given_name, '')) > 1
@@ -70,7 +74,7 @@ get_concats "system/query"
 	SELECT
 	    key = :key,
 	    data = ''
-		+ :name + '`'
+		+ :name_str + '`'
 		+ :name_meta + '1'
 		+ :name_meta + '1'
 		+ :name_meta + '1'

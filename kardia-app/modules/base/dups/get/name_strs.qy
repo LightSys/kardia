@@ -9,10 +9,14 @@ get_names "system/query"
     // p_surname value and only the p_org_name field is considered for them
     // (it's long enough on it's own, anyway).  However, p_org_name is still
     // considered for people, too.
+    // 
+    // Note: Don't make the mistake of calling an attribute "name" or it might
+    // accidentally become the canonical name of that object in the object
+    // system, causing a ton of stuff to break in subtle and confusing ways.
     sql = "
 	SELECT
 	    key = :p_partner_key,
-	    name = ''
+	    name_str = ''
 		+ isnull(:p_given_name, '')
 		+ isnull(condition(
 		        char_length(isnull(:p_given_name, '')) > 1
