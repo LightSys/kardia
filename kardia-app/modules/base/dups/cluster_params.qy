@@ -9,7 +9,7 @@ duplicate_checking_globals "system/query"
     sql = "
 	SELECT
 	    -- Compute which clustering algorithm to use (no clustering is better for small amounts of data).
-	    algorithm = condition(:parameters:num_data > 100000, 'kmeans', 'none'),
+	    algorithm = condition(:parameters:num_data > 50000, 'kmeans', 'none'),
 	    
 	    -- Compute the k value for clustering.
 	    k = constrain(convert(integer, power(logn(:parameters:num_data, 36), 3.2) - 8), 2, convert(integer, NULL))
