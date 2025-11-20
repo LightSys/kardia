@@ -81,7 +81,7 @@ update_duplicates "system/query"
 	SELECT :value:addresses_count  = count(1) FROM collection addresses;
 	SELECT :value:concats_count    = count(1) FROM collection concats;
 	
-	print 'Computing search parameters...'
+	print 'Computing parameters...'
 	-- Compute searching parameters.
 	SELECT
 	    :value:name_strs_algorithm = :name_strs:algorithm,
