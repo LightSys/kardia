@@ -511,6 +511,10 @@ drop table a_bank_recon;
 drop table a_bank_recon_item;
 
 
+/* a_bank_recon_accts */
+drop table a_bank_recon_accts;
+
+
 /* a_dimension */
 drop table a_dimension;
 

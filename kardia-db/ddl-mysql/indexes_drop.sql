@@ -780,7 +780,13 @@ alter table a_fund_staff drop index a_fund_staff_partner_idx;
 
 
 /* a_bank_recon_item */
+alter table a_bank_recon_item drop index a_recon_foreign_idx;
 /* drop index a_bank_recon_item.a_recon_item_pk */ 
+/* go */
+
+
+/* a_bank_recon_accts */
+/* drop index a_bank_recon_accts.a_recon_accts_pk */ 
 /* go */
 
 

@@ -384,6 +384,9 @@ revoke select on ra to public;
 /* a_bank_recon_item */
 
 
+/* a_bank_recon_accts */
+
+
 /* a_dimension */
 
 

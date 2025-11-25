@@ -775,12 +775,18 @@ create  index a_fund_staff_partner_idx on a_fund_staff (p_staff_partner_key, a_l
 
 
 /* a_bank_recon */
-/* create  index a_recon_pk on a_bank_recon (a_ledger_number, a_period, a_account_code)*/ 
+/* create  index a_recon_pk on a_bank_recon (a_ledger_number, a_account_code, a_statement_id)*/ 
 /* go */
 
 
 /* a_bank_recon_item */
-/* create  index a_recon_item_pk on a_bank_recon_item (a_ledger_number, a_period, a_account_code, a_line_item)*/ 
+create  index a_recon_foreign_idx on a_bank_recon_item (a_ledger_number, a_batch_key, a_group_key, a_item_key, a_account_code, a_line_item);
+/* create  index a_recon_item_pk on a_bank_recon_item (a_ledger_number, a_account_code, a_line_item)*/ 
+/* go */
+
+
+/* a_bank_recon_accts */
+/* create  index a_recon_accts_pk on a_bank_recon_accts (a_ledger_number, a_account_code)*/ 
 /* go */
 
 

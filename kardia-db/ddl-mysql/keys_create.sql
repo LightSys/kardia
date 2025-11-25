@@ -392,10 +392,13 @@ alter table a_currency_exch_rate
 	add constraint a_curr_pk primary key  (a_ledger_number, a_base_currency_code, a_foreign_currency_code, a_exch_rate_date);
 
 alter table a_bank_recon
-	add constraint a_recon_pk primary key  (a_ledger_number, a_period, a_account_code);
+	add constraint a_recon_pk primary key  (a_ledger_number, a_account_code, a_statement_id);
 
 alter table a_bank_recon_item
-	add constraint a_recon_item_pk primary key  (a_ledger_number, a_period, a_account_code, a_line_item);
+	add constraint a_recon_item_pk primary key  (a_ledger_number, a_account_code, a_line_item);
+
+alter table a_bank_recon_accts
+	add constraint a_recon_accts_pk primary key  (a_ledger_number, a_account_code);
 
 alter table a_dimension
 	add constraint a_dim_pk primary key  (a_dimension, a_ledger_number);

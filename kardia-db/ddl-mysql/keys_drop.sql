@@ -846,6 +846,10 @@ alter table a_bank_recon_item
 	drop primary key;
 
 
+alter table a_bank_recon_accts
+	drop primary key;
+
+
 alter table a_dimension
 	drop primary key;
 
