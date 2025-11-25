@@ -565,20 +565,20 @@ inc_exp_matrix "system/report"
 		style = bold;
 
 		res1 "report/table-cell" { value=runserver(''); font=helvetica; }
-		res2 "report/table-cell" { value=runserver('Above Rsrv: (open: ' + (:opening_equity_qy:amt + :nca_qy:obamt - (:this:reserve_factor * (:expense_total_qy:amt_per_month))) + '):'); font=helvetica; }
-		res3 "report/table-cell" { value=runserver(:opening_equity_qy:amt + :trx_sum_qy:etp12 + :nca_qy:p12amt - (:this:reserve_factor * (:expense_total_qy:amt_per_month))); align=right; }
-		res4 "report/table-cell" { value=runserver(:opening_equity_qy:amt + :trx_sum_qy:etp11 + :nca_qy:p11amt - (:this:reserve_factor * (:expense_total_qy:amt_per_month))); align=right; }
-		res5 "report/table-cell" { value=runserver(:opening_equity_qy:amt + :trx_sum_qy:etp10 + :nca_qy:p10amt - (:this:reserve_factor * (:expense_total_qy:amt_per_month))); align=right; }
-		res6 "report/table-cell" { value=runserver(:opening_equity_qy:amt + :trx_sum_qy:etp9 + :nca_qy:p9amt - (:this:reserve_factor * (:expense_total_qy:amt_per_month))); align=right; }
-		res7 "report/table-cell" { value=runserver(:opening_equity_qy:amt + :trx_sum_qy:etp8 + :nca_qy:p8amt - (:this:reserve_factor * (:expense_total_qy:amt_per_month))); align=right; }
-		res8 "report/table-cell" { value=runserver(:opening_equity_qy:amt + :trx_sum_qy:etp7 + :nca_qy:p7amt - (:this:reserve_factor * (:expense_total_qy:amt_per_month))); align=right; }
-		res9 "report/table-cell" { value=runserver(:opening_equity_qy:amt + :trx_sum_qy:etp6 + :nca_qy:p6amt - (:this:reserve_factor * (:expense_total_qy:amt_per_month))); align=right; }
-		res10 "report/table-cell" { value=runserver(:opening_equity_qy:amt + :trx_sum_qy:etp5 + :nca_qy:p5amt - (:this:reserve_factor * (:expense_total_qy:amt_per_month))); align=right; }
-		res11 "report/table-cell" { value=runserver(:opening_equity_qy:amt + :trx_sum_qy:etp4 + :nca_qy:p4amt - (:this:reserve_factor * (:expense_total_qy:amt_per_month))); align=right; }
-		res12 "report/table-cell" { value=runserver(:opening_equity_qy:amt + :trx_sum_qy:etp3 + :nca_qy:p3amt - (:this:reserve_factor * (:expense_total_qy:amt_per_month))); align=right; }
-		res13 "report/table-cell" { value=runserver(:opening_equity_qy:amt + :trx_sum_qy:etp2 + :nca_qy:p2amt - (:this:reserve_factor * (:expense_total_qy:amt_per_month))); align=right; }
-		res14 "report/table-cell" { value=runserver(:opening_equity_qy:amt + :trx_sum_qy:etp1 + :nca_qy:p1amt - (:this:reserve_factor * (:expense_total_qy:amt_per_month))); align=right; }
-		res15 "report/table-cell" { value=runserver(:opening_equity_qy:amt + :trx_sum_qy:etp_all + :nca_qy:p1amt - (:this:reserve_factor * (:expense_total_qy:amt_per_month))); align=right; }
+		res2 "report/table-cell" { value=runserver('Above Rsrv: (open: ' + round(:opening_equity_qy:amt + :nca_qy:obamt - (:this:reserve_factor * (:expense_total_qy:amt_per_month)), 2) + '):'); font=helvetica; }
+		res3 "report/table-cell" { value=runserver(round(:opening_equity_qy:amt + :trx_sum_qy:etp12 + :nca_qy:p12amt - (:this:reserve_factor * (:expense_total_qy:amt_per_month)),2)); align=right; }
+		res4 "report/table-cell" { value=runserver(round(:opening_equity_qy:amt + :trx_sum_qy:etp11 + :nca_qy:p11amt - (:this:reserve_factor * (:expense_total_qy:amt_per_month)),2)); align=right; }
+		res5 "report/table-cell" { value=runserver(round(:opening_equity_qy:amt + :trx_sum_qy:etp10 + :nca_qy:p10amt - (:this:reserve_factor * (:expense_total_qy:amt_per_month)),2)); align=right; }
+		res6 "report/table-cell" { value=runserver(round(:opening_equity_qy:amt + :trx_sum_qy:etp9 + :nca_qy:p9amt - (:this:reserve_factor * (:expense_total_qy:amt_per_month)),2)); align=right; }
+		res7 "report/table-cell" { value=runserver(round(:opening_equity_qy:amt + :trx_sum_qy:etp8 + :nca_qy:p8amt - (:this:reserve_factor * (:expense_total_qy:amt_per_month)),2)); align=right; }
+		res8 "report/table-cell" { value=runserver(round(:opening_equity_qy:amt + :trx_sum_qy:etp7 + :nca_qy:p7amt - (:this:reserve_factor * (:expense_total_qy:amt_per_month)),2)); align=right; }
+		res9 "report/table-cell" { value=runserver(round(:opening_equity_qy:amt + :trx_sum_qy:etp6 + :nca_qy:p6amt - (:this:reserve_factor * (:expense_total_qy:amt_per_month)),2)); align=right; }
+		res10 "report/table-cell" { value=runserver(round(:opening_equity_qy:amt + :trx_sum_qy:etp5 + :nca_qy:p5amt - (:this:reserve_factor * (:expense_total_qy:amt_per_month)),2)); align=right; }
+		res11 "report/table-cell" { value=runserver(round(:opening_equity_qy:amt + :trx_sum_qy:etp4 + :nca_qy:p4amt - (:this:reserve_factor * (:expense_total_qy:amt_per_month)),2)); align=right; }
+		res12 "report/table-cell" { value=runserver(round(:opening_equity_qy:amt + :trx_sum_qy:etp3 + :nca_qy:p3amt - (:this:reserve_factor * (:expense_total_qy:amt_per_month)),2)); align=right; }
+		res13 "report/table-cell" { value=runserver(round(:opening_equity_qy:amt + :trx_sum_qy:etp2 + :nca_qy:p2amt - (:this:reserve_factor * (:expense_total_qy:amt_per_month)),2)); align=right; }
+		res14 "report/table-cell" { value=runserver(round(:opening_equity_qy:amt + :trx_sum_qy:etp1 + :nca_qy:p1amt - (:this:reserve_factor * (:expense_total_qy:amt_per_month)),2)); align=right; }
+		res15 "report/table-cell" { value=runserver(round(:opening_equity_qy:amt + :trx_sum_qy:etp_all + :nca_qy:p1amt - (:this:reserve_factor * (:expense_total_qy:amt_per_month)),2)); align=right; }
 		}
 
 	    reserve_mos_row "report/table-row"
