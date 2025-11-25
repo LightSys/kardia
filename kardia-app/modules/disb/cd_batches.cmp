@@ -17,6 +17,23 @@ cd_batches "widget/component-decl"
 	glunpost_cn "widget/connector" { event=GLUnposted; target=disb_osrc; action=Refresh; }
 	}
 
+    Refresh "widget/component-decl-action"
+	{
+	on_refresh_general "widget/connector"
+	    {
+	    //event_condition=runclient(:Batch is null or :disb_osrc:a_batch_number != :Batch);
+	    target=disb_osrc;
+	    action=Refresh;
+	    }
+	on_refresh_batch "widget/connector"
+	    {
+	    condition=0;
+	    event_condition=runclient(:Batch is not null and :disb_osrc:a_batch_number = :Batch);
+	    target=disb_osrc;
+	    action=RefreshObject;
+	    }
+	}
+
     disb_osrc "widget/osrc"
 	{
 	sql = runserver("
@@ -56,6 +73,7 @@ cd_batches "widget/component-decl"
 	replicasize=200;
 	readahead=200;
 	autoquery=never;
+	refresh_interval=120000;
 
 	period_sync "widget/rule"
 	    {
@@ -270,6 +288,7 @@ cd_batches "widget/component-decl"
 		Height=600;
 		ledger=runclient(:disb_osrc:a_ledger_number);
 		batch=runclient(:disb_osrc:a_batch_number);
+		send_refresh=cd_batches;
 		}
 	    edit_cn2 "widget/connector"
 		{
@@ -284,6 +303,7 @@ cd_batches "widget/component-decl"
 		Height=600;
 		ledger=runclient(:disb_osrc:a_ledger_number);
 		batch=runclient(:disb_osrc:a_batch_number);
+		send_refresh=cd_batches;
 		}
 	    }
 	copy_disb "widget/textbutton"

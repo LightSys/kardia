@@ -13,6 +13,23 @@ cr_batches "widget/component-decl"
     cash_acct "widget/parameter" { type=string; default=runserver( isnull( (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_config_name = 'RcptCashAcct' and :a_ledger_number = :this:ledger), '')); deploy_to_client=yes; }
     gotobatch "widget/parameter" { type=integer; deploy_to_client=yes; }
 
+    Refresh "widget/component-decl-action"
+	{
+	on_refresh_general "widget/connector"
+	    {
+	    //event_condition=runclient(:Batch is null or :rcpt_osrc:a_batch_number != :Batch);
+	    target=rcpt_osrc;
+	    action=Refresh;
+	    }
+	on_refresh_batch "widget/connector"
+	    {
+	    condition=0;
+	    event_condition=runclient(:Batch is not null and :rcpt_osrc:a_batch_number = :Batch);
+	    target=rcpt_osrc;
+	    action=RefreshObject;
+	    }
+	}
+
     post_cr "widget/component"
 	{
 	path = "/apps/kardia/modules/rcpt/post_cr_batch.cmp";
@@ -31,6 +48,7 @@ cr_batches "widget/component-decl"
 
     refresh_timer "widget/timer"
 	{
+	condition=0;
 	msec=300000; // 5min = 300sec = 300000msec
 	auto_reset=1;
 	auto_start=0;
@@ -73,8 +91,9 @@ cr_batches "widget/component-decl"
 	readahead=200;
 	autoquery=never;
 	indicates_activity = no;
+	refresh_interval=120000;
 
-	rcpt_endquery_cn "widget/connector" { target=refresh_timer; event=EndQuery; action=SetTimer; Time=300000; }
+	//rcpt_endquery_cn "widget/connector" { target=refresh_timer; event=EndQuery; action=SetTimer; Time=300000; }
 
 	period_sync "widget/rule"
 	    {
@@ -752,6 +771,7 @@ cr_batches "widget/component-decl"
 		Height=700;
 		ledger=runclient(:rcpt_osrc:a_ledger_number);
 		batch=runclient(:rcpt_osrc:a_batch_number);
+		send_refresh=cr_batches;
 		}
 	    }
 	edit_rcpt "widget/textbutton"
@@ -776,6 +796,7 @@ cr_batches "widget/component-decl"
 		Height=700;
 		ledger=runclient(:rcpt_osrc:a_ledger_number);
 		batch=runclient(:rcpt_osrc:a_batch_number);
+		send_refresh=cr_batches;
 		}
 	    edit_cn2 "widget/connector"
 		{
@@ -790,6 +811,7 @@ cr_batches "widget/component-decl"
 		Height=700;
 		ledger=runclient(:rcpt_osrc:a_ledger_number);
 		batch=runclient(:rcpt_osrc:a_batch_number);
+		send_refresh=cr_batches;
 		}
 	    }
 	sep_line2 "widget/pane" 
