@@ -1186,6 +1186,14 @@ alter table a_subtrx_cashxfer
 	drop index a_subtrx_cxf_fund_clustered_idx;
 
 
+alter table i_association
+	drop primary key;
+
+
+alter table i_acct_association
+	drop primary key;
+
+
 alter table i_eg_gift_import
 	drop primary key;
 

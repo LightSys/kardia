@@ -22,9 +22,10 @@ a_bank_recon_item "application/filespec"
     a_amount "filespec/column" { type=money; id=9; }
     a_is_reconciled "filespec/column" { type=integer; id=10; }
     a_comment "filespec/column" { type=string; id=11; }
-    s_date_created "filespec/column" { type=datetime; id=12; }
-    s_created_by "filespec/column" { type=string; id=13; }
-    s_date_modified "filespec/column" { type=datetime; id=14; }
-    s_modified_by "filespec/column" { type=string; id=15; }
-    __cx_osml_control "filespec/column" { type=string; id=16; }
+    a_item_date "filespec/column" { type=datetime; id=12; }
+    s_date_created "filespec/column" { type=datetime; id=13; }
+    s_created_by "filespec/column" { type=string; id=14; }
+    s_date_modified "filespec/column" { type=datetime; id=15; }
+    s_modified_by "filespec/column" { type=string; id=16; }
+    __cx_osml_control "filespec/column" { type=string; id=17; }
     }
