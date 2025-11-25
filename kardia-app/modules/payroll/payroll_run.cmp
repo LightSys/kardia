@@ -1502,6 +1502,29 @@ payroll_run "widget/component-decl"
 			period=runclient(:period_osrc:a_period);
 			}
 		    }
+
+		stubs_btn "widget/textbutton"
+		    {
+		    width=170; height=24;
+		    text = "Pay Stubs";
+		    enabled = runclient(:period_osrc:glcnt = 1);
+
+		    on_pay_stubs "widget/connector"
+			{
+			event=Click;
+			target=container;
+			action=Launch;
+			Name=runclient('pay_stubs_window');
+			Multi=1;
+			Source = runclient("/apps/kardia/modules/payroll/paystubs.rpt");
+			Width=800;
+			Height=600;
+			ledger=runclient(:ledger_osrc:a_ledger_number);
+			startperiod=runclient(:period_osrc:a_payroll_period);
+			endperiod=runclient(:period_osrc:a_payroll_period);
+			groupid=runclient(:group_osrc:a_payroll_group_id);
+			}
+		    }
 		}
 
 	    make_checks_osrc "widget/osrc"
