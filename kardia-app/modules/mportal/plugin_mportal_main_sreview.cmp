@@ -251,7 +251,7 @@ support_review "widget/component-decl"
 		    :gp:a_ledger_number = :info:ledger and
 		    :gp:a_fund = :info:fund and
 		    :gp:a_is_active = 1 and
-		    (:gp:a_amount > $0 or :gp:s_date_modified > dateadd(day, -14, getdate()) or :gp:a_interval = 0) and
+		    (:gp:a_amount != $0 or :gp:s_date_modified > dateadd(day, -31, getdate()) or :gp:a_interval = 0) and
 		    isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date) > dateadd(month, -37, getdate()) and
 		    (:i:a_fund =* :gp:a_fund or :i:a_fund =* :gp:a_actual_fund) and
 		    :i:a_ledger_number =* :gp:a_ledger_number and
@@ -282,7 +282,7 @@ support_review "widget/component-decl"
 		    :gp:a_fund = :d:a_fund and
 		    :gp:p_donor_partner_key = :d:p_donor_partner_key and
 		    :gp:a_is_active = 1 and
-		    (:gp:a_amount > $0 or :gp:s_date_modified > dateadd(day, -14, getdate()))
+		    (:gp:a_amount != $0 or :gp:s_date_modified > dateadd(day, -31, getdate()))
 		set
 		    :a_act_lookback_date = condition(:d:a_first_gift > dateadd(day, -381, :d:a_act_lookahead_date), :d:a_first_gift, dateadd(day, -381, :d:a_act_lookahead_date))
 --		    :a_act_lookback_date = dateadd(month, 0 - (select condition(
@@ -314,7 +314,7 @@ support_review "widget/component-decl"
 		    :gp:a_fund = :d:a_fund and
 		    :gp:p_donor_partner_key = :d:p_donor_partner_key and
 		    :gp:a_is_active = 1 and
-		    (:gp:a_amount > $0 or :gp:s_date_modified > dateadd(day, -14, getdate()))
+		    (:gp:a_amount != $0 or :gp:s_date_modified > dateadd(day, -31, getdate()))
 		set
 		    -- Logic here:
 		    -- 1. If no gifts in window, average is NULL
@@ -522,7 +522,7 @@ support_review "widget/component-decl"
 		    (:parameters:name is null or :gp:name = :parameters:name) and
 		    :gp:a_fund = :c:a_fund and
 		    :gp:a_ledger_number = :c:a_ledger_number and
-		    (:gp:a_amount > $0 or :gp:s_date_modified > dateadd(day, -14, getdate())) and
+		    (:gp:a_amount != $0 or :gp:s_date_modified > dateadd(day, -31, getdate())) and
 		    :gpf:a_ledger_number =* :gp:a_ledger_number and
 		    :gpf:a_fund =* :gp:a_fund and
 		    :gpf:p_donor_partner_key =* :gp:p_donor_partner_key and
@@ -706,7 +706,8 @@ support_review "widget/component-decl"
 					select label='Quarterly', value=3, selected=0;
 					select label='Three times a Year', value=4, selected=0;
 					select label='Twice a Year', value=6, selected=0;
-					select label='Annually', value=12, selected=0
+					select label='Annually', value=12, selected=0;
+					select label='Every Two Years', value=24, selected=0
 					";
 				numdisplay = 10;
 				field = a_interval;
