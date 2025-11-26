@@ -1,0 +1,21 @@
+$Version=2$
+duplicate_checking_globals "system/query"
+    {
+    // Computes parameters for clustering and searching, based on the provided
+    // size of the data.
+    
+    num_data "query/parameter" { type = integer; style = strnull; min = 1; }
+    
+    sql = "
+	SELECT
+	    -- Compute which clustering algorithm to use (no clustering is better for small amounts of data).
+	    algorithm = condition(:parameters:num_data > 50000, 'kmeans', 'none'),
+	    
+	    -- Compute the k value for clustering.
+	    k = constrain(convert(integer, power(logn(:parameters:num_data, 36), 3.2) - 8), 2, convert(integer, NULL))
+	FROM
+	    /apps/kardia/data/Kardia_DB/_a_alphabet/rows
+	LIMIT 1
+	;
+    ";
+    }
