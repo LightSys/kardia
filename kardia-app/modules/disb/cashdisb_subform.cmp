@@ -231,6 +231,7 @@ cashdisb_subform "widget/component-decl"
 	// sr_line_item "widget/parameter" { type=integer; default=null; }
 	
 	external_itself "widget/parameter" { type = "object"; default = null; }
+	send_refresh "widget/parameter" { type=object; default=null; deploy_to_client=yes; }
 	
 	// Working Debugging Code
 	// GB_cn0 "widget/connector" { event="GotoBatch"; target="alerter";
@@ -851,6 +852,10 @@ cashdisb_subform "widget/component-decl"
 									//                checks from all batches to show up in the
 									//				  widget/table.  Changing to original setting.
 		
+		// Refresh totals on cd batches app
+		refresh_parent_on_save "widget/connector" { event=DataSaved; target=send_refresh; action=Refresh; Batch=runclient(:batch_osrc:a_batch_number); }
+		refresh_parent_on_del "widget/connector" { event=Deleted; target=send_refresh; action=Refresh; Batch=runclient(:batch_osrc:a_batch_number); }
+
 		// Update Payee Name Display
 		// Usage Tested: 20090513 / Lightly Tested: 20090319
 		cd_EndQuery_cn1 "widget/connector"

@@ -240,8 +240,8 @@ manage_support_review "widget/component-decl"
 				    :gpf:a_fund = :parameters:p_fund and
 				    :sr:a_review = :parameters:p_review
 				";
-			readahead=20;
-			replicasize=20;
+			readahead=100;
+			replicasize=100;
 
 			sreview_link "widget/rule"
 			    {

@@ -164,8 +164,8 @@ post_batch "widget/component-decl"
 			:t:a_batch_number,
 			:t:a_journal_number,
 			:c:a_bal_fund
-		ORDER BY
-			:t:a_fund
+		--ORDER BY
+		--	:t:a_fund
 		HAVING
 			:a_amount != $0
 		";

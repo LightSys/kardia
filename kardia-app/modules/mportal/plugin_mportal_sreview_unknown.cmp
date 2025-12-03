@@ -87,7 +87,8 @@ plugin_mportal_sreview_continue "widget/component-decl"
 			select label='Quarterly', value=3, selected=0;
 			select label='Three times a Year', value=4, selected=0;
 			select label='Twice a Year', value=6, selected=0;
-			select label='Annually', value=12, selected=0
+			select label='Annually', value=12, selected=0;
+			select label='Every Two Years', value=24, selected=0
 			";
 		numdisplay = 10;
 		fieldname = a_interval;

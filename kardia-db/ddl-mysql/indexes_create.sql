@@ -1121,6 +1121,18 @@ create  index a_subtrx_cxf_fund_rev2_idx on a_subtrx_cashxfer (a_dest_cash_acct,
 create  index a_subtrx_cxf_journal_idx on a_subtrx_cashxfer (a_journal_number, a_ledger_number, a_batch_number);
 
 
+/* i_association */
+create  index i_assoc_int_idx on i_association (i_assoc_service, i_assoc_type, i_assoc_internal_id, i_assoc_external_id, i_assoc_hist_id);
+/* create  index i_assoc_pk on i_association (i_assoc_service, i_assoc_type, i_assoc_external_id, i_assoc_hist_id)*/ 
+/* go */
+
+
+/* i_acct_association */
+create  index i_acct_assoc_int_idx on i_acct_association (a_ledger_number, i_assoc_service, i_assoc_type, i_assoc_internal_id, i_assoc_external_id, i_assoc_hist_id);
+/* create  index i_acct_assoc_pk on i_acct_association (a_ledger_number, i_assoc_service, i_assoc_type, i_assoc_external_id, i_assoc_hist_id)*/ 
+/* go */
+
+
 /* i_eg_gift_import */
 create  index i_eg_edeposit_idx on i_eg_gift_import (i_eg_deposit_uuid, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid, i_eg_line_item);
 create  index i_eg_edonor_idx on i_eg_gift_import (i_eg_donor_uuid, i_eg_donor_alt_id, i_eg_donormap_future, i_eg_donormap_confidence, p_donor_partner_key, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid, i_eg_line_item);

@@ -1121,6 +1121,18 @@ alter table a_subtrx_cashxfer drop index a_subtrx_cxf_fund_rev2_idx;
 alter table a_subtrx_cashxfer drop index a_subtrx_cxf_journal_idx;
 
 
+/* i_association */
+alter table i_association drop index i_assoc_int_idx;
+/* drop index i_association.i_assoc_pk */ 
+/* go */
+
+
+/* i_acct_association */
+alter table i_acct_association drop index i_acct_assoc_int_idx;
+/* drop index i_acct_association.i_acct_assoc_pk */ 
+/* go */
+
+
 /* i_eg_gift_import */
 alter table i_eg_gift_import drop index i_eg_edeposit_idx;
 alter table i_eg_gift_import drop index i_eg_edonor_idx;
