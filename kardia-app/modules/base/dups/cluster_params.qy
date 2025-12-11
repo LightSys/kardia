@@ -12,7 +12,7 @@ duplicate_checking_globals "system/query"
 	    algorithm = condition(:parameters:num_data > 50000, 'kmeans', 'none'),
 	    
 	    -- Compute the k value for clustering.
-	    k = constrain(convert(integer, power(logn(:parameters:num_data, 36), 3.2) - 8), 2, convert(integer, NULL))
+	    k = constrain(convert(integer, power(log(:parameters:num_data, 36), 3.2) - 8), 2, convert(integer, NULL))
 	FROM
 	    /apps/kardia/data/Kardia_DB/_a_alphabet/rows
 	LIMIT 1
