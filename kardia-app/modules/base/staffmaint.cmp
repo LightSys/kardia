@@ -1,18 +1,18 @@
 $Version=2$
 staffmaint "widget/component-decl"
     {
-    width=780;
-    height=580;
+    width=980;
+    height=680;
 
     ledger "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
 
     vbox "widget/vbox"
 	{
 	x=0; y=0;
-	width=780; height=580;
+	width=980; height=680;
 	spacing=8;
 
-	page_hdr "widget/component" { height=20; path="section_label.cmp"; text="Manage Missionaries / Staff"; }
+	page_hdr "widget/component" { height=20; path="section_label.cmp"; text="Manage Missionaries / Staff"; fl_height=0; }
 
 	search_hbox "widget/hbox"
 	    {
@@ -115,12 +115,14 @@ staffmaint "widget/component-decl"
 
 	    staff_table_pane "widget/pane"
 		{
-		height=188;
+		height=288;
 		widget_class="table_bgnd";
+		fl_height = 100;
 
 		staff_table "widget/table"
 		    {
-		    x=0; y=0; height=186; width=778;
+		    x=0; y=0; height=286; width=978;
+		    fl_height = 100;
 
 		    t_isstaff "widget/table-column" { title=""; fieldname=p_is_staff; width=32; type=check; }
 		    t_id "widget/table-column" { title="ID"; fieldname=p_partner_key; width=60; }
@@ -145,13 +147,15 @@ staffmaint "widget/component-decl"
 	    {
 	    height=319;
 	    style=flat;
+	    fl_height=0;
 
 	    staff_tab "widget/tab"
 		{
 		background="/apps/kardia/images/bg/light_bgnd2.jpg";
 		inactive_background="/apps/kardia/images/bg/light_bgnd3.jpg";
 		x=0; y=0;
-		height=294; width=780;
+		height=294; width=980;
+		fl_height=0;
 
 		details_tab "widget/tabpage"
 		    {
@@ -172,7 +176,7 @@ staffmaint "widget/component-decl"
 			rec_ctls "widget/component"
 			    {
 			    path="/sys/cmp/form_controls.cmp";
-			    x=10; y=10; width=758; height=26;
+			    x=10; y=10; width=958; height=26;
 			    object_name="Staff Member";
 			    save_mode=osrc;
 			    osrc=staff_osrc;
@@ -181,7 +185,7 @@ staffmaint "widget/component-decl"
 
 			rec_details_vbox "widget/vbox"
 			    {
-			    x=10; y=46; width=350; height=235;
+			    x=10; y=46; width=450; height=235;
 			    spacing=6;
 			    cellsize=20;
 
@@ -250,13 +254,13 @@ staffmaint "widget/component-decl"
 			sepline "widget/pane"
 			    {
 			    style=lowered;
-			    x=374; y=46; width=2; height=235;
+			    x=484; y=46; width=2; height=235;
 			    }
 
 			// Allow user to create/edit emails from this interface
 			emails_vbox "widget/vbox"
 			    {
-			    x=390; y=46; width=378; height=235;
+			    x=510; y=46; width=458; height=235;
 			    spacing=6;
 			    cellsize=20;
 
@@ -327,7 +331,7 @@ staffmaint "widget/component-decl"
 					{
 					x=0;y=0;
 					height=98;
-					width=376;
+					width=456;
 
 					table_contact_pref "widget/table-column" { width=50; title = "Pref?"; fieldname = is_pref; type=check; }
 					table_contact_type "widget/table-column" { width=50; title = "Type"; fieldname = con_type_txt; }
@@ -422,7 +426,7 @@ staffmaint "widget/component-decl"
 
 			plugin_cmp "widget/component"
 			    {
-			    height=272; width=758; x=10; y=10;
+			    height=272; width=958; x=10; y=10;
 			    path = runserver(:plugin_tabs:path);
 			    staff_osrc = staff_osrc;
 			    ledger = runserver(:this:ledger);

@@ -1,8 +1,8 @@
 $Version=2$
 plugin_gl_fundedit_receipting "widget/component-decl"
     {
-    width=490;
-    height=292;
+    width=640;
+    height=367;
     title = "Receipting";
 
     Modified "widget/component-decl-event" { }
@@ -14,8 +14,8 @@ plugin_gl_fundedit_receipting "widget/component-decl"
 	{
 	x = 0;
 	y = 0;
-	width = 490;
-	height = 292;
+	width = 640;
+	height = 367;
 	spacing = 6;
 	cellsize = 20;
 
@@ -99,13 +99,13 @@ plugin_gl_fundedit_receipting "widget/component-decl"
 
 		    ra_table_pane "widget/pane"
 			{
-			height=102;
+			height=177;
 			widget_class=table_bgnd;
 
 			ra_table "widget/table"
 			    {
 			    x=0;y=0;
-			    width=488; height=100;
+			    width=638; height=175;
 			    mode = dynamicrow;
 
 			    t_acct "widget/table-column" { title="GL Account"; fieldname="a_account_code"; width=85; }

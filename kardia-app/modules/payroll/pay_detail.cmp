@@ -409,7 +409,7 @@ pay_detail_cmp "widget/component-decl"
 	    payitem_list "widget/table"
 		{
 		x=0;y=0;width=760;height=runserver(condition(:this:by_item_type == 0, 220, 252));
-		rowheight = 18;
+		rowheight = 20;
 		mode=dynamicrow;
 
 		//t_valid "widget/table-column" { title="Valid From"; fieldname="startdate"; width=70; }

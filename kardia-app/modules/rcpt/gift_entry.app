@@ -11,6 +11,7 @@ gift_entry "widget/page"
     require_one_endorsement="kardia:gift_manage","kardia:gift_entry","kardia:gift";
     endorsement_context=runserver("kardia:ledger:" + :this:ledger + ":");
     max_requests=9;
+    send_refresh "widget/parameter" { type=object; default=null; deploy_to_client=yes; }
 
     ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
     batch "widget/parameter" { type=integer; default=null; }
@@ -26,5 +27,6 @@ gift_entry "widget/page"
 	batch = runserver(:this:batch);
 	receipt = runserver(:this:receipt);
 	by_donor = runserver(:this:by_donor);
+	send_refresh = send_refresh;
 	}
     }

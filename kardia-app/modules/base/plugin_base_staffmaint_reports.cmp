@@ -58,11 +58,13 @@ plugin_base_staffmaint_ccmanage "widget/component-decl"
 	    replicasize=25;
 	    readahead=25;
 
-	    refresh_conn "widget/connector"
+	    staff_link "widget/rule"
 		{
-		source = staff_osrc;
-		event = DataFocusChanged;
-		action = Refresh;
+		ruletype=osrc_relationship;
+		target=staff_osrc;
+		key_1=p_partner_key;
+		target_key_1=p_partner_key;
+		revealed_only=yes;
 		}
 
 	    rpt_form "widget/form"

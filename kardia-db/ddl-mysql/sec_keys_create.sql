@@ -238,6 +238,24 @@ alter table a_transaction_tmp
 alter table a_transaction_tmp
 	add constraint a_trxt_recip_id_idx unique  (p_int_partner_id, a_ledger_number, a_batch_number, a_journal_number, a_transaction_number);
 
+alter table a_dimension
+	add constraint a_dim_legacy_idx unique  (a_legacy_code, a_dimension, a_ledger_number);
+
+alter table a_dimension
+	add constraint a_dim_fund_idx unique  (a_dim_fund, a_dimension, a_ledger_number);
+
+alter table a_dimension
+	add constraint a_dim_fund_class_idx unique  (a_dim_fund_class, a_dim_fund, a_dimension, a_ledger_number);
+
+alter table a_dimension_item
+	add constraint a_dim_item_legacy_idx unique  (a_legacy_code, a_dimension, a_ledger_number, a_dimension_item);
+
+alter table a_dimension_item
+	add constraint a_dim_item_fund_idx unique  (a_dim_item_fund, a_dimension, a_ledger_number, a_dimension_item);
+
+alter table a_dimension_item
+	add constraint a_dim_item_fund_class_idx unique  (a_dim_fund_class, a_dim_fund, a_dimension, a_ledger_number, a_dimension_item);
+
 alter table a_payroll_period
 	add constraint a_payperiod_idx unique  (a_period, a_ledger_number, a_payroll_group_id, a_payroll_period);
 

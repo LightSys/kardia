@@ -511,6 +511,18 @@ drop table a_bank_recon;
 drop table a_bank_recon_item;
 
 
+/* a_bank_recon_accts */
+drop table a_bank_recon_accts;
+
+
+/* a_dimension */
+drop table a_dimension;
+
+
+/* a_dimension_item */
+drop table a_dimension_item;
+
+
 /* a_payroll */
 drop table a_payroll;
 
@@ -701,6 +713,14 @@ drop table a_subtrx_deposit;
 
 /* a_subtrx_cashxfer */
 drop table a_subtrx_cashxfer;
+
+
+/* i_association */
+drop table i_association;
+
+
+/* i_acct_association */
+drop table i_acct_association;
 
 
 /* i_eg_gift_import */

@@ -1,8 +1,8 @@
 $Version=2$
 plugin_gl_fundedit_managers "widget/component-decl"
     {
-    width=490;
-    height=292;
+    width=640;
+    height=367;
     title = "Managers";
 
     Modified "widget/component-decl-event" { }
@@ -44,8 +44,8 @@ plugin_gl_fundedit_managers "widget/component-decl"
 	{
 	x = 0;
 	y = 0;
-	width = 490;
-	height = 292;
+	width = 640;
+	height = 367;
 	spacing = 8;
 	cellsize = 20;
 
@@ -114,15 +114,15 @@ plugin_gl_fundedit_managers "widget/component-decl"
 
 		mgr_pane "widget/pane"
 		    {
-		    height=250;
+		    height=400;
 		    style=flat;
 		    enabled=runclient(:fund_osrc:a_fund = :fund_osrc:a_bal_fund);
 
 		    mgr_vbox "widget/vbox"
 			{
 			x=0; y=0;
-			height=250;
-			width=490;
+			height=400;
+			width=715;
 			spacing=8;
 			cellsize = 20;
 
@@ -130,13 +130,13 @@ plugin_gl_fundedit_managers "widget/component-decl"
 
 			mgr_table_pane "widget/pane"
 			    {
-			    height=142;
+			    height=217;
 			    widget_class=table_bgnd;
 
 			    mgr_table "widget/table"
 				{
 				x=0;y=0;
-				width=488; height=140;
+				width=638; height=215;
 				mode = dynamicrow;
 
 				//t_id "widget/table-column" { title="ID"; fieldname="p_staff_partner_key"; width=70; }
@@ -191,8 +191,9 @@ plugin_gl_fundedit_managers "widget/component-decl"
 
 			btns_hbox "widget/hbox"
 			    {
-			    x=100; height=24;
+			    height=24;
 			    spacing=8;
+			    align=center;
 
 			    save_btn "widget/textbutton"
 				{
@@ -240,8 +241,8 @@ plugin_gl_fundedit_managers "widget/component-decl"
 	toplevel = yes;
 	width=400;
 	height=250;
-	x=45;
-	y=21;
+	x=120;
+	y=58;
 	modal = yes;
 	visible = no;
 

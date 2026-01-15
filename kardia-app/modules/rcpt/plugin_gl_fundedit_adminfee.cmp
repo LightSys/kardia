@@ -1,8 +1,8 @@
 $Version=2$
 plugin_gl_fundedit_adminfee "widget/component-decl"
     {
-    width=490;
-    height=292;
+    width=640;
+    height=367;
     title = "Admin Fees";
 
     Modified "widget/component-decl-event" { }
@@ -51,7 +51,7 @@ plugin_gl_fundedit_adminfee "widget/component-decl"
 
 	    cc_vbox "widget/vbox"
 		{
-		x=0;y=0;width=490;height=292;
+		x=0; y=0; width=640; height=367;
 		spacing=8;
 		cellsize=20;
 
@@ -82,22 +82,22 @@ plugin_gl_fundedit_adminfee "widget/component-decl"
 
 		form_pane "widget/pane"
 		    {
-		    x=0;y=0;width=490;height=205;
+		    x=0; y=0; width=640; height=280;
 		    style=flat;
 		    enabled=runclient(:cc_form:is_editable or :cc_form:is_discardable);
 		    
 		    form_vbox "widget/vbox"
 			{
-			x=0;y=0;width=490;height=205;
+			x=0; y=0; width=640; height=280;
 			spacing=8; cellsize=20;
 
 			form_hbox "widget/hbox"
 			    {
-			    height=76; spacing=32;
+			    height=80; spacing=32;
 
 			    type_vbox "widget/vbox"
 				{
-				width=438; spacing=8;
+				width=588; spacing=8;
 
 				f_admin_type "widget/component" 
 				    {
@@ -246,12 +246,12 @@ plugin_gl_fundedit_adminfee "widget/component-decl"
 
 			    adminitem_tbl_pane "widget/pane"
 				{
-				height=122;
+				height=193;
 				widget_class = "table_bgnd";
 
 				adminitem_tbl "widget/table"
 				    {
-				    height=120; width=488; x=0; y=0;
+				    height=191; width=638; x=0; y=0;
 				    colsep = 0;
 				    allow_selection = yes;
 				    show_selection = no;

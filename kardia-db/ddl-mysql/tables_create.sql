@@ -779,6 +779,7 @@ create table p_notification_method (
         p_notify_method                       integer  not null,       /* id of the notification method --  */
         p_notify_method_label                 varchar(10)  not null,   /* notification method short label --  */
         p_notify_method_desc                  varchar(255)  not null,  /* longer description of the notification method --  */
+        p_allowed_contact_types               varchar(32)  null,       /* list of p_contact_type(s) that are allowed for this notification method. --  */
         p_expects_ack                         bit  not null,           /* whether this method anticipates an message-seen acknowledgement from the recipient (0=no, 1=yes) --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
@@ -2552,9 +2553,13 @@ create table a_currency_exch_rate (
 
 create table a_bank_recon (
         a_ledger_number                       char(10)  not null,      /* ledger number for this reconciliation --  */
-        a_period                              char(8)  not null,       /* accounting period for this reconciliation --  */
         a_account_code                        char(16)  not null,      /* GL account that we're reconciling --  */
-        a_bank_balance                        decimal(14,4)  null,     /* Ending balance from the bank statement --  */
+        a_statement_id                        int(11)  not null,       /* ID used to differentiate reconciliations for the same account. --  */
+        a_period                              char(8)  not null,       /* accounting period for this reconciliation, typically calculated based on end date --  */
+        a_end_date                            datetime  not null,      /* Ending date from the bank statement --  */
+        a_bank_start_balance                  decimal(14,4)  null,     /* Starting balance from the bank statement --  */
+        a_bank_end_balance                    decimal(14,4)  not null,
+                                                                      /* Ending balance from the bank statement --  */
         a_comment                             varchar(900)  null,      /* Comments on this account's reconciliation. --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
@@ -2569,16 +2574,86 @@ create table a_bank_recon (
 
 create table a_bank_recon_item (
         a_ledger_number                       char(10)  not null,      /* ledger number for this reconciliation --  */
-        a_period                              char(8)  not null,       /* accounting period for this reconciliation --  */
-        a_account_code                        char(16)  not null,      /* GL account that we're reconciling --  */
         a_line_item                           integer  not null,       /* An autoincrement integer line item ID --  */
-        a_origin                              char(2)  not null,       /* The type of line item - GL, CD, CR, DE. --  */
-        a_source_key                          varchar(80)  not null,   /* The primary key of the source of the line item, such as from a_subtrx_cashdisb. --  */
-        a_amount                              decimal(14,4)  not null,
-                                                                      /* The amount of the reconciliation line item --  */
-        a_posted_date                         datetime  null,          /* The date the item posted on the bank account. --  */
+        a_account_code                        char(16)  not null,      /* GL account that we're reconciling --  */
+        a_statement_id                        int(11)  null,           /* the reconciliation statement to associate this line item with once it is marked reconciled --  */
+        a_origin                              char(2)  null,           /* The type of line item - GL, CD, CR, DE. NULL indicates it exists only in the bank reconciliation. --  */
+        a_batch_key                           int(11)  null,           /* The batch part of the primary key of the source of the line item, such as from a_subtrx_cashdisb. --  */
+        a_group_key                           int(11)  null,           /* The group part of the primary key of the source of the line item, such as from a_subtrx_cashdisb. --  */
+        a_item_key                            int(11)  null,           /* The item part of the primary key of the source of the line item, such as from a_subtrx_cashdisb. --  */
+        a_amount                              decimal(14,4)  null,     /* The amount of the reconciliation line item --  */
         a_is_reconciled                       bit  default 0,          /* Whether the line item is reconciled or not. --  */
         a_comment                             varchar(255)  null,      /* Comments on the line item. --  */
+        a_item_date                           datetime  not null,      /* The primary date associated with the transaction, such as the effective date from the GL. --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* a_bank_recon_accts */
+
+create table a_bank_recon_accts (
+        a_ledger_number                       char(10)  not null,      /* ledger number for the account --  */
+        a_account_code                        char(16)  not null,      /* GL account to allow/disallow --  */
+        a_is_reconcilable                     bit(1)  default 0  null,
+                                                                      /* Whether or not the account can be reconciled --  */
+        a_is_customizable                     bit(1)  default 0  null,
+                                                                      /* Whether or not to allow the account to have line items that exist only in the reconciliation app. --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* a_dimension */
+
+create table a_dimension (
+        a_dimension                           char(20)  not null,      /* dimension code (alphanumeric allowed) --  */
+        a_ledger_number                       char(10)  not null,      /* ledger number that uses this fund --  */
+        a_is_posting                          bit,                     /* enables use of this dimension --  */
+        a_dim_desc                            char(32)  null,          /* short description of dimension, for reporting and UI --  */
+        a_dim_comments                        varchar(255)  null,      /* comments / long description of dimension --  */
+        a_legacy_code                         varchar(32)  null,       /* Legacy dimension code, from data import --  */
+        a_default_item                        varchar(20)  null,       /* Default item to use for this dimension. --  */
+        a_start_date                          datetime  null,          /* Starting date this dimension can be used --  */
+        a_end_date                            datetime  null,          /* Ending date this dimension can be used --  */
+        a_lock_position                       integer  null,           /* If set (1-3), locks this dimension to dimension #1, #2, or #3 in the UI, where applicable. --  */
+        a_lock_always_show                    bit  not null,           /* If position locked, always show this dimension, but leave it disabled if not applicable to the transaction. --  */
+        a_required                            bit  not null,           /* Whether this dimension must be specified, where applicable. --  */
+        a_dim_usage                           char(1)  not null,       /* What types of transactions this dimension can apply to: R = revenue only, E = expense only, B = both revenue and expense. --  */
+        a_dim_fund                            char(20)  null,          /* If specified, this dimension only applies to a specific fund. --  */
+        a_dim_fund_class                      char(3)  null,           /* If specified, this dimension only applies to a specific fund class. --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* a_dimension_item */
+
+create table a_dimension_item (
+        a_dimension                           char(20)  not null,      /* dimension code (alphanumeric allowed) --  */
+        a_ledger_number                       char(10)  not null,      /* ledger number that uses this fund --  */
+        a_dimension_item                      char(20)  not null,      /* dimension item code (alphanumeric allowed) --  */
+        a_is_posting                          bit  not null,           /* enables use of this dimension item --  */
+        a_dim_item_desc                       char(32)  null,          /* short description of dimension item, for reporting and UI --  */
+        a_dim_item_comments                   varchar(255)  null,      /* comments / long description of dimension item --  */
+        a_legacy_code                         varchar(32)  null,       /* Legacy dimension item code, from data import --  */
+        a_start_date                          datetime  null,          /* Starting date this dimension item can be used --  */
+        a_end_date                            datetime  null,          /* Ending date this dimension item can be used --  */
+        a_dim_item_usage                      char(1)  not null,       /* What types of transactions this dimension item can apply to: R = revenue only, E = expense only, B = both revenue and expense. --  */
+        a_dim_item_fund                       char(20)  null,          /* If specified, this dimension item only applies to a specific fund. --  */
+        a_dim_item_fund_class                 char(3)  null,           /* If specified, this dimension item only applies to a specific fund class. --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -3791,6 +3866,47 @@ create table a_subtrx_cashxfer (
                                                                       /* Amount to transfer --  */
         a_in_gl                               bit  default 0,          /* Has this transfer been posted into the GL - yes (1) or no (0)? --  */
         a_comment                             varchar(255)  null,      /* Xfer comments --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* i_association */
+
+create table i_association (
+        i_assoc_service                       varchar(16)  not null,   /* Code for the external service --  */
+        i_assoc_type                          varchar(16)  not null,   /* Code for the association type (currently supported: 'partner' for partner/donor) --  */
+        i_assoc_external_id                   varchar(80)  not null,   /* External identifier (e.g., giving service donor ID) --  */
+        i_assoc_hist_id                       integer  not null,       /* Sequential id of this association - so we can record how associations change over time and refer back to them --  */
+        i_assoc_start_date                    datetime  null,          /* Starting date this association applies to. Null if no starting date. --  */
+        i_assoc_end_date                      datetime  null,          /* Ending date this association applies to. Null if no ending date. --  */
+        i_assoc_id                            varchar(80)  not null,   /* Internal identifier (e.g., Kardia partner ID) --  */
+        i_assoc_future                        integer  null,           /* Future applicability of this mapping: 0=low, 1=medium, 2=high --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* i_acct_association */
+
+create table i_acct_association (
+        a_ledger_number                       char(10)  not null,      /* Accounting ledger (legal entity) --  */
+        i_assoc_service                       varchar(16)  not null,   /* Code for the external service --  */
+        i_assoc_type                          varchar(16)  not null,   /* Code for the association type (currently supported: 'fund', 'account', 'donoraccount') --  */
+        i_assoc_external_id                   varchar(80)  not null,   /* External identifier (e.g., giving service donor ID) --  */
+        i_assoc_hist_id                       integer  not null,       /* Sequential id of this association - so we can record how associations change over time and refer back to them --  */
+        i_assoc_start_date                    datetime  null,          /* Starting date this association applies to. Null if no starting date. --  */
+        i_assoc_end_date                      datetime  null,          /* Ending date this association applies to. Null if no ending date. --  */
+        i_assoc_id                            varchar(80)  not null,   /* Internal identifier (e.g., Kardia partner ID) --  */
+        i_assoc_future                        integer  null,           /* Future applicability of this mapping: 0=low, 1=medium, 2=high --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */

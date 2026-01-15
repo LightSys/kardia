@@ -2,7 +2,7 @@ $Version=2$
 config "widget/component-decl"
     {
     width=1000;
-    height=580;
+    height=680;
 
     hdr_label "widget/label"
 	{
@@ -18,7 +18,7 @@ config "widget/component-decl"
     config_tab "widget/tab"
 	{
 	x=0; y=26;
-	height=554;
+	height=654;
 	width=850;
 	tab_location=left;
 	tab_width=150;
@@ -42,7 +42,7 @@ config "widget/component-decl"
 
 		plugin_cmp "widget/component"
 		    {
-		    height=490; width=828; x=10; y=50;
+		    height=590; width=828; x=10; y=50;
 		    path = runserver(:plugin_tabs:path);
 		    }
 		}

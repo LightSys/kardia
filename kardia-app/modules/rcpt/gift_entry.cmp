@@ -7,6 +7,7 @@ gift_entry "widget/component-decl"
     batch "widget/parameter" { type=integer; default=null; deploy_to_client=yes; }
     receipt "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
     by_donor "widget/parameter" { type=integer; default=0; deploy_to_client=yes; }
+    send_refresh "widget/parameter" { type=object; default=null; deploy_to_client=yes; }
     receipts_rpt "widget/parameter" { type=string; default=runserver(isnull( (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :this:ledger and :a_config_name = 'RcptReport'), "/apps/kardia/modules/rcpt/receipt_batch.rpt")); deploy_to_client=yes; }
     acks_rpt "widget/parameter" { type=string; default=runserver(isnull( (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :this:ledger and :a_config_name = 'RcptAckReport'), "/apps/kardia/modules/rcpt/receipt_batch.rpt")); deploy_to_client=yes; }
     nc_rpt "widget/parameter" { type=string; default=runserver(isnull( (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :this:ledger and :a_config_name = 'RcptNCReport'), "/apps/kardia/modules/rcpt/receipt_batch.rpt")); deploy_to_client=yes; }
@@ -231,6 +232,7 @@ gift_entry "widget/component-decl"
 	on_copy_9 "widget/connector" { event=Copied; target=doing_automark; action=SetValue; Value=1; }
 	on_copy_10 "widget/connector" { condition=runserver(:this:use_scanner); event=Copied; target=scanner; action=UpdateUsed; }
 	on_copy_11 "widget/connector" { event=Copied; target=popover_view_check; action=Close; }
+	on_copy_12 "widget/connector" { event=Copied; target=send_refresh; action=Refresh; Batch=runclient(:batch:value); }
 	}
 
     prevrcpt_osrc "widget/osrc"
@@ -383,6 +385,10 @@ gift_entry "widget/component-decl"
 			replicasize=700;
 			readahead=700;
 			autoquery = never;
+
+			// Refresh totals on cr batches app
+			refresh_parent_on_save "widget/connector" { event=DataSaved; target=send_refresh; action=Refresh; Batch=runclient(:batch:value); }
+			refresh_parent_on_del "widget/connector" { event=Deleted; target=send_refresh; action=Refresh; Batch=runclient(:batch:value); }
 
 			rcpt_link_rule "widget/rule"
 			    {

@@ -780,7 +780,31 @@ alter table a_fund_staff drop index a_fund_staff_partner_idx;
 
 
 /* a_bank_recon_item */
+alter table a_bank_recon_item drop index a_recon_foreign_idx;
 /* drop index a_bank_recon_item.a_recon_item_pk */ 
+/* go */
+
+
+/* a_bank_recon_accts */
+/* drop index a_bank_recon_accts.a_recon_accts_pk */ 
+/* go */
+
+
+/* a_dimension */
+alter table a_dimension drop index a_dim_fund_class_idx;
+alter table a_dimension drop index a_dim_fund_idx;
+alter table a_dimension drop index a_dim_ledger_number_idx;
+alter table a_dimension drop index a_dim_legacy_idx;
+/* drop index a_dimension.a_dim_pk */ 
+/* go */
+
+
+/* a_dimension_item */
+alter table a_dimension_item drop index a_dim_item_fund_class_idx;
+alter table a_dimension_item drop index a_dim_item_fund_idx;
+alter table a_dimension_item drop index a_dim_item_ledger_number_idx;
+alter table a_dimension_item drop index a_dim_item_legacy_idx;
+/* drop index a_dimension_item.a_dim_item_pk */ 
 /* go */
 
 
@@ -1095,6 +1119,18 @@ alter table a_subtrx_cashxfer drop index a_subtrx_cxf_batch_idx;
 alter table a_subtrx_cashxfer drop index a_subtrx_cxf_fund_rev1_idx;
 alter table a_subtrx_cashxfer drop index a_subtrx_cxf_fund_rev2_idx;
 alter table a_subtrx_cashxfer drop index a_subtrx_cxf_journal_idx;
+
+
+/* i_association */
+alter table i_association drop index i_assoc_int_idx;
+/* drop index i_association.i_assoc_pk */ 
+/* go */
+
+
+/* i_acct_association */
+alter table i_acct_association drop index i_acct_assoc_int_idx;
+/* drop index i_acct_association.i_acct_assoc_pk */ 
+/* go */
 
 
 /* i_eg_gift_import */

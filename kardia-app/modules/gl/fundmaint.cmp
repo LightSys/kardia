@@ -1,7 +1,7 @@
 $Version=2$
 fundmaint "widget/component-decl"
     {
-    width=780; height=580;
+    width=980; height=680;
     ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; deploy_to_client=yes; }
     mainfund "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
     fund "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
@@ -10,12 +10,12 @@ fundmaint "widget/component-decl"
 
     hbox "widget/hbox"
 	{
-	x=0;y=0;width=780;height=580;
+	x=0;y=0;width=980;height=680;
 	spacing=16;
 
 	fundlist_vbox "widget/vbox"
 	    {
-	    width=250; spacing=8;
+	    width=300; spacing=8;
 
 	    searchlbl "widget/component"
 		{
@@ -48,7 +48,7 @@ fundmaint "widget/component-decl"
 
 	    searchlistpane "widget/pane"
 		{
-		height=520;
+		height=620;
 		widget_class=table_bgnd;
 
 		searchlistosrc "widget/osrc"
@@ -95,7 +95,7 @@ fundmaint "widget/component-decl"
 				    
 		    searchlisttbl "widget/table"
 			{
-			height=518; width=248; x=0; y=0;
+			height=618; width=298; x=0; y=0;
 
 			t_cc "widget/table-column" { title="Fund"; fieldname="a_fund"; width=70; }
 			t_type "widget/table-column" { title="Type"; fieldname="a_fund_class"; width=40; }
@@ -107,7 +107,7 @@ fundmaint "widget/component-decl"
 
 	subfund_vbox "widget/vbox"
 	    {
-	    width=514; spacing=8;
+	    width=664; spacing=8;
 
 	    sublbl "widget/component"
 		{
@@ -120,6 +120,7 @@ fundmaint "widget/component-decl"
 	    btn_hbox "widget/hbox"
 		{
 		cellsize = 130; spacing=8; height=24;
+		align = center;
 
 		addfund_btn "widget/textbutton"
 		    {
@@ -159,12 +160,47 @@ fundmaint "widget/component-decl"
 
 	    subfund_pane "widget/pane"
 		{
-		height=145;
+		height=195;
 		widget_class=table_bgnd;
 
 		subfund_osrc "widget/osrc"
 		    {
 		    sql = runserver("
+			declare object info;
+
+			select
+				:info:period = :a_period,
+				:info:parent_period = :a_parent_period,
+				:info:ledger = :a_ledger_number
+			from
+				/apps/kardia/data/Kardia_DB/a_period/rows
+			where
+				getdate() >= :a_start_date and
+				:a_summary_only = 0 and
+				:a_status != 'N' and
+				:a_ledger_number = " + quote(:this:ledger) + "
+			order by
+				:a_start_date desc
+			limit
+				1
+			;
+
+			select
+				:info:startperiod = :a_period
+			from
+				/apps/kardia/data/Kardia_DB/a_period/rows
+			where
+				:a_ledger_number = :info:ledger and
+				:a_parent_period = :info:parent_period and
+				:a_summary_only = 0
+			order by
+				:a_start_date asc
+			limit
+				1
+			;
+				
+			--print 'Start: ' + isnull(:info:startperiod, '-') + ', End: ' + isnull(:info:period, '-') + ', Parent: ' + isnull(:info:parent_period, '-');
+
 			select
 				:c:a_fund,
 				:c:a_fund_desc,
@@ -183,11 +219,18 @@ fundmaint "widget/component-decl"
 				:a_parent_fund,
 				:a_bal_fund,
 				:a_reporting_level,
-				:a_fund_comments
+				:a_fund_comments,
+				receipting = (select count(1) from /apps/kardia/data/Kardia_DB/a_fund_receipting/rows fr where :fr:a_fund = :c:a_fund and :fr:a_ledger_number = :c:a_ledger_number and :a_receiptable = 1),
+				openbal = '' + ((select isnull($0 - sum(:t:a_amount), $0) from /apps/kardia/data/Kardia_DB/a_transaction/rows t where :t:a_period = :info:startperiod and :t:a_transaction_type = 'B' and :t:a_posted = 1 and :t:a_ledger_number = :info:ledger and :t:a_fund = :c:a_fund and :t:a_account_category >= '30')) + ' ... begin ' + :info:startperiod + '',
+				curbal = '' + ((select isnull($0 - sum(:t:a_amount), $0) from /apps/kardia/data/Kardia_DB/a_transaction/rows t where :t:a_period >= :info:startperiod and :t:a_period <= :info:period and :t:a_posted = 1 and :t:a_ledger_number = :info:ledger and :t:a_fund = :c:a_fund and :t:a_account_category >= '30')) + ' ... current ' + :info:period + '',
+				rollopenbal = '' + ((select isnull($0 - sum(:t:a_amount), 'n/a') from /apps/kardia/data/Kardia_DB/a_fund/rows c2, /apps/kardia/data/Kardia_DB/a_transaction/rows t where :t:a_period = :info:startperiod and :t:a_transaction_type = 'B' and :t:a_posted = 1 and :t:a_ledger_number = :info:ledger and :t:a_fund = :c2:a_fund and :c2:a_ledger_number = :c:a_ledger_number and :c2:a_bal_fund = :c:a_fund and :t:a_account_category >= '30')),
+				rollcurbal = '' + ((select isnull($0 - sum(:t:a_amount), 'n/a') from /apps/kardia/data/Kardia_DB/a_fund/rows c2, /apps/kardia/data/Kardia_DB/a_transaction/rows t where :t:a_period >= :info:startperiod and :t:a_period <= :info:period and :t:a_posted = 1 and :t:a_ledger_number = :info:ledger and :t:a_fund = :c2:a_fund and :c2:a_ledger_number = :c:a_ledger_number and :c2:a_bal_fund = :c:a_fund and :t:a_account_category >= '30')),
+				liabs = '' + ($0 - (select isnull(sum(:t:a_amount), $0) from /apps/kardia/data/Kardia_DB/a_transaction/rows t where :t:a_period >= :info:startperiod and :t:a_period <= :info:period and :t:a_posted = 1 and :t:a_ledger_number = :info:ledger and :t:a_fund = :c:a_fund and :t:a_account_category >= '20' and :t:a_account_category < '30')),
+				assts = '' + ((select isnull(sum(:t:a_amount), $0) from /apps/kardia/data/Kardia_DB/a_transaction/rows t where :t:a_period >= :info:startperiod and :t:a_period <= :info:period and :t:a_posted = 1 and :t:a_ledger_number = :info:ledger and :t:a_fund = :c:a_fund and :t:a_account_category >= '10' and :t:a_account_category < '19'))
 			from
 				/apps/kardia/data/Kardia_DB/a_fund/rows c
 			where 
-				:c:a_ledger_number = " + quote(:this:ledger) + "
+				:c:a_ledger_number = :info:ledger
 			order by
 				:c:a_fund
 			");
@@ -230,18 +273,19 @@ fundmaint "widget/component-decl"
 				    
 		    subfund_table "widget/table"
 			{
-			height=143; width=512; x=0; y=0;
+			height=193; width=662; x=0; y=0;
 
 			dblclick_sub "widget/connector" { event=DblClick; target=fund_form; action=Modify; }
 
 			t2_cc "widget/table-column" { title="Fund"; fieldname="a_fund"; width=70; }
-			t2_desc "widget/table-column" { title="Description"; fieldname="a_fund_desc"; width=130; }
+			t2_desc "widget/table-column" { title="Description"; fieldname="a_fund_desc"; width=230; }
 			t2_cls "widget/table-column" { title="Type"; fieldname="a_fund_class"; width=40; }
 			t2_legacy "widget/table-column" { title="Legacy"; fieldname="a_legacy_code"; width=70; }
-			t2_restr "widget/table-column" { title="Rest."; fieldname="a_restricted_type"; width=40; }
-			t2_bal "widget/table-column" { title="Bal?"; fieldname="bal"; width=40; type=check; }
-			t2_ext "widget/table-column" { title="Ext?"; fieldname="a_is_external"; width=40; type=check; }
-			t2_post "widget/table-column" { title="Post?"; fieldname="a_is_posting"; width=40; type=check; }
+			t2_restr "widget/table-column" { title="Rest."; fieldname="a_restricted_type"; width=40; align=center; }
+			t2_bal "widget/table-column" { title="Bal?"; fieldname="bal"; width=40; type=check; align=center; }
+			t2_ext "widget/table-column" { title="Ext?"; fieldname="a_is_external"; width=40; type=check; align=center; }
+			t2_post "widget/table-column" { title="Post?"; fieldname="a_is_posting"; width=40; type=check; align=center; }
+			t2_rcpt "widget/table-column" { title="Rcpt?"; fieldname="receipting"; width=40; type=check; align=center; }
 			}
 		    }
 		}
@@ -266,13 +310,13 @@ fundmaint "widget/component-decl"
 
 		fund_tc_pane "widget/pane"
 		    {
-		    height=339;
+		    height=389;
 		    style=flat;
 		    enabled = runclient(:fund_form:is_editable or :fund_form:is_discardable);
 
 		    fund_tc "widget/tab"
 			{
-			height=314; width=514; x=0; y=0;
+			height=364; width=664; x=0; y=0;
 			background="/apps/kardia/images/bg/light_bgnd2.jpg";
 			inactive_background="/apps/kardia/images/bg/light_bgnd3.jpg";
 
@@ -282,17 +326,14 @@ fundmaint "widget/component-decl"
 
 			    form_hbox "widget/hbox"
 				{
-				height=230; width=490; x=10; y=10;
-				spacing=10;
+				height=280; width=640; x=10; y=10;
+				spacing=20;
 
 				form_vbox1 "widget/vbox"
 				    {
-				    spacing=4;
-				    width=240;
+				    spacing=6;
+				    width=315;
 
-				    f_ledger "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_ledger_number'; ctl_type=label; text='Ledger:'; label_width=120; }
-				    f_parentcc "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_parent_fund'; ctl_type=label; text='Rollup Fund:'; label_width=120; }
-				    f_balcc "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_bal_fund'; ctl_type=label; text='Balancing Fund:'; label_width=120; }
 				    f_fund "widget/component" 
 					{ 
 					height=20;
@@ -327,19 +368,9 @@ fundmaint "widget/component-decl"
 				    f_desc "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_fund_desc'; ctl_type=editbox; text='Description:'; label_width=120; }
 				    f_comm "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_fund_comments'; ctl_type=editbox; text='Comments:'; label_width=120; }
 				    f_legacy_code "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field=a_legacy_code; text="Legacy Code:"; ctl_type="editbox"; tooltip="Legacy Fund from Old System"; label_width=120; }
-				    }
-
-				form_vbox2 "widget/vbox"
-				    {
-				    spacing=4;
-				    width=240;
-
-				    f_is_posting "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field=a_is_posting; text="Is Posting:"; ctl_type="checkbox"; tooltip="Enable posting to this fund"; label_width=120; }
-				    f_is_external "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field=a_is_external; text="Is External:"; ctl_type="checkbox"; tooltip="Enable posting to this fund"; label_width=120; }
-				    f_is_balancing "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field=a_is_balancing; text="Self-Balancing:"; ctl_type="checkbox"; type=readonly; tooltip="Enable posting to this fund"; label_width=120; }
-
 				    f_cc_class "widget/component"
-					{ height=20; path="/sys/cmp/smart_field.cmp"; field=a_fund_class; text="Class:"; ctl_type="dropdown"; tooltip="Class/Category"; sql="select :a_fund_class_desc, :a_fund_class from /apps/kardia/data/Kardia_DB/a_fund_class/rows"; label_width=120; 
+					{
+					height=20; path="/sys/cmp/smart_field.cmp"; field=a_fund_class; text="Class:"; ctl_type="dropdown"; tooltip="Class/Category"; sql="select label = :a_fund_class + ' - ' + :a_fund_class_desc, :a_fund_class from /apps/kardia/data/Kardia_DB/a_fund_class/rows order by :a_fund_class"; label_width=120; 
 					cc_class_cn2 "widget/connector"
 					    {
 					    event=DataModify;
@@ -355,12 +386,41 @@ fundmaint "widget/component-decl"
 					}
 				    f_cc_level "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field=a_reporting_level; text="Report Level:"; ctl_type="dropdown"; tooltip="Class/Category"; sql="select :a_level_desc, :a_reporting_level from /apps/kardia/data/Kardia_DB/a_reporting_level/rows"; label_width=120; }
 				    f_restricted_type "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field=a_restricted_type; text="Restriction:"; ctl_type="dropdown"; tooltip="Fund Restriction Type"; sql = "select :text, :tag from /apps/kardia/data/Kardia_DB/_a_restricted_type/rows"; label_width=120; }
+				    f_is_posting "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field=a_is_posting; text="Enabled/Posting:"; ctl_type="checkbox"; tooltip="Enable posting to this fund"; label_width=120; }
+				    f_is_external "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field=a_is_external; text="External:"; ctl_type="checkbox"; tooltip="Enable posting to this fund"; label_width=120; }
+				    f_is_balancing "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field=a_is_balancing; text="Self-Balancing:"; ctl_type="checkbox"; type=readonly; tooltip="Enable posting to this fund"; label_width=120; }
 				    }
+
+				status_vbox "widget/vbox"
+				    {
+				    spacing=6;
+				    width=305;
+
+				    f_ledger "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_ledger_number'; ctl_type=label; text='Ledger:'; label_width=120; }
+				    f_parentcc "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_parent_fund'; ctl_type=label; text='Rollup Fund:'; label_width=120; }
+				    f_balcc "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_bal_fund'; ctl_type=label; text='Balancing Fund:'; label_width=120; }
+				    statsep1 "widget/pane" { height=2; style=lowered; }
+				    f_openbal "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='openbal'; ctl_type=label; text='Opening Balance:'; label_width=120; }
+				    f_curbal "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='curbal'; ctl_type=label; text='Current Balance:'; label_width=120; }
+				    f_ropenbal "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='rollopenbal'; ctl_type=label; text='Rollup Open Bal.:'; label_width=120; }
+				    f_rcurbal "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='rollcurbal'; ctl_type=label; text='Rollup Cur. Bal.:'; label_width=120; }
+				    f_liabs "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='liabs'; ctl_type=label; text='Liabilities:'; label_width=120; }
+				    f_assts "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='assts'; ctl_type=label; text='Assets:'; label_width=120; }
+				    }
+				}
+
+			    form_vbox2 "widget/vbox"
+				{
+				height=72; x=193; y=10;
+				spacing=6;
+				width=140;
+
+
 				}
 
 			    formbtn_hbox "widget/hbox"
 				{
-				x=10; y=240; height = 24; width = 490;
+				x=10; y=290; height = 24; width = 640;
 				align=center;
 				cellsize=120; spacing=8;
 
@@ -401,7 +461,7 @@ fundmaint "widget/component-decl"
 
 			    fund_rec_info "widget/component"
 				{
-				height=20; width=490; x=10; y=282;
+				height=20; width=490; x=10; y=332;
 				path = "/apps/kardia/modules/base/record_metadata_bar.cmp";
 				}
 			    }
@@ -416,7 +476,7 @@ fundmaint "widget/component-decl"
 
 				plugin_cmp "widget/component"
 				    {
-				    height=292; width=490; x=10; y=10;
+				    height=342; width=640; x=10; y=10;
 				    path = runserver(:plugin_tabs:path);
 				    fund_osrc = subfund_osrc;
 				    ledger = runserver(:this:ledger);
