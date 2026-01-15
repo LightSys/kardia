@@ -177,7 +177,7 @@ myprojects "widget/component-decl"
 		    t_sprint_id = :parameters:tosprint,
 		    t_project_id = :parameters:project,
 		    t_task_label = :t:t_task_label,
-		    t_task_desc = 'Imported: ' + :t:t_task_desc,
+		    t_task_desc = condition(charindex('Imported: ', :t:t_task_desc) == 1, :t:t_task_desc, 'Imported: ' + :t:t_task_desc),
 		    t_task_hours = round(:t:t_task_hours * (1.0 - isnull(:t:t_task_percent, 0.0)), 1),
 		    t_task_percent = 0.0,
 		    t_task_state = (select :ts:t_task_state_id from /apps/kardia/data/Kardia_DB/t_task_state/rows ts where :ts:t_task_state_type != 'F' order by :t_task_state_sequence asc limit 1),
