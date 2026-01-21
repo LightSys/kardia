@@ -12,13 +12,12 @@ plugin_rcpt_importprocess_050splitTrx "system/query"
 
     sql = "
 		-- get a transaction ID and the columns needed later for potential matching of any multi part rows. 
+		-- TODO: do a first pass with just the dummy records, and then add an 'on duplicate update' to this one
 		DECLARE COLLECTION match;
 		INSERT INTO
 		    COLLECTION match
 		SELECT
-		    transaction_id = first(:i_eg_trx_uuid),
-		    :i_eg_donor_uuid, :i_eg_deposit_amt, 
-		    :i_eg_deposit_gross_amt, :i_eg_desig_notes, :i_eg_service
+		    transaction_id = first(:i_eg_trx_uuid), :i_eg_service
 		FROM 
 		    /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows 
 		WHERE 
@@ -29,6 +28,8 @@ plugin_rcpt_importprocess_050splitTrx "system/query"
 		GROUP BY
 		    :i_eg_donor_uuid, :i_eg_deposit_amt, 
 		    :i_eg_deposit_gross_amt, :i_eg_desig_notes, :i_eg_service
+		ORDER BY 
+		    :i_eg_status = 'template' desc, :s_date_created desc
 		;
 
 		
@@ -94,27 +95,25 @@ plugin_rcpt_importprocess_050splitTrx "system/query"
 		    :s:i_eg_acctmap_future,
 		    :s:i_eg_fundmap_future,
 		    :s:i_eg_donormap_future,
-		    :s:a_ledger_number,
-		    s_date_created = getdate(),
-		    s_created_by = user_name(),
-		    s_date_modified = getdate(),
-		    s_modified_by = user_name()
+		    :s:a_ledger_number
 		FROM
 		    IDENTITY /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows s,	-- the transactions to split
 		    IDENTITY /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows i,	-- the prexisting transaction to copy
 		    COLLECTION match m 							-- the guide for what to match with
 		WHERE
 		    :m:transaction_id = :i:i_eg_trx_uuid
+		    AND :m:i_eg_service = :i:i_eg_service
 		    AND :s:a_ledger_number = :parameters:ledger
 		    AND :i:a_ledger_number = :parameters:ledger
 		    AND substring(:s:i_eg_postprocess, 1, 1) = 'S'
-		    AND isnull(:s:i_eg_desig_notes, '') = isnull(:m:i_eg_desig_notes,'') -- make sure what donor sent was the same
-		    AND :s:i_eg_donor_uuid = :m:i_eg_donor_uuid -- make sure was the same donor
-		    AND isnull(:s:i_eg_deposit_amt, :m:i_eg_deposit_amt) = :m:i_eg_deposit_amt -- need to let null net values pass for now
-		    AND :s:i_eg_deposit_gross_amt = :m:i_eg_deposit_gross_amt
+		    AND isnull(:s:i_eg_desig_notes, '') = isnull(:i:i_eg_desig_notes,'') -- make sure what donor sent was the same
+		    AND :s:i_eg_donor_uuid = :i:i_eg_donor_uuid -- make sure was the same donor
+		    AND isnull(:s:i_eg_deposit_amt, :i:i_eg_deposit_amt) = :i:i_eg_deposit_amt -- need to let null net values pass for now
+		    AND :s:i_eg_deposit_gross_amt = :i:i_eg_deposit_gross_amt
 		    AND isnull(:s:i_eg_deposit_amt, 0) = isnull(:s:i_eg_net_amount, 0) -- make sure only one item in transaction to be split
 		    AND :s:i_eg_deposit_gross_amt = :s:i_eg_gift_amount
-		    AND :s:i_eg_service = :m:i_eg_service
+		    AND :s:i_eg_service = :i:i_eg_service
+		    AND :s:i_eg_status != 'template'
 		;
 
 		-- add a checksum in case an assumption was violated
@@ -204,8 +203,11 @@ plugin_rcpt_importprocess_050splitTrx "system/query"
 		    :s:i_eg_service,		:s:i_eg_processor,		:s:i_eg_gift_currency,
 		    :s:i_eg_receipt_desired,	:s:i_eg_anonymous,		:s:i_eg_prayforme,
 		    :s:i_eg_acctmap_future,	:s:i_eg_fundmap_future,		:s:i_eg_donormap_future,
-		    :s:a_ledger_number,		:s:s_date_created,		:s:s_created_by,
-		    :s:s_date_modified,		:s:s_modified_by
+		    :s:a_ledger_number,
+		    s_date_created = getdate(),
+		    s_created_by = user_name(),
+		    s_date_modified = getdate(),
+		    s_modified_by = user_name()
 		FROM 
 		    COLLECTION split s
 		ON DUPLICATE
@@ -223,7 +225,7 @@ plugin_rcpt_importprocess_050splitTrx "system/query"
 		    :s_date_modified = getdate() IF MODIFIED,
 		    :s_modified_by = user_name() IF MODIFIED
 		;
-	
+	-- TODO: delete/invalidate any onetime dummy records?
 		-- If it still has an S, can assume does not need it
 		UPDATE 
 		    /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows
