@@ -392,10 +392,13 @@ alter table a_currency_exch_rate
 	add constraint a_curr_pk primary key  (a_ledger_number, a_base_currency_code, a_foreign_currency_code, a_exch_rate_date);
 
 alter table a_bank_recon
-	add constraint a_recon_pk primary key  (a_ledger_number, a_period, a_account_code);
+	add constraint a_recon_pk primary key  (a_ledger_number, a_account_code, a_statement_id);
 
 alter table a_bank_recon_item
-	add constraint a_recon_item_pk primary key  (a_ledger_number, a_period, a_account_code, a_line_item);
+	add constraint a_recon_item_pk primary key  (a_ledger_number, a_account_code, a_line_item);
+
+alter table a_bank_recon_accts
+	add constraint a_recon_accts_pk primary key  (a_ledger_number, a_account_code);
 
 alter table a_dimension
 	add constraint a_dim_pk primary key  (a_dimension, a_ledger_number);
@@ -555,6 +558,12 @@ alter table a_subtrx_cashxfer
 
 alter table a_subtrx_cashxfer
 	add constraint a_subtrx_cxf_fund_clustered_idx unique  (a_fund, a_source_cash_acct, a_ledger_number, a_batch_number, a_journal_number);
+
+alter table i_association
+	add constraint i_assoc_pk primary key  (i_assoc_service, i_assoc_type, i_assoc_external_id, i_assoc_hist_id);
+
+alter table i_acct_association
+	add constraint i_acct_assoc_pk primary key  (a_ledger_number, i_assoc_service, i_assoc_type, i_assoc_external_id, i_assoc_hist_id);
 
 alter table i_eg_gift_import
 	add constraint i_eg_gift_import_pk primary key  (a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid, i_eg_line_item);

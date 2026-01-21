@@ -384,6 +384,9 @@ revoke select on ra to public;
 /* a_bank_recon_item */
 
 
+/* a_bank_recon_accts */
+
+
 /* a_dimension */
 
 
@@ -532,6 +535,12 @@ revoke select on ra to public;
 
 
 /* a_subtrx_cashxfer */
+
+
+/* i_association */
+
+
+/* i_acct_association */
 
 
 /* i_eg_gift_import */

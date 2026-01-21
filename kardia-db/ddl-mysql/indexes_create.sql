@@ -775,12 +775,18 @@ create  index a_fund_staff_partner_idx on a_fund_staff (p_staff_partner_key, a_l
 
 
 /* a_bank_recon */
-/* create  index a_recon_pk on a_bank_recon (a_ledger_number, a_period, a_account_code)*/ 
+/* create  index a_recon_pk on a_bank_recon (a_ledger_number, a_account_code, a_statement_id)*/ 
 /* go */
 
 
 /* a_bank_recon_item */
-/* create  index a_recon_item_pk on a_bank_recon_item (a_ledger_number, a_period, a_account_code, a_line_item)*/ 
+create  index a_recon_foreign_idx on a_bank_recon_item (a_ledger_number, a_batch_key, a_group_key, a_item_key, a_account_code, a_line_item);
+/* create  index a_recon_item_pk on a_bank_recon_item (a_ledger_number, a_account_code, a_line_item)*/ 
+/* go */
+
+
+/* a_bank_recon_accts */
+/* create  index a_recon_accts_pk on a_bank_recon_accts (a_ledger_number, a_account_code)*/ 
 /* go */
 
 
@@ -1113,6 +1119,18 @@ create  index a_subtrx_cxf_batch_idx on a_subtrx_cashxfer (a_batch_number, a_led
 create  index a_subtrx_cxf_fund_rev1_idx on a_subtrx_cashxfer (a_source_cash_acct, a_fund, a_batch_number, a_journal_number);
 create  index a_subtrx_cxf_fund_rev2_idx on a_subtrx_cashxfer (a_dest_cash_acct, a_fund, a_batch_number, a_journal_number);
 create  index a_subtrx_cxf_journal_idx on a_subtrx_cashxfer (a_journal_number, a_ledger_number, a_batch_number);
+
+
+/* i_association */
+create  index i_assoc_int_idx on i_association (i_assoc_service, i_assoc_type, i_assoc_internal_id, i_assoc_external_id, i_assoc_hist_id);
+/* create  index i_assoc_pk on i_association (i_assoc_service, i_assoc_type, i_assoc_external_id, i_assoc_hist_id)*/ 
+/* go */
+
+
+/* i_acct_association */
+create  index i_acct_assoc_int_idx on i_acct_association (a_ledger_number, i_assoc_service, i_assoc_type, i_assoc_internal_id, i_assoc_external_id, i_assoc_hist_id);
+/* create  index i_acct_assoc_pk on i_acct_association (a_ledger_number, i_assoc_service, i_assoc_type, i_assoc_external_id, i_assoc_hist_id)*/ 
+/* go */
 
 
 /* i_eg_gift_import */

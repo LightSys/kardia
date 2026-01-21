@@ -846,6 +846,10 @@ alter table a_bank_recon_item
 	drop primary key;
 
 
+alter table a_bank_recon_accts
+	drop primary key;
+
+
 alter table a_dimension
 	drop primary key;
 
@@ -1180,6 +1184,14 @@ alter table a_subtrx_cashxfer
 
 alter table a_subtrx_cashxfer
 	drop index a_subtrx_cxf_fund_clustered_idx;
+
+
+alter table i_association
+	drop primary key;
+
+
+alter table i_acct_association
+	drop primary key;
 
 
 alter table i_eg_gift_import
