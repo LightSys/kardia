@@ -15,4 +15,5 @@
 export PATH=$PATH:/usr/local/sbin:/usr/local/bin
 
 # TODO: Greg - We need to update this cron to call the new file.
+# I use: csv select * from /apps/kardia/modules/base/dups/update.qy
 /usr/local/bin/test_obj -c /usr/local/etc/centrallix.conf -u kardia -p $(cat /usr/local/etc/centrallix/kardia-auth) -q -C 'ls /apps/kardia/modules/base/update_duplicates.qy' 2>/dev/null >/dev/null
