@@ -12,7 +12,7 @@ update_gift_import "system/query"
 
 		" +
 		isnull((select
-			sum('insert into /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows select a_ledger_number = ' + quote(:l:a_ledger_number) + ',\n' + 'i_eg_postprocess = (select :pp:mods from collection postproc pp where :pp:ledger = ' + quote(:l:a_ledger_number) + '),\n' + :p:sql + ' ' + :p:upsert_sql + '\n;\n' + isnull(:p:postprocess_sql + '\n;\n', ''))
+			sum('declare object postprocess; select :postprocess:value = (select :pp:mods from collection postproc pp where :pp:ledger = ' + quote(:l:a_ledger_number) + '); insert into /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows select a_ledger_number = ' + quote(:l:a_ledger_number) + ',\n' + 'i_eg_postprocess = :postprocess:value,\n' + :p:sql + ' ' + :p:upsert_sql + '\n;\n' + isnull(:p:postprocess_sql + '\n;\n', ''))
 		from
 			/apps/kardia/data/Kardia_DB/a_ledger/rows l,
 			object wildcard '/apps/kardia/modules/*/plugin_rcpt_giftimport_*.cmp' p,
