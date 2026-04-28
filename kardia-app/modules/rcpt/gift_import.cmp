@@ -550,14 +550,14 @@ gift_import "widget/component-decl"
 							    set_surname = runclient(condition(charindex(' ',:gift_import_osrc:i_eg_donor_name) > 0, substring(:gift_import_osrc:i_eg_donor_name, char_length(:gift_import_osrc:i_eg_donor_name) - charindex(' ',reverse(:gift_import_osrc:i_eg_donor_name)) + 2), null));
 							    set_given_name = runclient(condition(charindex(' ',:gift_import_osrc:i_eg_donor_name) > 0, substring(:gift_import_osrc:i_eg_donor_name, 1, char_length(:gift_import_osrc:i_eg_donor_name) - charindex(' ',reverse(:gift_import_osrc:i_eg_donor_name))), :gift_import_osrc:i_eg_donor_name));
 							    set_salutation = runclient(condition(charindex(' ',:gift_import_osrc:i_eg_donor_name) > 0, substring(:gift_import_osrc:i_eg_donor_name, 1, char_length(:gift_import_osrc:i_eg_donor_name) - charindex(' ',reverse(:gift_import_osrc:i_eg_donor_name))), :gift_import_osrc:i_eg_donor_name));
-							    set_addr1 = runclient(:gift_import_osrc:i_eg_donor_addr1);
-							    set_addr2 = runclient(:gift_import_osrc:i_eg_donor_addr2);
-							    set_city = runclient(:gift_import_osrc:i_eg_donor_city);
-							    set_state_province = runclient(:gift_import_osrc:i_eg_donor_state);
-							    set_postal = runclient(:gift_import_osrc:i_eg_donor_postal);
-							    set_country_code = runclient(:gift_import_osrc:import_country_code);
-							    set_phone = runclient(:gift_import_osrc:i_eg_donor_phone);
-							    set_email = runclient(:gift_import_osrc:i_eg_donor_email);
+							    set_addr1 = runclient(isnull(:gift_import_osrc:i_eg_donor_addr1, ""));
+							    set_addr2 = runclient(isnull(:gift_import_osrc:i_eg_donor_addr2, ""));
+							    set_city = runclient(isnull(:gift_import_osrc:i_eg_donor_city, ""));
+							    set_state_province = runclient(isnull(:gift_import_osrc:i_eg_donor_state, ""));
+							    set_postal = runclient(isnull(:gift_import_osrc:i_eg_donor_postal, ""));
+							    set_country_code = runclient(isnull(:gift_import_osrc:import_country_code, ""));
+							    set_phone = runclient(isnull(:gift_import_osrc:i_eg_donor_phone, ""));
+							    set_email = runclient(isnull(:gift_import_osrc:i_eg_donor_email, ""));
 							    }
 							}
 						    }
@@ -2425,4 +2425,3 @@ gift_import "widget/component-decl"
 	    }
 	}
     }
-
