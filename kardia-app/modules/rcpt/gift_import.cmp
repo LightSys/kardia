@@ -326,6 +326,9 @@ gift_import "widget/component-decl"
 					:eg:i_eg_desig_notes,
 					:eg:i_eg_donor_email,
 					:eg:i_eg_donor_phone,
+					:eg:i_eg_donor_phone_line,
+					:eg:i_eg_donor_phone_area,
+					:eg:i_eg_donor_phone_country,
 					:eg:a_ledger_number,
 					:eg:i_eg_gift_uuid,
 					:eg:i_eg_trx_uuid,
@@ -562,7 +565,9 @@ gift_import "widget/component-decl"
 							    set_state_province = runclient(isnull(:gift_import_osrc:i_eg_donor_state, ""));
 							    set_postal = runclient(isnull(:gift_import_osrc:i_eg_donor_postal, ""));
 							    set_country_code = runclient(isnull(:gift_import_osrc:import_country_code, ""));
-							    set_phone = runclient(isnull(:gift_import_osrc:i_eg_donor_phone, ""));
+							    set_phone = runclient(isnull(:gift_import_osrc:i_eg_donor_phone_line, isnull(:gift_import_osrc:i_eg_donor_phone, "")));
+							    set_phone_area_city = runclient(isnull(:gift_import_osrc:i_eg_donor_phone_area, ""));
+							    set_phone_area_country = runclient(isnull(:gift_import_osrc:i_eg_donor_phone_country, ""));
 							    set_email = runclient(isnull(:gift_import_osrc:i_eg_donor_email, ""));
 							    }
 							}
