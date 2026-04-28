@@ -17,8 +17,11 @@ new_partner "widget/page"
     set_given_name "widget/parameter" { type=string; }
     set_surname "widget/parameter" { type=string; }
     set_salutation "widget/parameter" { type=string; }
+    set_title "widget/parameter" { type=string; }
+    set_suffix "widget/parameter" { type=string; }
     set_addr1 "widget/parameter" { type=string; }
     set_addr2 "widget/parameter" { type=string; }
+    set_addr3 "widget/parameter" { type=string; }
     set_city "widget/parameter" { type=string; }
     set_state_province "widget/parameter" { type=string; }
     set_postal "widget/parameter" { type=string; }
@@ -42,8 +45,11 @@ new_partner "widget/page"
 	set_given_name=runserver(:this:set_given_name);
 	set_surname=runserver(:this:set_surname);
 	set_salutation=runserver(:this:set_salutation);
+	set_title=runserver(:this:set_title);
+	set_suffix=runserver(:this:set_suffix);
 	set_addr1=runserver(:this:set_addr1);
 	set_addr2=runserver(:this:set_addr2);
+	set_addr3=runserver(:this:set_addr3);
 	set_city=runserver(:this:set_city);
 	set_state_province=runserver(:this:set_state_province);
 	set_postal=runserver(:this:set_postal);

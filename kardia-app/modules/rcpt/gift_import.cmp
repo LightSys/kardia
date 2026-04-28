@@ -310,8 +310,11 @@ gift_import "widget/component-decl"
 					p_country_name = upper(:co:p_country_name),
 					:af:p_format,
 					:eg:i_eg_donor_name,
+					:eg:i_eg_donor_prefix,
+					:eg:i_eg_donor_suffix,
 					:eg:i_eg_donor_addr1,
 					:eg:i_eg_donor_addr2,
+					:eg:i_eg_donor_addr3,
 					:eg:i_eg_donor_city,
 					:eg:i_eg_donor_state,
 					:eg:i_eg_donor_postal,
@@ -550,8 +553,11 @@ gift_import "widget/component-decl"
 							    set_surname = runclient(condition(charindex(' ',:gift_import_osrc:i_eg_donor_name) > 0, substring(:gift_import_osrc:i_eg_donor_name, char_length(:gift_import_osrc:i_eg_donor_name) - charindex(' ',reverse(:gift_import_osrc:i_eg_donor_name)) + 2), null));
 							    set_given_name = runclient(condition(charindex(' ',:gift_import_osrc:i_eg_donor_name) > 0, substring(:gift_import_osrc:i_eg_donor_name, 1, char_length(:gift_import_osrc:i_eg_donor_name) - charindex(' ',reverse(:gift_import_osrc:i_eg_donor_name))), :gift_import_osrc:i_eg_donor_name));
 							    set_salutation = runclient(condition(charindex(' ',:gift_import_osrc:i_eg_donor_name) > 0, substring(:gift_import_osrc:i_eg_donor_name, 1, char_length(:gift_import_osrc:i_eg_donor_name) - charindex(' ',reverse(:gift_import_osrc:i_eg_donor_name))), :gift_import_osrc:i_eg_donor_name));
+							    set_title = runclient(isnull(:gift_import_osrc:i_eg_donor_prefix, ""));
+							    set_suffix = runclient(isnull(:gift_import_osrc:i_eg_donor_suffix, ""));
 							    set_addr1 = runclient(isnull(:gift_import_osrc:i_eg_donor_addr1, ""));
 							    set_addr2 = runclient(isnull(:gift_import_osrc:i_eg_donor_addr2, ""));
+							    set_addr3 = runclient(isnull(:gift_import_osrc:i_eg_donor_addr3, ""));
 							    set_city = runclient(isnull(:gift_import_osrc:i_eg_donor_city, ""));
 							    set_state_province = runclient(isnull(:gift_import_osrc:i_eg_donor_state, ""));
 							    set_postal = runclient(isnull(:gift_import_osrc:i_eg_donor_postal, ""));

@@ -26,8 +26,11 @@ new_partner "widget/component-decl"
     set_given_name "widget/parameter" { type=string; deploy_to_client=yes; }
     set_surname "widget/parameter" { type=string; deploy_to_client=yes; }
     set_salutation "widget/parameter" { type=string; deploy_to_client=yes; }
+    set_title "widget/parameter" { type=string; deploy_to_client=yes; }
+    set_suffix "widget/parameter" { type=string; deploy_to_client=yes; }
     set_addr1 "widget/parameter" { type=string; deploy_to_client=yes; }
     set_addr2 "widget/parameter" { type=string; deploy_to_client=yes; }
+    set_addr3 "widget/parameter" { type=string; deploy_to_client=yes; }
     set_city "widget/parameter" { type=string; deploy_to_client=yes; }
     set_state_province "widget/parameter" { type=string; deploy_to_client=yes; }
     set_postal "widget/parameter" { type=string; deploy_to_client=yes; }
@@ -47,8 +50,11 @@ new_partner "widget/component-decl"
     set_surname_cn "widget/connector" { event=LoadComplete; event_condition=runclient(:new_partner:set_surname is not null); target=new_partner_form; action=SetValue; Field=runclient("p_surname"); Value=runclient(:new_partner:set_surname); }
     set_salutation_cn "widget/connector" { event=LoadComplete; event_condition=runclient(:new_partner:set_salutation is not null); target=new_partner_form; action=SetValue; Field=runclient("p_preferred_name"); Value=runclient(:new_partner:set_salutation); }
     set_comment_cn "widget/connector" { event=LoadComplete; event_condition=runclient(:new_partner:set_comment is not null); target=new_partner_form; action=SetValue; Field=runclient("p_comments"); Value=runclient(:new_partner:set_comment); }
+    set_title_cn "widget/connector" { event=LoadComplete; event_condition=runclient(:new_partner:set_title is not null); target=new_partner_form; action=SetValue; Field=runclient("p_title"); Value=runclient(:new_partner:set_title); }
+    set_suffix_cn "widget/connector" { event=LoadComplete; event_condition=runclient(:new_partner:set_suffix is not null); target=new_partner_form; action=SetValue; Field=runclient("p_suffix"); Value=runclient(:new_partner:set_suffix); }
     set_addr1_cn "widget/connector" { event=LoadComplete; event_condition=runclient(:new_partner:set_addr1 is not null); target=new_location_form; action=SetValue; Field=runclient("p_address_1"); Value=runclient(:new_partner:set_addr1); }
     set_addr2_cn "widget/connector" { event=LoadComplete; event_condition=runclient(:new_partner:set_addr2 is not null); target=new_location_form; action=SetValue; Field=runclient("p_address_2"); Value=runclient(:new_partner:set_addr2); }
+    set_addr3_cn "widget/connector" { event=LoadComplete; event_condition=runclient(:new_partner:set_addr3 is not null); target=new_location_form; action=SetValue; Field=runclient("p_address_3"); Value=runclient(:new_partner:set_addr3); }
     set_city_cn "widget/connector" { event=LoadComplete; event_condition=runclient(:new_partner:set_city is not null); target=new_location_form; action=SetValue; Field=runclient("p_city"); Value=runclient(:new_partner:set_city); }
     set_state_province_cn "widget/connector" { event=LoadComplete; event_condition=runclient(:new_partner:set_state_province is not null); target=new_location_form; action=SetValue; Field=runclient("p_state_province"); Value=runclient(:new_partner:set_state_province); }
     set_postal_cn "widget/connector" { event=LoadComplete; event_condition=runclient(:new_partner:set_postal is not null); target=new_location_form; action=SetValue; Field=runclient("p_postal_code"); Value=runclient(:new_partner:set_postal); }
@@ -780,4 +786,3 @@ new_partner "widget/component-decl"
 	    }
 	}
     }
-
