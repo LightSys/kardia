@@ -164,6 +164,35 @@ myprojects "widget/component-decl"
 	refresh_on_endquery "widget/connector" { event=EndQuery; target=myprojects; action=TriggerEvent; EventName=runclient('RefreshTaskData'); }
 	}
 
+    // Move/modify a task outside of the context of a task editing form
+    modtask_osrc "widget/osrc"
+	{
+	mt_task "widget/parameter" { param_name=task; type=integer; }
+	mt_percent "widget/parameter" { param_name=percent; type=integer; }
+	mt_state "widget/parameter" { param_name=state; type=integer; }
+
+	sql = "	update
+		    /apps/kardia/data/Kardia_DB/t_task/rows
+		set
+		    :t_task_state = isnull(:parameters:state, :t_task_state),
+		    :t_task_percent = isnull(:parameters:percent, :t_task_percent)
+		where
+		    :t_task_id = :parameters:task
+		;
+
+		select
+		    *
+		from
+		    /apps/kardia/data/Kardia_DB/t_task/rows
+		where
+		    :t_task_id = :parameters:task
+		";
+	autoquery=never;
+
+	on_mt_task_mod "widget/connector" { event=EndQuery; target=make_history_osrc; action=QueryParam; t_task_id=runclient(:modtask_osrc:t_task_id); task_op=runclient("M"); }
+	on_mt_task_mod2 "widget/connector" { event=EndQuery; target=sprints_osrc; action=RefreshObject; }
+	}
+
     // Copy tasks from one sprint to another
     copytask_osrc "widget/osrc"
 	{
@@ -514,11 +543,13 @@ myprojects "widget/component-decl"
 		    po_dashboard "widget/parameter" { param_name=dashboard; type=integer; default=runclient(:dashboard:value); }
 		    name "widget/parameter" { type=string; }
 
-		    sql = " declare collection tmp;
+		    sql = runserver("
+			    declare collection tmp;
 		    
 			    insert
 				collection tmp
 			    select
+				:pr:name,
 				:pr:t_project_id,
 				:pr:t_project_label,
 				:pr:s_date_modified,
@@ -546,7 +577,74 @@ myprojects "widget/component-decl"
 				 :parameters:dashboard = 1 or
 				 (select count(1) from /apps/kardia/data/Kardia_DB/t_participant/rows pa, /apps/kardia/data/Kardia_DB/p_staff/rows s where :pa:t_project_id = :pr:t_project_id and :pa:p_partner_key = :s:p_partner_key and :s:p_kardia_login = user_name() and :s:p_is_staff = 1) >= 1) and
 				(:parameters:only_current = 0 or
-				 (:pr:t_project_start <= getdate() and :pr:t_project_end >= getdate()))
+				 (:pr:t_project_start <= getdate() and isnull(:pr:t_project_end, convert(datetime, '2099-01-01 12:00:00')) >= getdate())) and
+				 (:parameters:name is null or :parameters:name = '0' or :parameters:name = convert(string, :pr:t_project_id))
+			    ;
+
+			    -- Which sprint?
+			    update
+				identity collection tmp
+			    set
+				:tmp:sprint = isnull(isnull(
+				    (select
+					:s:t_sprint_id
+				    from
+					/apps/kardia/data/Kardia_DB/t_sprint/rows s,
+					/apps/kardia/data/Kardia_DB/t_sprint_project/rows sp
+				    where
+					(:sp:t_project_id = :tmp:t_project_id) and
+					getdate() >= :s:t_sprint_start and
+					getdate() <= :s:t_sprint_end and
+					:s:t_sprint_start is not null and
+					:s:t_sprint_id = :sp:t_sprint_id
+				    order by
+					:s:t_sprint_start desc)
+				,
+				    (select
+					:s:t_sprint_id
+				    from
+					/apps/kardia/data/Kardia_DB/t_sprint/rows s,
+					/apps/kardia/data/Kardia_DB/t_sprint_project/rows sp
+				    where
+					(:sp:t_project_id = :tmp:t_project_id) and
+					:s:t_sprint_id = :sp:t_sprint_id and
+					:s:t_sprint_start is not null and
+					getdate() >= :s:t_sprint_start
+				    order by
+					:s:t_sprint_start desc)
+				),
+				    (select
+					:s:t_sprint_id
+				    from
+					/apps/kardia/data/Kardia_DB/t_sprint/rows s,
+					/apps/kardia/data/Kardia_DB/t_sprint_project/rows sp
+				    where
+					(:sp:t_project_id = :tmp:t_project_id) and
+					:s:t_sprint_start is not null and
+					:s:t_sprint_id = :sp:t_sprint_id
+				    order by
+					:s:t_sprint_start desc)
+				)
+			    ;
+
+			    update
+				collection tmp
+			    set
+				:tmp:maxcnt = isnull((select max(count(1)) from /apps/kardia/data/Kardia_DB/t_task/rows t where (:t:t_project_id = :tmp:t_project_id) and :t:t_sprint_id = :tmp:sprint group by :t:t_task_state), 0)
+			    ;
+
+			    update
+				collection tmp
+			    set
+				:tmp:oneside = constrain(convert(integer,condition(:tmp:maxcnt = 0, 1, round(sqrt(:tmp:maxcnt) + 0.49))), 2, 7)
+			    ;
+
+			    update
+				collection tmp
+			    set
+				:tmp:width_ratio = 1.0 / :tmp:oneside,
+				:tmp:height_ratio = (5.0 / 8.0) / :tmp:oneside,
+				:tmp:fontsize = 13 - :tmp:oneside
 			    ;
 
 			    select
@@ -556,6 +654,10 @@ myprojects "widget/component-decl"
 				color = 'white',
 				hours = sum(:tmp:hours),
 				lasttask = max(:tmp:lasttask),
+				oneside = 7,
+				width_ratio = (1.0) / 7,
+				height_ratio = (5.0 / 8.0) / 7,
+				fontsize = 13 - 7,
 				t_project_id = 0,
 				t_project_label = 'All Projects',
 				t_project_desc = '',
@@ -569,6 +671,7 @@ myprojects "widget/component-decl"
 				ppl = (select count(1) from /apps/kardia/data/Kardia_DB/t_participant/rows p),
 				spr = (select count(1) from /apps/kardia/data/Kardia_DB/t_sprint_project/rows sp),
 				past_end = 0
+				" + (select sum(", tasks_" + :ts:t_task_state_id + " = (select * from expression('/apps/kardia/modules/task/block_tasklist.qy?project=0&state=" + :ts:t_task_state_id + "')) ") from /apps/kardia/data/Kardia_DB/t_task_state/rows ts) + "
 			    from
 				collection tmp,
 				identity /apps/kardia/data/Kardia_DB/t_project/rows pr
@@ -576,7 +679,7 @@ myprojects "widget/component-decl"
 				:pr:t_project_id = :tmp:t_project_id
 			    having
 				has_endorsement('kardia:sys_admin', 'kardia') and
-				:parameters:name is null and
+				(:parameters:name is null or :parameters:name = '0') and
 				:parameters:dashboard = 0
 			    ;
 
@@ -587,6 +690,10 @@ myprojects "widget/component-decl"
 				:tmp:color,
 				:tmp:hours,
 				:tmp:lasttask,
+				:tmp:width_ratio,
+				:tmp:height_ratio,
+				:tmp:fontsize,
+				:tmp:oneside,
 				:pr:t_project_id,
 				:pr:t_project_label,
 				:pr:t_project_desc,
@@ -601,15 +708,16 @@ myprojects "widget/component-decl"
 				ppl = (select count(1) from /apps/kardia/data/Kardia_DB/t_participant/rows p where :p:t_project_id = :tmp:t_project_id),
 				spr = (select count(1) from /apps/kardia/data/Kardia_DB/t_sprint_project/rows sp where :sp:t_project_id = :tmp:t_project_id),
 				past_end = condition(isnull(:pr:t_project_end, getdate()) < getdate() and (select isnull(max(:s:t_sprint_end), getdate()) from /apps/kardia/data/Kardia_DB/t_sprint/rows s, /apps/kardia/data/Kardia_DB/t_sprint_project/rows sp where :sp:t_project_id = :pr:t_project_id and :s:t_sprint_id = :sp:t_sprint_id) < getdate(), 1, 0)
+				" + (select sum(", tasks_" + :ts:t_task_state_id + " = (select * from expression('/apps/kardia/modules/task/block_tasklist.qy?project=' + :pr:t_project_id + '&state=" + :ts:t_task_state_id + "')) ") from /apps/kardia/data/Kardia_DB/t_task_state/rows ts) + "
 			    from
 				collection tmp,
 				identity /apps/kardia/data/Kardia_DB/t_project/rows pr
 			    where
-				:pr:t_project_id = :tmp:t_project_id and
-				(:parameters:name is null or :pr:name = :parameters:name)
+				:pr:t_project_id =* :tmp:t_project_id and
+				(:parameters:name is null or :tmp:name = :parameters:name)
 			    order by
 				condition(:tmp:lasttask > :tmp:s_date_modified, :tmp:lasttask, :tmp:s_date_modified) desc
-			    ";
+			    ");
 		    autoquery=oneachreveal;
 		    refresh_interval=runserver(:this:refresh);
 
@@ -644,6 +752,30 @@ myprojects "widget/component-decl"
 			    {
 			    sql = "select * from /apps/kardia/data/Kardia_DB/t_task_state/rows order by :t_task_state_sequence asc";
 
+			    on_select_taskitem "widget/connector"
+				{
+				source=proj_table;
+				event=ClickItem;
+				event_condition=runclient(:Column is not null and :Column = 'tasks_' + runserver(:stages:t_task_state_id));
+				target=popover_edit_task;
+				action=Open;
+				t_task_id = runclient(:ItemKey);
+				IsModal = 1;
+				PointAt = one_state_col;
+				}
+
+			    on_drag_taskitem "widget/connector"
+				{
+				source=proj_table;
+				event=DragDropItem;
+				event_condition=runclient(:TargetColumn is not null and :TargetColumn = 'tasks_' + runserver(:stages:t_task_state_id));
+				target=modtask_osrc;
+				action=QueryParam;
+				task = runclient(:ItemKey);
+				state = runclient(substring(:TargetColumn, 7));
+				percent = runclient(condition(substring(:TargetColumn, 7) = runserver( (select :t_task_state_id from /apps/kardia/data/Kardia_DB/t_task_state/rows where :t_task_state_type == 'C' order by :t_task_state_sequence desc limit 1) ), 1, null));
+				}
+
 			    one_state_col "widget/table-column"
 				{
 				title = runserver(:stages:t_task_state_label);
@@ -651,9 +783,22 @@ myprojects "widget/component-decl"
 				style = bold;
 				align = center;
 				textcolor=runclient(condition(:project_osrc:t_project_label is null, 'white', 'black'));
-				type = image;
-				image_maxwidth=runclient(:proj_table:width / runserver(2 + (select count(1) from /apps/kardia/data/Kardia_DB/t_task_state/rows )));
-				value=runclient("/apps/kardia/modules/task/task_cell_svg.rpt?now=" + :project_osrc:rev + "&c=" + :project_osrc:color + "&h=" + :project_osrc:hours + "&project=" + :project_osrc:t_project_id + "&state=" + runserver(:stages:t_task_state_id) + "&image_width=" + (:proj_table:width / runserver(2 + (select count(1) from /apps/kardia/data/Kardia_DB/t_task_state/rows )) - 24));
+				//type = image;
+				//image_maxwidth=runclient(:proj_table:width / runserver(2 + (select count(1) from /apps/kardia/data/Kardia_DB/t_task_state/rows )));
+				//value=runclient("/apps/kardia/modules/task/task_cell_svg.rpt?now=" + :project_osrc:rev + "&c=" + :project_osrc:color + "&h=" + :project_osrc:hours + "&project=" + :project_osrc:t_project_id + "&state=" + runserver(:stages:t_task_state_id) + "&image_width=" + (:proj_table:width / runserver(2 + (select count(1) from /apps/kardia/data/Kardia_DB/t_task_state/rows )) - 24));
+				fieldname = runserver('tasks_' + :stages:t_task_state_id);
+				type = itemlist;
+				item_separator = '|';
+				item_width = runclient((:proj_table:width / runserver(2 + (select count(1) from /apps/kardia/data/Kardia_DB/t_task_state/rows )) - 32) / :project_osrc:oneside - 4 - 2 - 2);
+				item_height = runclient((:proj_table:width / runserver(2 + (select count(1) from /apps/kardia/data/Kardia_DB/t_task_state/rows )) - 32) * :project_osrc:height_ratio);
+				item_spacing = 4;
+				item_bgcolor = runclient(isnull(:project_osrc:t_project_color, "#c0c0c0"));
+				item_border_radius = 4;
+				item_font_size = runclient(isnull(:project_osrc:fontsize, 9));
+				item_border_color = runclient(isnull(:project_osrc:t_project_color, "#c0c0c0"));
+				item_border_width = 2;
+				item_align = left;
+				item_keys = true;
 				}
 			    }
 
@@ -823,7 +968,7 @@ myprojects "widget/component-decl"
 					{
 					sql = " select
 						    :pa:t_role,
-						    :pa:t_skill_ratio,
+						    --:pa:t_skill_ratio,
 						    :pa:s_date_created,
 						    :pa:s_created_by,
 						    :pa:s_date_modified,
@@ -980,8 +1125,8 @@ myprojects "widget/component-decl"
 					limit
 					    1
 					), '/apps/kardia/images/artwork/persona.png'),
-				decdone = condition(:spa:taskhrs == 0, 0.0, :spa:taskdone / :spa:taskhrs),
-				decload = condition(:spa:cap == 0, 0.0, :spa:load / :spa:cap),
+				decdone = condition(:spa:taskhrs == 0, 0.0, :spa:taskdone / nullif(:spa:taskhrs, 0.0)),
+				decload = condition(:spa:cap == 0, 0.0, :spa:load / nullif(:spa:cap, 0.0)),
 				hrs = isnull(:spa:taskhrs, 'null')
 			    from
 				/apps/kardia/data/Kardia_DB/p_staff/rows s,
@@ -1072,7 +1217,7 @@ myprojects "widget/component-decl"
 					    sum( (select isnull(sum(:t:t_task_hours), 0.0) from /apps/kardia/data/Kardia_DB/t_task/rows t, /apps/kardia/data/Kardia_DB/t_task_state/rows ts where :t:t_project_id = :sp:t_project_id and :t:t_sprint_id = :s:t_sprint_id and :ts:t_task_state_id = :t:t_task_state and :ts:t_task_state_type != 'F') ) ),
 					0.0),
 				    workcap = isnull(sum((select isnull(sum(:st:t_time_hours), 0.0) from /apps/kardia/data/Kardia_DB/t_sprint_time/rows st where (:st:t_project_id = :sp:t_project_id or :st:t_project_id is null) and :st:t_sprint_id = :s:t_sprint_id) * (select isnull(sum(:spr:t_skill_ratio), 0.0) from /apps/kardia/data/Kardia_DB/t_sprint_participant/rows spr, /apps/kardia/data/Kardia_DB/t_participant/rows p where :spr:t_project_id = :sp:t_project_id and :spr:t_sprint_id = :s:t_sprint_id and :p:p_partner_key = :spr:p_partner_key and :p:t_project_id = :spr:t_project_id)), 0.0),
-				    workhrs = isnull(sum((select isnull(sum(:st:t_time_hours), 0.0) from /apps/kardia/data/Kardia_DB/t_sprint_time/rows st where (:st:t_project_id = :sp:t_project_id or :st:t_project_id is null) and :st:t_sprint_id = :s:t_sprint_id)), 0.0) / count(:sp:t_project_id)
+				    workhrs = isnull(sum((select isnull(sum(:st:t_time_hours), 0.0) from /apps/kardia/data/Kardia_DB/t_sprint_time/rows st where (:st:t_project_id = :sp:t_project_id or :st:t_project_id is null) and :st:t_sprint_id = :s:t_sprint_id)), 0.0) / nullif(count(:sp:t_project_id), 0)
 				from
 				    identity /apps/kardia/data/Kardia_DB/t_sprint/rows s,
 				    /apps/kardia/data/Kardia_DB/t_sprint_project/rows sp
@@ -1083,7 +1228,7 @@ myprojects "widget/component-decl"
 				    :s:t_sprint_start desc,
 				    :s:t_sprint_id
 				order by
-				    :s:t_sprint_start desc
+				    isnull(:s:t_sprint_start, convert(datetime, '1970-01-01 00:00:00')) desc
 				having
 				    (:parameters:t_project_id = 0 or :projcnt = 1) and
 				    (:activecnt >= 1 or :t_sprint_end is null or :t_sprint_end > getdate())
@@ -1507,8 +1652,7 @@ myprojects "widget/component-decl"
 				    pctdone = '' + convert(integer, round(:t_task_percent * 100, 0)) + '%25',
 				    stat = (select :ts:t_task_state_label from /apps/kardia/data/Kardia_DB/t_task_state/rows ts where :ts:t_task_state_id = :t:t_task_state),
 				    assignees = isnull((select sum(substring(:p:p_given_name, 1, 1) + substring(:p:p_surname, 1, 1) + ', ') - ', ' from /apps/kardia/data/Kardia_DB/p_partner/rows p, /apps/kardia/data/Kardia_DB/t_assignee/rows a where :a:t_task_id = :t:t_task_id and :p:p_partner_key = :a:p_partner_key), ''),
-				    assigned_me = (select count(1) from /apps/kardia/data/Kardia_DB/t_assignee/rows a, /apps/kardia/data/Kardia_DB/p_staff/rows s where :a:t_task_id = :t:t_task_id and :a:p_partner_key = :s:p_partner_key and :s:p_kardia_login = user_name()),
-				    me = (select :p_partner_key from /apps/kardia/data/Kardia_DB/p_staff/rows s where :s:p_kardia_login = user_name())
+				    assigned_me = (select count(1) from /apps/kardia/data/Kardia_DB/t_assignee/rows a, /apps/kardia/data/Kardia_DB/p_staff/rows s where :a:t_task_id = :t:t_task_id and :a:p_partner_key = :s:p_partner_key and :s:p_kardia_login = user_name())
 				from
 				    /apps/kardia/data/Kardia_DB/t_task/rows t
 				where
@@ -1653,126 +1797,24 @@ myprojects "widget/component-decl"
 					tasks_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
 					}
 
-				    assignee_vbox "widget/vbox"
+				    assignee_pane "widget/pane"
 					{
 					width=380;
-					spacing=10;
+					fl_width=10;
+					style=flat;
+					bgcolor=null;
 
-					assignee_osrc "widget/osrc"
+					assignee_cmp "widget/component"
 					    {
-					    sql = "	select
-							*,
-							nametxt = :p:p_given_name + ' ' + :p:p_surname
-						    from
-							identity /apps/kardia/data/Kardia_DB/t_assignee/rows ta,
-							/apps/kardia/data/Kardia_DB/p_partner/rows p
-						    where
-							:p:p_partner_key = :ta:p_partner_key
-						    ";
-					    baseobj="/apps/kardia/data/Kardia_DB/t_assignee/rows";
+					    width=380;
+					    height=176;
+					    fl_width=10;
+					    path="/apps/kardia/modules/task/assignees.cmp";
+					    enabled = runclient(:task_edit_form:form_mode == 'View');
 
-					    onAssigneeCreate "widget/connector" { event=Created; target=tasks_osrc; action=RefreshObject; }
-					    onAssigneeCreate2 "widget/connector" { event=Created; target=part_osrc; action=Refresh; }
-					    onAssigneeCreate3 "widget/connector" { event=Created; target=spart_osrc; action=Refresh; }
-
-					    assignee_task_link "widget/rule"
-						{
-						ruletype=osrc_relationship;
-						target=tasks_osrc;
-						key_objname=ta;
-						key_1=t_task_id;
-						target_key_1=t_task_id;
-						}
-
-					    asn_table "widget/table"
-						{
-						hdr_background = null;
-						hdr_bgcolor = "#444444";
-						height=118;
-						rowheight=20;
-						nodata_message="No task assignees yet.";
-
-						asn_detail "widget/table-row-detail"
-						    {
-						    width=260;
-						    height=34;
-						    
-						    asn_ctls_hbox "widget/hbox"
-							{
-							x=10; y=10;
-							width=240;
-							height=24;
-							spacing=10;
-							align=center;
-
-							assignee_form "widget/form"
-							    {
-							    onAssigneeDelete "widget/connector" { event=DataDeleted; target=tasks_osrc; action=RefreshObject; }
-							    onAssigneeDelete2 "widget/connector" { event=DataDeleted; target=part_osrc; action=Refresh; }
-							    onAssigneeDelete3 "widget/connector" { event=DataDeleted; target=spart_osrc; action=Refresh; }
-
-							    rm_asn_btn "widget/textbutton"
-								{
-								height=24;
-								width=170;
-								fl_width=0;
-								text="Remove Assignee";
-								enabled=runclient(not :assignee_form:is_discardable);
-
-								on_rm_asn "widget/connector" { event=Click; target=assignee_form; action=Delete; }
-								}
-							    }
-							}
-						    }
-
-						t_taname "widget/table-column" { title="Task Assignees"; fieldname=nametxt; style=bold; }
-						}
-					    }
-
-					newassign_hbox "widget/hbox"
-					    {
-					    height=24;
-					    align=center;
-					    spacing=10;
-
-					    newassign_btn "widget/textbutton"
-						{
-						height=24;
-						width=170;
-						fl_width=0;
-						text="Add an Assignee...";
-						enabled=runclient(:task_edit_form:form_mode == 'View' and not :assignee_form:is_discardable);
-
-						on_newassign "widget/connector"
-						    {
-						    event=Click;
-						    target=add_assign;
-						    action=Open;
-						    IsModal=1;
-						    }
-						}
-
-					    addme_btn "widget/textbutton"
-						{
-						height=24;
-						width=170;
-						fl_width=0;
-						text="Assign to Me";
-						enabled=runclient(:tasks_osrc:assigned_me == 0 and :task_edit_form:form_mode == 'View' and not :assignee_form:is_discardable);
-
-						on_addme "widget/connector"
-						    {
-						    event=Click;
-						    target=assignee_osrc;
-						    action=Create;
-						    t_task_id=runclient(:tasks_osrc:t_task_id);
-						    p_partner_key=runclient(:tasks_osrc:me);
-						    s_date_created=runclient(getdate());
-						    s_created_by=runclient(user_name());
-						    s_date_modified=runclient(getdate());
-						    s_modified_by=runclient(user_name());
-						    }
-						}
+					    onAssigneeUpdate "widget/connector" { event=Updated; target=tasks_osrc; action=RefreshObject; }
+					    onAssigneeUpdate2 "widget/connector" { event=Updated; target=part_osrc; action=Refresh; }
+					    onAssigneeUpdate3 "widget/connector" { event=Updated; target=spart_osrc; action=Refresh; }
 					    }
 					}
 				    }
@@ -2216,88 +2258,6 @@ myprojects "widget/component-decl"
 	    }
 	}
 
-    // Add task assignee popover window
-    add_assign "widget/childwindow"
-	{
-	width=400;
-	height=125;
-	x=300;
-	y=327;
-
-	load_a_dd_on_open "widget/connector"
-	    {
-	    event=Open;
-	    target=add_assign_dd;
-	    action=SetItems;
-	    SQL=runclient(" select
-				label = :p:p_given_name + ' ' + :p:p_surname,
-				value = :p:p_partner_key,
-				selected = 0
-			    from
-				/apps/kardia/data/Kardia_DB/t_sprint_participant/rows sp,
-				/apps/kardia/data/Kardia_DB/p_partner/rows p
-			    where
-				:p:p_partner_key = :sp:p_partner_key and
-				:sp:t_project_id = " + :project_osrc:t_project_id + " and
-				:sp:t_sprint_id = " + :sprints_osrc:t_sprint_id
-			    );
-	    }
-
-	add_assign_vbox "widget/vbox"
-	    {
-	    x=10; y=10;
-	    width=378;
-	    height=103;
-	    spacing=20;
-
-	    add_assign_title "widget/label" { height=16; font_size=16; style=bold; align=center; text="Add Task Assignee"; fgcolor=black; }
-
-	    add_assign_dd "widget/dropdown"
-		{
-		width=200;
-		numdisplay=12;
-		mode=dynamic_server;
-		sql = " select label='', value='' where 0 = 1";
-		}
-
-	    add_assign_actions_hbox "widget/hbox"
-		{
-		height=24;
-		align=center;
-		spacing=10;
-
-		add_assign_ok "widget/textbutton"
-		    {
-		    width=150;
-		    enabled=runclient(:add_assign_dd:value is not null);
-		    text=runclient(isnull('Add Assignee', '-'));
-
-		    on_aa_ok_1 "widget/connector" { event=Click; target=add_assign; action=Close; }
-		    on_aa_ok_2 "widget/connector"
-			{
-			event=Click;
-			target=assignee_osrc;
-			action=Create;
-			t_task_id=runclient(:tasks_osrc:t_task_id);
-			p_partner_key=runclient(:add_assign_dd:value);
-			s_date_created=runclient(getdate());
-			s_created_by=runclient(user_name());
-			s_date_modified=runclient(getdate());
-			s_modified_by=runclient(user_name());
-			}
-		    }
-
-		add_assign_cancel "widget/textbutton"
-		    {
-		    width=150;
-		    text="Cancel";
-
-		    on_aa_cancel "widget/connector" { event=Click; target=add_assign; action=Close; }
-		    }
-		}
-	    }
-	}
-
     // Add sprint participant popover window
     add_spart "widget/childwindow"
 	{
@@ -2483,4 +2443,142 @@ myprojects "widget/component-decl"
 		}
 	    }
 	}
+
+    // Quick Task Edit popover window
+    popover_edit_task "widget/childwindow"
+	{
+	width=500;
+	height=396;
+	x=250;
+	y=93;
+	widget_template="/apps/kardia/modules/task/tasks-popover.tpl";
+
+	query_on_open_task "widget/connector" { event=Open; target=edit_task_osrc; action=QueryParam; t_task_id=runclient(:t_task_id); }
+
+	edit_task_osrc "widget/osrc"
+	    {
+	    sql = " select
+			*
+		    from
+			/apps/kardia/data/Kardia_DB/t_task/rows
+		    ";
+	    autoquery=never;
+
+	    edit_on_endquery "widget/connector" { event=EndQuery; target=edit_task_form; action=Edit; event_delay=0.1; }
+	    on_task_mod "widget/connector" { event=Modified; target=make_history_osrc; action=QueryParam; t_task_id=runclient(:edit_task_osrc:t_task_id); task_op=runclient("M"); }
+	    on_task_mod2 "widget/connector" { event=Modified; target=sprints_osrc; action=RefreshObject; }
+	    on_task_mod3 "widget/connector" { event=Modified; target=tasks_osrc; action=Refresh; }
+
+	    edit_task_vbox "widget/vbox"
+		{
+		x=10; y=10;
+		width=468;
+		height=358;
+		spacing=10;
+
+		edit_task_form "widget/form"
+		    {
+		    on_et_saved "widget/connector" { event=DataSaved; target=popover_edit_task; action=Close; event_delay=0.15; }
+		    on_et_discarded "widget/connector" { event=Discard; target=popover_edit_task; action=Close; event_delay=0.15; }
+		    //edit_task_title "widget/label" { height=16; font_size=16; style=bold; align=center; value=runclient('Task: ' + :edit_task_osrc:t_task_label); fgcolor=black; }
+		    on_task_save "widget/connector" { event=DataSaved; target=make_history_osrc; action=QueryParam; t_task_id=runclient(:edit_task_osrc:t_task_id); task_op=runclient("S"); }
+		    on_task_save2 "widget/connector" { event=DataSaved; target=sprints_osrc; action=RefreshObject; }
+		    on_task_save3 "widget/connector" { event=DataSaved; target=tasks_osrc; action=Refresh; }
+
+		    //edit_task_sep1 "widget/autolayoutspacer" { height=1; }
+
+		    edit_task_label_pane "widget/component"
+			{
+			height=20;
+			path="/apps/kardia/modules/task/label_pane_small.cmp";
+			text=runclient('Task Settings for ' + :edit_task_osrc:t_task_label + ':');
+			}
+
+		    f_et_taskname "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; text="Task Name:"; field=t_task_label; }
+		    f_et_taskdesc "widget/component" { height=54; ctl_type=textarea; path="/sys/cmp/smart_field.cmp"; text="Description:"; field=t_task_desc; }
+
+		    edit_task_hbox "widget/hbox"
+			{
+			height=20;
+			spacing=10;
+
+			f_et_taskhours "widget/component" { width=154; path="/sys/cmp/smart_field.cmp"; text="# Hours:"; field=t_task_hours; feth_hints "widget/hints" { default=1; } }
+			f_et_taskpercent "widget/component" { width=130; label_width=70; path="/sys/cmp/smart_field.cmp"; text="% Done:"; field=t_task_percent; ctl_type=dropdown; sql="select label='' + (convert(integer,:name) * 10) + '%', value=convert(string, abs(round(convert(double,:name) / 10,1))) from /apps/kardia/data/Months.csv/rows limit 11"; numdisplay=12; fetp_hints "widget/hints" { default='0.0'; } } 
+			f_et_taskstatus "widget/component" { width=164; label_width=64; path="/sys/cmp/smart_field.cmp"; text="Status:"; field=t_task_state; ctl_type=dropdown; sql="select label=:t_task_state_label, value=:t_task_state_id from /apps/kardia/data/Kardia_DB/t_task_state/rows order by :t_task_state_sequence"; numdisplay=8; fets_hints "widget/hints" { default=runserver( (select :t_task_state_id from /apps/kardia/data/Kardia_DB/t_task_state/rows where :t_task_state_type != 'F' order by :t_task_state_sequence asc limit 1)); } }
+			}
+
+
+
+		    assign_sep "widget/autolayoutspacer" { height=1; }
+
+		    // assignees
+		    eassignee_pane "widget/pane"
+			{
+			height=164;
+			fl_width=10;
+			style=flat;
+			bgcolor=null;
+
+			eassignee_cmp "widget/component"
+			    {
+			    width=468;
+			    height=176;
+			    fl_width=10;
+			    path="/apps/kardia/modules/task/assignees.cmp";
+			    enabled = runclient(:edit_task_form:form_mode == 'View');
+
+			    onAssigneeUpdateE "widget/connector" { event=Updated; target=tasks_osrc; action=RefreshObject; }
+			    onAssigneeUpdateE2 "widget/connector" { event=Updated; target=part_osrc; action=Refresh; }
+			    onAssigneeUpdateE3 "widget/connector" { event=Updated; target=spart_osrc; action=Refresh; }
+			    }
+			}
+
+		    edit_task_sep "widget/autolayoutspacer" { height=1; }
+
+		    edit_task_ctls_hbox "widget/hbox"
+			{
+			height=24;
+			align=center;
+			spacing=10;
+
+			edit_task_save "widget/textbutton"
+			    {
+			    height=24;
+			    width=130;
+			    fl_width=0;
+			    text="Save";
+			    enabled=runclient(:edit_task_form:is_savable);
+			    on_edit_task_save_1 "widget/connector" { event=Click; target=edit_task_form; action=Save; }
+			    }
+			edit_task_cancel "widget/textbutton"
+			    {
+			    height=24;
+			    width=130;
+			    fl_width=0;
+			    text=runclient(condition(:edit_task_form:is_savable, "Cancel", "Close"));
+			    on_edit_task_cancel_1 "widget/connector" { event=Click; target=edit_task_form; action=Discard; }
+			    }
+			edit_task_markdone "widget/textbutton"
+			    {
+			    height=24;
+			    width=130;
+			    fl_width=0;
+			    text="Mark as Done!";
+			    enabled=runclient(not :edit_task_form:is_savable);
+
+			    on_edit_task_markdone_1 "widget/connector"
+				{
+				event=Click;
+				target=edit_task_osrc;
+				action=Modify;
+				t_task_percent=runclient("1.0");
+				t_task_state=runclient(runserver( (select :t_task_state_id from /apps/kardia/data/Kardia_DB/t_task_state/rows where :t_task_state_type == 'C' order by :t_task_state_sequence desc limit 1) ));
+				}
+			    }
+			}
+		    }
+		}
+	    }
+	}
     }
+

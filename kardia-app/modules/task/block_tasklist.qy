@@ -1,0 +1,80 @@
+$Version=2$
+block_tasklist "system/query"
+    {
+    // Created by:	Greg Beeley
+    // Last change:	02/09/2026
+
+    // Data controls
+    project "query/parameter" { type=integer; default=0; }
+    sprint "query/parameter" { type=integer; }
+    state "query/parameter" { type=integer; }
+
+    sql = " declare object block;
+
+	    -- Which sprint?
+	    select
+		:block:sprint = :s:t_sprint_id,
+		:block:sprintname = :s:t_sprint_label
+	    from
+		/apps/kardia/data/Kardia_DB/t_sprint/rows s
+	    where
+		:s:t_sprint_id = :parameters:sprint
+	    ;
+	    select
+		:block:sprint = isnull(:block:sprint, :s:t_sprint_id),
+		:block:sprintname = isnull(:block:sprintname, :s:t_sprint_label)
+	    from
+		/apps/kardia/data/Kardia_DB/t_sprint/rows s,
+		/apps/kardia/data/Kardia_DB/t_sprint_project/rows sp
+	    where
+		(:sp:t_project_id = :parameters:project or :parameters:project = 0) and
+		getdate() >= :s:t_sprint_start and
+		getdate() <= :s:t_sprint_end and
+		:s:t_sprint_start is not null and
+		:s:t_sprint_id = :sp:t_sprint_id
+	    order by
+		:s:t_sprint_start desc
+	    limit
+		1
+	    ;
+
+	    -- Did not find one?
+	    select
+		:block:sprint = isnull(:block:sprint, :s:t_sprint_id),
+		:block:sprintname = isnull(:block:sprintname, :s:t_sprint_label)
+	    from
+		/apps/kardia/data/Kardia_DB/t_sprint/rows s,
+		/apps/kardia/data/Kardia_DB/t_sprint_project/rows sp
+	    where
+		(:sp:t_project_id = :parameters:project or :parameters:project = 0) and
+		:s:t_sprint_id = :sp:t_sprint_id and
+		:s:t_sprint_start is not null
+	    order by
+		:s:t_sprint_start desc
+	    limit
+		1
+	    ;
+
+	    select
+		txt = sum('' + :t1:t_task_id + '|' + escape(
+			--isnull('' + :t1:t_task_hours + 'h ', '')
+			isnull('' + convert(integer, :t1:t_task_percent * 100) + '% ', '0% ')
+			+ isnull((select sum(substring(:pt:p_given_name, 1, 1) + substring(:pt:p_surname, 1, 1) + ',') - ',' from /apps/kardia/data/Kardia_DB/p_partner/rows pt, /apps/kardia/data/Kardia_DB/t_assignee/rows a where :a:t_task_id = :t1:t_task_id and :pt:p_partner_key = :a:p_partner_key), '')
+			+ '\n'
+			+ isnull(:t1:t_task_label, '') + '\n'
+			+ isnull(:t1:t_task_desc, '')
+		    , '|') + '|') - '|'
+		--:p:t_project_color,
+		--seq = dense_rank(:t1:t_task_id) - 1,
+	    from
+		identity /apps/kardia/data/Kardia_DB/t_task/rows t1,
+		/apps/kardia/data/Kardia_DB/t_project/rows p
+	    where
+		:p:t_project_id = :t1:t_project_id and
+		(:t1:t_project_id = :parameters:project or :parameters:project = 0) and
+		:t1:t_sprint_id = :block:sprint and
+		:t1:t_task_state = :parameters:state
+	    order by
+		:t1:t_task_id asc
+	    ";
+    }
