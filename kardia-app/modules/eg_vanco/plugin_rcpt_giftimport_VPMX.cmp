@@ -79,7 +79,7 @@ plugin_rcpt_giftimport_EGS "widget/component-decl"
 			:i_eg_gift_amount = :p:i_eg_gift_amount,
 			:i_eg_net_amount = :p:i_eg_net_amount,
 			:i_eg_desig_notes = :p:i_eg_desig_notes,
-			:i_eg_postprocess = :postprocess:value,
+			:i_eg_postprocess = :postproc_str:value,
 			:i_eg_status = :p:i_eg_status,
 			:i_eg_returned_status = :p:i_eg_returned_status,
 			:i_eg_gift_settlement_date = :p:i_eg_gift_settlement_date,
