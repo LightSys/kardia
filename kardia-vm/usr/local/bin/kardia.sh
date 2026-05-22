@@ -3243,11 +3243,11 @@ function writeCheckScannerConfig
 	CKR_HOST=0.0.0.0
     fi
     if [ "$CKR_KEY" = "" -o "$CKR_KEY" = "change_this" ]; then
-	CKR_KEY=$(dd if=/dev/urandom bs=1 count=16 | md5sum)
+	CKR_KEY=$(dd if=/dev/urandom bs=1 count=16 | md5sum | sed 's/ .*//')
     fi
     sed -i 's/^port[ 	]*=[ 	]*"\?\([0-9a-z_-]*\)"\?[ 	]*$/port = '"$CKR_PORT"'/' /usr/local/src/check-reader/server/config/config.toml
     sed -i 's/^host[ 	]*=[ 	]*"\?\([0-9a-z_-]*\)"\?[ 	]*$/host = "'"$CKR_HOST"'"/' /usr/local/src/check-reader/server/config/config.toml
-    sed -i 's/^jwt_key[ 	]*=[ 	]*"\?\([0-9a-z_-]*\)"\?[ 	]*$/host = "'"$CKR_KEY"'"/' /usr/local/src/check-reader/server/config/auth.toml
+    sed -i 's/^jwt_key[ 	]*=[ 	]*"\?\([0-9a-z_-]*\)"\?[ 	]*$/jwt_key = "'"$CKR_KEY"'"/' /usr/local/src/check-reader/server/config/auth.toml
     }
 
 
