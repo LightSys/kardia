@@ -3339,7 +3339,7 @@ function installCheckScanner
     {
     if [ ! -d "/usr/local/src/check-reader" ]; then
 	cd /usr/local/src
-	git clone "$CKR_REPO" check-reader
+	git clone "$CKR_GITREPO" check-reader
     else
 	echo "Error: check-reader server already installed."
 	return 1
