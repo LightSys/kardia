@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # kardia.sh - manage the Kardia / Centrallix VM appliance
-# version: 1.0.11
+# version: 1.7
 # os: rocky_8
 
 # Some housekeeping stuff.  We may be running under a user account, but
@@ -127,7 +127,7 @@ function insertLine
 
 BASEDIR=/usr/local
 USER=$(/usr/bin/id -un)
-VERSION="1.5"
+VERSION="1.7"
 YEAR=$(date '+%Y')
 sTITLE="Kardia/Centrallix VM Appliance $VERSION (C) 2011-$YEAR LightSys"
 Root || TITLE="[$USER]  $sTITLE"
@@ -2346,9 +2346,11 @@ function initConsole
     fi
     if [ "$SNAME" = Centrallix ]; then
 	if [ "$USER" = root ]; then
-	    screen -S "$SNAME" -p 0 -X stuff "export LD_LIBRARY_PATH=/usr/local/lib"
+	    screen -S "$SNAME" -p 0 -X stuff "export LD_LIBRARY_PATH=/usr/local/lib
+"
 	else
-	    screen -S "$SNAME" -p 0 -X stuff "export LD_LIBRARY_PATH='/home/$USER/cxinst/lib'"
+	    screen -S "$SNAME" -p 0 -X stuff "export LD_LIBRARY_PATH='/home/$USER/cxinst/lib'
+"
 	fi
 	sleep 0.1
 	screen -S "$SNAME" -p 0 -X logfile "$CXLOG"
@@ -2356,7 +2358,9 @@ function initConsole
 	screen -S "$SNAME" -p 0 -X log on
 	sleep 0.1
     fi
-    screen -S "$SNAME" -p 0 -X stuff "##### $SNAME Console #####"
+    screen -S "$SNAME" -p 0 -X stuff "
+##### $SNAME Console #####
+"
     }
 
 
@@ -2428,9 +2432,11 @@ function cxStop
 	    echo "Stopping Centrallix running under (gdb) in a console..."
 	    if [ "$GDBRUNNING" != "" ]; then
 		screenPassCtrlC
-		screen -S Centrallix -p 0 -X stuff "quit"
+		screen -S Centrallix -p 0 -X stuff "quit
+"
 		sleep 0.1
-		screen -S Centrallix -p 0 -X stuff "y"
+		screen -S Centrallix -p 0 -X stuff "y
+"
 		sleep 0.1
 		killall -u "$USER" gdb 2>/dev/null
 		sleep 0.1
@@ -2466,22 +2472,28 @@ function cxStart
 	    screenCheck
 	    echo "Starting Centrallix in a console..."
 	    screenPassCtrlC
-	    screen -S Centrallix -p 0 -X stuff "$CXBIN -c $CXCONF"
+	    screen -S Centrallix -p 0 -X stuff "$CXBIN -c $CXCONF
+"
 	    sleep 0.5
 	    ;;
 	gdb)
 	    screenCheck
 	    echo "Starting Centrallix under (gdb) in a console..."
 	    screenPassCtrlC
-	    screen -S Centrallix -p 0 -X stuff "gdb $CXBIN"
+	    screen -S Centrallix -p 0 -X stuff "gdb $CXBIN
+"
 	    sleep 0.1
-	    screen -S Centrallix -p 0 -X stuff "set pagination off"
+	    screen -S Centrallix -p 0 -X stuff "set pagination off
+"
 	    sleep 0.1
-	    screen -S Centrallix -p 0 -X stuff "handle SIGPIPE nostop noprint"
+	    screen -S Centrallix -p 0 -X stuff "handle SIGPIPE nostop noprint
+"
 	    sleep 0.1
-	    screen -S Centrallix -p 0 -X stuff "handle SIG33 nostop noprint"
+	    screen -S Centrallix -p 0 -X stuff "handle SIG33 nostop noprint
+"
 	    sleep 0.1
-	    screen -S Centrallix -p 0 -X stuff "run -c $CXCONF"
+	    screen -S Centrallix -p 0 -X stuff "run -c $CXCONF
+"
 	    sleep 0.5
 	    ;;
     esac
@@ -3304,9 +3316,11 @@ function startCheckScanner
     {
     screenCheck Scanner
     sleep 0.1
-    screen -S Scanner -p 0 -X stuff "cd /usr/local/src/check-reader/server"
+    screen -S Scanner -p 0 -X stuff "cd /usr/local/src/check-reader/server
+"
     sleep 0.1
-    screen -S Scanner -p 0 -X stuff "python3 app.py -c"
+    screen -S Scanner -p 0 -X stuff "python3 app.py -c
+"
     sleep 0.5
     }
 
