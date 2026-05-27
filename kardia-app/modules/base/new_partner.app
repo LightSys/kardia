@@ -17,14 +17,20 @@ new_partner "widget/page"
     set_given_name "widget/parameter" { type=string; }
     set_surname "widget/parameter" { type=string; }
     set_salutation "widget/parameter" { type=string; }
+    set_title "widget/parameter" { type=string; }
+    set_suffix "widget/parameter" { type=string; }
     set_addr1 "widget/parameter" { type=string; }
     set_addr2 "widget/parameter" { type=string; }
+    set_addr3 "widget/parameter" { type=string; }
     set_city "widget/parameter" { type=string; }
     set_state_province "widget/parameter" { type=string; }
     set_postal "widget/parameter" { type=string; }
     set_country_code "widget/parameter" { type=string; }
     set_email "widget/parameter" { type=string; }
     set_phone "widget/parameter" { type=string; }
+    set_phone_line "widget/parameter" { type=string; }
+    set_phone_area_city "widget/parameter" { type=string; }
+    set_phone_area_country "widget/parameter" { type=string; }
     set_comment "widget/parameter" { type=string; }
 
     new_partner_cmp "widget/component" 
@@ -42,15 +48,20 @@ new_partner "widget/page"
 	set_given_name=runserver(:this:set_given_name);
 	set_surname=runserver(:this:set_surname);
 	set_salutation=runserver(:this:set_salutation);
+	set_title=runserver(:this:set_title);
+	set_suffix=runserver(:this:set_suffix);
 	set_addr1=runserver(:this:set_addr1);
 	set_addr2=runserver(:this:set_addr2);
+	set_addr3=runserver(:this:set_addr3);
 	set_city=runserver(:this:set_city);
 	set_state_province=runserver(:this:set_state_province);
 	set_postal=runserver(:this:set_postal);
 	set_country_code=runserver(:this:set_country_code);
 	set_email=runserver(:this:set_email);
-	set_phone=runserver(condition(:this:set_country_code = "US" OR :this:set_country_code = "CA", substring(:this:set_phone, char_length(:this:set_phone) - 6,3) + "-" + substring(:this:set_phone, char_length(:this:set_phone) - 3), :this:set_phone));      // set the subscriber number based on country (or all if unsuported)
-	set_phone_area=runserver(condition(:this:set_country_code = "US" OR :this:set_country_code = "CA", substring(:this:set_phone, char_length(:this:set_phone) - 9,3), NULL)); // set the area code based on country code (or blank if unsuported)
+	set_phone=(replace(replace(replace(replace(replace(:this:set_phone, "+", NULL), "-", NULL), "(", NULL), ")", NULL), " ", NULL));
+	set_phone_line=runserver(:this:set_phone_line);
+	set_phone_area_city=runserver(:this:set_phone_area_city);
+	set_phone_area_country=runserver(:this:set_phone_area_country);
 	set_comment=runserver(:this:set_comment);
 	}
     }
