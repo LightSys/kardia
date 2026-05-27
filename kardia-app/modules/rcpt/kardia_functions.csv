@@ -11,6 +11,7 @@ Periodic Giving Statement,RPT,annual_statement.app,Print an Periodic Giving Stat
 Donor Report,RPT,donor_report_test.app,"List Donors by gift totals, Funds, Accounts, and Locations",""                                      
 Receipt/Statement Types,APP,receipt_types.app,Add and Update Receipt Types,""                     
 Gift Import,APP,gift_import.app,"Import gift data from external services",                             
+Gift Associations,APP,gift_associations.app,"Override incoming gift associations",
 Deposits Batches,APP,de_batches.app,Manage and Post Deposits Batches,                                 
 Deposits Summary,RPT,deposit_summary.app,Summary of Deposits for a Period,                                 
 Gift Import Report,RPT,gift_import_report.app,Detail report of gift import data for a period,                                 
