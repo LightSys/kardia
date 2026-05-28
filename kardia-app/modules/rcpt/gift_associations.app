@@ -13,8 +13,13 @@ gift_associations "widget/page"
 
     // Note: This app assumes that connectors are activated in the order they are defined.
     
-    ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; deploy_to_client=yes; }
-//     period "widget/parameter" { type=string; default=null; }
+    ledger "widget/parameter"
+	{
+	type=string;
+	default=null;
+	allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+	deploy_to_client=yes;
+	}
     
     new_record "widget/variable"
 	{
@@ -29,39 +34,6 @@ gift_associations "widget/page"
 	    condition=upper(:content_osrc:status) != "OVERRIDE";
 	    TabIndex=runclient(condition(:new_record:value = 1, 2, 1));
 	    }
-	}
-    
-    cache_services_list "widget/osrc"
-	{
-	
-	// Note: This query spams the console with errors. This is not
-	// incorrect behavior, it's just how the MySQL driver & object
-	// system respond to this query. The replicasize value has been
-	// reduced to minimize this possible bottleneck.
-	sql=runserver('--\'sql=" -- Fixes syntax highlighting.
-	    DECLARE collection gift_services scope application;
-	    
-	    INSERT INTO
-		collection gift_services
-	    SELECT
-		label = "All",--"sql="
-		value = "any",--"sql="
-		selected = 1
-	    ;
-	    
-	    INSERT INTO
-		collection gift_services
-	    SELECT
-		label = substring(:a_config_name, 12),
-		value = substring(:a_config_name, 12),
-		selected = 0
-	    FROM
-		/apps/kardia/data/Kardia_DB/a_config/rows
-	    WHERE
-		-- substring(:a_config_name, 0, 11) = "GiftImport_" AND --"sql="
-		:a_config_value = "1" --"sql="
-	');// End of janky syntax hacks:'");
-	autoquery=onfirstreveal;
 	}
     
     content_pane "widget/pane"
@@ -588,7 +560,6 @@ gift_associations "widget/page"
 				    text="Delete";
 				    enabled=runclient(condition(upper(:content_osrc:status) = "OVERRIDE" and :new_record:value = 0, 1, 0));
 				    
-				    // TODO: Add security.
 				    delete_button_connector "widget/connector"
 					{
 					event=Click;

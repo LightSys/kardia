@@ -1,14 +1,14 @@
 $Version=2$
 gift_associations_edit "widget/component-decl"
     {
-    width=600; height=140;
+    width=590; height=140;
     
     form "widget/parameter" { type=object; find_container="widget/form"; }
     editable "widget/parameter" { type=integer; default=0; }
     
     cols "widget/hbox"
 	{
-	x=0; y=0; width=600; height=140; spacing=10;
+	x=0; y=0; width=590; height=140; spacing=5;
 	
 	col2 "widget/vbox"
 	    {
