@@ -489,7 +489,7 @@ gift_associations "widget/page"
 					i_eg_line_item = runclient(1);
 					i_eg_status = runclient("override");
 					
-					// General feilds.
+					// General fields.
 					i_eg_service = runclient(:content_osrc:i_eg_service);
 					i_eg_processor = runclient(:content_osrc:i_eg_processor);
 					i_eg_donor_uuid = runclient(:content_osrc:i_eg_donor_uuid);
@@ -550,7 +550,7 @@ gift_associations "widget/page"
 				x=0; width=140; height=23; // y=button_col
 				border_radius=5;
 				text="Line Item Details";
-				enabled=yes;
+				enabled=no; // TODO: Implement.
 				}
 			    
 			    history_button "widget/textbutton"
@@ -558,7 +558,7 @@ gift_associations "widget/page"
 				x=0; width=140; height=23; // y=button_col
 				border_radius=5;
 				text="Association History";
-				enabled=yes;
+				enabled=no; // TODO: Implement.
 				}
 			    }
 			}
