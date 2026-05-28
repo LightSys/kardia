@@ -333,19 +333,19 @@ gift_associations "widget/page"
 		    enter_mode = save;
 		    tab_revealed_only = yes;
 		    
-		    blank_ledger "widget/variable" { fieldname = "a_ledger_number"; blank_ledger_val "widget/hints" { default = runclient(:ledger:value); } }
-		    blank_gift_uuid "widget/variable" { fieldname = "i_eg_gift_uuid"; blank_gift_uuid_val "widget/hints" { default = runclient("FAKE_" + convert("string", eval("Math.floor(Math.random() * 1e15) + 1"))); } }
-		    blank_trx_uuid "widget/variable" { fieldname = "i_eg_trx_uuid"; blank_trx_uuid_val "widget/hints" { default = runclient(:blank_gift_uuid:value); } }
-		    blank_line_item "widget/variable" { fieldname = "i_eg_line_item"; blank_line_item_val "widget/hints" { default = runclient(1); } }
-		    blank_donor_uuid "widget/variable" { fieldname = "i_eg_donor_uuid"; blank_donor_uuid_val "widget/hints" { default = runclient("FAKE_" + convert("string", eval("Math.floor(Math.random() * 1e15) + 1"))); } }
-		    blank_status "widget/variable" { fieldname = "i_eg_status"; blank_status_val "widget/hints" { default = runclient("override"); } }
-		    blank_service "widget/variable" { fieldname = "i_eg_service"; blank_service_val "widget/hints" { default = runclient("N/A"); } }
-		    blank_processor "widget/variable" { fieldname = "i_eg_processor"; blank_processor_val "widget/hints" { default = runclient("N/A"); } }
-		    blank_gift_amount "widget/variable" { fieldname = "i_eg_gift_amount"; blank_gift_amount_val "widget/hints" { default = runclient(0); } }
-		    blank_deposit_amt "widget/variable" { fieldname = "i_eg_deposit_amt"; blank_deposit_amt_val "widget/hints" { default = runclient(0); } }
-		    blank_deposit_gross "widget/variable" { fieldname = "i_eg_deposit_gross_amt"; blank_deposit_gross_val "widget/hints" { default = runclient(0); } }
-		    blank_gift_interval "widget/variable" { fieldname = "i_eg_gift_interval"; blank_gift_interval_val "widget/hints" { default = runclient("never"); } }
-		    blank_gift_date "widget/variable" { fieldname = "i_eg_gift_date"; blank_gift_date_val "widget/hints" { default = runclient(getdate()); } }
+		    // Hidden fields.
+		    ledger_number "widget/variable" { fieldname = "a_ledger_number"; ledger_val "widget/hints" { default = runclient(:ledger:value); } }
+		    gift_uuid "widget/variable" { fieldname = "i_eg_gift_uuid"; gift_uuid_val "widget/hints" { default = runclient(:gift_id_field:value); } }
+		    gift_date "widget/variable" { fieldname = "i_eg_gift_date"; gift_date_val "widget/hints" { default = runclient(:gift_date_field:value); } }
+		    trx_uuid "widget/variable" { fieldname = "i_eg_trx_uuid"; trx_uuid_val "widget/hints" { default = runclient(:gift_id_field:value); } }
+		    line_item "widget/variable" { fieldname = "i_eg_line_item"; line_item_val "widget/hints" { default = runclient(1); } }
+		    donor_uuid "widget/variable" { fieldname = "i_eg_donor_uuid"; donor_uuid_val "widget/hints" { default = runclient("FAKE_" + convert("string", eval("Math.floor(Math.random() * 1e15) + 1"))); } }
+		    status "widget/variable" { fieldname = "i_eg_status"; status_val "widget/hints" { default = runclient("override"); } }
+		    service "widget/variable" { fieldname = "i_eg_service"; service_val "widget/hints" { default = runclient("N/A"); } }
+		    processor "widget/variable" { fieldname = "i_eg_processor"; processor_val "widget/hints" { default = runclient("N/A"); } }
+		    gift_amount "widget/variable" { fieldname = "i_eg_gift_amount"; gift_amount_val "widget/hints" { default = runclient(0); } }
+		    deposit_amt "widget/variable" { fieldname = "i_eg_deposit_amt"; deposit_amt_val "widget/hints" { default = runclient(0); } }
+		    gift_interval "widget/variable" { fieldname = "i_eg_gift_interval"; gift_interval_val "widget/hints" { default = runclient("never"); } }
 		    field_handler "widget/component" { path = "/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
 		    
 		    edit_pane "widget/pane"
@@ -358,7 +358,7 @@ gift_associations "widget/page"
 			    {
 			    x = 10; y = 95; width = 740; height = 2; style = border;
 			    }
-						
+			
 			static_col "widget/vbox"
 			    {
 			    x = 10; y = 10; width = 150; height = 140; spacing = 10;
@@ -378,6 +378,11 @@ gift_associations "widget/page"
 				ctl_type = label;
 				type = readonly;
 				field = "gift_id";
+				
+				gift_id_hints "widget/hints"
+				    {
+				    default = runclient("FAKE_" + convert("string", eval("Math.floor(Math.random() * 1e15) + 1")));
+				    }
 				}
 			    
 			    gift_date_field "widget/component"
@@ -388,6 +393,11 @@ gift_associations "widget/page"
 				ctl_type = label;
 				type = readonly;
 				field = "gift_date";
+				
+				gift_date_hints "widget/hints"
+				    {
+				    default = runclient(getdate());
+				    }
 				}
 			    
 			    divider_spacer1 "widget/autolayoutspacer" { height = 10; }

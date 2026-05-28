@@ -283,6 +283,7 @@ gift_associations_edit "widget/component-decl"
 		    condition=runserver(:this:editable = 0);
 		    style=readonly;
 		    }
+		gross_amount_hints "widget/hints" { default = runclient("$0.00"); }
 		}
 	    
 	    net_amount_field "widget/component"
@@ -304,6 +305,7 @@ gift_associations_edit "widget/component-decl"
 		    condition=runserver(:this:editable = 0);
 		    style=readonly;
 		    }
+		net_amount_hints "widget/hints" { default = runclient("$0.00"); }
 		}
 	    
 	    desig_notes_spacer "widget/autolayoutspacer" { height=15; }
