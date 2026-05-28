@@ -100,7 +100,7 @@ gift_associations_edit "widget/component-decl"
 		{
 		x=0; width=200; height=15; label_width=100; // y=col2
 		path="/apps/kardia/modules/base/editbox_table.cmp";
-		field="i_eg_gift_uuid";
+		field="p_donor_partner_key";
 		text="Donor:";
 		form=form;
 		
@@ -139,7 +139,7 @@ gift_associations_edit "widget/component-decl"
 		    + "*p_org_name*,"
 		    + "p_legacy_key_1,"
 		    + "*p_legacy_key_2*";
-		key_name="p_partner_key";
+		key_name="p_donor_partner_key";
 		
 		mutable_kardia_donor_hints "widget/hints"
 		    {
@@ -227,7 +227,7 @@ gift_associations_edit "widget/component-decl"
 		{
 		x=0; width=200; height=15; label_width=100; // y=col3
 		path="/apps/kardia/modules/base/editbox_table.cmp";
-		field="p_donor_partner_key";
+		field="a_fund";
 		text="Desig.:";
 		form=form;
 		
@@ -236,19 +236,16 @@ gift_associations_edit "widget/component-decl"
 		popup_width=335;
 		popup_sql="
 		    SELECT
-			value = :i_eg_desig_uuid,
-			label = :i_eg_desig_name
+			value = :a_fund,
+			label = :a_fund
 		    FROM
 			/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows
 		    GROUP BY
 			:i_eg_desig_uuid
 		    ;
 		";
-		search_field_list=""
-		    + "i_eg_desig_uuid,"
-		    + "*i_eg_desig_name*,"
-		    + "*i_eg_desig_notes*";
-		key_name="p_donor_partner_key";
+		search_field_list="*a_fund*";
+		key_name="a_fund";
 		
 		mutable_kardia_designation_hints "widget/hints"
 		    {

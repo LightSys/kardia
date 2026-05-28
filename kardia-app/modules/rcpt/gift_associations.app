@@ -233,12 +233,11 @@ gift_associations "widget/page"
 		    ), --sql="
 		    amount = :eg:i_eg_gift_amount,
 		    status = upper(ltrim(rtrim(:eg:i_eg_status))),
+		    gift_id = :eg:i_eg_gift_uuid,
 		    gift_date = :eg:i_eg_gift_date,
 		    
 		    -- Editable fields.
-		    :eg:i_eg_gift_uuid,         -- Gift ID
 		    :eg:i_eg_service,           -- Service
-		    :eg:i_eg_gift_date,         -- Gift Date
 		    :eg:i_eg_donor_name,        -- Donor Name
 		    :eg:i_eg_donor_address,     -- Donor Addr
 		    :eg:i_eg_desig_uuid,        -- Desig ID
@@ -367,7 +366,7 @@ gift_associations "widget/page"
 				text="Gift ID:";
 				ctl_type=label;
 				type=readonly;
-				field="i_eg_gift_uuid";
+				field="gift_id";
 				}
 			    
 			    gift_date_field "widget/component"
@@ -377,7 +376,7 @@ gift_associations "widget/page"
 				text="Gift Date:";
 				ctl_type=label;
 				type=readonly;
-				field="i_eg_gift_date";
+				field="gift_date";
 				}
 			    
 			    divider_spacer1 "widget/autolayoutspacer" { height=10; }
