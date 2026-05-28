@@ -10,7 +10,7 @@ gift_associations "widget/page"
     require_one_endorsement = "kardia:gift_entry";
     endorsement_context = runserver("kardia:ledger:" + :this:ledger + ":");
     max_requests = 9;
-
+    
     // Note: This app assumes that connectors are activated in the order they are defined.
     
     ledger "widget/parameter"
@@ -107,7 +107,7 @@ gift_associations "widget/page"
 		    Value = runclient("");
 		    }
 		}
-	
+	    
 	    // Service filter dropdown.
 	    filter_service_spacer "widget/autolayoutspacer" { width = 10; }	
 	    filter_service_label "widget/label"
