@@ -13,6 +13,21 @@ gift_associations "widget/page"
     
     ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; deploy_to_client=yes; }
 //     period "widget/parameter" { type=string; default=null; }
+
+    new_record "widget/variable"
+	{
+	type=Integer;
+	value=0;
+		
+	update_tab_connector "widget/connector"
+	    {
+	    event=DataModify;
+	    target=edit_tab;
+	    action=SetTab;
+	    condition=upper(:content_osrc:status) != "OVERRIDE";
+	    TabIndex=runclient(condition(:new_record:value = 1, 2, 1));
+	    }
+	}
     
     cache_services_list "widget/osrc"
 	{
@@ -207,6 +222,8 @@ gift_associations "widget/page"
 	    // reduced to minimize performance issues.
 	    sql=runserver('--\'sql=" -- Fixes syntax highlighting.
 		SELECT
+		    :eg:a_ledger_number,
+		    
 		    -- Table display fields.
 		    donor_service_name = :eg:i_eg_donor_name
 			+ isnull(" (" + :eg:i_eg_donor_address + ")", ""), --sql="
@@ -335,11 +352,36 @@ gift_associations "widget/page"
 		{
 		height=160;
 		width=960;
+		show_on_new=1;
 		
 		edit_form "widget/form"
 		    {
 		    // TODO: Set up permissions.
 		    objectsource=content_osrc;
+		    
+		    blank_ledger "widget/variable" { fieldname="a_ledger_number"; blank_ledger_val "widget/hints" { default=runclient(:ledger:value); } }
+		    blank_gift_uuid "widget/variable" { fieldname="i_eg_gift_uuid"; blank_gift_uuid_val "widget/hints" { default=runclient("FAKE_" + convert("string", eval("Math.floor(Math.random() * 1e15) + 1"))); } }
+		    blank_trx_uuid "widget/variable" { fieldname="i_eg_trx_uuid"; blank_trx_uuid_val "widget/hints" { default=runclient(:blank_gift_uuid:value); } }
+		    blank_line_item "widget/variable" { fieldname="i_eg_line_item"; blank_line_item_val "widget/hints" { default=runclient(1); } }
+		    blank_donor_uuid "widget/variable" { fieldname="i_eg_donor_uuid"; blank_donor_uuid_val "widget/hints" { default=runclient("FAKE_" + convert("string", eval("Math.floor(Math.random() * 1e15) + 1"))); } }
+		    blank_status "widget/variable" { fieldname="i_eg_status"; blank_status_val "widget/hints" { default=runclient("override"); } }
+		    blank_service "widget/variable" { fieldname="i_eg_service"; blank_service_val "widget/hints" { default=runclient("N/A"); } }
+		    blank_processor "widget/variable" { fieldname="i_eg_processor"; blank_processor_val "widget/hints" { default=runclient("N/A"); } }
+		    blank_gift_amount "widget/variable" { fieldname="i_eg_gift_amount"; blank_gift_amount_val "widget/hints" { default=runclient(0); } }
+		    blank_deposit_amt "widget/variable" { fieldname="i_eg_deposit_amt"; blank_deposit_amt_val "widget/hints" { default=runclient(0); } }
+		    blank_deposit_gross "widget/variable" { fieldname="i_eg_deposit_gross_amt"; blank_deposit_gross_val "widget/hints" { default=runclient(0); } }
+		    blank_gift_interval "widget/variable" { fieldname="i_eg_gift_interval"; blank_gift_interval_val "widget/hints" { default=runclient("never"); } }
+		    blank_gift_date "widget/variable" { fieldname="i_eg_gift_date"; blank_gift_date_val "widget/hints" { default=runclient(getdate()); } }
+		    field_handler "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
+		    
+		    reset_variable_connector "widget/connector"
+			{
+			event=ModeChange;
+			target=new_record;
+			action=SetValue;
+			event_condition=runclient(:OldMode = "New" and :NewMode != "New");
+			Value=0;
+			}
 		    
 		    edit_pane "widget/pane"
 			{
@@ -402,7 +444,7 @@ gift_associations "widget/page"
 			    border_color=transparent;
 			    tab_location=none;
 			    
-			    selected_index=runclient(condition(:content_osrc:status = "OVERRIDE", 2, 1));
+			    selected_index=runclient(condition(upper(:content_osrc:status) = "OVERRIDE", 2, 1));
 			    
 			    immutable "widget/tabpage"
 				{
@@ -439,7 +481,7 @@ gift_associations "widget/page"
 				    x=0; y=0; width=60; height=23; // x=save_cancel_buttons
 				    border_radius=5;
 				    text="Save";
-				    enabled=runclient(condition(:content_osrc:status = "OVERRIDE", 1, 0));
+				    enabled=runclient(condition(upper(:content_osrc:status) = "OVERRIDE" or :new_record:value = 1, 1, 0));
 				    
 				    save_button_connector "widget/connector"
 					{
@@ -456,7 +498,7 @@ gift_associations "widget/page"
 				    y=0; width=60; height=23; // x=save_cancel_buttons
 				    border_radius=5;
 				    text="Cancel";
-				    enabled=runclient(condition(:content_osrc:status = "OVERRIDE", 1, 0));
+				    enabled=runclient(condition(upper(:content_osrc:status) = "OVERRIDE" or :new_record:value = 1, 1, 0));
 				    
 				    cancel_button_connector "widget/connector"
 					{
@@ -478,7 +520,7 @@ gift_associations "widget/page"
 				    y=0; width=60; height=23; // x=copy_delete_buttons
 				    border_radius=5;
 				    text="Copy";
-				    enabled=yes;
+				    enabled=runclient(condition(:new_record:value = 0, 1, 0));
 				    
 				    // TODO: Figure out how to copy the current element into a new element.
 				    // copy_connector "widget/connector"
@@ -494,7 +536,7 @@ gift_associations "widget/page"
 				    y=0; width=60; height=23; // x=copy_delete_buttons
 				    border_radius=5;
 				    text="Delete";
-				    enabled=runclient(condition(:content_osrc:status = "OVERRIDE", 1, 0));
+				    enabled=runclient(condition(upper(:content_osrc:status) = "OVERRIDE" and :new_record:value = 0, 1, 0));
 				    
 				    // TODO: Add security.
 				    delete_button_connector "widget/connector"
@@ -533,37 +575,19 @@ gift_associations "widget/page"
 	    border_radius=5;
 	    text="Create Blank Override";
 	    
+	    blank_association_button_pre_connector "widget/connector"
+		{
+		event=Click;
+		target=new_record;
+		action=SetValue;
+		Value=1;
+		}
+	    
 	    blank_association_button_connector "widget/connector"
 		{
 		event=Click;
-		target=content_osrc;
-		action=Create;
-		
-		// Blank values.
-		a_ledger_number=runclient(:ledger:value);
-		i_eg_gift_uuid=runclient("FAKE_1");
-		i_eg_desig_uuid=runclient("");
-		i_eg_line_item=runclient(1);
-		i_eg_trx_uuid=runclient("FAKE_1");
-		i_eg_donor_uuid=runclient("");
-		i_eg_desig_name=runclient("");
-		i_eg_desig_notes=runclient("");
-		i_eg_status=runclient("override");
-		i_eg_gift_amount=runclient(0);
-		i_eg_deposit_amt=runclient(0);
-		i_eg_deposit_gross_amt=runclient(0);
-		i_eg_deposit_amt=runclient(0);
-		i_eg_gift_interval=runclient("never");
-		i_eg_service=runclient("");
-		i_eg_processor=runclient("");
-		i_eg_donor_name=runclient("Blank");
-		p_donor_partner_key=runclient("No key");
-		a_fund=runclient("");
-		i_eg_gift_date=runclient(getdate());
-		s_date_created=runclient(getdate());
-		s_created_by=runclient(user_name());
-		s_date_modified=runclient(getdate());
-		s_modified_by=runclient(user_name());
+		target=edit_form;
+		action=New;
 		}
 	    }
 	}
