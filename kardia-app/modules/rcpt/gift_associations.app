@@ -233,7 +233,11 @@ gift_associations "widget/page"
 		    ), --sql="
 		    amount = :eg:i_eg_gift_amount,
 		    status = upper(ltrim(rtrim(:eg:i_eg_status))),
-		    gift_id = :eg:i_eg_gift_uuid,
+		    gift_id = condition(
+			char_length(:eg:i_eg_gift_uuid) > 12,
+			substring(:eg:i_eg_gift_uuid, 0, 12) + "...", --"sql="
+			:eg:i_eg_gift_uuid
+		    ),
 		    gift_date = :eg:i_eg_gift_date,
 		    
 		    -- Editable fields.
