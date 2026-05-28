@@ -21,21 +21,6 @@ gift_associations "widget/page"
 	deploy_to_client=yes;
 	}
     
-    new_record "widget/variable"
-	{
-	type=Integer;
-	value=0;
-		
-	update_tab_connector "widget/connector"
-	    {
-	    event=DataModify;
-	    target=edit_tab;
-	    action=SetTab;
-	    condition=upper(:content_osrc:status) != "OVERRIDE";
-	    TabIndex=runclient(condition(:new_record:value = 1, 2, 1));
-	    }
-	}
-    
     content_pane "widget/pane"
 	{
 	x=10; y=10; width=980; height=680;
@@ -352,15 +337,6 @@ gift_associations "widget/page"
 		    blank_gift_date "widget/variable" { fieldname="i_eg_gift_date"; blank_gift_date_val "widget/hints" { default=runclient(getdate()); } }
 		    field_handler "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
 		    
-		    reset_variable_connector "widget/connector"
-			{
-			event=ModeChange;
-			target=new_record;
-			action=SetValue;
-			event_condition=runclient(:OldMode = "New" and :NewMode != "New");
-			Value=0;
-			}
-		    
 		    edit_pane "widget/pane"
 			{
 			x=15; y=15; width=930; height=140;
@@ -459,7 +435,7 @@ gift_associations "widget/page"
 				    x=0; y=0; width=60; height=23; // x=save_cancel_buttons
 				    border_radius=5;
 				    text="Save";
-				    enabled=runclient(condition(upper(:content_osrc:status) = "OVERRIDE" or :new_record:value = 1, 1, 0));
+				    enabled=runclient(:edit_form:is_savable);
 				    
 				    save_button_connector "widget/connector"
 					{
@@ -476,7 +452,7 @@ gift_associations "widget/page"
 				    y=0; width=60; height=23; // x=save_cancel_buttons
 				    border_radius=5;
 				    text="Cancel";
-				    enabled=runclient(condition(upper(:content_osrc:status) = "OVERRIDE" or :new_record:value = 1, 1, 0));
+				    enabled=runclient(:edit_form:is_discardable);
 				    
 				    cancel_button_connector "widget/connector"
 					{
@@ -498,7 +474,7 @@ gift_associations "widget/page"
 				    y=0; width=60; height=23; // x=copy_delete_buttons
 				    border_radius=5;
 				    text="Copy";
-				    enabled=runclient(condition(:new_record:value = 0, 1, 0));
+				    enabled=runclient(:edit_form:is_editable);
 				    
 				    copy_connector "widget/connector"
 					{
@@ -558,7 +534,7 @@ gift_associations "widget/page"
 				    y=0; width=60; height=23; // x=copy_delete_buttons
 				    border_radius=5;
 				    text="Delete";
-				    enabled=runclient(condition(upper(:content_osrc:status) = "OVERRIDE" and :new_record:value = 0, 1, 0));
+				    enabled=runclient(:edit_form:is_editable AND upper(:content_osrc:status) = "OVERRIDE");
 				    
 				    delete_button_connector "widget/connector"
 					{
@@ -596,19 +572,23 @@ gift_associations "widget/page"
 	    border_radius=5;
 	    text="Create Blank Override";
 	    
-	    blank_association_button_pre_connector "widget/connector"
-		{
-		event=Click;
-		target=new_record;
-		action=SetValue;
-		Value=1;
-		}
-	    
 	    blank_association_button_connector "widget/connector"
 		{
 		event=Click;
 		target=edit_form;
 		action=New;
+		}
+	    
+	    // Fixes a bug where, when the user canceled creating a blank
+	    // association, the old selected association would be editable.
+	    blank_association_cancel_connector "widget/connector"
+		{
+		source=edit_form;
+		event=ModeChange;
+		target=edit_tab;
+		action=SetTab;
+		event_condition=runclient(:OldMode = "New" and :NewMode != "New" and upper(:content_osrc:status) != "OVERRIDE");
+		TabIndex=1;
 		}
 	    }
 	}
