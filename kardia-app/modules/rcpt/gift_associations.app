@@ -2,62 +2,62 @@ $Version=2$
 gift_associations "widget/page"
     {
     title = "Gift Associations";
-    width=1000;
-    height=700;
-    widget_template="/apps/kardia/tpl/kardia-system.tpl", runserver("/apps/kardia/tpl/" + user_name() + ".tpl");
-    background=null;
-    bgcolor=white;
-    require_one_endorsement="kardia:gift_entry";
-    endorsement_context=runserver("kardia:ledger:" + :this:ledger + ":");
-    max_requests=9;
+    width = 1000;
+    height = 700;
+    widget_template = "/apps/kardia/tpl/kardia-system.tpl", runserver("/apps/kardia/tpl/" + user_name() + ".tpl");
+    background = null;
+    bgcolor = white;
+    require_one_endorsement = "kardia:gift_entry";
+    endorsement_context = runserver("kardia:ledger:" + :this:ledger + ":");
+    max_requests = 9;
 
     // Note: This app assumes that connectors are activated in the order they are defined.
     
     ledger "widget/parameter"
 	{
-	type=string;
-	default=null;
-	allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-	deploy_to_client=yes;
+	type = string;
+	default = null;
+	allowchars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+	deploy_to_client = yes;
 	}
     
     content_pane "widget/pane"
 	{
-	x=10; y=10; width=980; height=680;
-	background="/apps/kardia/images/bg/light_bgnd.jpg";
-	border_radius=6;
-	shadow_radius=4;
-	shadow_offset=2;
-	shadow_color="#808080";
-	shadow_angle=135;
+	x = 10; y = 10; width = 980; height = 680;
+	background = "/apps/kardia/images/bg/light_bgnd.jpg";
+	border_radius = 6;
+	shadow_radius = 4;
+	shadow_offset = 2;
+	shadow_color = "#808080";
+	shadow_angle = 135;
 	
 	filter_layout "widget/hbox"
 	    {
-	    x=0; y=8; width=980; height=35;
-	    spacing=5;
+	    x = 0; y = 8; width = 980; height = 35;
+	    spacing = 5;
 	    
 	    // Search box.
-	    filter_search_spacer "widget/autolayoutspacer" { width=10; }
+	    filter_search_spacer "widget/autolayoutspacer" { width = 10; }
 	    filter_search_label "widget/label"
 		{
-		y=10;
-		width=40;
-		align=right;
-		text="Search:";
+		y = 10;
+		width = 40;
+		align = right;
+		text = "Search:";
 		}
 	    filter_search_box "widget/editbox"
 		{
-		y=5; width=200; height=25;
+		y = 5; width = 200; height = 25;
 		
 		run_search "widget/connector"
 		    {
-		    event=ReturnPressed;
-		    target=content_osrc;
-		    action=QueryText;
+		    event = ReturnPressed;
+		    target = content_osrc;
+		    action = QueryText;
 		    
-		    cx__case_insensitive=1;
-		    objname=runclient("eg");
-		    field_list=""
+		    cx__case_insensitive = 1;
+		    objname = runclient("eg");
+		    field_list = ""
 			+ "*i_eg_donor_name*,"
 			+ "*i_eg_desig_name*,"
 			+ "*i_eg_desig_notes*,"
@@ -65,19 +65,19 @@ gift_associations "widget/page"
 			+ "*i_eg_donor_email*,"
 			+ "i_eg_donor_city*,"
 			+ "i_eg_donor_state";
-		    query=runclient(:filter_search_box:content);
+		    query = runclient(:filter_search_box:content);
 		    }
 		
 		run_search2 "widget/connector"
 		    {
 		    // Should be the same as run_search, just with a different event.
-		    event=LoseFocus;
-		    target=content_osrc;
-		    action=QueryText;
+		    event = LoseFocus;
+		    target = content_osrc;
+		    action = QueryText;
 		    
-		    cx__case_insensitive=1;
-		    objname=runclient("eg");
-		    field_list=""
+		    cx__case_insensitive = 1;
+		    objname = runclient("eg");
+		    field_list = ""
 			+ "*i_eg_donor_name*,"
 			+ "*i_eg_desig_name*,"
 			+ "*i_eg_desig_notes*,"
@@ -85,49 +85,49 @@ gift_associations "widget/page"
 			+ "*i_eg_donor_email*,"
 			+ "i_eg_donor_city*,"
 			+ "i_eg_donor_state";
-		    query=runclient(:filter_search_box:content);
+		    query = runclient(:filter_search_box:content);
 		    }
 		
 		clear_search_query "widget/connector"
 		    {
-		    event=EscapePressed;
-		    target=content_osrc;
-		    action=QueryText;
+		    event = EscapePressed;
+		    target = content_osrc;
+		    action = QueryText;
 		    
-		    objname=runclient("eg");
-		    field_list=runclient("");
-		    query=runclient("");
+		    objname = runclient("eg");
+		    field_list = runclient("");
+		    query = runclient("");
 		    }
 		
 		clear_search "widget/connector"
 		    {
-		    event=EscapePressed;
-		    target=filter_search_box;
-		    action=SetValue;
-		    Value=runclient("");
+		    event = EscapePressed;
+		    target = filter_search_box;
+		    action = SetValue;
+		    Value = runclient("");
 		    }
 		}
 	
 	    // Service filter dropdown.
-	    filter_service_spacer "widget/autolayoutspacer" { width=10; }	
+	    filter_service_spacer "widget/autolayoutspacer" { width = 10; }	
 	    filter_service_label "widget/label"
 		{
-		y=10;
-		width=40;
-		align=right;
-		text="Service:";
+		y = 10;
+		width = 40;
+		align = right;
+		text = "Service:";
 		}
 	    filter_service_dropdown "widget/dropdown"
 		{
-		y=4; width=125; height=25;
+		y = 4; width = 125; height = 25;
 		
 		// Styling.
-		bgcolor=white;
-		hilight="#d0d0d0";
+		bgcolor = white;
+		hilight = "#d0d0d0";
 		
 		// Get payment service types.
-		mode="dynamic_server";
-		sql="
+		mode = "dynamic_server";
+		sql = "
 		    DECLARE collection gift_services;
 		    
 		    INSERT INTO
@@ -155,13 +155,13 @@ gift_associations "widget/page"
 		    
 		    SELECT * FROM collection gift_services;
 		";
-		filter_service_hints "widget/hints" { style=notnull; }
+		filter_service_hints "widget/hints" { style = notnull; }
 		
 		filter_service_updater "widget/connector"
 		    {
-		    event=DataChange;
-		    target=content_osrc;
-		    action=QueryParam;
+		    event = DataChange;
+		    target = content_osrc;
+		    action = QueryParam;
 		    }
 		}
 	    }
@@ -170,16 +170,16 @@ gift_associations "widget/page"
 	    {
 	    filter_service_param "widget/parameter"
 		{
-		param_name=service;
-		type=string;
-		default=runclient(:filter_service_dropdown:value);
+		param_name = service;
+		type = string;
+		default = runclient(:filter_service_dropdown:value);
 		}
 	    
 	    // Note: This query spams the console with errors. This is not
 	    // incorrect behavior, it's just how the MySQL driver & object
 	    // system respond to this query. The replicasize value has been
 	    // reduced to minimize performance issues.
-	    sql=runserver('--\'sql=" -- Fixes syntax highlighting.
+	    sql = runserver('--\'sql=" -- Fixes syntax highlighting.
 		SELECT
 		    :eg:a_ledger_number,
 		    
@@ -246,178 +246,178 @@ gift_associations "widget/page"
 		ORDER BY
 		    :eg:i_eg_gift_date desc
 	    ');// End of janky syntax hacks:'");
-	    replicasize=200;
-	    readahead=400;
-	    autoquery=onfirstreveal;
-	    baseobj="/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows";
-	    use_having_clause=yes;
+	    replicasize = 200;
+	    readahead = 400;
+	    autoquery = onfirstreveal;
+	    baseobj = "/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows";
+	    use_having_clause = yes;
 	    }
 	
 	table "widget/table"
 	    {
-	    x=10; y=50; width=960; height=590;
-	    objectsource=content_osrc;
-	    nodata_message="No gifts to display";
+	    x = 10; y = 50; width = 960; height = 590;
+	    objectsource = content_osrc;
+	    nodata_message = "No gifts to display";
 	    
 	    // Layout
-	    rowheight=null;
-	    cellvspacing=4;
-	    inner_padding=4;
-	    colsep=0;
+	    rowheight = null;
+	    cellvspacing = 4;
+	    inner_padding = 4;
+	    colsep = 0;
 	    
 	    // Behavior
-	    overlap_scrollbar=yes;
-	    demand_scrollbar=yes;
+	    overlap_scrollbar = yes;
+	    demand_scrollbar  = yes;
 	    initial_selection = noexpand;
 	    allow_deselection = yes;
 	    
 	    // Rows
-	    row_border_radius=6;
-	    row_shadow_radius=2;
-	    row_shadow_offset=1;
-	    row_shadow_color="#a0a0a0";
-	    row_shadow_angle=135;
+	    row_border_radius = 6;
+	    row_shadow_radius = 2;
+	    row_shadow_offset = 1;
+	    row_shadow_color = "#a0a0a0";
+	    row_shadow_angle = 135;
 	    
 	    // Columns
 	    column_service_designation "widget/table-column"
 		{
-		width=50;
-		fieldname=donor_service_name;
-		caption_fieldname=donor_service_designation;
-		title="Giving Service Donor/Designation";
+		width = 50;
+		fieldname = donor_service_name;
+		caption_fieldname = donor_service_designation;
+		title = "Giving Service Donor/Designation";
 		}
 	    column_kardia_designation "widget/table-column"
 		{
-		width=50;
-		fieldname=donor_kardia_name;
-		caption_fieldname=donor_kardia_designation;
-		title="Kardia Donor/Designation";
+		width = 50;
+		fieldname = donor_kardia_name;
+		caption_fieldname = donor_kardia_designation;
+		title = "Kardia Donor/Designation";
 		}
 	    column_amount "widget/table-column"
 		{
-		width=10;
-		align=right;
-		fieldname=amount;
-		title="Amount";
+		width = 10;
+		align = right;
+		fieldname = amount;
+		title = "Amount";
 		}
 	    column_type "widget/table-column"
 		{
-		width=15;
-		fieldname=status;
-		caption_fieldname=gift_date;
-		align=center;
-		caption_align=center;
-		title="Type/Date";
+		width = 15;
+		fieldname = status;
+		caption_fieldname = gift_date;
+		align = center;
+		caption_align = center;
+		title = "Type/Date";
 		}
 	    
 	    // Row Detail
 	    table_detail "widget/table-row-detail"
 		{
-		height=160;
-		width=960;
-		show_on_new=1;
+		height = 160;
+		width = 960;
+		show_on_new = 1;
 		
 		edit_form "widget/form"
 		    {
-		    objectsource=content_osrc;
+		    objectsource = content_osrc;
 		    
 		    // Permissions & UX.
-		    allow_view=yes;
-		    allow_new=yes;
-		    allow_modify=yes;
-		    allow_delete=yes;
-		    allow_nodata=yes; // Used when no record is selected.
-		    allow_query=no;   // Not used here, disable it.
-		    confirm_delete=yes;
-		    comfirm_discard=no;
-		    enter_mode=save;
-		    tab_revealed_only=yes;
+		    allow_view = yes;
+		    allow_new = yes;
+		    allow_modify = yes;
+		    allow_delete = yes;
+		    allow_nodata = yes; // Used when no record is selected.
+		    allow_query = no;   // Not used here, disable it.
+		    confirm_delete = yes;
+		    comfirm_discard = no;
+		    enter_mode = save;
+		    tab_revealed_only = yes;
 		    
-		    blank_ledger "widget/variable" { fieldname="a_ledger_number"; blank_ledger_val "widget/hints" { default=runclient(:ledger:value); } }
-		    blank_gift_uuid "widget/variable" { fieldname="i_eg_gift_uuid"; blank_gift_uuid_val "widget/hints" { default=runclient("FAKE_" + convert("string", eval("Math.floor(Math.random() * 1e15) + 1"))); } }
-		    blank_trx_uuid "widget/variable" { fieldname="i_eg_trx_uuid"; blank_trx_uuid_val "widget/hints" { default=runclient(:blank_gift_uuid:value); } }
-		    blank_line_item "widget/variable" { fieldname="i_eg_line_item"; blank_line_item_val "widget/hints" { default=runclient(1); } }
-		    blank_donor_uuid "widget/variable" { fieldname="i_eg_donor_uuid"; blank_donor_uuid_val "widget/hints" { default=runclient("FAKE_" + convert("string", eval("Math.floor(Math.random() * 1e15) + 1"))); } }
-		    blank_status "widget/variable" { fieldname="i_eg_status"; blank_status_val "widget/hints" { default=runclient("override"); } }
-		    blank_service "widget/variable" { fieldname="i_eg_service"; blank_service_val "widget/hints" { default=runclient("N/A"); } }
-		    blank_processor "widget/variable" { fieldname="i_eg_processor"; blank_processor_val "widget/hints" { default=runclient("N/A"); } }
-		    blank_gift_amount "widget/variable" { fieldname="i_eg_gift_amount"; blank_gift_amount_val "widget/hints" { default=runclient(0); } }
-		    blank_deposit_amt "widget/variable" { fieldname="i_eg_deposit_amt"; blank_deposit_amt_val "widget/hints" { default=runclient(0); } }
-		    blank_deposit_gross "widget/variable" { fieldname="i_eg_deposit_gross_amt"; blank_deposit_gross_val "widget/hints" { default=runclient(0); } }
-		    blank_gift_interval "widget/variable" { fieldname="i_eg_gift_interval"; blank_gift_interval_val "widget/hints" { default=runclient("never"); } }
-		    blank_gift_date "widget/variable" { fieldname="i_eg_gift_date"; blank_gift_date_val "widget/hints" { default=runclient(getdate()); } }
-		    field_handler "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
+		    blank_ledger "widget/variable" { fieldname = "a_ledger_number"; blank_ledger_val "widget/hints" { default = runclient(:ledger:value); } }
+		    blank_gift_uuid "widget/variable" { fieldname = "i_eg_gift_uuid"; blank_gift_uuid_val "widget/hints" { default = runclient("FAKE_" + convert("string", eval("Math.floor(Math.random() * 1e15) + 1"))); } }
+		    blank_trx_uuid "widget/variable" { fieldname = "i_eg_trx_uuid"; blank_trx_uuid_val "widget/hints" { default = runclient(:blank_gift_uuid:value); } }
+		    blank_line_item "widget/variable" { fieldname = "i_eg_line_item"; blank_line_item_val "widget/hints" { default = runclient(1); } }
+		    blank_donor_uuid "widget/variable" { fieldname = "i_eg_donor_uuid"; blank_donor_uuid_val "widget/hints" { default = runclient("FAKE_" + convert("string", eval("Math.floor(Math.random() * 1e15) + 1"))); } }
+		    blank_status "widget/variable" { fieldname = "i_eg_status"; blank_status_val "widget/hints" { default = runclient("override"); } }
+		    blank_service "widget/variable" { fieldname = "i_eg_service"; blank_service_val "widget/hints" { default = runclient("N/A"); } }
+		    blank_processor "widget/variable" { fieldname = "i_eg_processor"; blank_processor_val "widget/hints" { default = runclient("N/A"); } }
+		    blank_gift_amount "widget/variable" { fieldname = "i_eg_gift_amount"; blank_gift_amount_val "widget/hints" { default = runclient(0); } }
+		    blank_deposit_amt "widget/variable" { fieldname = "i_eg_deposit_amt"; blank_deposit_amt_val "widget/hints" { default = runclient(0); } }
+		    blank_deposit_gross "widget/variable" { fieldname = "i_eg_deposit_gross_amt"; blank_deposit_gross_val "widget/hints" { default = runclient(0); } }
+		    blank_gift_interval "widget/variable" { fieldname = "i_eg_gift_interval"; blank_gift_interval_val "widget/hints" { default = runclient("never"); } }
+		    blank_gift_date "widget/variable" { fieldname = "i_eg_gift_date"; blank_gift_date_val "widget/hints" { default = runclient(getdate()); } }
+		    field_handler "widget/component" { path = "/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
 		    
 		    edit_pane "widget/pane"
 			{
-			x=15; y=15; width=930; height=140;
-			bgcolor="#e0e0e0";
-			style="lowered";
+			x = 15; y = 15; width = 930; height = 140;
+			bgcolor = "#e0e0e0";
+			style = "lowered";
 			
 			divider "widget/pane"
 			    {
-			    x=10; y=95; width=740; height=2; style=border;
+			    x = 10; y = 95; width = 740; height = 2; style = border;
 			    }
 						
 			static_col "widget/vbox"
 			    {
-			    x=10; y=10; width=150; height=140; spacing=10;
+			    x = 10; y = 10; width = 150; height = 140; spacing = 10;
 			    
 			    service_title_label "widget/label"
 				{
-				x=5; width=180; height=20; // y=static_col
-				font_size=12; style=bold;
-				text="Giving Service Info";
+				x = 5; width = 180; height = 20; // y = static_col
+				font_size = 12; style = bold;
+				text = "Giving Service Info";
 				}
 			    
 			    gift_id_field "widget/component"
 				{
-				x=0; width=180; height=15; label_width=60; // y=static_col
-				path="/sys/cmp/smart_field.cmp";
-				text="Gift ID:";
-				ctl_type=label;
-				type=readonly;
-				field="gift_id";
+				x = 0; width = 180; height = 15; label_width = 60; // y = static_col
+				path = "/sys/cmp/smart_field.cmp";
+				text = "Gift ID:";
+				ctl_type = label;
+				type = readonly;
+				field = "gift_id";
 				}
 			    
 			    gift_date_field "widget/component"
 				{
-				x=0; width=180; height=15; label_width=60; // y=static_col
-				path="/sys/cmp/smart_field.cmp";
-				text="Gift Date:";
-				ctl_type=label;
-				type=readonly;
-				field="gift_date";
+				x = 0; width = 180; height = 15; label_width = 60; // y = static_col
+				path = "/sys/cmp/smart_field.cmp";
+				text = "Gift Date:";
+				ctl_type = label;
+				type = readonly;
+				field = "gift_date";
 				}
 			    
-			    divider_spacer1 "widget/autolayoutspacer" { height=10; }
+			    divider_spacer1 "widget/autolayoutspacer" { height = 10; }
 			    
 			    kardia_title_label "widget/label"
 				{
-				x=5; width=180; height=20; // y=static_col
-				font_size=12; style=bold;
-				text="Kardia Info";
+				x = 5; width = 180; height = 20; // y = static_col
+				font_size = 12; style = bold;
+				text = "Kardia Info";
 				}
 			    }
 			
 			edit_tab "widget/tab"
 			    {
-			    x=170; y=15; width=590; height=140;
+			    x = 170; y = 15; width = 590; height = 140;
 			    
 			    // Widget is invisible.
-			    bgcolor=transparent;
-			    border_color=transparent;
-			    tab_location=none;
+			    bgcolor = transparent;
+			    border_color = transparent;
+			    tab_location = none;
 			    
-			    selected_index=runclient(condition(upper(:content_osrc:status) = "OVERRIDE", 2, 1));
+			    selected_index = runclient(condition(upper(:content_osrc:status)  =  "OVERRIDE", 2, 1));
 			    
 			    immutable "widget/tabpage"
 				{
 				display_cols "widget/component"
 				    {
-				    x=0; y=0; width=590; height=140;
-				    path="/apps/kardia/modules/rcpt/gift_associations_edit.cmp";
-				    editable=0;
+				    x = 0; y = 0; width = 590; height = 140;
+				    path = "/apps/kardia/modules/rcpt/gift_associations_edit.cmp";
+				    editable = 0;
 				    }
 				}
 			    
@@ -425,73 +425,73 @@ gift_associations "widget/page"
 				{
 				edit_cols "widget/component"
 				    {
-				    x=0; y=0; width=590; height=140;
-				    path="/apps/kardia/modules/rcpt/gift_associations_edit.cmp";
-				    editable=1;
+				    x = 0; y = 0; width = 590; height = 140;
+				    path = "/apps/kardia/modules/rcpt/gift_associations_edit.cmp";
+				    editable = 1;
 				    }
 				}
 			    }
 			
 			button_col "widget/vbox"
 			    {
-			    x=780; y=14; width=140; height=140; spacing=7;
-			    fl_width=0;
+			    x = 780; y = 14; width = 140; height = 140; spacing = 7;
+			    fl_width = 0;
 			    
 			    save_cancel_buttons "widget/hbox"
 				{
-				x=0; width=140; height=23; spacing=20; // y=button_col
+				x = 0; width = 140; height = 23; spacing = 20; // y = button_col
 				
 				save_button "widget/textbutton"
 				    {
-				    x=0; y=0; width=60; height=23; // x=save_cancel_buttons
-				    border_radius=5;
-				    text="Save";
-				    enabled=runclient(:edit_form:is_savable);
+				    x = 0; y = 0; width = 60; height = 23; // x = save_cancel_buttons
+				    border_radius = 5;
+				    text = "Save";
+				    enabled = runclient(:edit_form:is_savable);
 				    
 				    save_button_connector "widget/connector"
 					{
-					event=Click;
-					target=edit_form;
-					action=Save;
-					FromKeyboard=1;
-					FromOSRC=0;
+					event = Click;
+					target = edit_form;
+					action = Save;
+					FromKeyboard = 1;
+					FromOSRC = 0;
 					}
 				    }
 				
 				cancel_button "widget/textbutton"
 				    {
-				    y=0; width=60; height=23; // x=save_cancel_buttons
-				    border_radius=5;
-				    text="Cancel";
-				    enabled=runclient(:edit_form:is_discardable);
+				    y = 0; width = 60; height = 23; // x = save_cancel_buttons
+				    border_radius = 5;
+				    text = "Cancel";
+				    enabled = runclient(:edit_form:is_discardable);
 				    
 				    cancel_button_connector "widget/connector"
 					{
-					event=Click;
-					target=edit_form;
-					action=Discard;
-					FromKeyboard=1;
-					FromOSRC=0;
+					event = Click;
+					target = edit_form;
+					action = Discard;
+					FromKeyboard = 1;
+					FromOSRC = 0;
 					}
 				    }
 				}
 			    
 			    copy_delete_buttons "widget/hbox"
 				{
-				x=0; width=140; height=23; spacing=20; // y=button_col
+				x = 0; width = 140; height = 23; spacing = 20; // y = button_col
 				
 				copy_button "widget/textbutton"
 				    {
-				    y=0; width=60; height=23; // x=copy_delete_buttons
-				    border_radius=5;
-				    text="Copy";
-				    enabled=runclient(:edit_form:is_editable);
+				    y = 0; width = 60; height = 23; // x = copy_delete_buttons
+				    border_radius = 5;
+				    text = "Copy";
+				    enabled = runclient(:edit_form:is_editable);
 				    
 				    copy_connector "widget/connector"
 					{
-					event=Click;
-					target=content_osrc;
-					action=Create;
+					event = Click;
+					target = content_osrc;
+					action = Create;
 					
 					// ID fields.
 					a_ledger_number = runclient(:content_osrc:a_ledger_number);
@@ -527,49 +527,49 @@ gift_associations "widget/page"
 				    
 				    auto_update_connector "widget/connector"
 					{
-					event=Click;
-					target=content_osrc;
-					action=Refresh;
+					event = Click;
+					target = content_osrc;
+					action = Refresh;
 					}
 				    
 				    auto_scroll_connector "widget/connector"
 					{
-					event=Click;
-					target=content_osrc;
-					action=First;
+					event = Click;
+					target = content_osrc;
+					action = First;
 					}
 				    }
 				
 				delete_button "widget/textbutton"
 				    {
-				    y=0; width=60; height=23; // x=copy_delete_buttons
-				    border_radius=5;
-				    text="Delete";
-				    enabled=runclient(:edit_form:is_editable AND upper(:content_osrc:status) = "OVERRIDE");
+				    y = 0; width = 60; height = 23; // x = copy_delete_buttons
+				    border_radius = 5;
+				    text = "Delete";
+				    enabled = runclient(:edit_form:is_editable AND upper(:content_osrc:status) = "OVERRIDE");
 				    
 				    delete_button_connector "widget/connector"
 					{
-					event=Click;
-					target=edit_form;
-					action=Delete;
+					event = Click;
+					target = edit_form;
+					action = Delete;
 					}
 				    }
 				}
 			    
 			    line_item_button "widget/textbutton"
 				{
-				x=0; width=140; height=23; // y=button_col
-				border_radius=5;
-				text="Line Item Details";
-				enabled=no; // TODO: Implement.
+				x = 0; width = 140; height = 23; // y = button_col
+				border_radius = 5;
+				text = "Line Item Details";
+				enabled = no; // TODO: Implement.
 				}
 			    
 			    history_button "widget/textbutton"
 				{
-				x=0; width=140; height=23; // y=button_col
-				border_radius=5;
-				text="Association History";
-				enabled=no; // TODO: Implement.
+				x = 0; width = 140; height = 23; // y = button_col
+				border_radius = 5;
+				text = "Association History";
+				enabled = no; // TODO: Implement.
 				}
 			    }
 			}
@@ -579,27 +579,27 @@ gift_associations "widget/page"
 	
 	blank_association_button "widget/textbutton"
 	    {
-	    x=10; y=650; width=150; height=25;
-	    border_radius=5;
-	    text="Create Blank Override";
+	    x = 10; y = 650; width = 150; height = 25;
+	    border_radius = 5;
+	    text = "Create Blank Override";
 	    
 	    blank_association_button_connector "widget/connector"
 		{
-		event=Click;
-		target=edit_form;
-		action=New;
+		event = Click;
+		target = edit_form;
+		action = New;
 		}
 	    
 	    // Fixes a bug where, when the user canceled creating a blank
 	    // association, the old selected association would be editable.
 	    blank_association_cancel_connector "widget/connector"
 		{
-		source=edit_form;
-		event=ModeChange;
-		target=edit_tab;
-		action=SetTab;
+		source = edit_form;
+		event = ModeChange;
+		target = edit_tab;
+		action = SetTab;
 		event_condition=runclient(:OldMode = "New" and :NewMode != "New" and upper(:content_osrc:status) != "OVERRIDE");
-		TabIndex=1;
+		TabIndex = 1;
 		}
 	    }
 	}
