@@ -319,8 +319,19 @@ gift_associations "widget/page"
 		
 		edit_form "widget/form"
 		    {
-		    // TODO: Set up permissions.
 		    objectsource=content_osrc;
+		    
+		    // Permissions & UX.
+		    allow_view=yes;
+		    allow_new=yes;
+		    allow_modify=yes;
+		    allow_delete=yes;
+		    allow_nodata=yes; // Used when no record is selected.
+		    allow_query=no;   // Not used here, disable it.
+		    confirm_delete=yes;
+		    comfirm_discard=no;
+		    enter_mode=save;
+		    tab_revealed_only=yes;
 		    
 		    blank_ledger "widget/variable" { fieldname="a_ledger_number"; blank_ledger_val "widget/hints" { default=runclient(:ledger:value); } }
 		    blank_gift_uuid "widget/variable" { fieldname="i_eg_gift_uuid"; blank_gift_uuid_val "widget/hints" { default=runclient("FAKE_" + convert("string", eval("Math.floor(Math.random() * 1e15) + 1"))); } }
