@@ -10,10 +10,12 @@ gift_associations "widget/page"
     require_one_endorsement="kardia:gift_entry";
     endorsement_context=runserver("kardia:ledger:" + :this:ledger + ":");
     max_requests=9;
+
+    // Note: This app assumes that connectors are activated in the order they are defined.
     
     ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; deploy_to_client=yes; }
 //     period "widget/parameter" { type=string; default=null; }
-
+    
     new_record "widget/variable"
 	{
 	type=Integer;
@@ -259,18 +261,22 @@ gift_associations "widget/page"
 		    
 		    -- Editable fields.
 		    :eg:i_eg_service,           -- Service
+		    :eg:i_eg_processor,         -- Service (human readable)
+		    :eg:i_eg_donor_uuid,        -- Donor UUID
 		    :eg:i_eg_donor_name,        -- Donor Name
 		    :eg:i_eg_donor_address,     -- Donor Addr
 		    :eg:i_eg_desig_uuid,        -- Desig ID
 		    :eg:i_eg_desig_name,        -- Desig Name
 		    :eg:i_eg_desig_notes,       -- Desig Notes
+		    :eg:i_eg_gift_interval,     -- Gift interval
+		    :eg:i_eg_gift_amount,       -- Gift Amount
 		    :eg:i_eg_net_amount,        -- Gross Amount
 		    :eg:i_eg_deposit_gross_amt, -- Net Amount
 		    :eg:p_donor_partner_key,    -- Kardia Donor
 		    :eg:a_fund,                 -- Desig.
 		    :eg:a_account_code          -- GL Account
 		FROM
-		    /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows eg,
+		    identity /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows eg,
 		    /apps/kardia/data/Kardia_DB/p_partner/rows p
 		WHERE
 		    :eg:p_donor_partner_key *= :p:p_partner_key AND
@@ -281,7 +287,7 @@ gift_associations "widget/page"
 		    :eg:i_eg_trx_uuid,
 		    :eg:i_eg_service
 		ORDER BY
-		    :eg:i_eg_gift_date
+		    :eg:i_eg_gift_date desc
 	    ');// End of janky syntax hacks:'");
 	    replicasize=200;
 	    readahead=400;
@@ -522,13 +528,57 @@ gift_associations "widget/page"
 				    text="Copy";
 				    enabled=runclient(condition(:new_record:value = 0, 1, 0));
 				    
-				    // TODO: Figure out how to copy the current element into a new element.
-				    // copy_connector "widget/connector"
-				    //     {
-				    //     event=Click;
-				    //     target=edit_form;
-				    //     action=?;
-				    //     }
+				    copy_connector "widget/connector"
+					{
+					event=Click;
+					target=content_osrc;
+					action=Create;
+					
+					// ID fields.
+					a_ledger_number = runclient(:content_osrc:a_ledger_number);
+					i_eg_gift_uuid = runclient("FAKE_" + convert("string", eval("Math.floor(Math.random() * 1e15) + 1")));
+					i_eg_trx_uuid = runclient("FAKE_" + convert("string", eval("Math.floor(Math.random() * 1e15) + 1")));
+					i_eg_line_item = runclient(1);
+					i_eg_status = runclient("override");
+					
+					// General feilds.
+					i_eg_service = runclient(:content_osrc:i_eg_service);
+					i_eg_processor = runclient(:content_osrc:i_eg_processor);
+					i_eg_donor_uuid = runclient(:content_osrc:i_eg_donor_uuid);
+					i_eg_donor_name = runclient(:content_osrc:i_eg_donor_name);
+					i_eg_donor_address = runclient(:content_osrc:i_eg_donor_address);
+					i_eg_desig_uuid = runclient(:content_osrc:i_eg_desig_uuid);
+					i_eg_desig_name = runclient(:content_osrc:i_eg_desig_name);
+					i_eg_desig_notes = runclient(:content_osrc:i_eg_desig_notes);
+					i_eg_gift_amount = runclient(:content_osrc:i_eg_gift_amount);
+					i_eg_gift_interval = runclient(:content_osrc:i_eg_gift_interval);
+					i_eg_net_amount = runclient(:content_osrc:i_eg_net_amount);
+					i_eg_deposit_gross_amt = runclient(:content_osrc:i_eg_deposit_gross_amt);
+					p_donor_partner_key = runclient(:content_osrc:p_donor_partner_key);
+					a_fund = runclient(:content_osrc:a_fund);
+					a_account_code = runclient(:content_osrc:a_account_code);
+					
+					// Auto fields.
+					i_eg_gift_date = runclient(getdate());
+					s_date_created = runclient(getdate());
+					s_created_by = runclient(user_name());
+					s_date_modified = runclient(getdate());
+					s_modified_by = runclient(user_name());
+					}
+				    
+				    auto_update_connector "widget/connector"
+					{
+					event=Click;
+					target=content_osrc;
+					action=Refresh;
+					}
+				    
+				    auto_scroll_connector "widget/connector"
+					{
+					event=Click;
+					target=content_osrc;
+					action=First;
+					}
 				    }
 				
 				delete_button "widget/textbutton"
