@@ -163,7 +163,7 @@ gift_associations "widget/page"
 		event = DataModify;
 		target = content_osrc;
 		action = QueryText;
-		event_condition = runclient(:search_trigger:value == 1);
+		event_condition = runclient(:search_trigger:value = 1);
 		
 		cx__case_insensitive = 1;
 		objname = runclient("eg");
@@ -242,8 +242,9 @@ gift_associations "widget/page"
 		    :eg:i_eg_desig_notes,       -- Desig Notes
 		    :eg:i_eg_gift_interval,     -- Gift interval
 		    :eg:i_eg_gift_amount,       -- Gift Amount
-		    :eg:i_eg_net_amount,        -- Gross Amount
-		    :eg:i_eg_deposit_gross_amt, -- Net Amount
+		    :eg:i_eg_deposit_amt,       -- Deposit Amount
+		    :eg:i_eg_net_amount,        -- Net Amount
+		    :eg:i_eg_deposit_gross_amt, -- Gross Amount
 		    :eg:p_donor_partner_key,    -- Kardia Donor
 		    :eg:a_fund,                 -- Desig.
 		    :eg:a_account_code          -- GL Account
@@ -343,7 +344,7 @@ gift_associations "widget/page"
 		    allow_nodata = yes; // Used when no record is selected.
 		    allow_query = no;   // Not used here, disable it.
 		    confirm_delete = yes;
-		    comfirm_discard = no;
+		    confirm_discard = no;
 		    enter_mode = save;
 		    tab_revealed_only = yes;
 		    
@@ -448,6 +449,7 @@ gift_associations "widget/page"
 				    x = 0; y = 0; width = 590; height = 140;
 				    path = "/apps/kardia/modules/rcpt/gift_associations_edit.cmp";
 				    editable = 0;
+				    ledger = runserver(:this:ledger);
 				    }
 				}
 			    
@@ -458,6 +460,7 @@ gift_associations "widget/page"
 				    x = 0; y = 0; width = 590; height = 140;
 				    path = "/apps/kardia/modules/rcpt/gift_associations_edit.cmp";
 				    editable = 1;
+				    ledger = runserver(:this:ledger);
 				    }
 				}
 			    }
@@ -541,6 +544,7 @@ gift_associations "widget/page"
 					i_eg_desig_notes = runclient(:content_osrc:i_eg_desig_notes);
 					i_eg_gift_amount = runclient(:content_osrc:i_eg_gift_amount);
 					i_eg_gift_interval = runclient(:content_osrc:i_eg_gift_interval);
+					i_eg_deposit_amt = runclient(:content_osrc:i_eg_deposit_amt);
 					i_eg_net_amount = runclient(:content_osrc:i_eg_net_amount);
 					i_eg_deposit_gross_amt = runclient(:content_osrc:i_eg_deposit_gross_amt);
 					p_donor_partner_key = runclient(:content_osrc:p_donor_partner_key);
