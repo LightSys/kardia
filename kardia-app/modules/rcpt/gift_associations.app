@@ -606,6 +606,14 @@ gift_associations "widget/page"
 	    border_radius = 5;
 	    text = "Create Blank Override";
 	    
+	    immutable_blank_fix "widget/connector"
+		{
+		event = Click;
+		target = edit_tab;
+		action = SetTab;
+		TabIndex = 2;
+		}
+	    
 	    blank_association_button_connector "widget/connector"
 		{
 		event = Click;
