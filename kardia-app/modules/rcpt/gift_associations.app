@@ -124,6 +124,7 @@ gift_associations "widget/page"
 		    FROM
 			/apps/kardia/data/Kardia_DB/a_config/rows
 		    WHERE
+		        -- TODO: Uncomment once Noah fixes substring().
 			-- substring(:a_config_name, 0, 11) = 'GiftImport_' AND
 			:a_config_value = '1'
 		    GROUP BY
@@ -191,7 +192,7 @@ gift_associations "widget/page"
 	    // reduced to minimize performance issues.
 	    sql = runserver('--\'sql=" -- Fixes syntax highlighting.
 		SELECT
-		    -- Primary keys.
+		    -- Primary key fields.
 		    :eg:a_ledger_number,
 		    :eg:i_eg_trx_uuid,
 		    :eg:i_eg_desig_uuid,
@@ -231,6 +232,7 @@ gift_associations "widget/page"
 		    gift_date = :eg:i_eg_gift_date,
 		    
 		    -- Editable fields.
+		    :eg:i_eg_gift_uuid,         -- Gift uuid
 		    :eg:i_eg_service,           -- Service
 		    :eg:i_eg_processor,         -- Service (human readable)
 		    :eg:i_eg_donor_uuid,        -- Donor UUID
@@ -347,9 +349,9 @@ gift_associations "widget/page"
 		    
 		    // Hidden fields.
 		    ledger_number "widget/variable" { fieldname = "a_ledger_number"; ledger_val "widget/hints" { default = runclient(:ledger:value); } }
-		    gift_uuid "widget/variable" { fieldname = "i_eg_gift_uuid"; gift_uuid_val "widget/hints" { default = runclient(:gift_id_field:value); } }
-		    gift_date "widget/variable" { fieldname = "i_eg_gift_date"; gift_date_val "widget/hints" { default = runclient(:gift_date_field:value); } }
-		    trx_uuid "widget/variable" { fieldname = "i_eg_trx_uuid"; trx_uuid_val "widget/hints" { default = runclient(:gift_id_field:value); } }
+		    gift_uuid "widget/variable" { fieldname = "i_eg_gift_uuid"; gift_uuid_val "widget/hints" { default = runclient("FAKE_" + convert("string", eval("Math.floor(Math.random() * 1e15) + 1"))); } }
+		    gift_date "widget/variable" { fieldname = "i_eg_gift_date"; gift_date_val "widget/hints" { default = runclient(:content_osrc:i_eg_gift_date); } }
+		    trx_uuid "widget/variable" { fieldname = "i_eg_trx_uuid"; trx_uuid_val "widget/hints" { default = runclient("FAKE_" + convert("string", eval("Math.floor(Math.random() * 1e15) + 1"))); } }
 		    line_item "widget/variable" { fieldname = "i_eg_line_item"; line_item_val "widget/hints" { default = runclient(1); } }
 		    donor_uuid "widget/variable" { fieldname = "i_eg_donor_uuid"; donor_uuid_val "widget/hints" { default = runclient("FAKE_" + convert("string", eval("Math.floor(Math.random() * 1e15) + 1"))); } }
 		    status "widget/variable" { fieldname = "i_eg_status"; status_val "widget/hints" { default = runclient("override"); } }
@@ -393,7 +395,13 @@ gift_associations "widget/page"
 				
 				gift_id_hints "widget/hints"
 				    {
-				    default = runclient("FAKE_" + convert("string", eval("Math.floor(Math.random() * 1e15) + 1")));
+				    // TODO: Replace "Namespace error" placeholder with the value below
+				    // after the namespace bug is fixed.
+				    default = "Namespace error"; //runclient(condition(
+				// 	char_length(:gift_uuid:value) > 12,
+				// 	substring(:gift_uuid:value, 0, 12) + "...",
+				// 	:gift_uuid:value
+				//     ));
 				    }
 				}
 			    
