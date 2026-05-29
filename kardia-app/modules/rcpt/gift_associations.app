@@ -159,9 +159,22 @@ gift_associations "widget/page"
 		
 		filter_service_updater "widget/connector"
 		    {
+		    // Should be the same as run_search, just with a different event.
 		    event = DataChange;
 		    target = content_osrc;
-		    action = QueryParam;
+		    action = QueryText;
+		    
+		    cx__case_insensitive = 1;
+		    objname = runclient("eg");
+		    field_list = ""
+			+ "*i_eg_donor_name*,"
+			+ "*i_eg_desig_name*,"
+			+ "*i_eg_desig_notes*,"
+			+ "p_donor_partner_key,"
+			+ "*i_eg_donor_email*,"
+			+ "i_eg_donor_city*,"
+			+ "i_eg_donor_state";
+		    query = runclient(:filter_search_box:content);
 		    }
 		}
 	    }
