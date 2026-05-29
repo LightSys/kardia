@@ -181,7 +181,11 @@ gift_associations "widget/page"
 	    // reduced to minimize performance issues.
 	    sql = runserver('--\'sql=" -- Fixes syntax highlighting.
 		SELECT
+		    -- Primary keys.
 		    :eg:a_ledger_number,
+		    :eg:i_eg_trx_uuid,
+		    :eg:i_eg_desig_uuid,
+		    :eg:i_eg_line_item,
 		    
 		    -- Table display fields.
 		    donor_service_name = :eg:i_eg_donor_name
@@ -222,7 +226,6 @@ gift_associations "widget/page"
 		    :eg:i_eg_donor_uuid,        -- Donor UUID
 		    :eg:i_eg_donor_name,        -- Donor Name
 		    :eg:i_eg_donor_address,     -- Donor Addr
-		    :eg:i_eg_desig_uuid,        -- Desig ID
 		    :eg:i_eg_desig_name,        -- Desig Name
 		    :eg:i_eg_desig_notes,       -- Desig Notes
 		    :eg:i_eg_gift_interval,     -- Gift interval
@@ -250,7 +253,6 @@ gift_associations "widget/page"
 	    readahead = 400;
 	    autoquery = onfirstreveal;
 	    baseobj = "/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows";
-	    use_having_clause = yes;
 	    }
 	
 	table "widget/table"
@@ -346,7 +348,7 @@ gift_associations "widget/page"
 		    gift_amount "widget/variable" { fieldname = "i_eg_gift_amount"; gift_amount_val "widget/hints" { default = runclient(0); } }
 		    deposit_amt "widget/variable" { fieldname = "i_eg_deposit_amt"; deposit_amt_val "widget/hints" { default = runclient(0); } }
 		    gift_interval "widget/variable" { fieldname = "i_eg_gift_interval"; gift_interval_val "widget/hints" { default = runclient("never"); } }
-		    field_handler "widget/component" { path = "/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
+		    hidden_field_handler "widget/component" { path = "/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
 		    
 		    edit_pane "widget/pane"
 			{
@@ -542,6 +544,7 @@ gift_associations "widget/page"
 					action = Refresh;
 					}
 				    
+				    // Assumes the newly created association is at the top of the list.
 				    auto_scroll_connector "widget/connector"
 					{
 					event = Click;
