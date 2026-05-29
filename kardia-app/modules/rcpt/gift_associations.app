@@ -49,46 +49,23 @@ gift_associations "widget/page"
 		{
 		y = 5; width = 200; height = 25;
 		
-		run_search "widget/connector"
+		trigger_manual_search "widget/connector"
 		    {
 		    event = ReturnPressed;
-		    target = content_osrc;
-		    action = QueryText;
-		    
-		    cx__case_insensitive = 1;
-		    objname = runclient("eg");
-		    field_list = ""
-			+ "*i_eg_donor_name*,"
-			+ "*i_eg_desig_name*,"
-			+ "*i_eg_desig_notes*,"
-			+ "p_donor_partner_key,"
-			+ "*i_eg_donor_email*,"
-			+ "i_eg_donor_city*,"
-			+ "i_eg_donor_state";
-		    query = runclient(:filter_search_box:content);
+		    target = search_trigger;
+		    action = SetValue;
+		    Value = runclient(1);
 		    }
 		
-		run_search2 "widget/connector"
+		trigger_auto_search "widget/connector"
 		    {
-		    // Should be the same as run_search, just with a different event.
 		    event = LoseFocus;
-		    target = content_osrc;
-		    action = QueryText;
-		    
-		    cx__case_insensitive = 1;
-		    objname = runclient("eg");
-		    field_list = ""
-			+ "*i_eg_donor_name*,"
-			+ "*i_eg_desig_name*,"
-			+ "*i_eg_desig_notes*,"
-			+ "p_donor_partner_key,"
-			+ "*i_eg_donor_email*,"
-			+ "i_eg_donor_city*,"
-			+ "i_eg_donor_state";
-		    query = runclient(:filter_search_box:content);
+		    target = search_trigger;
+		    action = SetValue;
+		    Value = runclient(1);
 		    }
 		
-		clear_search_query "widget/connector"
+		clear_search_results "widget/connector"
 		    {
 		    event = EscapePressed;
 		    target = content_osrc;
@@ -99,7 +76,7 @@ gift_associations "widget/page"
 		    query = runclient("");
 		    }
 		
-		clear_search "widget/connector"
+		clear_search_box "widget/connector"
 		    {
 		    event = EscapePressed;
 		    target = filter_search_box;
@@ -157,24 +134,12 @@ gift_associations "widget/page"
 		";
 		filter_service_hints "widget/hints" { style = notnull; }
 		
-		filter_service_updater "widget/connector"
+		trigger_filtered_search "widget/connector"
 		    {
-		    // Should be the same as run_search, just with a different event.
 		    event = DataChange;
-		    target = content_osrc;
-		    action = QueryText;
-		    
-		    cx__case_insensitive = 1;
-		    objname = runclient("eg");
-		    field_list = ""
-			+ "*i_eg_donor_name*,"
-			+ "*i_eg_desig_name*,"
-			+ "*i_eg_desig_notes*,"
-			+ "p_donor_partner_key,"
-			+ "*i_eg_donor_email*,"
-			+ "i_eg_donor_city*,"
-			+ "i_eg_donor_state";
-		    query = runclient(:filter_search_box:content);
+		    target = search_trigger;
+		    action = SetValue;
+		    Value = runclient(1);
 		    }
 		}
 	    }
@@ -186,6 +151,38 @@ gift_associations "widget/page"
 		param_name = service;
 		type = string;
 		default = runclient(:filter_service_dropdown:value);
+		}
+	    
+	    // Allows multiple connectors to easily re-run the search.
+	    search_trigger "widget/variable" { type = Integer; value=runclient(0); }
+	    
+	    run_search "widget/connector"
+		{
+		source = search_trigger;
+		event = DataModify;
+		target = content_osrc;
+		action = QueryText;
+		event_condition = runclient(:search_trigger:value == 1);
+		
+		cx__case_insensitive = 1;
+		objname = runclient("eg");
+		field_list = ""
+		    + "*i_eg_donor_name*,"
+		    + "*i_eg_desig_name*,"
+		    + "*i_eg_desig_notes*,"
+		    + "p_donor_partner_key,"
+		    + "*i_eg_donor_email*,"
+		    + "i_eg_donor_city*,"
+		    + "i_eg_donor_state";
+		query = runclient(:filter_search_box:content);
+		}
+	    
+	    reset_variable "widget/connector"
+		{
+		event = EndQuery;
+		target = search_trigger;
+		action = SetValue;
+		Value = runclient(0);
 		}
 	    
 	    // Note: This query spams the console with errors. This is not
@@ -434,7 +431,7 @@ gift_associations "widget/page"
 			    border_color = transparent;
 			    tab_location = none;
 			    
-			    selected_index = runclient(condition(upper(:content_osrc:status)  =  "OVERRIDE", 2, 1));
+			    selected_index = runclient(condition(upper(:content_osrc:status) = "OVERRIDE", 2, 1));
 			    
 			    immutable "widget/tabpage"
 				{
