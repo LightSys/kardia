@@ -186,10 +186,6 @@ gift_associations "widget/page"
 		Value = runclient(0);
 		}
 	    
-	    // Note: This query spams the console with errors. This is not
-	    // incorrect behavior, it's just how the MySQL driver & object
-	    // system respond to this query. The replicasize value has been
-	    // reduced to minimize performance issues.
 	    sql = runserver('--\'sql=" -- Fixes syntax highlighting.
 		SELECT
 		    -- Primary key fields.
@@ -201,7 +197,7 @@ gift_associations "widget/page"
 		    -- Table display fields.
 		    donor_service_name = :eg:i_eg_donor_name
 			+ isnull(" (" + :eg:i_eg_donor_address + ")", ""), --sql="
-		    donor_service_designation = :eg:i_eg_desig_name,
+		    donor_service_designation = isnull(:eg:i_eg_desig_name, null),
 		    donor_kardia_name = rtrim(""
 			+ isnull(:p:p_given_name + " ", "")
 			+ isnull(:p:p_surname    + " ", "")
@@ -214,7 +210,7 @@ gift_associations "widget/page"
 			:eg:a_fund,
 			"multiple"
 		    ), --sql="
-		    amount = :eg:i_eg_gift_amount,
+		    amount = isnull(:eg:i_eg_gift_amount, null),
 		    status = upper(ltrim(rtrim(:eg:i_eg_status))),
 		    gift_id = condition(
 			char_length(:eg:i_eg_gift_uuid) > 12,
@@ -246,7 +242,7 @@ gift_associations "widget/page"
 		WHERE
 		    :eg:p_donor_partner_key *= :p:p_partner_key AND
 		    :eg:a_ledger_number = ' + quote(:this:ledger) + ' AND
-		    (:parameters:service = any or :parameters:service = :eg:i_eg_service)
+		    (:parameters:service = any OR :parameters:service = :eg:i_eg_service)
 		GROUP BY
 		    :eg:i_eg_gift_uuid,
 		    :eg:i_eg_trx_uuid,
