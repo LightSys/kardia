@@ -197,7 +197,8 @@ gift_associations "widget/page"
 		    -- Table display fields.
 		    donor_service_name = :eg:i_eg_donor_name
 			+ isnull(" (" + :eg:i_eg_donor_address + ")", ""), --sql="
-		    donor_service_designation = isnull(:eg:i_eg_desig_name, null),
+		    donor_service_designation = isnull(:eg:i_eg_desig_name + " ", "")
+			+ isnull("(" + :eg:i_eg_desig_uuid + ")", ""), --"sql="
 		    donor_kardia_name = rtrim(""
 			+ isnull(:p:p_given_name + " ", "")
 			+ isnull(:p:p_surname    + " ", "")
@@ -207,7 +208,7 @@ gift_associations "widget/page"
 			+ ")"),
 		    donor_kardia_designation = condition(
 			:eg:i_eg_gift_amount = :eg:i_eg_deposit_gross_amt,
-			:eg:a_fund,
+			isnull(:f:a_fund_desc + " ", "") + "(" + :eg:a_fund + ")",
 			"multiple"
 		    ), --sql="
 		    amount = isnull(:eg:i_eg_gift_amount, null),
@@ -238,9 +239,11 @@ gift_associations "widget/page"
 		    :eg:a_account_code          -- GL Account
 		FROM
 		    identity /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows eg,
-		    /apps/kardia/data/Kardia_DB/p_partner/rows p
+		    /apps/kardia/data/Kardia_DB/p_partner/rows p,
+		    /apps/kardia/data/Kardia_DB/a_fund/rows f
 		WHERE
 		    :eg:p_donor_partner_key *= :p:p_partner_key AND
+		    :eg:a_fund *= :f:a_fund AND
 		    :eg:a_ledger_number = ' + quote(:this:ledger) + ' AND
 		    (:parameters:service = any OR :parameters:service = :eg:i_eg_service)
 		GROUP BY
