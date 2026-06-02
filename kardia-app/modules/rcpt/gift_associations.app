@@ -202,19 +202,11 @@ gift_associations "widget/page"
 		    donor_service_name = :eg:i_eg_donor_name
 			+ isnull(" (" + :eg:i_eg_donor_address + ")", ""), --sql="
 		    donor_service_designation = :eg:i_eg_desig_name,
-		    donor_kardia_name = ltrim(""
-			+ isnull(:p:p_given_name, "")
-			+ isnull(condition(
-				char_length(isnull(:p:p_given_name, "")) > 1
-			    AND char_length(isnull(:p:p_surname, "")) > 1
-			    AND :p:p_given_name != :p:p_preferred_name
-			    AND :p:p_surname != :p:p_preferred_name,
-			    :p:p_preferred_name,
-			    ""
-			), "")
-			+ isnull(:p:p_surname, "")
-			+ isnull(:p:p_org_name, "")
-			+ " ("
+		    donor_kardia_name = rtrim(""
+			+ isnull(:p:p_given_name + " ", "")
+			+ isnull(:p:p_surname    + " ", "")
+			+ isnull(:p:p_org_name   + " ", "")
+			+ "("
 			+ isnull(:eg:p_donor_partner_key, "null")
 			+ ")"),
 		    donor_kardia_designation = condition(
