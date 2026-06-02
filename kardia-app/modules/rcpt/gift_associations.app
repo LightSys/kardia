@@ -388,9 +388,9 @@ gift_associations "widget/page"
 				
 				gift_id_hints "widget/hints"
 				    {
-				    // TODO: Replace "Namespace error" placeholder with the value below
+				    // TODO: Replace placeholder below with the specified value
 				    // after the namespace bug is fixed.
-				    default = "Namespace error"; //runclient(condition(
+				    default = "Oops!"; //runclient(condition(
 				// 	char_length(:gift_uuid:value) > 12,
 				// 	substring(:gift_uuid:value, 0, 12) + "...",
 				// 	:gift_uuid:value
