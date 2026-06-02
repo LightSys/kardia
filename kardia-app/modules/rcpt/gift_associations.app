@@ -217,7 +217,7 @@ gift_associations "widget/page"
 			substring(:eg:i_eg_gift_uuid, 0, 12) + "...", --"sql="
 			:eg:i_eg_gift_uuid
 		    ),
-		    gift_date = :eg:i_eg_gift_date,
+		    gift_date = dateformat(:eg:i_eg_gift_date, "M/d/yyyy"), --"sql="
 		    
 		    -- Editable fields.
 		    :eg:i_eg_gift_uuid,         -- Gift uuid
@@ -394,6 +394,7 @@ gift_associations "widget/page"
 				    }
 				}
 			    
+			    // Date display only, the gift_date variable stores the date written to the DB.
 			    gift_date_field "widget/component"
 				{
 				x = 0; width = 180; height = 15; label_width = 60; // y = static_col
@@ -405,8 +406,7 @@ gift_associations "widget/page"
 				
 				gift_date_hints "widget/hints"
 				    {
-				    // TODO: Replace placeholder once the namespace error is fixed.
-				    default = runclient(0); //runclient(:gift_date:value);
+				    default = runclient(getdate());
 				    }
 				}
 			    
