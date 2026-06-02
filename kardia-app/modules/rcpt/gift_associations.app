@@ -547,21 +547,6 @@ gift_associations "widget/page"
 					s_date_modified = runclient(getdate());
 					s_modified_by = runclient(user_name());
 					}
-				    
-				    auto_update_connector "widget/connector"
-					{
-					event = Click;
-					target = content_osrc;
-					action = Refresh;
-					}
-				    
-				    // Assumes the newly created association is at the top of the list.
-				    auto_scroll_connector "widget/connector"
-					{
-					event = Click;
-					target = content_osrc;
-					action = First;
-					}
 				    }
 				
 				delete_button "widget/textbutton"
