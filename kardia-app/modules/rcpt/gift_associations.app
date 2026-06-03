@@ -249,11 +249,15 @@ gift_associations "widget/page"
 		    (:f:a_ledger_number is null OR :f:a_ledger_number = " + quote(:this:ledger) + ") AND
 		    (:parameters:service = any OR :parameters:service = :eg:i_eg_service)
 		GROUP BY
+		    :eg:i_eg_gift_date desc,
 		    :eg:i_eg_gift_uuid,
 		    :eg:i_eg_trx_uuid,
 		    :eg:i_eg_service
 		ORDER BY
-		    :eg:i_eg_gift_date desc
+		    :eg:i_eg_gift_date desc,
+		    :eg:i_eg_gift_uuid,
+		    :eg:i_eg_trx_uuid,
+		    :eg:i_eg_service
 	    ");
 	    replicasize = 200;
 	    readahead = 400;
@@ -593,9 +597,9 @@ gift_associations "widget/page"
 	
 	blank_association_button "widget/textbutton"
 	    {
-	    x = 10; y = 650; width = 150; height = 25;
+	    x = 10; y = 650; width = 100; height = 25;
 	    border_radius = 5;
-	    text = "Create Blank Override";
+	    text = "Add Override";
 	    
 	    immutable_blank_fix "widget/connector"
 		{
