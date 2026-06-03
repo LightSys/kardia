@@ -253,7 +253,7 @@ gift_associations_edit "widget/component-decl"
 			:cr:a_fund =* :c:a_fund
 		    ;
 		");
-		search_field_list = "*a_fund*,*a_fund_desc*,a_legacy_code*";
+		search_field_list = "*a_fund*,*a_fund_desc*,*a_legacy_code*";
 		key_name = "a_fund";
 		
 		mutable_kardia_designation_hints "widget/hints"

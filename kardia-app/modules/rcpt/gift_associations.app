@@ -45,6 +45,7 @@ gift_associations "widget/page"
 		align = right;
 		text = "Search:";
 		}
+	    
 	    filter_search_box "widget/editbox"
 		{
 		y = 5; width = 200; height = 25;
@@ -245,6 +246,7 @@ gift_associations "widget/page"
 		    :eg:p_donor_partner_key *= :p:p_partner_key AND
 		    :eg:a_fund *= :f:a_fund AND
 		    :eg:a_ledger_number = ' + quote(:this:ledger) + ' AND
+		    (:f:a_ledger_number is null OR :f:a_ledger_number = ' + quote(:this:ledger) + ') AND
 		    (:parameters:service = any OR :parameters:service = :eg:i_eg_service)
 		GROUP BY
 		    :eg:i_eg_gift_uuid,
