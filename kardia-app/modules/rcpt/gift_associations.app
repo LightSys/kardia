@@ -187,7 +187,7 @@ gift_associations "widget/page"
 		Value = runclient(0);
 		}
 	    
-	    sql = runserver('--\'sql=" -- Fixes syntax highlighting.
+	    sql = runserver("
 		SELECT
 		    -- Primary key fields.
 		    :eg:a_ledger_number,
@@ -197,29 +197,29 @@ gift_associations "widget/page"
 		    
 		    -- Table display fields.
 		    donor_service_name = :eg:i_eg_donor_name
-			+ isnull(" (" + :eg:i_eg_donor_address + ")", ""), --sql="
-		    donor_service_designation = isnull(:eg:i_eg_desig_name + " ", "")
-			+ isnull("(" + :eg:i_eg_desig_uuid + ")", ""), --"sql="
-		    donor_kardia_name = rtrim(""
-			+ isnull(:p:p_given_name + " ", "")
-			+ isnull(:p:p_surname    + " ", "")
-			+ isnull(:p:p_org_name   + " ", "")
-			+ "("
-			+ isnull(:eg:p_donor_partner_key, "null")
-			+ ")"),
+			+ isnull(' (' + :eg:i_eg_donor_address + ')', ''),
+		    donor_service_designation = isnull(:eg:i_eg_desig_name + ' ', '')
+			+ isnull('(' + :eg:i_eg_desig_uuid + ')', ''),
+		    donor_kardia_name = rtrim(''
+			+ isnull(:p:p_given_name + ' ', '')
+			+ isnull(:p:p_surname    + ' ', '')
+			+ isnull(:p:p_org_name   + ' ', '')
+			+ '('
+			+ isnull(:eg:p_donor_partner_key, 'null')
+			+ ')'),
 		    donor_kardia_designation = condition(
 			:eg:i_eg_gift_amount = :eg:i_eg_deposit_gross_amt,
-			isnull(:f:a_fund_desc + " ", "") + "(" + :eg:a_fund + ")",
-			"multiple"
-		    ), --sql="
+			isnull(:f:a_fund_desc + ' ', '') + '(' + :eg:a_fund + ')',
+			'multiple'
+		    ),
 		    amount = isnull(:eg:i_eg_gift_amount, null),
 		    status = upper(ltrim(rtrim(:eg:i_eg_status))),
 		    gift_id = condition(
 			char_length(:eg:i_eg_gift_uuid) > 12,
-			substring(:eg:i_eg_gift_uuid, 0, 12) + "...", --"sql="
+			substring(:eg:i_eg_gift_uuid, 0, 12) + '...',
 			:eg:i_eg_gift_uuid
 		    ),
-		    gift_date = dateformat(:eg:i_eg_gift_date, "M/d/yyyy"), --"sql="
+		    gift_date = dateformat(:eg:i_eg_gift_date, 'M/d/yyyy'),
 		    
 		    -- Editable fields.
 		    :eg:i_eg_gift_uuid,         -- Gift uuid
@@ -245,8 +245,8 @@ gift_associations "widget/page"
 		WHERE
 		    :eg:p_donor_partner_key *= :p:p_partner_key AND
 		    :eg:a_fund *= :f:a_fund AND
-		    :eg:a_ledger_number = ' + quote(:this:ledger) + ' AND
-		    (:f:a_ledger_number is null OR :f:a_ledger_number = ' + quote(:this:ledger) + ') AND
+		    :eg:a_ledger_number = " + quote(:this:ledger) + " AND
+		    (:f:a_ledger_number is null OR :f:a_ledger_number = " + quote(:this:ledger) + ") AND
 		    (:parameters:service = any OR :parameters:service = :eg:i_eg_service)
 		GROUP BY
 		    :eg:i_eg_gift_uuid,
@@ -254,7 +254,7 @@ gift_associations "widget/page"
 		    :eg:i_eg_service
 		ORDER BY
 		    :eg:i_eg_gift_date desc
-	    ');// End of janky syntax hacks:'");
+	    ");
 	    replicasize = 200;
 	    readahead = 400;
 	    autoquery = onfirstreveal;
