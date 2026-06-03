@@ -186,10 +186,6 @@ gift_associations "widget/page"
 		Value = runclient(0);
 		}
 	    
-	    // Note: This query spams the console with errors. This is not
-	    // incorrect behavior, it's just how the MySQL driver & object
-	    // system respond to this query. The replicasize value has been
-	    // reduced to minimize performance issues.
 	    sql = runserver('--\'sql=" -- Fixes syntax highlighting.
 		SELECT
 		    -- Primary key fields.
@@ -201,35 +197,28 @@ gift_associations "widget/page"
 		    -- Table display fields.
 		    donor_service_name = :eg:i_eg_donor_name
 			+ isnull(" (" + :eg:i_eg_donor_address + ")", ""), --sql="
-		    donor_service_designation = :eg:i_eg_desig_name,
-		    donor_kardia_name = ltrim(""
-			+ isnull(:p:p_given_name, "")
-			+ isnull(condition(
-				char_length(isnull(:p:p_given_name, "")) > 1
-			    AND char_length(isnull(:p:p_surname, "")) > 1
-			    AND :p:p_given_name != :p:p_preferred_name
-			    AND :p:p_surname != :p:p_preferred_name,
-			    :p:p_preferred_name,
-			    ""
-			), "")
-			+ isnull(:p:p_surname, "")
-			+ isnull(:p:p_org_name, "")
-			+ " ("
+		    donor_service_designation = isnull(:eg:i_eg_desig_name + " ", "")
+			+ isnull("(" + :eg:i_eg_desig_uuid + ")", ""), --"sql="
+		    donor_kardia_name = rtrim(""
+			+ isnull(:p:p_given_name + " ", "")
+			+ isnull(:p:p_surname    + " ", "")
+			+ isnull(:p:p_org_name   + " ", "")
+			+ "("
 			+ isnull(:eg:p_donor_partner_key, "null")
 			+ ")"),
 		    donor_kardia_designation = condition(
 			:eg:i_eg_gift_amount = :eg:i_eg_deposit_gross_amt,
-			:eg:a_fund,
+			isnull(:f:a_fund_desc + " ", "") + "(" + :eg:a_fund + ")",
 			"multiple"
 		    ), --sql="
-		    amount = :eg:i_eg_gift_amount,
+		    amount = isnull(:eg:i_eg_gift_amount, null),
 		    status = upper(ltrim(rtrim(:eg:i_eg_status))),
 		    gift_id = condition(
 			char_length(:eg:i_eg_gift_uuid) > 12,
 			substring(:eg:i_eg_gift_uuid, 0, 12) + "...", --"sql="
 			:eg:i_eg_gift_uuid
 		    ),
-		    gift_date = :eg:i_eg_gift_date,
+		    gift_date = dateformat(:eg:i_eg_gift_date, "M/d/yyyy"), --"sql="
 		    
 		    -- Editable fields.
 		    :eg:i_eg_gift_uuid,         -- Gift uuid
@@ -250,11 +239,13 @@ gift_associations "widget/page"
 		    :eg:a_account_code          -- GL Account
 		FROM
 		    identity /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows eg,
-		    /apps/kardia/data/Kardia_DB/p_partner/rows p
+		    /apps/kardia/data/Kardia_DB/p_partner/rows p,
+		    /apps/kardia/data/Kardia_DB/a_fund/rows f
 		WHERE
 		    :eg:p_donor_partner_key *= :p:p_partner_key AND
+		    :eg:a_fund *= :f:a_fund AND
 		    :eg:a_ledger_number = ' + quote(:this:ledger) + ' AND
-		    (:parameters:service = any or :parameters:service = :eg:i_eg_service)
+		    (:parameters:service = any OR :parameters:service = :eg:i_eg_service)
 		GROUP BY
 		    :eg:i_eg_gift_uuid,
 		    :eg:i_eg_trx_uuid,
@@ -351,7 +342,7 @@ gift_associations "widget/page"
 		    // Hidden fields.
 		    ledger_number "widget/variable" { fieldname = "a_ledger_number"; ledger_val "widget/hints" { default = runclient(:ledger:value); } }
 		    gift_uuid "widget/variable" { fieldname = "i_eg_gift_uuid"; gift_uuid_val "widget/hints" { default = runclient("FAKE_" + convert("string", eval("Math.floor(Math.random() * 1e15) + 1"))); } }
-		    gift_date "widget/variable" { fieldname = "i_eg_gift_date"; gift_date_val "widget/hints" { default = runclient(:content_osrc:i_eg_gift_date); } }
+		    gift_date "widget/variable" { fieldname = "i_eg_gift_date"; gift_date_val "widget/hints" { default = runclient(getdate()); } }
 		    trx_uuid "widget/variable" { fieldname = "i_eg_trx_uuid"; trx_uuid_val "widget/hints" { default = runclient("FAKE_" + convert("string", eval("Math.floor(Math.random() * 1e15) + 1"))); } }
 		    line_item "widget/variable" { fieldname = "i_eg_line_item"; line_item_val "widget/hints" { default = runclient(1); } }
 		    donor_uuid "widget/variable" { fieldname = "i_eg_donor_uuid"; donor_uuid_val "widget/hints" { default = runclient("FAKE_" + convert("string", eval("Math.floor(Math.random() * 1e15) + 1"))); } }
@@ -396,9 +387,9 @@ gift_associations "widget/page"
 				
 				gift_id_hints "widget/hints"
 				    {
-				    // TODO: Replace "Namespace error" placeholder with the value below
+				    // TODO: Replace placeholder below with the specified value
 				    // after the namespace bug is fixed.
-				    default = "Namespace error"; //runclient(condition(
+				    default = "Oops!"; //runclient(condition(
 				// 	char_length(:gift_uuid:value) > 12,
 				// 	substring(:gift_uuid:value, 0, 12) + "...",
 				// 	:gift_uuid:value
@@ -406,6 +397,7 @@ gift_associations "widget/page"
 				    }
 				}
 			    
+			    // Date display only, the gift_date variable stores the date written to the DB.
 			    gift_date_field "widget/component"
 				{
 				x = 0; width = 180; height = 15; label_width = 60; // y = static_col
@@ -557,21 +549,6 @@ gift_associations "widget/page"
 					s_created_by = runclient(user_name());
 					s_date_modified = runclient(getdate());
 					s_modified_by = runclient(user_name());
-					}
-				    
-				    auto_update_connector "widget/connector"
-					{
-					event = Click;
-					target = content_osrc;
-					action = Refresh;
-					}
-				    
-				    // Assumes the newly created association is at the top of the list.
-				    auto_scroll_connector "widget/connector"
-					{
-					event = Click;
-					target = content_osrc;
-					action = First;
 					}
 				    }
 				
