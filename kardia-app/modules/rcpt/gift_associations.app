@@ -4,7 +4,7 @@ gift_associations "widget/page"
     title = "Gift Associations";
     width = 1000;
     height = 700;
-    widget_template = "/apps/kardia/tpl/kardia-system.tpl", runserver("/apps/kardia/tpl/" + user_name() + ".tpl");
+    widget_template = "/apps/kardia/tpl/kardia-system.tpl";
     background = null;
     bgcolor = white;
     require_one_endorsement = "kardia:gift_entry";
