@@ -593,9 +593,9 @@ gift_associations "widget/page"
 	
 	blank_association_button "widget/textbutton"
 	    {
-	    x = 10; y = 650; width = 150; height = 25;
+	    x = 10; y = 650; width = 100; height = 25;
 	    border_radius = 5;
-	    text = "Create Blank Override";
+	    text = "Add Override";
 	    
 	    immutable_blank_fix "widget/connector"
 		{
