@@ -36,14 +36,78 @@ transaction_report "system/report"
 	sql = "select * from /apps/kardia/data/Kardia_DB/a_ledger/rows l where :l:a_ledger_number = :this:ledger";
 	}
 
+    // Determine the appropriate starting period for the report data
+    // as well as the starting period for balance forward computation
     period_qy "report/query"
 	{
-	sql = "select parent = first(:a_parent_period) from /apps/kardia/data/Kardia_DB/a_period/rows p where :p:a_period = :this:startperiod and :p:a_ledger_number = :this:ledger";
-	}
+	sql = "	declare object info;
 
-    year_qy "report/query"
-	{
-	sql = "select *, year = datepart(year, :a_start_date) from /apps/kardia/data/Kardia_DB/a_period/rows p where :p:a_period = isnull(:this:year_period, :period_qy:parent) and :p:a_ledger_number = :this:ledger";
+		-- Starting period based on startperiod parameter
+		select
+			:info:startyear = :a_parent_period,
+			:info:startperiod = :a_period
+		from
+			/apps/kardia/data/Kardia_DB/a_period/rows p
+		where
+			:this:startperiod is not null and
+			:p:a_period = :this:startperiod and
+			:p:a_summary_only = 0 and
+			:p:a_ledger_number = :this:ledger
+		;
+
+		-- Starting period based on startdate parameter
+		select
+			:info:startyear = :a_parent_period,
+			:info:startperiod = :a_period
+		from
+			/apps/kardia/data/Kardia_DB/a_period/rows p
+		where
+			:this:startdate is not null and
+			:p:a_start_date <= :this:startdate and
+			:p:a_end_date >= :this:startdate and
+			:p:a_summary_only = 0 and
+			:p:a_ledger_number = :this:ledger and
+			(:info:startperiod is null or :info:startperiod < :p:a_period)
+		;
+
+		-- No start given?  Default to first period in system or in
+		-- the given accounting year, if provided.
+		select
+			:info:startyear = :a_parent_period,
+			:info:startperiod = :a_period
+		from
+			/apps/kardia/data/Kardia_DB/a_period/rows p
+		where
+			:p:a_ledger_number = :this:ledger and
+			(:this:year_period is null or :this:year_period = :p:a_parent_period) and
+			:p:a_summary_only = 0 and
+			:info:startperiod is null
+		order by
+			:p:a_period asc
+		limit
+			1
+		;
+	
+		-- Period containing the starting/opening balances
+		select
+			:info:obperiod = :a_period
+		from
+			/apps/kardia/data/Kardia_DB/a_period/rows p
+		where
+			:p:a_parent_period = :info:startyear and
+			:p:a_summary_only = 0 and
+			:p:a_ledger_number = :this:ledger
+		order by
+			:p:a_period asc
+		limit
+			1
+		;
+
+		select
+			:info:startperiod,
+			:info:startyear,
+			:info:obperiod
+		";
 	}
 
     fund_qy "report/query"
@@ -58,8 +122,7 @@ transaction_report "system/report"
 
     balfwd_qy "report/query"
 	{
-	sql = runserver("
-		select
+	sql = " select
 			cnt = count(1),
 			total = isnull(sum(:t:a_amount), $0.00)
 		from
@@ -69,22 +132,23 @@ transaction_report "system/report"
 			:t:a_ledger_number = :this:ledger and
 			:t:a_fund = :c:a_fund and
 			:c:a_ledger_number = :this:ledger and
-			not (:this:startperiod is null and :this:startdate is null) and
-			datepart(year, :t:a_effective_date) = :year_qy:year " +
-
-			    condition(:this:balfund is null, '', ' and :c:a_bal_fund = :this:balfund') + 
-			    condition(:this:fund is null, '', ' and :t:a_fund = :this:fund') + 
-			    condition(:this:account is null, '', ' and :t:a_account_code = :this:account') + 
-			    condition(:this:ctlaccount is null, '', ' and :t:a_account_category = :this:ctlaccount') + 
-			    condition(:this:batch is null, '', ' and :t:a_batch_number = :this:batch') + 
-			    condition(:this:startperiod is null, '', ' and :t:a_period < :this:startperiod') + 
-			    condition(:this:endperiod is null, '', ' and :t:a_period <= :this:endperiod') + 
-			    condition(:this:startdate is null, '', ' and :t:a_effective_date < :this:startdate') + 
-			    condition(:this:enddate is null, '', ' and :t:a_effective_date <= :this:enddate') + 
-			    condition(:this:hide1900, ' and :t:a_account_code != "1900"', '') + 
-			    condition(:this:onlyequity, ' and :t:a_account_code >= "3000" and :t:a_account_code <= "5999"', '') + 
-			    condition(:this:origin is null, '', ' and :t:a_origin = :this:origin') + 
-		"");
+			not (:this:startperiod is null and :this:startdate is null and :this:year_period is null) and
+			:t:a_period >= :period_qy:obperiod and
+			(:t:a_transaction_type = 'T' or :t:a_period = :period_qy:obperiod) and
+			(:this:balfund is null or :this:balfund = :c:a_bal_fund) and
+			(:this:fund is null or :this:fund = :t:a_fund) and
+			(:this:account is null or :this:account = :t:a_account_code) and
+			(:this:ctlaccount is null or :this:ctlaccount = :t:a_account_category) and
+			(:this:batch is null or :this:batch = :t:a_batch_number) and
+			(:this:startperiod is null or :t:a_period < :this:startperiod) and
+			(:this:endperiod is null or :t:a_period <= :this:endperiod) and
+			(:this:startdate is null or :t:a_effective_date < :this:startdate) and
+			(:this:enddate is null or :t:a_effective_date <= :this:enddate) and
+			(:this:hide1900 = 0 or :t:a_account_code != '1900') and
+			(:this:onlyequity = 0 or :t:a_account_code >= '3000') and
+			(:this:onlyequity = 0 or :t:a_account_code <= '5999') and
+			(:this:origin is null or :t:a_origin = :this:origin)
+		";
 	}
 
 
@@ -120,22 +184,22 @@ transaction_report "system/report"
 			:t:a_account_code *= :a:a_account_code and
 			:c:a_ledger_number =* :t:a_ledger_number and
 			:a:a_ledger_number =* :t:a_ledger_number and
-			datepart(year, :t:a_effective_date) = :year_qy:year " +
-
-			    condition(:this:balfund is null, '', ' and :c:a_bal_fund = :this:balfund') + 
-			    condition(:this:fund is null, '', ' and :t:a_fund = :this:fund') + 
-			    condition(:this:account is null, '', ' and :t:a_account_code = :this:account') + 
-			    condition(:this:ctlaccount is null, '', ' and :t:a_account_category = :this:ctlaccount') + 
-			    condition(:this:batch is null, '', ' and :t:a_batch_number = :this:batch') + 
-			    condition(:this:startperiod is null, '', ' and :t:a_period >= :this:startperiod') + 
-			    condition(:this:endperiod is null, '', ' and :t:a_period <= :this:endperiod') + 
-			    condition(:this:startdate is null, '', ' and :t:a_effective_date >= :this:startdate') + 
-			    condition(:this:enddate is null, '', ' and :t:a_effective_date <= :this:enddate') + 
-			    condition(:this:hide1900, ' and :t:a_account_code != "1900"', '') + 
-			    condition(:this:onlyequity, ' and :t:a_account_code >= "3000" and :t:a_account_code <= "5999"', '') + 
-			    condition(:this:origin is null, '', ' and :t:a_origin = :this:origin') + 
-
-		" order by " +
+			:t:a_period >= :period_qy:obperiod and
+			(:t:a_transaction_type = 'T' or :t:a_period = :period_qy:obperiod) and
+			(:this:balfund is null or :this:balfund = :c:a_bal_fund) and
+			(:this:fund is null or :this:fund = :t:a_fund) and
+			(:this:account is null or :this:account = :t:a_account_code) and
+			(:this:ctlaccount is null or :this:ctlaccount = :t:a_account_category) and
+			(:this:batch is null or :this:batch = :t:a_batch_number) and
+			(:this:startperiod is null or :t:a_period >= :this:startperiod) and
+			(:this:endperiod is null or :t:a_period <= :this:endperiod) and
+			(:this:startdate is null or :t:a_effective_date >= :this:startdate) and
+			(:this:enddate is null or :t:a_effective_date <= :this:enddate) and
+			(:this:hide1900 = 0 or :t:a_account_code != '1900') and
+			(:this:onlyequity = 0 or :t:a_account_code >= '3000') and
+			(:this:onlyequity = 0 or :t:a_account_code <= '5999') and
+			(:this:origin is null or :t:a_origin = :this:origin)
+		order by " +
 
 			    condition(:this:sortby == "pbjt", ":t:a_period, :t:a_batch_number, :t:a_journal_number, :t:a_transaction_number", "") +
 			    condition(:this:sortby == "cca", ":t:a_fund, :t:a_account_code", "") +
@@ -143,6 +207,7 @@ transaction_report "system/report"
 			    condition(:this:sortby == "date", ":t:a_effective_date, :t:a_batch_number, :t:a_journal_number, :t:a_transaction_number", "") +
 			    condition(:this:sortby == "pdate", ":t:a_period, :t:a_effective_date, :t:a_batch_number, :t:a_journal_number, :t:a_transaction_number", "") +
 		"");
+
 	plus_sum "report/aggregate" { compute="isnull(sum(:plus_amt),$0)"; reset=0; }
 	minus_sum "report/aggregate" { compute="isnull(sum(:minus_amt),$0)"; reset=0; }
 	rowid "report/aggregate" { compute="count(1)"; reset=0; }
@@ -158,7 +223,7 @@ transaction_report "system/report"
 
     ledger_form "report/form"
 	{
-	source = ledger_qy, period_qy, year_qy, acct_qy, fund_qy;
+	source = ledger_qy, period_qy, acct_qy, fund_qy;
 
 	rpt_title "report/area"
 	    {
@@ -174,7 +239,11 @@ transaction_report "system/report"
 	    x=0; width=80; height=1;
 	    font=helvetica;
 	    fontsize=8;
-	    c_d0 "report/data" { value = runserver("Year: " + :this:year_period + "\n"); }
+	    c_d0 "report/data"
+		{
+		condition = runserver(not (:this:year_period is null));
+		value = runserver("Year: " + :this:year_period + "\n");
+		}
 	    c_d1 "report/data"
 		{ 
 		condition = runserver(not (:this:balfund is null));
