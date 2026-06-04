@@ -23,7 +23,7 @@ gift_associations_edit "widget/component-decl"
 		
 		// Dropdown data.
 		ctl_type = dropdown;
-		field = "i_eg_service";
+		field = i_eg_service;
 		sql="
 		    SELECT
 			label = substring(:a_config_name, 12),
@@ -58,7 +58,7 @@ gift_associations_edit "widget/component-decl"
 		path = "/sys/cmp/smart_field.cmp";
 		text = "Donor Name:";
 		ctl_type = editbox;
-		field = "i_eg_donor_name";
+		field = i_eg_donor_name;
 		form = form;
 		
 		mutable_donor_name_hints "widget/hints"
@@ -79,7 +79,7 @@ gift_associations_edit "widget/component-decl"
 		path = "/sys/cmp/smart_field.cmp";
 		text = "Donor Address:";
 		ctl_type = editbox;
-		field = "i_eg_donor_address";
+		field = i_eg_donor_address;
 		form = form;
 		
 		mutable_donor_address_hints "widget/hints"
@@ -100,8 +100,8 @@ gift_associations_edit "widget/component-decl"
 		{
 		x = 0; width = 200; height = 15; label_width = 100; // y = col2
 		path = "/apps/kardia/modules/base/editbox_table.cmp";
-		field = "p_donor_partner_key";
 		text = "Donor:";
+		field = p_donor_partner_key;
 		form = form;
 		validate = 1;
 		
@@ -140,8 +140,8 @@ gift_associations_edit "widget/component-decl"
 		    + "*p_org_name*,"
 		    + "p_legacy_key_1,"
 		    + "*p_legacy_key_2*";
-		search_objname = "p";
-		key_name = "p_partner_key";
+		search_objname = p;
+		key_name = p_partner_key;
 		
 		mutable_kardia_donor_hints "widget/hints"
 		    {
@@ -176,7 +176,7 @@ gift_associations_edit "widget/component-decl"
 			path = "/sys/cmp/smart_field.cmp";
 			text = "Desig. ID:";
 			ctl_type = editbox;
-			field = "i_eg_desig_uuid";
+			field = i_eg_desig_uuid;
 			form = form;
 			
 			mutable_desig_id_hints "widget/hints"
@@ -198,7 +198,7 @@ gift_associations_edit "widget/component-decl"
 			path = "/sys/cmp/smart_field.cmp";
 			text = "Desig. Name:";
 			ctl_type = editbox;
-			field = "i_eg_desig_name";
+			field = i_eg_desig_name;
 			form = form;
 			
 			mutable_desig_name_hints "widget/hints"
@@ -225,7 +225,7 @@ gift_associations_edit "widget/component-decl"
 			path = "/sys/cmp/smart_field.cmp";
 			text = "Gross Amount:";
 			ctl_type = editbox;
-			field = "i_eg_deposit_gross_amt";
+			field = i_eg_deposit_gross_amt;
 			form = form;
 			
 			mutable_gross_amount_hints "widget/hints"
@@ -248,7 +248,7 @@ gift_associations_edit "widget/component-decl"
 			path = "/sys/cmp/smart_field.cmp";
 			text = "Net Amount:";
 			ctl_type = editbox;
-			field = "i_eg_net_amount";
+			field = i_eg_net_amount;
 			form = form;
 			
 			mutable_net_amount_hints "widget/hints"
@@ -273,7 +273,7 @@ gift_associations_edit "widget/component-decl"
 		path = "/sys/cmp/smart_field.cmp";
 		text = "Desig. Notes:";
 		ctl_type = editbox;
-		field = "i_eg_desig_notes";
+		field = i_eg_desig_notes;
 		form = form;
 		
 		mutable_desig_notes_hints "widget/hints"
@@ -298,8 +298,8 @@ gift_associations_edit "widget/component-decl"
 		    {
 		    x = 0; width = 200; height = 15; label_width = 100; // y = col3_and_4_bottom
 		    path = "/apps/kardia/modules/base/editbox_table.cmp";
-		    field = "a_fund";
 		    text = "Desig.:";
+		    field = a_fund;
 		    form = form;
 		    validate = 1;
 		    
@@ -324,8 +324,8 @@ gift_associations_edit "widget/component-decl"
 			    :c:a_is_posting = 1
 		    ");
 		    search_field_list = "*a_fund*,*a_fund_desc*,*a_legacy_code*";
-		    search_objname = "c";
-		    key_name = "a_fund";
+		    search_objname = c;
+		    key_name = a_fund;
 		    
 		    mutable_kardia_designation_hints "widget/hints"
 			{
@@ -343,8 +343,8 @@ gift_associations_edit "widget/component-decl"
 		    {
 		    x = 0; width = 170; height = 15; label_width = 100; // y = col3_and_4_bottom
 		    path = "/apps/kardia/modules/base/editbox_table.cmp";
-		    field = "a_account_code";
 		    text = "GL Account:";
+		    field = a_account_code;
 		    form = form;
 		    validate = 1;
 		    
@@ -364,7 +364,7 @@ gift_associations_edit "widget/component-decl"
 			    :a_account_code
 		    ");
 		    search_field_list = "*a_account_code*";
-		    key_name = "a_account_code";
+		    key_name = a_account_code;
 		    
 		    mutable_gl_account_hints "widget/hints"
 			{
