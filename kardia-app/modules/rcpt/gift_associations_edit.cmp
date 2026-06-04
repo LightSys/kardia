@@ -249,10 +249,10 @@ gift_associations_edit "widget/component-decl"
 			/apps/kardia/data/Kardia_DB/a_fund/rows c,
 			/apps/kardia/data/Kardia_DB/a_fund_receipting/rows cr
 		    WHERE
-			:c:a_is_posting = 1 AND
 			:c:a_ledger_number = " + quote(:this:ledger) + " AND
 			:cr:a_ledger_number =* :c:a_ledger_number AND
-			:cr:a_fund =* :c:a_fund
+			:cr:a_fund =* :c:a_fund AND
+			:c:a_is_posting = 1
 		");
 		search_field_list = "*a_fund*,*a_fund_desc*,*a_legacy_code*";
 		search_objname = "c";
@@ -344,7 +344,8 @@ gift_associations_edit "widget/component-decl"
 		    FROM
 			/apps/kardia/data/Kardia_DB/a_account/rows
 		    WHERE
-			:a_ledger_number = " + quote(:this:ledger) + "
+			:a_ledger_number = " + quote(:this:ledger) + " AND
+			:a_is_posting = 1
 		    ORDER BY
 			:a_account_code
 		");
