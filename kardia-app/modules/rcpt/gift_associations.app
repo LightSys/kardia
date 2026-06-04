@@ -592,7 +592,14 @@ gift_associations "widget/page"
 				x = 0; width = 140; height = 23; // y = button_col
 				border_radius = 5;
 				text = "Line Item Details";
-				enabled = no; // TODO: Implement.
+				enabled = runclient(:content_osrc:donor_kardia_designation = 'multiple');
+				
+				open_line_item_window "widget/connector"
+				    {
+				    event = Click;
+				    target = line_item_window;
+				    action = Open;
+				    }
 				}
 			    
 			    history_button "widget/textbutton"
@@ -639,6 +646,124 @@ gift_associations "widget/page"
 		action = SetTab;
 		event_condition=runclient(:OldMode = "New" and :NewMode != "New" and upper(:content_osrc:status) != "OVERRIDE");
 		TabIndex = 1;
+		}
+	    }
+	}
+    
+    line_item_window "widget/childwindow"
+	{
+	x = 140; y = 115; width = 410; height = 475;
+	title = "Line Item Details";
+	style = dialog;
+	toplevel = yes;
+	modal = yes;
+	visible = no;
+	
+	load_on_open "widget/connector"
+	    {
+	    event = Open;
+	    target = line_item_osrc;
+	    action = QueryParam;
+	    }
+	
+	line_item_osrc "widget/osrc"
+	    {
+	    // Get current transaction from client.
+	    trx_uuid_param "widget/parameter"
+		{
+		param_name = trx_uuid;
+		type = string;
+		default = runclient(:content_osrc:i_eg_trx_uuid);
+		}
+	    
+	    sql = runserver("
+		SELECT
+		    :eg:i_eg_line_item,         -- Line Item
+		    :eg:i_eg_desig_uuid,        -- Service: Desig. ID
+		    :eg:i_eg_desig_name,        -- Service: Desig. Name
+		    :eg:i_eg_desig_notes,       -- Service: Desig. Notes
+		    :eg:i_eg_gift_amount,       -- Gift Amount
+		    :eg:i_eg_deposit_gross_amt, -- Gross Amount
+		    :eg:i_eg_net_amount,        -- Net Amount
+		    :eg:a_fund,                 -- Kardia: Fund/Desig
+		    :eg:a_account_code          -- Kardia: GL Account
+		FROM
+		    identity /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows eg
+		WHERE
+		    :eg:i_eg_trx_uuid = :parameters:trx_uuid AND
+		    :eg:a_ledger_number = " + quote(:this:ledger) + "
+		ORDER BY
+		    :eg:i_eg_line_item
+	    ");
+	    baseobj = "/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows";
+	    replicasize = 50;
+	    readahead = 50;
+	    autoquery = never;
+	    }
+	
+	line_item_pane "widget/pane"
+	    {
+	    x = 5; y = 5; width = 400; height = 440;
+	    
+	    line_item_info "widget/hbox"
+		{
+		x = 15; y = 5; width = 380; height = 20; spacing = 10;
+		
+		deposit_title_label "widget/label"
+		    {
+		    y = 0; width = 80; height = 20; // x=line_item_info
+		    style = bold;
+		    text = "Deposit:";
+		    }
+		
+		deposit_gross_label "widget/label"
+		    {
+		    y = 0; width = 120; height = 20; // x=line_item_info
+		    value = runclient("Gross: " + :line_item_osrc:i_eg_deposit_gross_amt);
+		    }
+		
+		deposit_net_label "widget/label"
+		    {
+		    y = 0; width = 120; height = 20; // x=line_item_info
+		    value = runclient("Net: " + :line_item_osrc:i_eg_net_amount);
+		    }
+		}
+	    
+	    line_item_table "widget/table"
+		{
+		x = 10; y = 30; width = 380; height = 400;
+		objectsource = line_item_osrc;
+		nodata_message = "No Line Items Details";
+		
+		// Layout
+		rowheight = null;
+		cellvspacing = 4;
+		inner_padding = 4;
+		colsep = 0;
+		
+		// Behavior
+		overlap_scrollbar = yes;
+		demand_scrollbar = yes;
+		
+		column_desig_uuid "widget/table-column"
+		    {
+		    width = 25;
+		    fieldname = i_eg_desig_uuid;
+		    title = "Service Desig. ID";
+		    }
+		column_line_item "widget/table-column"
+		    {
+		    width = 10;
+		    fieldname = i_eg_line_item;
+		    title = "Line Item";
+		    }
+		column_gift_amount "widget/table-column"
+		    {
+		    width = 15;
+		    align = right;
+		    fieldname = i_eg_gift_amount;
+		    title = "Gift Amount";
+		    }
 		}
 	    }
 	}
