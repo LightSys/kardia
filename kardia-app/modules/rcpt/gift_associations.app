@@ -212,13 +212,13 @@ gift_associations "widget/page"
 			+ isnull(' (' + :eg:i_eg_donor_address + ')', ''),
 		    donor_service_designation = isnull(:eg:i_eg_desig_name + ' ', '')
 			+ isnull('(' + :eg:i_eg_desig_uuid + ')', ''),
-		    donor_kardia_name = rtrim(''
+		    donor_kardia_name = ''
 			+ isnull(:p:p_given_name + ' ', '')
 			+ isnull(:p:p_surname    + ' ', '')
 			+ isnull(:p:p_org_name   + ' ', '')
 			+ '('
 			+ isnull(:eg:p_donor_partner_key, 'null')
-			+ ')'),
+			+ ')',
 		    donor_kardia_designation = condition(
 			:eg:i_eg_gift_amount = :eg:i_eg_deposit_gross_amt,
 			isnull(:f:a_fund_desc + ' ', '') + '(' + :eg:a_fund + ')',
