@@ -66,23 +66,20 @@ gift_associations "widget/page"
 		    Value = runclient(1);
 		    }
 		
-		clear_search_results "widget/connector"
-		    {
-		    event = EscapePressed;
-		    target = content_osrc;
-		    action = QueryText;
-		    
-		    objname = runclient("eg");
-		    field_list = runclient("");
-		    query = runclient("");
-		    }
-		
 		clear_search_box "widget/connector"
 		    {
 		    event = EscapePressed;
 		    target = filter_search_box;
 		    action = SetValue;
 		    Value = runclient("");
+		    }
+		
+		trigger_clear_search "widget/connector"
+		    {
+		    event = EscapePressed;
+		    target = search_trigger;
+		    action = SetValue;
+		    Value = runclient(1);
 		    }
 		}
 	    
@@ -155,6 +152,13 @@ gift_associations "widget/page"
 		default = runclient(:filter_service_dropdown:value);
 		}
 	    
+	    filter_override_only_param "widget/parameter"
+		{
+		param_name = override_only;
+		type = integer;
+		default = runclient(condition(:filter_search_box:content = '', 1, 0));
+		}
+	    
 	    // Allows multiple connectors to easily re-run the search.
 	    search_trigger "widget/variable" { type = Integer; value=runclient(0); }
 	    
@@ -179,12 +183,20 @@ gift_associations "widget/page"
 		query = runclient(:filter_search_box:content);
 		}
 	    
-	    reset_variable "widget/connector"
+	    reset_search_trigger "widget/connector"
 		{
 		event = EndQuery;
 		target = search_trigger;
 		action = SetValue;
 		Value = runclient(0);
+		}
+	    
+	    page_load_connector "widget/connector"
+		{
+		source=gift_associations;
+		event=Load;
+		action=QueryParam;
+		target=content_osrc;
 		}
 	    
 	    sql = runserver("
@@ -247,7 +259,8 @@ gift_associations "widget/page"
 		    :eg:a_fund *= :f:a_fund AND
 		    :eg:a_ledger_number = " + quote(:this:ledger) + " AND
 		    (:f:a_ledger_number is null OR :f:a_ledger_number = " + quote(:this:ledger) + ") AND
-		    (:parameters:service = any OR :parameters:service = :eg:i_eg_service)
+		    (:parameters:override_only = 0 OR lower(:eg:i_eg_status) = 'override') AND
+		    (:parameters:service = 'any' OR :parameters:service = :eg:i_eg_service)
 		GROUP BY
 		    :eg:i_eg_gift_date desc,
 		    :eg:i_eg_gift_uuid,
@@ -259,9 +272,9 @@ gift_associations "widget/page"
 		    :eg:i_eg_trx_uuid,
 		    :eg:i_eg_service
 	    ");
-	    replicasize = 200;
-	    readahead = 400;
-	    autoquery = onfirstreveal;
+	    replicasize = 100;
+	    readahead = 200;
+	    autoquery = never;
 	    baseobj = "/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows";
 	    }
 	
