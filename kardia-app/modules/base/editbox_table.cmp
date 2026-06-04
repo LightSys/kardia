@@ -52,7 +52,7 @@ editbox_table "widget/component-decl"
 	    fl_height = 0;
 	    enabled=runclient(:form:is_enabled);
 
-	    btn_cn "widget/connector" { event=Click; target=win; action=Toggle; }
+	    btn_cn "widget/connector" { event=Click; target=popup_window; action=Toggle; }
 	    btn_cn2 "widget/connector" { event=Click; target=eb; action=SetFocus; event_delay=0.1; }
 	    }
 	}
@@ -62,7 +62,17 @@ editbox_table "widget/component-decl"
 	condition = runserver(:this:validate);
 
 	keyparam "widget/parameter" { type=runserver(:this:key_type); }
-	sql = runserver(:this:popup_sql + " where " + condition(char_length(:this:search_objname) > 0, ":" + :this:search_objname, "") + ":" + quote(:this:key_name) + " = :parameters:keyparam");
+	sql = runserver(:this:popup_sql
+	    + " where "
+		+ condition(
+		    char_length(:this:search_objname) > 0,
+		    ":" + :this:search_objname,
+		    ""
+		)
+		+ ":"
+		+ quote(:this:key_name)
+		+ " = :parameters:keyparam"
+	);
 	readahead = 5;
 	replicasize = 5;
 	autoquery = never;
@@ -82,7 +92,7 @@ editbox_table "widget/component-decl"
 	    event=DataChange;
 	    target=pane;
 	    action=SetBackground;
-	    Color=runclient(condition(:win:is_visible, "#a8c1d8", null));
+	    Color=runclient(condition(:popup_window:is_visible, "#a8c1d8", null));
 	    }
 
 	set_desc_on_validate "widget/connector"
@@ -124,7 +134,7 @@ editbox_table "widget/component-decl"
 	    }
 	}
 
-    win "widget/component"
+    popup_window "widget/component"
 	{
 	path = "/apps/kardia/modules/base/popup_table.cmp";
 	editbox = eb;
@@ -140,9 +150,7 @@ editbox_table "widget/component-decl"
 	search_objname = runserver(:this:search_objname);
 	multiselect = runserver(:this:multiselect);
 
-	//opened_cn "widget/connector" { event=Opened; target=pane; action=SetBackground; Image=runclient("/apps/kardia/images/bg/blue_gradient2_h.png"); }
 	opened_cn "widget/connector" { event=Opened; target=pane; action=SetBackground; Color=runclient("#a8c1d8"); }
-	//opened_cn "widget/connector" { event=Opened; target=pane; action=SetBackground; Color=runclient("#133957"); }
 	closed_cn "widget/connector" { event=Closed; target=pane; action=SetBackground; Color=runclient(null); }
 	}
     }
