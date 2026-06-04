@@ -101,7 +101,7 @@ gift_associations "widget/page"
 		hilight = "#d0d0d0";
 		
 		// Get payment service types.
-		mode = "dynamic_server";
+		mode = dynamic_server;
 		sql = "
 		    DECLARE collection gift_services;
 		    
@@ -129,7 +129,7 @@ gift_associations "widget/page"
 			:a_config_name
 		    ;
 		    
-		    SELECT * FROM collection gift_services;
+		    SELECT * FROM collection gift_services
 		";
 		filter_service_hints "widget/hints" { style = notnull; }
 		

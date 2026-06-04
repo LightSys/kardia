@@ -37,7 +37,6 @@ gift_associations_edit "widget/component-decl"
 			:a_config_value = '1'
 		    GROUP BY
 			:a_config_name
-		    ;
 		";
 		form = form;
 		
@@ -104,26 +103,28 @@ gift_associations_edit "widget/component-decl"
 		field = "p_donor_partner_key";
 		text = "Donor:";
 		form = form;
+		validate = 1;
 		
 		// Popup
 		popup_text = "Select a Donor:";
 		popup_width = 335;
 		popup_sql = "
 		    SELECT
-			value = :p:p_partner_key,
-			label = condition(
+			value = :p:p_partner_key + '', -- Stop failed auto-writes to DB.
+			label = isnull(condition(
 			    char_length(rtrim(:p:p_org_name)) > 0,
 			    :p:p_org_name,
-			    :p:p_given_name + ' ' + :p:p_surname
-			)
+			    :p:p_given_name + ' ' + :p:p_surname,
+			) + ' ', '')
 			+ isnull(
 			    ' ['
 				+ :pl:p_city + ', '
 				+ :pl:p_state_province + ' '
 				+ :pl:p_postal_code
-			    + '] #'
-			    + :p:p_partner_key,
+			    + '] ',
 			'')
+			+ '#'
+			+ isnull(:p:p_partner_key, 'null')
 		    FROM
 			/apps/kardia/data/Kardia_DB/p_partner/rows p,
 			/apps/kardia/data/Kardia_DB/p_location/rows pl
@@ -131,7 +132,6 @@ gift_associations_edit "widget/component-decl"
 			:p:p_partner_key *= :pl:p_partner_key
 		    GROUP BY
 			:p:p_partner_key
-		    ;
 		";
 		search_field_list = ""
 		    + "p_partner_key,"
@@ -140,7 +140,8 @@ gift_associations_edit "widget/component-decl"
 		    + "*p_org_name*,"
 		    + "p_legacy_key_1,"
 		    + "*p_legacy_key_2*";
-		key_name = "p_donor_partner_key";
+		search_objname = "p";
+		key_name = "p_partner_key";
 		
 		mutable_kardia_donor_hints "widget/hints"
 		    {
@@ -231,13 +232,14 @@ gift_associations_edit "widget/component-decl"
 		field = "a_fund";
 		text = "Desig.:";
 		form = form;
+		validate = 1;
 		
 		// Popup
 		popup_text = "Select a Designation:";
 		popup_width = 335;
 		popup_sql = runserver("
 		    SELECT
-			value = :c:a_fund,
+			value = :c:a_fund + '', -- Stop failed auto-writes to DB.
 			label = :c:a_fund + ' - ' + condition(
 			    isnull(:cr:a_receiptable,0) = 1,
 			    :c:a_fund_desc + isnull(' (legacy # ' + :c:a_legacy_code + ')',''),
@@ -251,9 +253,9 @@ gift_associations_edit "widget/component-decl"
 			:c:a_ledger_number = " + quote(:this:ledger) + " AND
 			:cr:a_ledger_number =* :c:a_ledger_number AND
 			:cr:a_fund =* :c:a_fund
-		    ;
 		");
 		search_field_list = "*a_fund*,*a_fund_desc*,*a_legacy_code*";
+		search_objname = "c";
 		key_name = "a_fund";
 		
 		mutable_kardia_designation_hints "widget/hints"
@@ -288,6 +290,7 @@ gift_associations_edit "widget/component-decl"
 		    style = applyonchange,notnull;
 		    default = runclient(0);
 		    }
+		
 		immutable_gross_amount_hints "widget/hints"
 		    {
 		    condition = runserver(:this:editable = 0);
@@ -310,6 +313,7 @@ gift_associations_edit "widget/component-decl"
 		    style = applyonchange,notnull;
 		    default = runclient(0);
 		    }
+		
 		immutable_net_amount_hints "widget/hints"
 		    {
 		    condition = runserver(:this:editable = 0);
@@ -328,21 +332,21 @@ gift_associations_edit "widget/component-decl"
 		field = "a_account_code";
 		text = "GL Account:";
 		form = form;
+		validate = 1;
 		
 		// Popup
 		popup_text = "Select a GL Account:";
 		popup_width = 335;
 		popup_sql = runserver("
 		    SELECT
-			value = :a:a_account_code,
-			label = :a:a_account_code + ' - ' + isnull(:a:a_acct_desc, '')
+			value = :a_account_code + '', -- Stop failed auto-writes to DB.
+			label = :a_account_code + ' - ' + isnull(:a_acct_desc, '')
 		    FROM
-			/apps/kardia/data/Kardia_DB/a_account/rows a
+			/apps/kardia/data/Kardia_DB/a_account/rows
 		    WHERE
-			:a:a_ledger_number = " + quote(:this:ledger) + "
+			:a_ledger_number = " + quote(:this:ledger) + "
 		    ORDER BY
-			:a:a_account_code
-		    ;
+			:a_account_code
 		");
 		search_field_list = "*a_account_code*";
 		key_name = "a_account_code";
