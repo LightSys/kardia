@@ -278,7 +278,7 @@ gift_associations "widget/page"
 	    baseobj = "/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows";
 	    }
 	
-	table "widget/table"
+	associations_table "widget/table"
 	    {
 	    x = 10; y = 50; width = 960; height = 590;
 	    objectsource = content_osrc;
@@ -336,7 +336,7 @@ gift_associations "widget/page"
 		}
 	    
 	    // Row Detail
-	    table_detail "widget/table-row-detail"
+	    associations_table_detail "widget/table-row-detail"
 		{
 		height = 160;
 		width = 960;
