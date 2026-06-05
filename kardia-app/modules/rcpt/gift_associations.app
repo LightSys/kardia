@@ -451,9 +451,16 @@ gift_associations "widget/page"
 			    border_color = transparent;
 			    tab_location = none;
 			    
-			    selected_index = runclient(condition(upper(:content_osrc:status) = "OVERRIDE", 2, 1));
+			    // Determine index.
+			    selected = runclient(
+				condition(upper(:content_osrc:status) != "OVERRIDE", uneditable_fields,
+				condition(:content_osrc:donor_kardia_designation == "multiple", partially_editable_fields,
+				fully_editable_fields
+			    )));
 			    
-			    immutable "widget/tabpage"
+			    // Note: blank_association_button depends these tab indexes.
+			    
+			    uneditable_fields "widget/tabpage"
 				{
 				display_cols "widget/component"
 				    {
@@ -464,7 +471,18 @@ gift_associations "widget/page"
 				    }
 				}
 			    
-			    editable "widget/tabpage"
+			    partially_editable_fields "widget/tabpage"
+				{
+				partial_edit_cols "widget/component"
+				    {
+				    x = 0; y = 0; width = 590; height = 140;
+				    path = "/apps/kardia/modules/rcpt/gift_associations_edit.cmp";
+				    editable_fields = "some";
+				    ledger = runserver(:this:ledger);
+				    }
+				}
+			    
+			    fully_editable_fields "widget/tabpage"
 				{
 				edit_cols "widget/component"
 				    {
@@ -626,7 +644,7 @@ gift_associations "widget/page"
 		event = Click;
 		target = edit_tab;
 		action = SetTab;
-		TabIndex = 2;
+		TabIndex = 3;
 		}
 	    
 	    blank_association_button_connector "widget/connector"
