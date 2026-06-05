@@ -101,7 +101,7 @@ gift_associations "widget/page"
 		hilight = "#d0d0d0";
 		
 		// Get payment service types.
-		mode = "dynamic_server";
+		mode = dynamic_server;
 		sql = "
 		    DECLARE collection gift_services;
 		    
@@ -122,14 +122,14 @@ gift_associations "widget/page"
 		    FROM
 			/apps/kardia/data/Kardia_DB/a_config/rows
 		    WHERE
-		        -- TODO: Uncomment once Noah fixes substring().
+			-- TODO: Uncomment once Noah fixes substring().
 			-- substring(:a_config_name, 0, 11) = 'GiftImport_' AND
 			:a_config_value = '1'
 		    GROUP BY
 			:a_config_name
 		    ;
 		    
-		    SELECT * FROM collection gift_services;
+		    SELECT * FROM collection gift_services
 		";
 		filter_service_hints "widget/hints" { style = notnull; }
 		
@@ -212,13 +212,13 @@ gift_associations "widget/page"
 			+ isnull(' (' + :eg:i_eg_donor_address + ')', ''),
 		    donor_service_designation = isnull(:eg:i_eg_desig_name + ' ', '')
 			+ isnull('(' + :eg:i_eg_desig_uuid + ')', ''),
-		    donor_kardia_name = rtrim(''
+		    donor_kardia_name = ''
 			+ isnull(:p:p_given_name + ' ', '')
 			+ isnull(:p:p_surname    + ' ', '')
 			+ isnull(:p:p_org_name   + ' ', '')
 			+ '('
 			+ isnull(:eg:p_donor_partner_key, 'null')
-			+ ')'),
+			+ ')',
 		    donor_kardia_designation = condition(
 			:eg:i_eg_gift_amount = :eg:i_eg_deposit_gross_amt,
 			isnull(:f:a_fund_desc + ' ', '') + '(' + :eg:a_fund + ')',
@@ -278,7 +278,7 @@ gift_associations "widget/page"
 	    baseobj = "/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows";
 	    }
 	
-	table "widget/table"
+	associations_table "widget/table"
 	    {
 	    x = 10; y = 50; width = 960; height = 590;
 	    objectsource = content_osrc;
@@ -336,7 +336,7 @@ gift_associations "widget/page"
 		}
 	    
 	    // Row Detail
-	    table_detail "widget/table-row-detail"
+	    associations_table_detail "widget/table-row-detail"
 		{
 		height = 160;
 		width = 960;
@@ -359,18 +359,18 @@ gift_associations "widget/page"
 		    tab_revealed_only = yes;
 		    
 		    // Hidden fields.
-		    ledger_number "widget/variable" { fieldname = "a_ledger_number"; ledger_val "widget/hints" { default = runclient(:ledger:value); } }
-		    gift_uuid "widget/variable" { fieldname = "i_eg_gift_uuid"; gift_uuid_val "widget/hints" { default = runclient("FAKE_" + convert("string", eval("Math.floor(Math.random() * 1e15) + 1"))); } }
-		    gift_date "widget/variable" { fieldname = "i_eg_gift_date"; gift_date_val "widget/hints" { default = runclient(getdate()); } }
-		    trx_uuid "widget/variable" { fieldname = "i_eg_trx_uuid"; trx_uuid_val "widget/hints" { default = runclient("FAKE_" + convert("string", eval("Math.floor(Math.random() * 1e15) + 1"))); } }
-		    line_item "widget/variable" { fieldname = "i_eg_line_item"; line_item_val "widget/hints" { default = runclient(1); } }
-		    donor_uuid "widget/variable" { fieldname = "i_eg_donor_uuid"; donor_uuid_val "widget/hints" { default = runclient("FAKE_" + convert("string", eval("Math.floor(Math.random() * 1e15) + 1"))); } }
-		    status "widget/variable" { fieldname = "i_eg_status"; status_val "widget/hints" { default = runclient("override"); } }
-		    service "widget/variable" { fieldname = "i_eg_service"; service_val "widget/hints" { default = runclient("N/A"); } }
-		    processor "widget/variable" { fieldname = "i_eg_processor"; processor_val "widget/hints" { default = runclient("N/A"); } }
-		    gift_amount "widget/variable" { fieldname = "i_eg_gift_amount"; gift_amount_val "widget/hints" { default = runclient(0); } }
-		    deposit_amt "widget/variable" { fieldname = "i_eg_deposit_amt"; deposit_amt_val "widget/hints" { default = runclient(0); } }
-		    gift_interval "widget/variable" { fieldname = "i_eg_gift_interval"; gift_interval_val "widget/hints" { default = runclient("never"); } }
+		    ledger_number "widget/variable" { fieldname = a_ledger_number; ledger_val "widget/hints" { default = runclient(:ledger:value); } }
+		    gift_uuid "widget/variable" { fieldname = i_eg_gift_uuid; gift_uuid_val "widget/hints" { default = runclient("FAKE_" + convert("string", eval("Math.floor(Math.random() * 1e15) + 1"))); } }
+		    gift_date "widget/variable" { fieldname = i_eg_gift_date; gift_date_val "widget/hints" { default = runclient(getdate()); } }
+		    trx_uuid "widget/variable" { fieldname = i_eg_trx_uuid; trx_uuid_val "widget/hints" { default = runclient("FAKE_" + convert("string", eval("Math.floor(Math.random() * 1e15) + 1"))); } }
+		    line_item "widget/variable" { fieldname = i_eg_line_item; line_item_val "widget/hints" { default = runclient(1); } }
+		    donor_uuid "widget/variable" { fieldname = i_eg_donor_uuid; donor_uuid_val "widget/hints" { default = runclient("FAKE_" + convert("string", eval("Math.floor(Math.random() * 1e15) + 1"))); } }
+		    status "widget/variable" { fieldname = i_eg_status; status_val "widget/hints" { default = runclient("override"); } }
+		    service "widget/variable" { fieldname = i_eg_service; service_val "widget/hints" { default = runclient("N/A"); } }
+		    processor "widget/variable" { fieldname = i_eg_processor; processor_val "widget/hints" { default = runclient("N/A"); } }
+		    gift_amount "widget/variable" { fieldname = i_eg_gift_amount; gift_amount_val "widget/hints" { default = runclient(0); } }
+		    deposit_amt "widget/variable" { fieldname = i_eg_deposit_amt; deposit_amt_val "widget/hints" { default = runclient(0); } }
+		    gift_interval "widget/variable" { fieldname = i_eg_gift_interval; gift_interval_val "widget/hints" { default = runclient("never"); } }
 		    hidden_field_handler "widget/component" { path = "/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
 		    
 		    edit_pane "widget/pane"
@@ -592,7 +592,14 @@ gift_associations "widget/page"
 				x = 0; width = 140; height = 23; // y = button_col
 				border_radius = 5;
 				text = "Line Item Details";
-				enabled = no; // TODO: Implement.
+				enabled = runclient(:content_osrc:donor_kardia_designation = 'multiple');
+				
+				open_line_item_window "widget/connector"
+				    {
+				    event = Click;
+				    target = line_item_window;
+				    action = Open;
+				    }
 				}
 			    
 			    history_button "widget/textbutton"
@@ -639,6 +646,393 @@ gift_associations "widget/page"
 		action = SetTab;
 		event_condition=runclient(:OldMode = "New" and :NewMode != "New" and upper(:content_osrc:status) != "OVERRIDE");
 		TabIndex = 1;
+		}
+	    }
+	}
+    
+    line_item_window "widget/childwindow"
+	{
+	x = 100; y = 115; width = 500; height = 475;
+	title = "Line Item Details";
+	style = dialog;
+	toplevel = yes;
+	modal = yes;
+	visible = no;
+	
+	load_on_open "widget/connector"
+	    {
+	    event = Open;
+	    target = line_item_osrc;
+	    action = QueryParam;
+	    }
+	
+	line_item_osrc "widget/osrc"
+	    {
+	    // Get current transaction from client.
+	    trx_uuid_param "widget/parameter"
+		{
+		param_name = trx_uuid;
+		type = string;
+		default = runclient(:content_osrc:i_eg_trx_uuid);
+		}
+	    
+	    sql = runserver("
+		SELECT
+		    :eg:a_ledger_number,        -- Primary key: ledger
+		    :eg:i_eg_trx_uuid,          -- Primary key: transaction UUID
+		    :eg:i_eg_line_item,         -- Line Item
+		    :eg:i_eg_desig_uuid,        -- Service: Desig. ID
+		    :eg:i_eg_desig_name,        -- Service: Desig. Name
+		    :eg:i_eg_desig_notes,       -- Service: Desig. Notes
+		    :eg:i_eg_gift_amount,       -- Gift Amount
+		    :eg:i_eg_deposit_gross_amt, -- Gross Amount
+		    :eg:i_eg_net_amount,        -- Net Amount
+		    :eg:a_fund,                 -- Kardia: Fund/Desig
+		    :eg:a_account_code          -- Kardia: GL Account
+		FROM
+		    identity /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows eg
+		WHERE
+		    :eg:i_eg_trx_uuid = :parameters:trx_uuid AND
+		    :eg:a_ledger_number = " + quote(:this:ledger) + "
+		ORDER BY
+		    :eg:i_eg_line_item
+	    ");
+	    baseobj = "/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows";
+	    replicasize = 50;
+	    readahead = 50;
+	    autoquery = never;
+	    }
+	
+	line_item_pane "widget/pane"
+	    {
+	    x = 5; y = 5; width = 490; height = 440;
+	    
+	    line_item_info "widget/hbox"
+		{
+		x = 15; y = 5; width = 475; height = 20; spacing = 10;
+		
+		deposit_title_label "widget/label"
+		    {
+		    y = 0; width = 80; height = 20; // x=line_item_info
+		    style = bold;
+		    text = "Deposit:";
+		    }
+		
+		deposit_gross_label "widget/label"
+		    {
+		    y = 0; width = 120; height = 20; // x=line_item_info
+		    value = runclient("Gross: " + :line_item_osrc:i_eg_deposit_gross_amt);
+		    }
+		
+		deposit_net_label "widget/label"
+		    {
+		    y = 0; width = 120; height = 20; // x=line_item_info
+		    value = runclient("Net: " + :line_item_osrc:i_eg_net_amount);
+		    }
+		}
+	    
+	    line_item_table "widget/table"
+		{
+		x = 10; y = 30; width = 470; height = 400;
+		objectsource = line_item_osrc;
+		nodata_message = "No Line Items Details";
+		
+		// Layout
+		rowheight = null;
+		cellvspacing = 4;
+		inner_padding = 4;
+		colsep = 0;
+		
+		// Behavior
+		overlap_scrollbar = yes;
+		demand_scrollbar = yes;
+		
+		// Columns
+		column_desig_uuid "widget/table-column"
+		    {
+		    width = 25;
+		    fieldname = i_eg_desig_uuid;
+		    title = "Service Desig. ID";
+		    }
+		column_line_item "widget/table-column"
+		    {
+		    width = 10;
+		    fieldname = i_eg_line_item;
+		    title = "Line Item";
+		    }
+		column_gift_amount "widget/table-column"
+		    {
+		    width = 15;
+		    align = right;
+		    fieldname = i_eg_gift_amount;
+		    title = "Gift Amount";
+		    }
+		
+		// Row Detail
+		line_item_detail "widget/table-row-detail"
+		    {
+		    width = 470; height = 250;
+		    
+		    line_item_edit_form "widget/form"
+			{
+			objectsource = line_item_osrc;
+			allow_view = yes;
+			allow_new = no;
+			allow_modify = yes;
+			allow_delete = no;
+			allow_nodata = yes;
+			allow_query = no;
+			confirm_discard = no;
+			enter_mode = save;
+			tab_revealed_only = yes;
+			
+			hidden_ledger "widget/variable" { fieldname = a_ledger_number; }
+			hidden_trx_uuid "widget/variable" { fieldname = i_eg_trx_uuid; }
+			hidden_line_item "widget/variable" { fieldname = i_eg_line_item; }
+			li_hidden_field_handler "widget/component" { path = "/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
+			
+			li_edit_pane "widget/pane"
+			    {
+			    x = 5; y = 15; width = 455; height = 235;
+			    bgcolor = "#e0e0e0";
+			    style = "lowered";
+			    
+			    kardia_label "widget/label"
+				{
+				x = 10; y = 5; width = 300; height = 16;
+				font_size = 12; style = bold;
+				text = "Kardia Association:";
+				}
+			    
+			    kardia_row "widget/hbox"
+				{
+				x = 10; y = 24; width = 445; height = 24; spacing = 10;
+				
+				fund_desig_field "widget/component"
+				    {
+				    y = 0; width = 215; height = 24; label_width = 80; // x = kardia_row
+				    path = "/apps/kardia/modules/base/editbox_table.cmp";
+				    text = "Fund/Desig.:";
+				    field = a_fund;
+				    validate = 1;
+				    
+				    // Popup
+				    popup_text = "Select a Designation:";
+				    popup_width = 335;
+				    // TODO: Duplicated query, replace with collection.
+				    popup_sql = runserver("
+					SELECT
+					    value = :c:a_fund + '',
+					    label = :c:a_fund + ' - ' + condition(
+						isnull(:cr:a_receiptable,0) = 1,
+						:c:a_fund_desc + isnull(' (legacy # ' + :c:a_legacy_code + ')',''),
+						'** CLOSED **'
+					    )
+					FROM
+					    /apps/kardia/data/Kardia_DB/a_fund/rows c,
+					    /apps/kardia/data/Kardia_DB/a_fund_receipting/rows cr
+					WHERE
+					    :c:a_ledger_number = " + quote(:this:ledger) + " AND
+					    :cr:a_ledger_number =* :c:a_ledger_number AND
+					    :cr:a_fund =* :c:a_fund AND
+					    :c:a_is_posting = 1
+				    ");
+				    search_field_list = "*a_fund*,*a_fund_desc*,*a_legacy_code*";
+				    search_objname = c;
+				    key_name = a_fund;
+				    
+				    fund_desig_hints "widget/hints" { style = applyonchange,notnull; }
+				    }
+				
+				gl_account_field "widget/component"
+				    {
+				    y = 0; width = 215; height = 24; label_width = 80; // x = kardia_row
+				    path = "/apps/kardia/modules/base/editbox_table.cmp";
+				    text = "GL Account:";
+				    field = a_account_code;
+				    validate = 1;
+				    
+				    // Popup
+				    popup_text = "Select a GL Account:";
+				    popup_width = 335;
+				    // TODO: Duplicated query, replace with collection.
+				    popup_sql = runserver("
+					SELECT
+					    value = :a_account_code + '',
+					    label = :a_account_code + ' - ' + isnull(:a_acct_desc, '')
+					FROM
+					    /apps/kardia/data/Kardia_DB/a_account/rows
+					WHERE
+					    :a_ledger_number = " + quote(:this:ledger) + " AND
+					    :a_is_posting = 1
+					ORDER BY
+					    :a_account_code
+				    ");
+				    search_field_list = "*a_account_code*";
+				    key_name = a_account_code;
+				    
+				    gl_account_hints "widget/hints" { style = applyonchange,notnull; }
+				    }
+				}
+			    
+			    divider1 "widget/pane"
+				{
+				x = 10; y = 52; width = 440; height = 2; style = border;
+				}
+			    
+			    service_label "widget/label"
+				{
+				x = 10; y = 58; width = 300; height = 16;
+				font_size = 12; style = bold;
+				text = "Giving Service Info:";
+				}
+			    
+			    service_row "widget/hbox"
+				{
+				x = 10; y = 77; width = 445; height = 80; spacing = 20;
+				
+				service_info_left_col "widget/vbox"
+				    {
+				    y = 0; width = 210; height = 80; spacing = 8; // x = service_row
+				    
+				    gift_amount_field "widget/component"
+					{
+					x = 0; width = 210; height = 20; label_width = 80; // y = service_info_left_col
+					path = "/sys/cmp/smart_field.cmp";
+					text = "Gift Amount";
+					ctl_type = editbox;
+					field = i_eg_gift_amount;
+					
+					gift_amount_hints "widget/hints" { style = applyonchange; }
+					}
+				    
+				    net_amount_field "widget/component"
+					{
+					x = 0; width = 210; height = 20; label_width = 80; // y = service_info_left_col
+					path = "/sys/cmp/smart_field.cmp";
+					text = "Net Amount:";
+					ctl_type = editbox;
+					field = i_eg_net_amount;
+					
+					net_amount_hints "widget/hints" { style = applyonchange; }
+					}
+				    
+				    desig_id_field "widget/component"
+					{
+					x = 0; width = 210; height = 20; label_width = 80; // y = service_info_left_col
+					path = "/sys/cmp/smart_field.cmp";
+					text = "Desig. ID:";
+					ctl_type = editbox;
+					field = i_eg_desig_uuid;
+					
+					desig_id_hints "widget/hints" { style = applyonchange; }
+					}
+				    }
+				
+				service_info_right_col "widget/vbox"
+				    {
+				    y = 0; width = 210; height = 80; spacing = 2; // x = service_row
+				    
+				    desig_notes_label "widget/label"
+					{
+					x = 0; width = 210; height = 15; // y = service_info_right_col
+					text = "Desig. Notes:";
+					style = italic;
+					}
+				    
+				    desig_notes_field "widget/component"
+					{
+					x = 0; width = 210; height = 60; // y = service_info_right_col
+					path = "/sys/cmp/smart_field.cmp";
+					text = "";
+					label_width = 0;
+					ctl_type = textarea;
+					field = i_eg_desig_notes;
+					
+					desig_notes_hints "widget/hints" { style = applyonchange; }
+					}
+				    }
+				}
+			    
+			    divider2 "widget/pane"
+				{
+				x = 10; y = 161; width = 440; height = 2; style = border;
+				}
+			    
+			    split_label "widget/label"
+				{
+				x = 10; y = 171; width = 35; height = 18;
+				style = bold;
+				text = "Split:";
+				}
+			    
+			    split_buttons "widget/hbox"
+				{
+				x = 50; y = 170; width = 250; height = 20; spacing = 10;
+				
+				split_gift_button "widget/textbutton"
+				    {
+				    y = 0; width = 90; height = 20; // x = split_buttons
+				    border_radius = 5;
+				    text = "Split Gift";
+				    enabled = no;
+				    }
+				
+				remove_split_button "widget/textbutton"
+				    {
+				    y = 0; width = 115; height = 20; // x = split_buttons
+				    border_radius = 5;
+				    text = "Remove Split";
+				    enabled = no;
+				    }
+				}
+			    
+			    divider3 "widget/pane"
+				{
+				x = 10; y = 195; width = 440; height = 2; style = border;
+				}
+			    
+			    li_save_cancel_buttons "widget/hbox"
+				{
+				x = 160; y = 210; width = 140; height = 22; spacing = 20;
+				
+				li_save_button "widget/textbutton"
+				    {
+				    y = 0; width = 55; height = 22; // x = li_save_cancel_buttons
+				    border_radius = 5;
+				    text = "Save";
+				    enabled = runclient(:line_item_edit_form:is_savable);
+				    
+				    li_save_connector "widget/connector"
+					{
+					event = Click;
+					target = line_item_edit_form;
+					action = Save;
+					FromKeyboard = 1;
+					FromOSRC = 0;
+					}
+				    }
+				
+				li_cancel_button "widget/textbutton"
+				    {
+				    y = 0; width = 55; height = 22; // x = li_save_cancel_buttons
+				    border_radius = 5;
+				    text = "Cancel";
+				    enabled = runclient(:line_item_edit_form:is_discardable);
+				    
+				    li_cancel_connector "widget/connector"
+					{
+					event = Click;
+					target = line_item_edit_form;
+					action = Discard;
+					FromKeyboard = 1;
+					FromOSRC = 0;
+					}
+				    }
+				}
+			    }
+			}
+		    }
 		}
 	    }
 	}
