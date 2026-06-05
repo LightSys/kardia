@@ -610,7 +610,7 @@ gift_associations "widget/page"
 				x = 0; width = 140; height = 23; // y = button_col
 				border_radius = 5;
 				text = "Line Item Details";
-				enabled = runclient(:content_osrc:donor_kardia_designation = 'multiple');
+				enabled = runclient(:content_osrc:donor_kardia_designation = 'multiple' AND not :edit_form:is_discardable);
 				
 				open_line_item_window "widget/connector"
 				    {
