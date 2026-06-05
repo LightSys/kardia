@@ -459,7 +459,7 @@ gift_associations "widget/page"
 				    {
 				    x = 0; y = 0; width = 590; height = 140;
 				    path = "/apps/kardia/modules/rcpt/gift_associations_edit.cmp";
-				    editable = 0;
+				    editable_fields = "none";
 				    ledger = runserver(:this:ledger);
 				    }
 				}
@@ -470,7 +470,7 @@ gift_associations "widget/page"
 				    {
 				    x = 0; y = 0; width = 590; height = 140;
 				    path = "/apps/kardia/modules/rcpt/gift_associations_edit.cmp";
-				    editable = 1;
+				    editable_fields = "all";
 				    ledger = runserver(:this:ledger);
 				    }
 				}
