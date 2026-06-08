@@ -3268,7 +3268,7 @@ function setCheckScannerHost
     {
     lookupStatus
     if [ "$1" = "" ]; then
-	DSTR="dialog --backtitle '$TITLE' --title 'Check Scanner Host' --inputbox 'Host name or IP for check scanner server:' 8 72 '$CKR_HOST'"
+	DSTR="dialog --backtitle '$TITLE' --title 'Check Scanner Server Host' --inputbox 'Host name or IP for check scanner server:' 8 72 '$CKR_HOST'"
 	CKR_HOST=$(eval "$DSTR" 2>&1 >/dev/tty)
 	if [ "$?" != 0 ]; then
 	    return 1
@@ -3286,7 +3286,7 @@ function setCheckScannerPort
     {
     lookupStatus
     if [ "$1" = "" ]; then
-	DSTR="dialog --backtitle '$TITLE' --title 'Check Scanner Port' --inputbox 'Service name or port number for check scanner server:' 8 72 '$CKR_PORT'"
+	DSTR="dialog --backtitle '$TITLE' --title 'Check Scanner Server Port' --inputbox 'Service name or port number for check scanner server:' 8 72 '$CKR_PORT'"
 	CKR_PORT=$(eval "$DSTR" 2>&1 >/dev/tty)
 	if [ "$?" != 0 ]; then
 	    return 1
@@ -3395,8 +3395,8 @@ function menuCheckScanner
 	if [ "$CKR_INSTALLED" = "no" ]; then
 	    DSTR="$DSTR Install 'Install Check Scanner Server'"
 	else
-	    DSTR="$DSTR Host    'Set Scanner Host IP    (now: ${CKR_HOST})'"
-	    DSTR="$DSTR Port    'Set Scanner TCP Port   (now: ${CKR_PORT})'"
+	    DSTR="$DSTR Host    'Set Server Host IP    (now: ${CKR_HOST})'"
+	    DSTR="$DSTR Port    'Set Server TCP Port   (now: ${CKR_PORT})'"
 	fi
 	DSTR="$DSTR '---'  ''"
 	if [ "$CKR_CONFIGURED" = "yes" ]; then
