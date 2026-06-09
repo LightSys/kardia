@@ -269,7 +269,7 @@ gift_associations_edit "widget/component-decl"
 			
 			immutable_gross_amount_hints "widget/hints"
 			    {
-			    condition = runserver(:this:editable_fields = "none");
+			    condition = runserver(:this:editable_fields = "none" OR :this:editable_fields = "some");
 			    style = readonly;
 			    }
 			}
@@ -292,7 +292,7 @@ gift_associations_edit "widget/component-decl"
 			
 			immutable_net_amount_hints "widget/hints"
 			    {
-			    condition = runserver(:this:editable_fields = "none");
+			    condition = runserver(:this:editable_fields = "none" OR :this:editable_fields = "some");
 			    style = readonly;
 			    }
 			}
