@@ -887,7 +887,6 @@ gift_associations "widget/page"
 				    path = "/apps/kardia/modules/base/editbox_table.cmp";
 				    text = "Fund/Desig.:";
 				    field = a_fund;
-				    validate = 1;
 				    
 				    // Popup
 				    popup_text = "Select a Designation:";
@@ -923,7 +922,6 @@ gift_associations "widget/page"
 				    path = "/apps/kardia/modules/base/editbox_table.cmp";
 				    text = "GL Account:";
 				    field = a_account_code;
-				    validate = 1;
 				    
 				    // Popup
 				    popup_text = "Select a GL Account:";

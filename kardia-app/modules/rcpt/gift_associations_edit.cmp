@@ -114,7 +114,6 @@ gift_associations_edit "widget/component-decl"
 		text = "Donor:";
 		field = p_donor_partner_key;
 		form = form;
-		validate = 1;
 		
 		// Popup
 		popup_text = "Select a Donor:";
@@ -344,7 +343,6 @@ gift_associations_edit "widget/component-decl"
 		    text = "Desig.:";
 		    field = a_fund;
 		    form = form;
-		    validate = 1;
 		    
 		    // Popup
 		    popup_text = "Select a Designation:";
@@ -403,7 +401,6 @@ gift_associations_edit "widget/component-decl"
 		    text = "GL Account:";
 		    field = a_account_code;
 		    form = form;
-		    validate = 1;
 		    
 		    // Popup
 		    popup_text = "Select a GL Account:";
