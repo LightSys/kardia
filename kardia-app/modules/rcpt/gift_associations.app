@@ -208,10 +208,12 @@ gift_associations "widget/page"
 		    :eg:i_eg_line_item,
 		    
 		    -- Table display fields.
-		    donor_service_name = :eg:i_eg_donor_name
-			+ isnull(' (' + :eg:i_eg_donor_address + ')', ''),
-		    donor_service_designation = isnull(:eg:i_eg_desig_name + ' ', '')
-			+ isnull('(' + :eg:i_eg_desig_uuid + ')', ''),
+		    donor_service_name = ''
+			+ isnull(:eg:i_eg_donor_name, 'null')
+			+ isnull(' (' + nullif(:eg:i_eg_donor_address, '') + ')', ''),
+		    donor_service_designation = ''
+			+ isnull(:eg:i_eg_desig_name + ' ', '')
+			+ isnull('(' + nullif(:eg:i_eg_desig_uuid, '') + ')', ''),
 		    donor_kardia_name = ''
 			+ isnull(:p:p_given_name + ' ', '')
 			+ isnull(:p:p_surname    + ' ', '')
@@ -419,7 +421,7 @@ gift_associations "widget/page"
 			target = propagate_shared_osrc;
 			action = QueryParam;
 			event_condition = runclient(:content_osrc:donor_kardia_designation = "multiple");
-
+			
 			ledger        = runclient(:content_osrc:a_ledger_number);
 			trx_uuid      = runclient(:content_osrc:i_eg_trx_uuid);
 			service       = runclient(:content_osrc:i_eg_service);
@@ -427,7 +429,7 @@ gift_associations "widget/page"
 			donor_address = runclient(:content_osrc:i_eg_donor_address);
 			partner_key   = runclient(:content_osrc:p_donor_partner_key);
 			}
-
+		    
 		    edit_pane "widget/pane"
 			{
 			x = 15; y = 15; width = 930; height = 140;
