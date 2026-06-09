@@ -278,6 +278,42 @@ gift_associations "widget/page"
 	    baseobj = "/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows";
 	    }
 	
+	// Saves must propagate because the associations_table may aggregate
+	// multiple line items of the same transaction, but the edit_form's
+	// Save action only writes to one record (the line item used for the
+	// row's primary key).  This propagator writes the data to the others.
+	propagate_shared_osrc "widget/osrc"
+	    {
+	    ledger_param        "widget/parameter" { param_name = ledger;        type = string; }
+	    trx_uuid_param      "widget/parameter" { param_name = trx_uuid;      type = string; }
+	    service_param       "widget/parameter" { param_name = service;       type = string; }
+	    donor_name_param    "widget/parameter" { param_name = donor_name;    type = string; }
+	    donor_address_param "widget/parameter" { param_name = donor_address; type = string; }
+	    partner_key_param   "widget/parameter" { param_name = partner_key;   type = string; }
+	    
+	    sql = "
+		UPDATE
+		    /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows
+		SET
+		    :i_eg_service        = :parameters:service,
+		    :i_eg_donor_name     = :parameters:donor_name,
+		    :i_eg_donor_address  = :parameters:donor_address,
+		    :p_donor_partner_key = :parameters:partner_key
+		WHERE
+		    :a_ledger_number = :parameters:ledger AND
+		    :i_eg_trx_uuid   = :parameters:trx_uuid
+	    ";
+	    autoquery = never;
+	    
+	    // Refresh so the table re-groups if i_eg_service was edited.
+	    refresh_after_propagate "widget/connector"
+		{
+		event = EndQuery;
+		target = content_osrc;
+		action = Refresh;
+		}
+	    }
+	
 	associations_table "widget/table"
 	    {
 	    x = 10; y = 50; width = 960; height = 590;
@@ -375,6 +411,23 @@ gift_associations "widget/page"
 		    gift_interval "widget/variable" { fieldname = i_eg_gift_interval; gift_interval_val "widget/hints" { default = runclient("never"); } }
 		    hidden_field_handler "widget/component" { path = "/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
 		    
+		    // When a row aggregates multiple line items, sync the shared
+		    // fields so that edits are applied to all line items.
+		    propagate_shared_fields "widget/connector"
+			{
+			event = DataSaved;
+			target = propagate_shared_osrc;
+			action = QueryParam;
+			event_condition = runclient(:content_osrc:donor_kardia_designation = "multiple");
+
+			ledger        = runclient(:content_osrc:a_ledger_number);
+			trx_uuid      = runclient(:content_osrc:i_eg_trx_uuid);
+			service       = runclient(:content_osrc:i_eg_service);
+			donor_name    = runclient(:content_osrc:i_eg_donor_name);
+			donor_address = runclient(:content_osrc:i_eg_donor_address);
+			partner_key   = runclient(:content_osrc:p_donor_partner_key);
+			}
+
 		    edit_pane "widget/pane"
 			{
 			x = 15; y = 15; width = 930; height = 140;
