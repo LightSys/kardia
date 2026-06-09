@@ -914,7 +914,7 @@ gift_associations "widget/page"
 				    search_objname = c;
 				    key_name = a_fund;
 				    
-				    fund_desig_hints "widget/hints" { style = applyonchange,notnull; }
+				    fund_desig_hints "widget/hints" { style = applyonchange,notnull,strnull; }
 				    }
 				
 				gl_account_field "widget/component"
@@ -944,7 +944,7 @@ gift_associations "widget/page"
 				    search_field_list = "*a_account_code*";
 				    key_name = a_account_code;
 				    
-				    gl_account_hints "widget/hints" { style = applyonchange,notnull; }
+				    gl_account_hints "widget/hints" { style = applyonchange,notnull,strnull; }
 				    }
 				}
 			    

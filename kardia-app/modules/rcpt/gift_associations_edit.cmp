@@ -54,7 +54,7 @@ gift_associations_edit "widget/component-decl"
 		mutable_service_hints "widget/hints"
 		    {
 		    condition = runserver(:this:editable_fields = "all" OR :this:editable_fields = "some");
-		    style = applyonchange,notnull;
+		    style = applyonchange,notnull,strnull;
 		    }
 		immutable_service_hints "widget/hints"
 		    {
@@ -75,7 +75,7 @@ gift_associations_edit "widget/component-decl"
 		mutable_donor_name_hints "widget/hints"
 		    {
 		    condition = runserver(:this:editable_fields = "all" OR :this:editable_fields = "some");
-		    style = applyonchange,notnull;
+		    style = applyonchange,notnull,strnull;
 		    }
 		immutable_donor_name_hints "widget/hints"
 		    {
@@ -158,7 +158,7 @@ gift_associations_edit "widget/component-decl"
 		mutable_kardia_donor_hints "widget/hints"
 		    {
 		    condition = runserver(:this:editable_fields = "all" OR :this:editable_fields = "some");
-		    style = applyonchange,notnull;
+		    style = applyonchange,notnull,strnull;
 		    }
 		immutable_kardia_donor_hints "widget/hints"
 		    {
@@ -195,7 +195,7 @@ gift_associations_edit "widget/component-decl"
 			mutable_desig_id_hints "widget/hints"
 			    {
 			    condition = runserver(:this:editable_fields = "all");
-			    style = applyonchange,notnull;
+			    style = applyonchange,notnull,strnull;
 			    }
 			
 			immutable_desig_id_hints "widget/hints"
@@ -227,7 +227,7 @@ gift_associations_edit "widget/component-decl"
 			mutable_desig_name_hints "widget/hints"
 			    {
 			    condition = runserver(:this:editable_fields = "all");
-			    style = applyonchange,notnull;
+			    style = applyonchange,notnull,strnull;
 			    }
 			
 			immutable_desig_name_hints "widget/hints"
@@ -263,7 +263,7 @@ gift_associations_edit "widget/component-decl"
 			mutable_gross_amount_hints "widget/hints"
 			    {
 			    condition = runserver(:this:editable_fields = "all");
-			    style = applyonchange,notnull;
+			    style = applyonchange,notnull,strnull;
 			    default = runclient(0);
 			    }
 			
@@ -286,7 +286,7 @@ gift_associations_edit "widget/component-decl"
 			mutable_net_amount_hints "widget/hints"
 			    {
 			    condition = runserver(:this:editable_fields = "all");
-			    style = applyonchange,notnull;
+			    style = applyonchange,notnull,strnull;
 			    default = runclient(0);
 			    }
 			
@@ -377,7 +377,7 @@ gift_associations_edit "widget/component-decl"
 		    mutable_kardia_designation_hints "widget/hints"
 			{
 			condition = runserver(:this:editable_fields = "all");
-			style = applyonchange,notnull;
+			style = applyonchange,notnull,strnull;
 			}
 		    immutable_kardia_designation_hints "widget/hints"
 			{
@@ -429,7 +429,7 @@ gift_associations_edit "widget/component-decl"
 		    mutable_gl_account_hints "widget/hints"
 			{
 			condition = runserver(:this:editable_fields = "all");
-			style = applyonchange,notnull;
+			style = applyonchange,notnull,strnull;
 			}
 		    
 		    immutable_gl_account_hints "widget/hints"
