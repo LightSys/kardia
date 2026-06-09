@@ -348,7 +348,7 @@ gift_associations "widget/page"
 		    {
 		    objectsource = content_osrc;
 		    
-		    // Permissions & UX.
+		    // Permissions & UX
 		    allow_view = yes;
 		    allow_new = yes;
 		    allow_modify = yes;
@@ -360,7 +360,7 @@ gift_associations "widget/page"
 		    enter_mode = save;
 		    tab_revealed_only = yes;
 		    
-		    // Hidden fields.
+		    // Hidden Fields
 		    ledger_number "widget/variable" { fieldname = a_ledger_number; ledger_val "widget/hints" { default = runclient(:ledger:value); } }
 		    gift_uuid "widget/variable" { fieldname = i_eg_gift_uuid; gift_uuid_val "widget/hints" { default = runclient("FAKE_" + convert("string", round(rand() * 2147483646) + 1)); } }
 		    gift_date "widget/variable" { fieldname = i_eg_gift_date; gift_date_val "widget/hints" { default = runclient(getdate()); } }
@@ -689,9 +689,9 @@ gift_associations "widget/page"
 	line_item_osrc "widget/osrc"
 	    {
 	    // Get current transaction from client.
-	    trx_uuid_param "widget/parameter"
+	    target_trx_uuid_param "widget/parameter"
 		{
-		param_name = trx_uuid;
+		param_name = target_trx_uuid;
 		type = string;
 		default = runclient(:content_osrc:i_eg_trx_uuid);
 		}
@@ -712,7 +712,7 @@ gift_associations "widget/page"
 		FROM
 		    identity /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows eg
 		WHERE
-		    :eg:i_eg_trx_uuid = :parameters:trx_uuid AND
+		    :eg:i_eg_trx_uuid = :parameters:target_trx_uuid AND
 		    :eg:a_ledger_number = " + quote(:this:ledger) + "
 		ORDER BY
 		    :eg:i_eg_line_item
