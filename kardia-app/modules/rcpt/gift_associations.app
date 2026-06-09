@@ -1084,6 +1084,13 @@ gift_associations "widget/page"
 					FromKeyboard = 1;
 					FromOSRC = 0;
 					}
+					
+				    li_refresh_on_save "widget/connector"
+					{
+					event = Click;
+					target = content_osrc;
+					action = Refresh;
+					}
 				    }
 				
 				li_cancel_button "widget/textbutton"
