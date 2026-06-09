@@ -291,9 +291,11 @@ gift_associations "widget/page"
 	    colsep = 0;
 	    
 	    // Behavior
+	    initial_selection = noexpand;
+	    followcurrent     = yes;
 	    overlap_scrollbar = yes;
 	    demand_scrollbar  = yes;
-	    initial_selection = noexpand;
+	    allow_selection   = yes;
 	    allow_deselection = yes;
 	    
 	    // Rows
