@@ -134,8 +134,6 @@ gift_associations_edit "widget/component-decl"
 				+ :pl:p_postal_code
 			    + '] ',
 			'')
-			+ '#'
-			+ isnull(:p:p_partner_key, 'null')
 		    FROM
 			/apps/kardia/data/Kardia_DB/p_partner/rows p,
 			/apps/kardia/data/Kardia_DB/p_location/rows pl
@@ -147,8 +145,11 @@ gift_associations_edit "widget/component-decl"
 		search_field_list = ""
 		    + "p_partner_key,"
 		    + "*p_given_name*,"
+		    + "*p_preferred_name*,"
 		    + "*p_surname*,"
+		    + "*p_localized_name*,"
 		    + "*p_org_name*,"
+		    + "*p_comments*,"
 		    + "p_legacy_key_1,"
 		    + "*p_legacy_key_2*";
 		search_objname = p;
@@ -351,9 +352,9 @@ gift_associations_edit "widget/component-decl"
 		    popup_sql = runserver("
 			SELECT
 			    value = :c:a_fund + '', -- Stop failed auto-writes to DB.
-			    label = :c:a_fund + ' - ' + condition(
-				isnull(:cr:a_receiptable,0) = 1,
-				:c:a_fund_desc + isnull(' (legacy # ' + :c:a_legacy_code + ')',''),
+			    label = condition(
+				isnull(:cr:a_receiptable, 0) = 1,
+				:c:a_fund_desc + isnull(' - legacy #' + :c:a_legacy_code, ''),
 				'** CLOSED **'
 			    )
 			FROM
@@ -365,7 +366,11 @@ gift_associations_edit "widget/component-decl"
 			    :cr:a_fund =* :c:a_fund AND
 			    :c:a_is_posting = 1
 		    ");
-		    search_field_list = "*a_fund*,*a_fund_desc*,*a_legacy_code*";
+		    search_field_list = ""
+			+ "*a_fund*,"
+			+ "*a_fund_desc*,"
+			+ "*a_fund_comments*,"
+			+ "*a_legacy_code*";
 		    search_objname = c;
 		    key_name = a_fund;
 		    
@@ -406,7 +411,7 @@ gift_associations_edit "widget/component-decl"
 		    popup_sql = runserver("
 			SELECT
 			    value = :a_account_code + '', -- Stop failed auto-writes to DB.
-			    label = :a_account_code + ' - ' + isnull(:a_acct_desc, '')
+			    label = isnull(:a_acct_desc + ' ', '')
 			FROM
 			    /apps/kardia/data/Kardia_DB/a_account/rows
 			WHERE
@@ -415,7 +420,10 @@ gift_associations_edit "widget/component-decl"
 			ORDER BY
 			    :a_account_code
 		    ");
-		    search_field_list = "*a_account_code*";
+		    search_field_list = ""
+			+ "*a_account_code*,"
+			+ "*a_acct_desc*,"
+			+ "*a_acct_comment*";
 		    key_name = a_account_code;
 		    
 		    mutable_gl_account_hints "widget/hints"
