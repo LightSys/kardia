@@ -123,7 +123,7 @@ gift_associations "widget/page"
 			/apps/kardia/data/Kardia_DB/a_config/rows
 		    WHERE
 			-- TODO: Uncomment once Noah fixes substring().
-			-- substring(:a_config_name, 0, 11) = 'GiftImport_' AND
+			substring(:a_config_name, 1, 11) = 'GiftImport_' AND
 			:a_config_value = '1'
 		    GROUP BY
 			:a_config_name
@@ -230,7 +230,7 @@ gift_associations "widget/page"
 		    status = upper(ltrim(rtrim(:eg:i_eg_status))),
 		    gift_id = condition(
 			char_length(:eg:i_eg_gift_uuid) > 12,
-			substring(:eg:i_eg_gift_uuid, 0, 12) + '...',
+			substring(:eg:i_eg_gift_uuid, 1, 12) + '...',
 			:eg:i_eg_gift_uuid
 		    ),
 		    gift_date = dateformat(:eg:i_eg_gift_date, 'M/d/yyyy'),
@@ -467,7 +467,7 @@ gift_associations "widget/page"
 				    // after the namespace bug is fixed.
 				    default = "Oops!"; //runclient(condition(
 				// 	char_length(:gift_uuid:value) > 12,
-				// 	substring(:gift_uuid:value, 0, 12) + "...",
+				// 	substring(:gift_uuid:value, 1, 12) + "...",
 				// 	:gift_uuid:value
 				//     ));
 				    }
