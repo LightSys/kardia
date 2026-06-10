@@ -4,8 +4,19 @@ gift_associations_edit "widget/component-decl"
     width = 590; height = 140;
     
     form "widget/parameter" { type = object; find_container = "widget/form"; }
-    editable "widget/parameter" { type = integer; default = 0; }
     ledger "widget/parameter" { type = string; }
+    editable_fields "widget/parameter"
+	{
+	// Valid values
+	// - all:  Every field is editable.
+	// - some: Only fields shared across multiple merged records
+	//         (aka. different line items that are part of the same
+	//         gift/transaction) are editable.
+	// - none: None of the fields are editable.
+	type = string;
+	default = "none";
+	enumlist = all,some,none;
+	}
     
     cols "widget/hbox"
 	{
@@ -42,12 +53,12 @@ gift_associations_edit "widget/component-decl"
 		
 		mutable_service_hints "widget/hints"
 		    {
-		    condition = runserver(:this:editable = 1);
-		    style = applyonchange,notnull;
+		    condition = runserver(:this:editable_fields = "all" OR :this:editable_fields = "some");
+		    style = applyonchange,notnull,strnull;
 		    }
 		immutable_service_hints "widget/hints"
 		    {
-		    condition = runserver(:this:editable = 0);
+		    condition = runserver(:this:editable_fields = "none");
 		    style = readonly;
 		    }
 		}
@@ -63,12 +74,12 @@ gift_associations_edit "widget/component-decl"
 		
 		mutable_donor_name_hints "widget/hints"
 		    {
-		    condition = runserver(:this:editable = 1);
-		    style = applyonchange,notnull;
+		    condition = runserver(:this:editable_fields = "all" OR :this:editable_fields = "some");
+		    style = applyonchange,notnull,strnull;
 		    }
 		immutable_donor_name_hints "widget/hints"
 		    {
-		    condition = runserver(:this:editable = 0);
+		    condition = runserver(:this:editable_fields = "none");
 		    style = readonly;
 		    }
 		}
@@ -84,12 +95,12 @@ gift_associations_edit "widget/component-decl"
 		
 		mutable_donor_address_hints "widget/hints"
 		    {
-		    condition = runserver(:this:editable = 1);
+		    condition = runserver(:this:editable_fields = "all" OR :this:editable_fields = "some");
 		    style = applyonchange;
 		    }
 		immutable_donor_address_hints "widget/hints"
 		    {
-		    condition = runserver(:this:editable = 0);
+		    condition = runserver(:this:editable_fields = "none");
 		    style = readonly;
 		    }
 		}
@@ -103,7 +114,6 @@ gift_associations_edit "widget/component-decl"
 		text = "Donor:";
 		field = p_donor_partner_key;
 		form = form;
-		validate = 1;
 		
 		// Popup
 		popup_text = "Select a Donor:";
@@ -123,8 +133,6 @@ gift_associations_edit "widget/component-decl"
 				+ :pl:p_postal_code
 			    + '] ',
 			'')
-			+ '#'
-			+ isnull(:p:p_partner_key, 'null')
 		    FROM
 			/apps/kardia/data/Kardia_DB/p_partner/rows p,
 			/apps/kardia/data/Kardia_DB/p_location/rows pl
@@ -136,8 +144,11 @@ gift_associations_edit "widget/component-decl"
 		search_field_list = ""
 		    + "p_partner_key,"
 		    + "*p_given_name*,"
+		    + "*p_preferred_name*,"
 		    + "*p_surname*,"
+		    + "*p_localized_name*,"
 		    + "*p_org_name*,"
+		    + "*p_comments*,"
 		    + "p_legacy_key_1,"
 		    + "*p_legacy_key_2*";
 		search_objname = p;
@@ -145,12 +156,12 @@ gift_associations_edit "widget/component-decl"
 		
 		mutable_kardia_donor_hints "widget/hints"
 		    {
-		    condition = runserver(:this:editable = 1);
-		    style = applyonchange,notnull;
+		    condition = runserver(:this:editable_fields = "all" OR :this:editable_fields = "some");
+		    style = applyonchange,notnull,strnull;
 		    }
 		immutable_kardia_donor_hints "widget/hints"
 		    {
-		    condition = runserver(:this:editable = 0);
+		    condition = runserver(:this:editable_fields = "none");
 		    style = readonly;
 		    }
 		}
@@ -172,6 +183,7 @@ gift_associations_edit "widget/component-decl"
 		    
 		    desig_id_field "widget/component"
 			{
+			condition = runserver(:this:editable_fields != "some");
 			x = 0; width = 200; height = 15; label_width = 100; // y = col3_top
 			path = "/sys/cmp/smart_field.cmp";
 			text = "Desig. ID:";
@@ -181,19 +193,29 @@ gift_associations_edit "widget/component-decl"
 			
 			mutable_desig_id_hints "widget/hints"
 			    {
-			    condition = runserver(:this:editable = 1);
-			    style = applyonchange,notnull;
+			    condition = runserver(:this:editable_fields = "all");
+			    style = applyonchange,notnull,strnull;
 			    }
 			
 			immutable_desig_id_hints "widget/hints"
 			    {
-			    condition = runserver(:this:editable = 0);
+			    condition = runserver(:this:editable_fields = "none");
 			    style = readonly;
 			    }
 			}
-		    
+		    desig_id_placeholder "widget/component"
+			{
+			condition = runserver(:this:editable_fields = "some");
+			x = 0; width = 200; height = 15; label_width = 100; // y = col3_top
+			path = "/sys/cmp/smart_field.cmp";
+			text = "Desig. ID:";
+			ctl_type = label;
+			value = "See Details";
+			}
+
 		    desig_name_field "widget/component"
 			{
+			condition = runserver(:this:editable_fields != "some");
 			x = 0; width = 200; height = 15; label_width = 100; // y = col3_top
 			path = "/sys/cmp/smart_field.cmp";
 			text = "Desig. Name:";
@@ -203,15 +225,24 @@ gift_associations_edit "widget/component-decl"
 			
 			mutable_desig_name_hints "widget/hints"
 			    {
-			    condition = runserver(:this:editable = 1);
-			    style = applyonchange,notnull;
+			    condition = runserver(:this:editable_fields = "all");
+			    style = applyonchange,notnull,strnull;
 			    }
 			
 			immutable_desig_name_hints "widget/hints"
 			    {
-			    condition = runserver(:this:editable = 0);
+			    condition = runserver(:this:editable_fields = "none");
 			    style = readonly;
 			    }
+			}
+		    desig_name_placeholder "widget/component"
+			{
+			condition = runserver(:this:editable_fields = "some");
+			x = 0; width = 200; height = 15; label_width = 100; // y = col3_top
+			path = "/sys/cmp/smart_field.cmp";
+			text = "Desig. Name:";
+			ctl_type = label;
+			value = "See Details";
 			}
 		    }
 		
@@ -230,14 +261,14 @@ gift_associations_edit "widget/component-decl"
 			
 			mutable_gross_amount_hints "widget/hints"
 			    {
-			    condition = runserver(:this:editable = 1);
-			    style = applyonchange,notnull;
+			    condition = runserver(:this:editable_fields = "all");
+			    style = applyonchange,notnull,strnull;
 			    default = runclient(0);
 			    }
 			
 			immutable_gross_amount_hints "widget/hints"
 			    {
-			    condition = runserver(:this:editable = 0);
+			    condition = runserver(:this:editable_fields = "none" OR :this:editable_fields = "some");
 			    style = readonly;
 			    }
 			}
@@ -253,14 +284,14 @@ gift_associations_edit "widget/component-decl"
 			
 			mutable_net_amount_hints "widget/hints"
 			    {
-			    condition = runserver(:this:editable = 1);
-			    style = applyonchange,notnull;
+			    condition = runserver(:this:editable_fields = "all");
+			    style = applyonchange,notnull,strnull;
 			    default = runclient(0);
 			    }
 			
 			immutable_net_amount_hints "widget/hints"
 			    {
-			    condition = runserver(:this:editable = 0);
+			    condition = runserver(:this:editable_fields = "none" OR :this:editable_fields = "some");
 			    style = readonly;
 			    }
 			}
@@ -269,6 +300,7 @@ gift_associations_edit "widget/component-decl"
 	    
 	    desig_notes_field "widget/component"
 		{
+		condition = runserver(:this:editable_fields != "some");
 		x = 0; width = 375; height = 15; label_width = 100; // y = col3_and_4
 		path = "/sys/cmp/smart_field.cmp";
 		text = "Desig. Notes:";
@@ -278,14 +310,23 @@ gift_associations_edit "widget/component-decl"
 		
 		mutable_desig_notes_hints "widget/hints"
 		    {
-		    condition = runserver(:this:editable = 1);
+		    condition = runserver(:this:editable_fields = "all");
 		    style = applyonchange;
 		    }
 		immutable_desig_notes_hints "widget/hints"
 		    {
-		    condition = runserver(:this:editable = 0);
+		    condition = runserver(:this:editable_fields = "none");
 		    style = readonly;
 		    }
+		}
+	    desig_notes_placeholder "widget/component"
+		{
+		condition = runserver(:this:editable_fields = "some");
+		x = 0; width = 375; height = 15; label_width = 100; // y = col3_and_4
+		path = "/sys/cmp/smart_field.cmp";
+		text = "Desig. Notes:";
+		ctl_type = label;
+		value = "See Details";
 		}
 	    
 	    divider_spacer3 "widget/autolayoutspacer" { height = 5; }
@@ -296,12 +337,12 @@ gift_associations_edit "widget/component-decl"
 		
 		kardia_designation_field "widget/component"
 		    {
+		    condition = runserver(:this:editable_fields != "some");
 		    x = 0; width = 200; height = 15; label_width = 100; // y = col3_and_4_bottom
 		    path = "/apps/kardia/modules/base/editbox_table.cmp";
 		    text = "Desig.:";
 		    field = a_fund;
 		    form = form;
-		    validate = 1;
 		    
 		    // Popup
 		    popup_text = "Select a Designation:";
@@ -309,9 +350,9 @@ gift_associations_edit "widget/component-decl"
 		    popup_sql = runserver("
 			SELECT
 			    value = :c:a_fund + '', -- Stop failed auto-writes to DB.
-			    label = :c:a_fund + ' - ' + condition(
-				isnull(:cr:a_receiptable,0) = 1,
-				:c:a_fund_desc + isnull(' (legacy # ' + :c:a_legacy_code + ')',''),
+			    label = condition(
+				isnull(:cr:a_receiptable, 0) = 1,
+				:c:a_fund_desc + isnull(' - legacy #' + :c:a_legacy_code, ''),
 				'** CLOSED **'
 			    )
 			FROM
@@ -323,30 +364,43 @@ gift_associations_edit "widget/component-decl"
 			    :cr:a_fund =* :c:a_fund AND
 			    :c:a_is_posting = 1
 		    ");
-		    search_field_list = "*a_fund*,*a_fund_desc*,*a_legacy_code*";
+		    search_field_list = ""
+			+ "*a_fund*,"
+			+ "*a_fund_desc*,"
+			+ "*a_fund_comments*,"
+			+ "*a_legacy_code*";
 		    search_objname = c;
 		    key_name = a_fund;
 		    
 		    mutable_kardia_designation_hints "widget/hints"
 			{
-			condition = runserver(:this:editable = 1);
-			style = applyonchange,notnull;
+			condition = runserver(:this:editable_fields = "all");
+			style = applyonchange,notnull,strnull;
 			}
 		    immutable_kardia_designation_hints "widget/hints"
 			{
-			condition = runserver(:this:editable = 0);
+			condition = runserver(:this:editable_fields = "none");
 			style = readonly;
 			}
+		    }
+		kardia_designation_placeholder "widget/component"
+		    {
+		    condition = runserver(:this:editable_fields = "some");
+		    x = 0; width = 200; height = 15; label_width = 100; // y = col3_and_4_bottom
+		    path = "/sys/cmp/smart_field.cmp";
+		    text = "Desig.:";
+		    ctl_type = label;
+		    value = "See Details";
 		    }
 		
 		kardia_gl_account_field "widget/component"
 		    {
+		    condition = runserver(:this:editable_fields != "some");
 		    x = 0; width = 170; height = 15; label_width = 100; // y = col3_and_4_bottom
 		    path = "/apps/kardia/modules/base/editbox_table.cmp";
 		    text = "GL Account:";
 		    field = a_account_code;
 		    form = form;
-		    validate = 1;
 		    
 		    // Popup
 		    popup_text = "Select a GL Account:";
@@ -354,7 +408,7 @@ gift_associations_edit "widget/component-decl"
 		    popup_sql = runserver("
 			SELECT
 			    value = :a_account_code + '', -- Stop failed auto-writes to DB.
-			    label = :a_account_code + ' - ' + isnull(:a_acct_desc, '')
+			    label = isnull(:a_acct_desc + ' ', '')
 			FROM
 			    /apps/kardia/data/Kardia_DB/a_account/rows
 			WHERE
@@ -363,20 +417,32 @@ gift_associations_edit "widget/component-decl"
 			ORDER BY
 			    :a_account_code
 		    ");
-		    search_field_list = "*a_account_code*";
+		    search_field_list = ""
+			+ "*a_account_code*,"
+			+ "*a_acct_desc*,"
+			+ "*a_acct_comment*";
 		    key_name = a_account_code;
 		    
 		    mutable_gl_account_hints "widget/hints"
 			{
-			condition = runserver(:this:editable = 1);
-			style = applyonchange,notnull;
+			condition = runserver(:this:editable_fields = "all");
+			style = applyonchange,notnull,strnull;
 			}
 		    
 		    immutable_gl_account_hints "widget/hints"
 			{
-			condition = runserver(:this:editable = 0);
+			condition = runserver(:this:editable_fields = "none");
 			style = readonly;
 			}
+		    }
+		kardia_gl_account_placeholder "widget/component"
+		    {
+		    condition = runserver(:this:editable_fields = "some");
+		    x = 0; width = 170; height = 15; label_width = 100; // y = col3_and_4_bottom
+		    path = "/sys/cmp/smart_field.cmp";
+		    text = "GL Account:";
+		    ctl_type = label;
+		    value = "See Details";
 		    }
 		}
 	    }
