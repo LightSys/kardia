@@ -1636,16 +1636,59 @@ myprojects "widget/component-decl"
 		    height=694;
 		    spacing=10;
 
-		    tasks_label_pane "widget/component"
+		    tasks_label_pane "widget/pane"
 			{
 			height=26;
-			path="/apps/kardia/modules/task/label_pane.cmp";
-			text=runclient(:project_osrc:t_project_label + ' Tasks');
+			style=flat;
+			background="/apps/kardia/images/bg/lsblue_gradient.png";
+			border_radius=6;
+
+			tasks_label "widget/label"
+			    {
+			    x=9; y=2;
+			    width=820;
+			    height=18;
+			    style=bold;
+			    font_size=18;
+			    value=runclient(:project_osrc:t_project_label + ' Tasks');
+			    }
+
+			hide_done_label "widget/label"
+			    {
+			    x=875; y=4; width=80; height=18;
+			    align=right; style=bold;
+			    value=runclient('Hide done tasks');
+			    }
+
+			hide_done_cb "widget/checkbox"
+			    {
+			    x=956; y=5; width=16;
+
+			    hide_done_cb_hints "widget/hints"
+				{
+				style=notnull;
+				default=0;
+				}
+
+			    refresh_tasks_osrc_on_change "widget/connector"
+				{
+				event=DataChange;
+				target=tasks_osrc;
+				action=Refresh;
+				}
+			    }
 			}
 
 		    tasks_osrc "widget/osrc"
 			{
 			task_proj "widget/parameter" { type=integer; param_name=t_project_id; }
+			task_hidedone "widget/parameter"
+			    {
+			    type=integer;
+			    param_name=hide_done;
+			    default=runclient(isnull(:hide_done_cb:value, 0));
+			    }
+
 			sql = "	select
 				    *,
 				    nametxt = :t:t_task_label + condition(:parameters:t_project_id = 0, ' (' + (select :t_project_label from /apps/kardia/data/Kardia_DB/t_project/rows pr where :pr:t_project_id = :t:t_project_id) + ')', ''),
@@ -1656,7 +1699,8 @@ myprojects "widget/component-decl"
 				from
 				    /apps/kardia/data/Kardia_DB/t_task/rows t
 				where
-				    :t:t_project_id = :parameters:t_project_id or :parameters:t_project_id = 0
+				    (:t:t_project_id = :parameters:t_project_id or :parameters:t_project_id = 0) and
+				    (:parameters:hide_done = 0 or isnull(:t:t_task_percent, 0.0) < 1.0)
 				";
 			baseobj="/apps/kardia/data/Kardia_DB/t_task/rows";
 			replicasize=200;
