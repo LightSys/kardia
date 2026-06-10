@@ -122,7 +122,6 @@ gift_associations "widget/page"
 		    FROM
 			/apps/kardia/data/Kardia_DB/a_config/rows
 		    WHERE
-			-- TODO: Uncomment once Noah fixes substring().
 			substring(:a_config_name, 1, 11) = 'GiftImport_' AND
 			:a_config_value = '1'
 		    GROUP BY
