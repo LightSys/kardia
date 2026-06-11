@@ -347,6 +347,7 @@ gift_associations "widget/page"
 		{
 		width = 50;
 		fieldname = donor_service_name;
+		sort_fieldname = i_eg_donor_name;
 		caption_fieldname = donor_service_designation;
 		title = "Giving Service Donor/Designation";
 		}
@@ -354,6 +355,7 @@ gift_associations "widget/page"
 		{
 		width = 50;
 		fieldname = donor_kardia_name;
+		sort_fieldname = p_donor_partner_key;
 		caption_fieldname = donor_kardia_designation;
 		title = "Kardia Donor/Designation";
 		}
@@ -362,12 +364,14 @@ gift_associations "widget/page"
 		width = 10;
 		align = right;
 		fieldname = amount;
+		sort_fieldname = i_eg_gift_amount;
 		title = "Amount";
 		}
 	    column_type "widget/table-column"
 		{
 		width = 15;
 		fieldname = status;
+		sort_fieldname = i_eg_status;
 		caption_fieldname = gift_date;
 		align = center;
 		caption_align = center;
