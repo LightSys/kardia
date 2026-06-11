@@ -334,13 +334,14 @@ gift_associations "widget/page"
 	    demand_scrollbar  = yes;
 	    allow_selection   = yes;
 	    allow_deselection = yes;
+	    allow_sorting     = yes;
 	    
 	    // Rows
 	    row_border_radius = 6;
 	    row_shadow_radius = 2;
 	    row_shadow_offset = 1;
-	    row_shadow_color = "#a0a0a0";
-	    row_shadow_angle = 135;
+	    row_shadow_color  = "#a0a0a0";
+	    row_shadow_angle  = 135;
 	    
 	    // Columns
 	    column_service_designation "widget/table-column"
@@ -355,9 +356,9 @@ gift_associations "widget/page"
 		{
 		width = 50;
 		fieldname = donor_kardia_name;
-		sort_fieldname = p_donor_partner_key;
 		caption_fieldname = donor_kardia_designation;
 		title = "Kardia Donor/Designation";
+		allow_sorting = no;
 		}
 	    column_amount "widget/table-column"
 		{
