@@ -818,8 +818,12 @@ gift_associations "widget/page"
 		colsep = 0;
 		
 		// Behavior
+		initial_selection = yes;
+		followcurrent     = yes;
 		overlap_scrollbar = yes;
-		demand_scrollbar = yes;
+		demand_scrollbar  = yes;
+		allow_selection   = yes;
+		allow_deselection = yes;
 		
 		// Columns
 		column_desig_uuid "widget/table-column"
