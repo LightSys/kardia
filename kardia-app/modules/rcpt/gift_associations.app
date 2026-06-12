@@ -725,7 +725,7 @@ gift_associations "widget/page"
 		event = ModeChange;
 		target = edit_tab;
 		action = SetTab;
-		event_condition=runclient(:OldMode = "New" and :NewMode != "New" and upper(:content_osrc:status) != "OVERRIDE");
+		event_condition=runclient(:OldMode = "New" AND :NewMode != "New" AND upper(:content_osrc:status) != "OVERRIDE");
 		TabIndex = 1;
 		}
 	    }
@@ -1058,7 +1058,17 @@ gift_associations "widget/page"
 				    y = 0; width = 90; height = 20; // x = split_buttons
 				    border_radius = 5;
 				    text = "Split Gift";
-				    enabled = no;
+				    enabled = runclient(
+					:line_item_osrc:i_eg_net_amount is not null AND
+					:line_item_osrc:i_eg_line_item == 1
+				    );
+				    
+				    split_open_cn "widget/connector"
+					{
+					event = Click;
+					target = popover_split_trx;
+					action = Open;
+					}
 				    }
 				
 				remove_split_button "widget/textbutton"
@@ -1066,7 +1076,22 @@ gift_associations "widget/page"
 				    y = 0; width = 115; height = 20; // x = split_buttons
 				    border_radius = 5;
 				    text = "Remove Split";
-				    enabled = no;
+				    // TODO: Noah - I think there's an assumption about i_eg_line_item
+				    // here that might be invalid. Could you verify it?
+				    enabled = runclient(:line_item_osrc:i_eg_line_item > 1);
+				    
+				    unsplit_cn "widget/connector"
+					{
+					event = Click;
+					event_confirm = runclient('Remove ' + :line_item_osrc:i_eg_gift_amount + ' split gift item?');
+					target = do_unsplit_osrc;
+					action = QueryParam;
+					ledger   = runclient(:line_item_osrc:a_ledger_number);
+					trx      = runclient(:line_item_osrc:i_eg_trx_uuid);
+					desig    = runclient(:line_item_osrc:i_eg_desig_uuid);
+					line     = runclient(:line_item_osrc:i_eg_line_item);
+					origline = runclient(1);
+					}
 				    }
 				}
 			    
@@ -1121,6 +1146,271 @@ gift_associations "widget/page"
 				    }
 				}
 			    }
+			}
+		    }
+		}
+	    }
+	}
+    
+    // Splits a line item by inserting a new row with i_eg_line_item=null
+    // (the server assigns the next line) AND subtracting the split
+    // amount/prorated net from the source row.
+    // Mirrors do_split_osrc in gift_import.cmp.
+    do_split_osrc "widget/osrc"
+	{
+	spl_ledger "widget/parameter" { type = string;  param_name = ledger; }
+	spl_trx    "widget/parameter" { type = string;  param_name = trx; }
+	spl_desig  "widget/parameter" { type = string;  param_name = desig; }
+	spl_line   "widget/parameter" { type = integer; param_name = line; }
+	spl_amount "widget/parameter" { type = string;  param_name = amount; }
+	
+	sql = "
+	    -- Insert the newly split record.
+	    insert
+		/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows
+	    select
+		*,
+		i_eg_line_item = null,
+		i_eg_net_amount = round(convert(money, :i_eg_net_amount * (convert(double, :parameters:amount) / convert(double, :i_eg_gift_amount))), 2),
+		i_eg_gift_amount = convert(money, :parameters:amount)
+	    from
+		/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows
+	    where
+		:a_ledger_number = :parameters:ledger AND
+		:i_eg_trx_uuid = :parameters:trx AND
+		:i_eg_desig_uuid = :parameters:desig AND
+		:i_eg_line_item = :parameters:line
+	    ;
+	    
+	    -- Update the previous record, removing the portion that was split away.
+	    update
+		/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows
+	    set
+		:i_eg_net_amount = :i_eg_net_amount - round(convert(money, :i_eg_net_amount * (convert(double, :parameters:amount) / convert(double, :i_eg_gift_amount))), 2),
+		:i_eg_gift_amount = :i_eg_gift_amount - convert(money, :parameters:amount)
+	    where
+		:a_ledger_number = :parameters:ledger AND
+		:i_eg_trx_uuid = :parameters:trx AND
+		:i_eg_desig_uuid = :parameters:desig AND
+		:i_eg_line_item = :parameters:line
+	    ";
+	autoquery = never;
+	readahead = 2;
+	replicasize = 2;
+	
+	on_split_refresh_li      "widget/connector" { event = EndQuery; target = line_item_osrc; action = Refresh; }
+	on_split_refresh_content "widget/connector" { event = EndQuery; target = content_osrc;   action = Refresh; }
+	}
+    
+    // Removes a split by capturing its amount/net, deleting the row,
+    // then adding those amounts back onto the original line.
+    // Mirrors do_unsplit_osrc in gift_import.cmp.
+    do_unsplit_osrc "widget/osrc"
+	{
+	uspl_ledger   "widget/parameter" { type = string;  param_name = ledger; }
+	uspl_trx      "widget/parameter" { type = string;  param_name = trx; }
+	uspl_desig    "widget/parameter" { type = string;  param_name = desig; }
+	uspl_line     "widget/parameter" { type = integer; param_name = line; }
+	uspl_origline "widget/parameter" { type = integer; param_name = origline; }
+	
+	sql = "
+	    declare object info;
+	    
+	    select
+		:info:amt = :i_eg_gift_amount,
+		:info:netamt = :i_eg_net_amount
+	    from
+		/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows
+	    where
+		:a_ledger_number = :parameters:ledger AND
+		:i_eg_trx_uuid = :parameters:trx AND
+		:i_eg_desig_uuid = :parameters:desig AND
+		:i_eg_line_item = :parameters:line
+	    ;
+	    
+	    delete
+		/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows
+	    where
+		:a_ledger_number = :parameters:ledger AND
+		:i_eg_trx_uuid = :parameters:trx AND
+		:i_eg_desig_uuid = :parameters:desig AND
+		:i_eg_line_item = :parameters:line
+	    ;
+	    
+	    update
+		/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows
+	    set
+		:i_eg_gift_amount = :i_eg_gift_amount + :info:amt,
+		:i_eg_net_amount = :i_eg_net_amount + :info:netamt
+	    where
+		:a_ledger_number = :parameters:ledger AND
+		:i_eg_trx_uuid = :parameters:trx AND
+		:i_eg_desig_uuid = :parameters:desig AND
+		:i_eg_line_item = :parameters:origline
+	    ";
+	autoquery = never;
+	readahead = 2;
+	replicasize = 2;
+	
+	on_unsplit_refresh_li      "widget/connector" { event = EndQuery; target = line_item_osrc; action = Refresh; }
+	on_unsplit_refresh_content "widget/connector" { event = EndQuery; target = content_osrc;   action = Refresh; }
+	}
+    
+    // Modal popover for entering the split amount, used by do_split_osrc.
+    // Centered roughly over the line_item_window.
+    popover_split_trx "widget/childwindow"
+	{
+	width = 350; height = 146;
+	x = 325; y = 290;
+	titlebar = no;
+	visible = no;
+	modal = yes;
+	border_style = solid;
+	border_color = "#f8f8f8";
+	background = null;
+	bgcolor = "#f8f8f8";
+	border_radius = 12;
+	shadow_radius = 4;
+	shadow_offset = 2;
+	shadow_color = "#404040";
+	shadow_angle = 135;
+	
+	open_pst1 "widget/connector" { event = Open; target = f_pst_amount; action = SetFocus; }
+	open_pst2 "widget/connector" { event = Open; target = f_pst_remain; action = SetValue; Value = runclient(:line_item_osrc:i_eg_gift_amount); }
+	
+	pst_vbox "widget/vbox"
+	    {
+	    x = 10; y = 10; width = 330; height = 126;
+	    spacing = 10;
+	    
+	    pst_title "widget/label"
+		{
+		height = 20;
+		font_size = 16;
+		align = center;
+		style = bold;
+		text = "Split Gift Line Item";
+		}
+	    
+	    pst_form "widget/form"
+		{
+		allow_new = yes;
+		
+		f_pst_remain "widget/component"
+		    {
+		    height = 20; label_width = 100;
+		    path = "/sys/cmp/smart_field.cmp";
+		    text = "Remaining:";
+		    field = remain;
+		    ctl_type = label;
+		    }
+		
+		f_pst_amount "widget/component"
+		    {
+		    height = 20; label_width = 100;
+		    path = "/sys/cmp/smart_field.cmp";
+		    text = "Split Amount:";
+		    field = amount;
+		    ctl_type = editbox;
+		    
+		    on_amount_change "widget/connector"
+			{
+			event = DataModify;
+			target = remain_txt;
+			action = SetValue;
+			Value = runclient('$' + (0
+			    + convert(double, :line_item_osrc:i_eg_gift_amount)
+			    - convert(double, isnull(:f_pst_amount:content, '0'))
+			    + .0001
+			));
+			}
+		    
+		    amt_hints "widget/hints" { allowchars = "0123456789.$"; }
+		    }
+		
+		remain_txt "widget/variable"
+		    {
+		    type = string;
+		    
+		    on_txt_change "widget/connector"
+			{
+			event = DataModify;
+			target = f_pst_remain;
+			action = SetValue;
+			Value = runclient(condition(
+			    charindex('.', :Value) > 0,
+			    substring(:Value + '00', 1, charindex('.', :Value) + 2),
+			    :Value + '.00'
+			));
+			}
+		    }
+		
+		pst_save "widget/connector"
+		    {
+		    event = BeforeSave;
+		    target = pst_ok;
+		    action = Click;
+		    event_cancel = runclient(1);
+		    }
+		
+		pst_discard "widget/connector"
+		    {
+		    event = Discard;
+		    target = popover_split_trx;
+		    action = Close;
+		    }
+		}
+	    
+	    pst_sep "widget/autolayoutspacer" { height = 1; }
+	    
+	    pst_ctls "widget/hbox"
+		{
+		height = 24;
+		spacing = 10;
+		align = center;
+		
+		pst_ok "widget/textbutton"
+		    {
+		    height = 24;
+		    width = 130;
+		    text = "Split";
+		    enabled = runclient(
+			char_length(:f_pst_amount:content) > 0 AND
+			convert(double, :line_item_osrc:i_eg_gift_amount) > convert(double, :f_pst_amount:content) AND
+			convert(double, :f_pst_amount:content) > 0
+		    );
+		    
+		    do_split1 "widget/connector"
+			{
+			event = Click;
+			target = do_split_osrc;
+			action = QueryParam;
+			ledger = runclient(:line_item_osrc:a_ledger_number);
+			trx    = runclient(:line_item_osrc:i_eg_trx_uuid);
+			desig  = runclient(:line_item_osrc:i_eg_desig_uuid);
+			line   = runclient(:line_item_osrc:i_eg_line_item);
+			amount = runclient(:f_pst_amount:content);
+			}
+		    
+		    do_split2 "widget/connector"
+			{
+			event = Click;
+			target = pst_form;
+			action = Discard;
+			}
+		    }
+		
+		pst_cancel "widget/textbutton"
+		    {
+		    height = 24;
+		    width = 130;
+		    text = "Cancel";
+		    
+		    do_split_cancel1 "widget/connector"
+			{
+			event = Click;
+			target = pst_form;
+			action = Discard;
 			}
 		    }
 		}
