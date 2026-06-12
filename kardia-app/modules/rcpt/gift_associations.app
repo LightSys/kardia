@@ -334,7 +334,7 @@ gift_associations "widget/page"
 	    demand_scrollbar  = yes;
 	    allow_selection   = yes;
 	    allow_deselection = yes;
-	    allow_sorting     = yes;
+	    allow_sorting     = no;
 	    
 	    // Rows
 	    row_border_radius = 6;
@@ -359,7 +359,6 @@ gift_associations "widget/page"
 		caption_fieldname = donor_kardia_designation;
 		sort_fieldname = ':p:p_surname';
 		title = "Kardia Donor/Designation";
-		allow_sorting = no;
 		}
 	    column_amount "widget/table-column"
 		{
