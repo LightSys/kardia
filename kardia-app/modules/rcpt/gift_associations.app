@@ -206,6 +206,10 @@ gift_associations "widget/page"
 		    :eg:i_eg_desig_uuid,
 		    :eg:i_eg_line_item,
 		    
+		    -- Logical values.
+		    n_line_items = count(1),
+		    is_override = lower(ltrim(rtrim(:eg:i_eg_status))) = 'override',
+		    
 		    -- Table display fields.
 		    donor_service_name = ''
 			+ isnull(:eg:i_eg_donor_name, 'null')
@@ -223,7 +227,7 @@ gift_associations "widget/page"
 		    donor_kardia_designation = condition(
 			:eg:i_eg_gift_amount = :eg:i_eg_deposit_gross_amt,
 			isnull(:f:a_fund_desc + ' ', '') + '(' + :eg:a_fund + ')',
-			'multiple'
+			'multiple (' + count(1) + ')'
 		    ),
 		    amount = isnull(:eg:i_eg_gift_amount, null),
 		    status = upper(ltrim(rtrim(:eg:i_eg_status))),
@@ -243,7 +247,7 @@ gift_associations "widget/page"
 		    :eg:i_eg_donor_address,     -- Donor Addr
 		    :eg:i_eg_desig_name,        -- Desig Name
 		    :eg:i_eg_desig_notes,       -- Desig Notes
-		    :eg:i_eg_gift_interval,     -- Gift interval
+		    :eg:i_eg_gift_interval,     -- Gift Interval
 		    :eg:i_eg_gift_amount,       -- Gift Amount
 		    :eg:i_eg_deposit_amt,       -- Deposit Amount
 		    :eg:i_eg_net_amount,        -- Net Amount
@@ -425,7 +429,7 @@ gift_associations "widget/page"
 			event = DataSaved;
 			target = propagate_shared_osrc;
 			action = QueryParam;
-			event_condition = runclient(:content_osrc:donor_kardia_designation = "multiple");
+			event_condition = runclient(:content_osrc:n_line_items > 1);
 			
 			ledger        = runclient(:content_osrc:a_ledger_number);
 			trx_uuid      = runclient(:content_osrc:i_eg_trx_uuid);
@@ -515,8 +519,8 @@ gift_associations "widget/page"
 			    
 			    // Determine index.
 			    selected = runclient(
-				condition(upper(:content_osrc:status) != "OVERRIDE", uneditable_fields,
-				condition(:content_osrc:donor_kardia_designation == "multiple", partially_editable_fields,
+				condition(not :content_osrc:is_override, uneditable_fields,
+				condition(:content_osrc:n_line_items > 1, partially_editable_fields,
 				fully_editable_fields
 			    )));
 			    
@@ -656,7 +660,7 @@ gift_associations "widget/page"
 				    y = 0; width = 60; height = 23; // x = copy_delete_buttons
 				    border_radius = 5;
 				    text = "Delete";
-				    enabled = runclient(:edit_form:is_editable AND upper(:content_osrc:status) = "OVERRIDE");
+				    enabled = runclient(:edit_form:is_editable AND :content_osrc:is_override);
 				    
 				    delete_button_connector "widget/connector"
 					{
@@ -672,7 +676,7 @@ gift_associations "widget/page"
 				x = 0; width = 140; height = 23; // y = button_col
 				border_radius = 5;
 				text = "Line Item Details";
-				enabled = runclient(:content_osrc:donor_kardia_designation = 'multiple' AND not :edit_form:is_discardable);
+				enabled = runclient(:content_osrc:n_line_items > 1 AND not :edit_form:is_discardable);
 				
 				open_line_item_window "widget/connector"
 				    {
@@ -724,7 +728,7 @@ gift_associations "widget/page"
 		event = ModeChange;
 		target = edit_tab;
 		action = SetTab;
-		event_condition=runclient(:OldMode = "New" AND :NewMode != "New" AND upper(:content_osrc:status) != "OVERRIDE");
+		event_condition=runclient(:OldMode = "New" AND :NewMode != "New" AND not :content_osrc:is_override);
 		TabIndex = 1;
 		}
 	    }
