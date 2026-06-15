@@ -518,43 +518,59 @@ gift_associations "widget/page"
 			    tab_location = none;
 			    
 			    // Determine index.
-			    selected = runclient(
-				condition(not :content_osrc:is_override, uneditable_fields,
-				condition(:content_osrc:n_line_items > 1, partially_editable_fields,
-				fully_editable_fields
-			    )));
+			    selected = runclient(condition(
+				:content_osrc:n_line_items > 1,
+				condition(:content_osrc:is_override, view_shared_editable, view_shared_readonly), // Merged line items.
+				condition(:content_osrc:is_override, view_all_editable,    view_all_readonly)     // Single line item.
+			    ));
 			    
-			    // Note: blank_association_button depends these tab indexes.
+			    // Note: blank_association_button depends on these tab indexes.
+			    // (TabIndex = 1 -> view_all_readonly, TabIndex = 3 -> view_all_editable).
 			    
-			    uneditable_fields "widget/tabpage"
+			    view_all_readonly "widget/tabpage"
 				{
-				display_cols "widget/component"
+				view_all_readonly_cols "widget/component"
 				    {
 				    x = 0; y = 0; width = 590; height = 140;
 				    path = "/apps/kardia/modules/rcpt/gift_associations_edit.cmp";
-				    editable_fields = "none";
+				    visible_fields = "all";
+				    edit_mode = "readonly";
 				    ledger = runserver(:this:ledger);
 				    }
 				}
 			    
-			    partially_editable_fields "widget/tabpage"
+			    view_shared_editable "widget/tabpage"
 				{
-				partial_edit_cols "widget/component"
+				view_shared_editable_cols "widget/component"
 				    {
 				    x = 0; y = 0; width = 590; height = 140;
 				    path = "/apps/kardia/modules/rcpt/gift_associations_edit.cmp";
-				    editable_fields = "some";
+				    visible_fields = "shared_only";
+				    edit_mode = "editable";
 				    ledger = runserver(:this:ledger);
 				    }
 				}
 			    
-			    fully_editable_fields "widget/tabpage"
+			    view_all_editable "widget/tabpage"
 				{
-				edit_cols "widget/component"
+				view_all_editable_cols "widget/component"
 				    {
 				    x = 0; y = 0; width = 590; height = 140;
 				    path = "/apps/kardia/modules/rcpt/gift_associations_edit.cmp";
-				    editable_fields = "all";
+				    visible_fields = "all";
+				    edit_mode = "editable";
+				    ledger = runserver(:this:ledger);
+				    }
+				}
+			    
+			    view_shared_readonly "widget/tabpage"
+				{
+				view_shared_readonly_cols "widget/component"
+				    {
+				    x = 0; y = 0; width = 590; height = 140;
+				    path = "/apps/kardia/modules/rcpt/gift_associations_edit.cmp";
+				    visible_fields = "shared_only";
+				    edit_mode = "readonly";
 				    ledger = runserver(:this:ledger);
 				    }
 				}
