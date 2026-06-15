@@ -524,8 +524,10 @@ gift_associations "widget/page"
 				condition(:content_osrc:is_override, view_all_editable,    view_all_readonly)     // Single line item.
 			    ));
 			    
-			    // Note: blank_association_button depends on these tab indexes.
-			    // (TabIndex = 1 -> view_all_readonly, TabIndex = 3 -> view_all_editable).
+			    // Note: blank_association_button hardcodes these tab indexes:
+			    // (1=view_all_readonly, 2=view_shared_editable,
+			    //  3=view_all_editable, 4=view_shared_readonly).
+			    // Keep that code up to date if reordering the tabpages below.
 			    
 			    view_all_readonly "widget/tabpage"
 				{
@@ -721,7 +723,8 @@ gift_associations "widget/page"
 	    border_radius = 5;
 	    text = "Add Override";
 	    
-	    immutable_blank_fix "widget/connector"
+	    // New records are always fully editable.
+	    blank_association_new_tab_connector "widget/connector"
 		{
 		event = Click;
 		target = edit_tab;
@@ -736,16 +739,21 @@ gift_associations "widget/page"
 		action = New;
 		}
 	    
-	    // Fixes a bug where, when the user canceled creating a blank
-	    // association, the old selected association would be editable.
+	    // When exiting "New" mode (save or discard), pick the correct tab to
+	    // display the new current record. Mirrors edit_tab.selected above
+	    // (keep the two expressions in sync).
 	    blank_association_cancel_connector "widget/connector"
 		{
 		source = edit_form;
 		event = ModeChange;
 		target = edit_tab;
 		action = SetTab;
-		event_condition=runclient(:OldMode = "New" AND :NewMode != "New" AND not :content_osrc:is_override);
-		TabIndex = 1;
+		event_condition = runclient(:OldMode = "New" AND :NewMode != "New");
+		TabIndex = runclient(condition(
+		    :content_osrc:n_line_items > 1,
+		    condition(:content_osrc:is_override, 2, 4), // view_shared_editable, view_shared_readonly
+		    condition(:content_osrc:is_override, 3, 1)  // view_all_editable,    view_all_readonly
+		));
 		}
 	    }
 	}
