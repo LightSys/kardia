@@ -381,7 +381,7 @@ gift_associations "widget/page"
 		fieldname = status;
 		caption_fieldname = gift_date;
 		sort_fieldname = ':eg:i_eg_status';
-		title = "Type/Date";
+		title = "Status/Date";
 		}
 	    
 	    // Row Detail
