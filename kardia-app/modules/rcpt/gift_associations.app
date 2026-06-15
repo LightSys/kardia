@@ -700,7 +700,6 @@ gift_associations "widget/page"
 				text = "Line Item Details";
 				enabled = runclient(
 				    :content_osrc:is_override AND
-				    :content_osrc:n_line_items > 1 AND
 				    not :edit_form:is_discardable
 				);
 				
@@ -1100,7 +1099,7 @@ gift_associations "widget/page"
 				    open_split_popup "widget/connector"
 					{
 					event = Click;
-					target = popover_split_trx;
+					target = split_trx_popup;
 					action = Open;
 					}
 				    }
@@ -1294,7 +1293,7 @@ gift_associations "widget/page"
     
     // Modal popover for entering the split amount, used by do_split_osrc.
     // Centered roughly over the line_item_window.
-    popover_split_trx "widget/childwindow"
+    split_trx_popup "widget/childwindow"
 	{
 	x = 325; y = 290; width = 350; height = 146;
 	
@@ -1306,18 +1305,18 @@ gift_associations "widget/page"
 	
 	// Background
 	background = null;
-	bgcolor = "#f8f8f8";
+	bgcolor    = "#f8f8f8";
 	
 	// Border
-	border_style = solid;
-	border_color = "#f8f8f8";
+	border_style  = solid;
+	border_color  = "#f8f8f8";
 	border_radius = 12;
 	
 	// Shadow
 	shadow_radius = 4;
 	shadow_offset = 2;
-	shadow_color = "#404040";
-	shadow_angle = 135;
+	shadow_color  = "#404040";
+	shadow_angle  = 135;
 	
 	focus_amount_on_open "widget/connector" { event = Open; target = split_popup_amount_field; action = SetFocus; }
 	init_remain_on_open "widget/connector" { event = Open; target = split_popup_remain_field; action = SetValue; Value = runclient(:line_item_osrc:i_eg_gift_amount); }
@@ -1338,11 +1337,11 @@ gift_associations "widget/page"
 	    
 	    split_popup_form "widget/form"
 		{
-		allow_new = yes; // y = split_popup_vbox
+		allow_new = yes;
 		
 		split_popup_remain_field "widget/component"
 		    {
-		    height = 20; label_width = 100;
+		    height = 20; label_width = 100; // y = split_popup_vbox
 		    path = "/sys/cmp/smart_field.cmp";
 		    text = "Remaining:";
 		    field = remain;
@@ -1351,7 +1350,7 @@ gift_associations "widget/page"
 		
 		split_popup_amount_field "widget/component"
 		    {
-		    height = 20; label_width = 100;
+		    height = 20; label_width = 100; // y = split_popup_vbox
 		    path = "/sys/cmp/smart_field.cmp";
 		    text = "Split Amount:";
 		    field = amount;
@@ -1400,7 +1399,7 @@ gift_associations "widget/page"
 		close_popup_on_form_discard "widget/connector"
 		    {
 		    event = Discard;
-		    target = popover_split_trx;
+		    target = split_trx_popup;
 		    action = Close;
 		    }
 		}
@@ -1425,7 +1424,7 @@ gift_associations "widget/page"
 		    
 		    submit_split_query "widget/connector"
 			{
-			event = Click;
+			event  = Click;
 			target = do_split_osrc;
 			action = QueryParam;
 			ledger = runclient(:line_item_osrc:a_ledger_number);
