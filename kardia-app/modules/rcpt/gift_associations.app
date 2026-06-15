@@ -309,6 +309,7 @@ gift_associations "widget/page"
 		    :i_eg_trx_uuid   = :parameters:trx_uuid
 	    ";
 	    autoquery = never;
+	    baseobj = "/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows";
 	    
 	    // Refresh so the table re-groups if i_eg_service was edited.
 	    refresh_after_propagate "widget/connector"
@@ -351,6 +352,8 @@ gift_associations "widget/page"
 	    column_service_designation "widget/table-column"
 		{
 		width = 50;
+		align = left;
+		caption_align = left;
 		fieldname = donor_service_name;
 		caption_fieldname = donor_service_desig_caption;
 		sort_fieldname = ':eg:i_eg_donor_name';
@@ -359,6 +362,8 @@ gift_associations "widget/page"
 	    column_kardia_designation "widget/table-column"
 		{
 		width = 50;
+		align = left;
+		caption_align = left;
 		fieldname = donor_kardia_name;
 		caption_fieldname = donor_kardia_desig_caption;
 		sort_fieldname = ':p:p_surname';
@@ -581,7 +586,6 @@ gift_associations "widget/page"
 			button_col "widget/vbox"
 			    {
 			    x = 780; y = 14; width = 140; height = 140; spacing = 7;
-			    fl_width = 0;
 			    
 			    save_cancel_buttons "widget/hbox"
 				{
@@ -888,6 +892,7 @@ gift_associations "widget/page"
 		line_item_detail "widget/table-row-detail"
 		    {
 		    width = 470; height = 250;
+		    show_on_new = 0;
 		    
 		    line_item_edit_form "widget/form"
 			{
@@ -1226,6 +1231,7 @@ gift_associations "widget/page"
 	autoquery = never;
 	readahead = 2;
 	replicasize = 2;
+	baseobj = "/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows";
 	
 	on_split_refresh_li      "widget/connector" { event = EndQuery; target = line_item_osrc; action = Refresh; }
 	on_split_refresh_content "widget/connector" { event = EndQuery; target = content_osrc;   action = Refresh; }
@@ -1280,6 +1286,7 @@ gift_associations "widget/page"
 	autoquery = never;
 	readahead = 2;
 	replicasize = 2;
+	baseobj = "/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows";
 	
 	on_unsplit_refresh_li      "widget/connector" { event = EndQuery; target = line_item_osrc; action = Refresh; }
 	on_unsplit_refresh_content "widget/connector" { event = EndQuery; target = content_osrc;   action = Refresh; }
@@ -1294,6 +1301,7 @@ gift_associations "widget/page"
 	titlebar = no;
 	visible = no;
 	modal = yes;
+	toplevel = yes;
 	border_style = solid;
 	border_color = "#f8f8f8";
 	background = null;
