@@ -183,11 +183,11 @@ gift_associations_edit "widget/component-decl"
 	    
 	    designation_amount_row "widget/hbox"
 		{
-		width = 375; height = 40; spacing = 5;
+		x = 0; width = 375; height = 40; spacing = 5; // y = designation_col
 		
 		designation_fields_col "widget/vbox"
 		    {
-		    y = 0; width = 200; height = 40; spacing = 10;
+		    y = 0; width = 200; height = 40; spacing = 10; // x = designation_amount_row
 		    
 		    desig_id_field "widget/component"
 			{
@@ -254,7 +254,7 @@ gift_associations_edit "widget/component-decl"
 		
 		amount_fields_col "widget/vbox"
 		    {
-		    y = 0; width = 170; height = 40; spacing = 10;
+		    y = 0; width = 170; height = 40; spacing = 10; // x = designation_amount_row
 		    
 		    gross_amount_field "widget/component"
 			{
@@ -332,12 +332,12 @@ gift_associations_edit "widget/component-decl"
 	    
 	    kardia_fields_row "widget/hbox"
 		{
-		width = 375; height = 15; spacing = 5;
+		width = 375; height = 15; spacing = 5; // y = designation_col
 		
 		kardia_designation_field "widget/component"
 		    {
 		    condition = runserver(:this:visible_fields = "all");
-		    x = 0; width = 200; height = 15; label_width = 100; // y = kardia_fields_row
+		    y = 0; width = 200; height = 15; label_width = 100; // x = kardia_fields_row
 		    path = "/apps/kardia/modules/base/editbox_table.cmp";
 		    text = "Desig.:";
 		    field = a_fund;
@@ -385,7 +385,7 @@ gift_associations_edit "widget/component-decl"
 		kardia_designation_placeholder "widget/component"
 		    {
 		    condition = runserver(:this:visible_fields = "shared_only");
-		    x = 0; width = 200; height = 15; label_width = 100; // y = kardia_fields_row
+		    y = 0; width = 200; height = 15; label_width = 100; // x = kardia_fields_row
 		    path = "/sys/cmp/smart_field.cmp";
 		    text = "Desig.:";
 		    ctl_type = label;
@@ -395,7 +395,7 @@ gift_associations_edit "widget/component-decl"
 		kardia_gl_account_field "widget/component"
 		    {
 		    condition = runserver(:this:visible_fields = "all");
-		    x = 0; width = 170; height = 15; label_width = 100; // y = kardia_fields_row
+		    y = 0; width = 170; height = 15; label_width = 100; // x = kardia_fields_row
 		    path = "/apps/kardia/modules/base/editbox_table.cmp";
 		    text = "GL Account:";
 		    field = a_account_code;
@@ -436,7 +436,7 @@ gift_associations_edit "widget/component-decl"
 		kardia_gl_account_placeholder "widget/component"
 		    {
 		    condition = runserver(:this:visible_fields = "shared_only");
-		    x = 0; width = 170; height = 15; label_width = 100; // y = kardia_fields_row
+		    y = 0; width = 170; height = 15; label_width = 100; // x = kardia_fields_row
 		    path = "/sys/cmp/smart_field.cmp";
 		    text = "GL Account:";
 		    ctl_type = label;

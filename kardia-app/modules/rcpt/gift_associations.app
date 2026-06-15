@@ -40,7 +40,7 @@ gift_associations "widget/page"
 	    filter_search_spacer "widget/autolayoutspacer" { width = 10; }
 	    filter_search_label "widget/label"
 		{
-		y = 10;
+		y = 10; // x = filter_layout
 		width = 40;
 		align = right;
 		text = "Search:";
@@ -48,7 +48,7 @@ gift_associations "widget/page"
 	    
 	    filter_search_box "widget/editbox"
 		{
-		y = 5; width = 200; height = 25;
+		y = 5; width = 200; height = 25; // x = filter_layout
 		
 		trigger_manual_search "widget/connector"
 		    {
@@ -87,14 +87,14 @@ gift_associations "widget/page"
 	    filter_service_spacer "widget/autolayoutspacer" { width = 10; }	
 	    filter_service_label "widget/label"
 		{
-		y = 10;
+		y = 10; // x = filter_layout
 		width = 40;
 		align = right;
 		text = "Service:";
 		}
 	    filter_service_dropdown "widget/dropdown"
 		{
-		y = 4; width = 125; height = 25;
+		y = 4; width = 125; height = 25; // x = filter_layout
 		
 		// Styling.
 		bgcolor = white;
@@ -1314,7 +1314,7 @@ gift_associations "widget/page"
 	    
 	    split_popup_title "widget/label"
 		{
-		height = 20;
+		height = 20; // y = split_popup_vbox
 		font_size = 16;
 		align = center;
 		style = bold;
@@ -1323,7 +1323,7 @@ gift_associations "widget/page"
 	    
 	    split_popup_form "widget/form"
 		{
-		allow_new = yes;
+		allow_new = yes; // y = split_popup_vbox
 		
 		split_popup_remain_field "widget/component"
 		    {
@@ -1394,14 +1394,13 @@ gift_associations "widget/page"
 	    
 	    split_popup_buttons "widget/hbox"
 		{
-		height = 24;
+		x = 0; height = 24; // y = split_popup_vbox
 		spacing = 10;
 		align = center;
 		
 		split_popup_ok "widget/textbutton"
 		    {
-		    height = 24;
-		    width = 130;
+		    y = 0; width = 130; height = 24; // x = split_popup_buttons
 		    text = "Split";
 		    enabled = runclient(
 			char_length(:split_popup_amount_field:content) > 0 AND
@@ -1431,8 +1430,7 @@ gift_associations "widget/page"
 		
 		split_popup_cancel "widget/textbutton"
 		    {
-		    height = 24;
-		    width = 130;
+		    y = 0; width = 130; height = 24; // x = split_popup_buttons
 		    text = "Cancel";
 		    
 		    discard_form_on_cancel "widget/connector"
