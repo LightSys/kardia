@@ -906,7 +906,6 @@ gift_associations "widget/page"
 				    // Popup
 				    popup_text = "Select a Designation:";
 				    popup_width = 335;
-				    // TODO: Duplicated query, replace with collection.
 				    popup_sql = runserver("
 					SELECT
 					    value = :c:a_fund + '',
@@ -941,7 +940,6 @@ gift_associations "widget/page"
 				    // Popup
 				    popup_text = "Select a GL Account:";
 				    popup_width = 335;
-				    // TODO: Duplicated query, replace with collection.
 				    popup_sql = runserver("
 					SELECT
 					    value = :a_account_code + '',

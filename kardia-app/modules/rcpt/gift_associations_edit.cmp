@@ -43,8 +43,7 @@ gift_associations_edit "widget/component-decl"
 		    FROM
 			/apps/kardia/data/Kardia_DB/a_config/rows
 		    WHERE
-			-- TODO: Uncomment after Noah fixes substring().
-			-- substring(:a_config_name, 0, 11) = 'GiftImport_' AND
+			substring(:a_config_name, 1, 11) = 'GiftImport_' AND
 			:a_config_value = '1'
 		    GROUP BY
 			:a_config_name
