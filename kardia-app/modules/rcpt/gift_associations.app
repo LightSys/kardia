@@ -1296,17 +1296,24 @@ gift_associations "widget/page"
     // Centered roughly over the line_item_window.
     popover_split_trx "widget/childwindow"
 	{
-	width = 350; height = 146;
-	x = 325; y = 290;
+	x = 325; y = 290; width = 350; height = 146;
+	
+	// Behavior
 	titlebar = no;
-	visible = no;
-	modal = yes;
+	visible  = no;
+	modal    = yes;
 	toplevel = yes;
-	border_style = solid;
-	border_color = "#f8f8f8";
+	
+	// Background
 	background = null;
 	bgcolor = "#f8f8f8";
+	
+	// Border
+	border_style = solid;
+	border_color = "#f8f8f8";
 	border_radius = 12;
+	
+	// Shadow
 	shadow_radius = 4;
 	shadow_offset = 2;
 	shadow_color = "#404040";
