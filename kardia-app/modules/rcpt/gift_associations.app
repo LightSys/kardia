@@ -641,8 +641,8 @@ gift_associations "widget/page"
 					
 					// ID fields.
 					a_ledger_number = runclient(:content_osrc:a_ledger_number);
-					i_eg_gift_uuid = runclient("FAKE_" + convert("string", eval("Math.floor(Math.random() * 1e15) + 1")));
-					i_eg_trx_uuid = runclient("FAKE_" + convert("string", eval("Math.floor(Math.random() * 1e15) + 1")));
+					i_eg_gift_uuid = runclient("FAKE_" + convert("string", round(rand() * 2147483646) + 1));
+					i_eg_trx_uuid = runclient("FAKE_" + convert("string", round(rand() * 2147483646) + 1));
 					i_eg_line_item = runclient(1);
 					i_eg_status = runclient("override");
 					
