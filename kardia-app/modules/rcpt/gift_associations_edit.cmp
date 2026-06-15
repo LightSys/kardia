@@ -32,17 +32,17 @@ gift_associations_edit "widget/component-decl"
 	enumlist = editable,readonly;
 	}
     
-    cols "widget/hbox"
+    column_layout "widget/hbox"
 	{
 	x = 0; y = 0; width = 590; height = 140; spacing = 5;
 	
-	col2 "widget/vbox"
+	service_donor_col "widget/vbox"
 	    {
-	    y = 0; width = 200; height = 140; spacing = 10; // x = cols
+	    y = 0; width = 200; height = 140; spacing = 10; // x = column_layout
 	    
 	    service_field "widget/component"
 		{
-		x = 0; width = 200; height = 15; label_width = 100; // y = col2
+		x = 0; width = 200; height = 15; label_width = 100; // y = service_donor_col
 		path = "/sys/cmp/smart_field.cmp";
 		text = "Service:";
 		
@@ -78,7 +78,7 @@ gift_associations_edit "widget/component-decl"
 	    
 	    donor_name_field "widget/component"
 		{
-		x = 0; width = 200; height = 15; label_width = 100; // y = col2
+		x = 0; width = 200; height = 15; label_width = 100; // y = service_donor_col
 		path = "/sys/cmp/smart_field.cmp";
 		text = "Donor Name:";
 		ctl_type = editbox;
@@ -99,7 +99,7 @@ gift_associations_edit "widget/component-decl"
 	    
 	    donor_address_field "widget/component"
 		{
-		x = 0; width = 200; height = 15; label_width = 100; // y = col2
+		x = 0; width = 200; height = 15; label_width = 100; // y = service_donor_col
 		path = "/sys/cmp/smart_field.cmp";
 		text = "Donor Address:";
 		ctl_type = editbox;
@@ -113,11 +113,11 @@ gift_associations_edit "widget/component-decl"
 		    }
 		}
 	    
-	    divider_spacer2 "widget/autolayoutspacer" { height = 5; }
+	    donor_kardia_spacer "widget/autolayoutspacer" { height = 5; }
 	    
 	    kardia_donor_field "widget/component"
 		{
-		x = 0; width = 200; height = 15; label_width = 100; // y = col2
+		x = 0; width = 200; height = 15; label_width = 100; // y = service_donor_col
 		path = "/apps/kardia/modules/base/editbox_table.cmp";
 		text = "Donor:";
 		field = p_donor_partner_key;
@@ -175,24 +175,24 @@ gift_associations_edit "widget/component-decl"
 		}
 	    }
 	
-	// col3 (Desig. ID/Name) and col4 (Gross/Net Amount) combined so that
+	// designation_fields_col and amount_fields_col combined so that
 	// Desig. Notes can span the full width of both columns.
-	col3_and_4 "widget/vbox"
+	designation_col "widget/vbox"
 	    {
-	    y = 0; width = 375; height = 140; spacing = 10; // x = cols
+	    y = 0; width = 375; height = 140; spacing = 10; // x = column_layout
 	    
-	    col3_and_4_top "widget/hbox"
+	    designation_amount_row "widget/hbox"
 		{
 		width = 375; height = 40; spacing = 5;
 		
-		col3_top "widget/vbox"
+		designation_fields_col "widget/vbox"
 		    {
 		    y = 0; width = 200; height = 40; spacing = 10;
 		    
 		    desig_id_field "widget/component"
 			{
 			condition = runserver(:this:visible_fields = "all");
-			x = 0; width = 200; height = 15; label_width = 100; // y = col3_top
+			x = 0; width = 200; height = 15; label_width = 100; // y = designation_fields_col
 			path = "/sys/cmp/smart_field.cmp";
 			text = "Desig. ID:";
 			ctl_type = editbox;
@@ -213,7 +213,7 @@ gift_associations_edit "widget/component-decl"
 		    desig_id_placeholder "widget/component"
 			{
 			condition = runserver(:this:visible_fields = "shared_only");
-			x = 0; width = 200; height = 15; label_width = 100; // y = col3_top
+			x = 0; width = 200; height = 15; label_width = 100; // y = designation_fields_col
 			path = "/sys/cmp/smart_field.cmp";
 			text = "Desig. ID:";
 			ctl_type = label;
@@ -223,7 +223,7 @@ gift_associations_edit "widget/component-decl"
 		    desig_name_field "widget/component"
 			{
 			condition = runserver(:this:visible_fields = "all");
-			x = 0; width = 200; height = 15; label_width = 100; // y = col3_top
+			x = 0; width = 200; height = 15; label_width = 100; // y = designation_fields_col
 			path = "/sys/cmp/smart_field.cmp";
 			text = "Desig. Name:";
 			ctl_type = editbox;
@@ -244,7 +244,7 @@ gift_associations_edit "widget/component-decl"
 		    desig_name_placeholder "widget/component"
 			{
 			condition = runserver(:this:visible_fields = "shared_only");
-			x = 0; width = 200; height = 15; label_width = 100; // y = col3_top
+			x = 0; width = 200; height = 15; label_width = 100; // y = designation_fields_col
 			path = "/sys/cmp/smart_field.cmp";
 			text = "Desig. Name:";
 			ctl_type = label;
@@ -252,13 +252,13 @@ gift_associations_edit "widget/component-decl"
 			}
 		    }
 		
-		col4_top "widget/vbox"
+		amount_fields_col "widget/vbox"
 		    {
 		    y = 0; width = 170; height = 40; spacing = 10;
 		    
 		    gross_amount_field "widget/component"
 			{
-			x = 0; width = 170; height = 15; label_width = 100; // y = col4_top
+			x = 0; width = 170; height = 15; label_width = 100; // y = amount_fields_col
 			path = "/sys/cmp/smart_field.cmp";
 			text = "Gross Amount:";
 			ctl_type = editbox;
@@ -280,7 +280,7 @@ gift_associations_edit "widget/component-decl"
 		    
 		    net_amount_field "widget/component"
 			{
-			x = 0; width = 170; height = 15; label_width = 100; // y = col4_top
+			x = 0; width = 170; height = 15; label_width = 100; // y = amount_fields_col
 			path = "/sys/cmp/smart_field.cmp";
 			text = "Net Amount:";
 			ctl_type = editbox;
@@ -305,7 +305,7 @@ gift_associations_edit "widget/component-decl"
 	    desig_notes_field "widget/component"
 		{
 		condition = runserver(:this:visible_fields = "all");
-		x = 0; width = 375; height = 15; label_width = 100; // y = col3_and_4
+		x = 0; width = 375; height = 15; label_width = 100; // y = designation_col
 		path = "/sys/cmp/smart_field.cmp";
 		text = "Desig. Notes:";
 		ctl_type = editbox;
@@ -321,23 +321,23 @@ gift_associations_edit "widget/component-decl"
 	    desig_notes_placeholder "widget/component"
 		{
 		condition = runserver(:this:visible_fields = "shared_only");
-		x = 0; width = 375; height = 15; label_width = 100; // y = col3_and_4
+		x = 0; width = 375; height = 15; label_width = 100; // y = designation_col
 		path = "/sys/cmp/smart_field.cmp";
 		text = "Desig. Notes:";
 		ctl_type = label;
 		value = "See Details";
 		}
 	    
-	    divider_spacer3 "widget/autolayoutspacer" { height = 5; }
+	    notes_kardia_spacer "widget/autolayoutspacer" { height = 5; }
 	    
-	    col3_and_4_bottom "widget/hbox"
+	    kardia_fields_row "widget/hbox"
 		{
 		width = 375; height = 15; spacing = 5;
 		
 		kardia_designation_field "widget/component"
 		    {
 		    condition = runserver(:this:visible_fields = "all");
-		    x = 0; width = 200; height = 15; label_width = 100; // y = col3_and_4_bottom
+		    x = 0; width = 200; height = 15; label_width = 100; // y = kardia_fields_row
 		    path = "/apps/kardia/modules/base/editbox_table.cmp";
 		    text = "Desig.:";
 		    field = a_fund;
@@ -385,7 +385,7 @@ gift_associations_edit "widget/component-decl"
 		kardia_designation_placeholder "widget/component"
 		    {
 		    condition = runserver(:this:visible_fields = "shared_only");
-		    x = 0; width = 200; height = 15; label_width = 100; // y = col3_and_4_bottom
+		    x = 0; width = 200; height = 15; label_width = 100; // y = kardia_fields_row
 		    path = "/sys/cmp/smart_field.cmp";
 		    text = "Desig.:";
 		    ctl_type = label;
@@ -395,7 +395,7 @@ gift_associations_edit "widget/component-decl"
 		kardia_gl_account_field "widget/component"
 		    {
 		    condition = runserver(:this:visible_fields = "all");
-		    x = 0; width = 170; height = 15; label_width = 100; // y = col3_and_4_bottom
+		    x = 0; width = 170; height = 15; label_width = 100; // y = kardia_fields_row
 		    path = "/apps/kardia/modules/base/editbox_table.cmp";
 		    text = "GL Account:";
 		    field = a_account_code;
@@ -436,7 +436,7 @@ gift_associations_edit "widget/component-decl"
 		kardia_gl_account_placeholder "widget/component"
 		    {
 		    condition = runserver(:this:visible_fields = "shared_only");
-		    x = 0; width = 170; height = 15; label_width = 100; // y = col3_and_4_bottom
+		    x = 0; width = 170; height = 15; label_width = 100; // y = kardia_fields_row
 		    path = "/sys/cmp/smart_field.cmp";
 		    text = "GL Account:";
 		    ctl_type = label;
