@@ -247,11 +247,11 @@ gift_associations "widget/page"
 		    :eg:i_eg_donor_address,     -- Donor Addr
 		    :eg:i_eg_desig_name,        -- Desig Name
 		    :eg:i_eg_desig_notes,       -- Desig Notes
-		    :eg:i_eg_gift_interval,     -- Gift Interval
-		    :eg:i_eg_gift_amount,       -- Gift Amount
-		    :eg:i_eg_deposit_amt,       -- Deposit Amount
+		    :eg:i_eg_gift_interval,     -- Interval
+		    :eg:i_eg_gift_amount,       -- Gross Amount
 		    :eg:i_eg_net_amount,        -- Net Amount
-		    :eg:i_eg_deposit_gross_amt, -- Gross Amount
+		    :eg:i_eg_deposit_gross_amt, -- Deposit Gross Amount
+		    :eg:i_eg_deposit_amt,       -- Deposit Net Amount
 		    :eg:p_donor_partner_key,    -- Kardia Donor
 		    :eg:a_fund,                 -- Desig.
 		    :eg:a_account_code          -- GL Account
@@ -861,9 +861,10 @@ gift_associations "widget/page"
 		    :eg:i_eg_desig_uuid,        -- Service: Desig. ID
 		    :eg:i_eg_desig_name,        -- Service: Desig. Name
 		    :eg:i_eg_desig_notes,       -- Service: Desig. Notes
-		    :eg:i_eg_gift_amount,       -- Gift Amount
-		    :eg:i_eg_deposit_gross_amt, -- Gross Amount
+		    :eg:i_eg_gift_amount,       -- Gross Amount
 		    :eg:i_eg_net_amount,        -- Net Amount
+		    :eg:i_eg_deposit_gross_amt, -- Deposit Gross Amount
+		    :eg:i_eg_deposit_amt,       -- Deposit Net Amount
 		    :eg:a_fund,                 -- Kardia: Fund/Desig
 		    :eg:a_account_code          -- Kardia: GL Account
 		FROM
