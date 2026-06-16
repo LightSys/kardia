@@ -212,7 +212,7 @@ gift_associations "widget/page"
 		    
 		    -- Table display fields.
 		    donor_service_name = ''
-			+ isnull(:eg:i_eg_donor_name, 'null')
+			+ isnull(:eg:i_eg_donor_name, 'Missing')
 			+ isnull(' (' + nullif(:eg:i_eg_donor_address, '') + ')', ''),
 		    donor_service_desig_caption = ''
 			+ isnull(:eg:i_eg_desig_name + ' ', '')
@@ -222,14 +222,15 @@ gift_associations "widget/page"
 			+ isnull(:p:p_surname    + ' ', '')
 			+ isnull(:p:p_org_name   + ' ', '')
 			+ '('
-			+ isnull(:eg:p_donor_partner_key, 'null')
+			+ isnull(:eg:p_donor_partner_key, 'Missing')
 			+ ')',
 		    donor_kardia_desig_caption = condition(
 			:eg:i_eg_gift_amount = :eg:i_eg_deposit_gross_amt,
 			isnull(:f:a_fund_desc + ' ', '') + '(' + :eg:a_fund + ')',
 			'multiple (' + count(1) + ')'
 		    ),
-		    amount = isnull(:eg:i_eg_gift_amount, null),
+		    amount = isnull(:eg:i_eg_deposit_gross_amt, 'Missing'),
+		    amount_caption = isnull(:eg:i_eg_deposit_amt, 'Missing'),
 		    status = upper(ltrim(rtrim(:eg:i_eg_status))),
 		    gift_id = condition(
 			char_length(:eg:i_eg_gift_uuid) > 12,
@@ -375,8 +376,9 @@ gift_associations "widget/page"
 		align = right;
 		caption_align = right;
 		fieldname = amount;
-		sort_fieldname = ':eg:i_eg_gift_amount';
-		title = "Amount";
+		caption_fieldname = amount_caption;
+		sort_fieldname = ':eg:i_eg_deposit_gross_amt';
+		title = "Amount Gross/Net";
 		}
 	    column_status_date "widget/table-column"
 		{
@@ -423,7 +425,9 @@ gift_associations "widget/page"
 		    service "widget/variable" { fieldname = i_eg_service; service_default "widget/hints" { default = runclient("N/A"); } }
 		    processor "widget/variable" { fieldname = i_eg_processor; processor_default "widget/hints" { default = runclient("N/A"); } }
 		    gift_amount "widget/variable" { fieldname = i_eg_gift_amount; gift_amount_default "widget/hints" { default = runclient(0); } }
-		    deposit_amt "widget/variable" { fieldname = i_eg_deposit_amt; deposit_amt_default "widget/hints" { default = runclient(0); } }
+		    net_amount "widget/variable" { fieldname = i_eg_net_amount; net_amount_default "widget/hints" { default = runclient(0); } }
+		    deposit_gross_amt "widget/variable" { fieldname = i_eg_deposit_gross_amt; deposit_gross_amt_default "widget/hints" { default = runclient(0); } }
+		    deposit_net_amt "widget/variable" { fieldname = i_eg_deposit_amt; deposit_net_amt_default "widget/hints" { default = runclient(0); } }
 		    gift_interval "widget/variable" { fieldname = i_eg_gift_interval; gift_interval_default "widget/hints" { default = runclient("never"); } }
 		    hidden_field_handler "widget/component" { path = "/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
 		    
@@ -905,7 +909,7 @@ gift_associations "widget/page"
 		deposit_net_label "widget/label"
 		    {
 		    y = 0; width = 120; height = 20; // x=line_item_info
-		    value = runclient("Net: " + :line_item_osrc:i_eg_net_amount);
+		    value = runclient("Net: " + :line_item_osrc:i_eg_deposit_amt);
 		    }
 		}
 	    

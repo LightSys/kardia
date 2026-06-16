@@ -284,7 +284,7 @@ gift_associations_edit "widget/component-decl"
 			path = "/sys/cmp/smart_field.cmp";
 			text = "Net Amount:";
 			ctl_type = editbox;
-			field = i_eg_net_amount;
+			field = i_eg_deposit_amt;
 			form = form;
 			
 			required_net_amount_hints "widget/hints"
