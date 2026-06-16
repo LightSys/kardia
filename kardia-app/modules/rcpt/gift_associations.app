@@ -637,43 +637,66 @@ gift_associations "widget/page"
 				    text = "Copy";
 				    enabled = runclient(:edit_form:is_editable);
 				    
+				    // Clones every line item of an aggregated row,
+				    // not just the row bound to the form.
 				    copy_connector "widget/connector"
 					{
-					event = Click;
+					event  = Click;
+					target = copy_osrc;
+					action = QueryParam;
+					
+					ledger            = runclient(:content_osrc:a_ledger_number);
+					source_trx_uuid   = runclient(:content_osrc:i_eg_trx_uuid);
+					new_trx_uuid      = runclient("FAKE_" + convert("string", round(rand() * 2147483646) + 1));
+					new_gift_uuid     = runclient("FAKE_" + convert("string", round(rand() * 2147483646) + 1));
+					gift_date         = runclient(getdate());
+					current_time      = runclient(getdate());
+					current_user_name = runclient(user_name());
+					}
+				    }
+	
+				// Copies every line item of a transaction as a new override
+				// transaction.
+				// We use INSERT ... SELECT to clone all line items atomically.
+				// The new records share a i_eg_trx_uuid / i_eg_gift_uuid while
+				// preserving each source row's i_eg_line_item / i_eg_desig_uuid.
+				copy_osrc "widget/osrc"
+				    {
+				    copy_ledger_param          "widget/parameter" { param_name = ledger;            type = string; }
+				    copy_source_trx_uuid_param "widget/parameter" { param_name = source_trx_uuid;   type = string; }
+				    copy_new_trx_uuid_param    "widget/parameter" { param_name = new_trx_uuid;      type = string; }
+				    copy_new_gift_uuid_param   "widget/parameter" { param_name = new_gift_uuid;     type = string; }
+				    copy_gift_date_param       "widget/parameter" { param_name = gift_date;         type = string; }
+				    copy_current_time_param    "widget/parameter" { param_name = current_time;      type = string; }
+				    copy_current_user_param    "widget/parameter" { param_name = current_user_name; type = string; }
+				    
+				    sql = "
+					INSERT
+					    /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows
+					SELECT
+					    *,
+					    i_eg_gift_uuid  = :parameters:new_gift_uuid,
+					    i_eg_trx_uuid   = :parameters:new_trx_uuid,
+					    i_eg_status     = 'override',
+					    i_eg_gift_date  = :parameters:gift_date,
+					    s_date_created  = :parameters:current_time,
+					    s_created_by    = :parameters:current_user_name,
+					    s_date_modified = :parameters:current_time,
+					    s_modified_by   = :parameters:current_user_name
+					FROM
+					    /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows
+					WHERE
+					    :a_ledger_number = :parameters:ledger AND
+					    :i_eg_trx_uuid   = :parameters:source_trx_uuid
+				    ";
+				    autoquery = never;
+				    baseobj = "/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows";
+				    
+				    refresh_content_after_copy "widget/connector"
+					{
+					event = EndQuery;
 					target = content_osrc;
-					action = Create;
-					
-					// ID fields.
-					a_ledger_number = runclient(:content_osrc:a_ledger_number);
-					i_eg_gift_uuid = runclient("FAKE_" + convert("string", round(rand() * 2147483646) + 1));
-					i_eg_trx_uuid = runclient("FAKE_" + convert("string", round(rand() * 2147483646) + 1));
-					i_eg_line_item = runclient(1);
-					i_eg_status = runclient("override");
-					
-					// General fields.
-					i_eg_service = runclient(:content_osrc:i_eg_service);
-					i_eg_processor = runclient(:content_osrc:i_eg_processor);
-					i_eg_donor_uuid = runclient(:content_osrc:i_eg_donor_uuid);
-					i_eg_donor_name = runclient(:content_osrc:i_eg_donor_name);
-					i_eg_donor_address = runclient(:content_osrc:i_eg_donor_address);
-					i_eg_desig_uuid = runclient(:content_osrc:i_eg_desig_uuid);
-					i_eg_desig_name = runclient(:content_osrc:i_eg_desig_name);
-					i_eg_desig_notes = runclient(:content_osrc:i_eg_desig_notes);
-					i_eg_gift_amount = runclient(:content_osrc:i_eg_gift_amount);
-					i_eg_gift_interval = runclient(:content_osrc:i_eg_gift_interval);
-					i_eg_deposit_amt = runclient(:content_osrc:i_eg_deposit_amt);
-					i_eg_net_amount = runclient(:content_osrc:i_eg_net_amount);
-					i_eg_deposit_gross_amt = runclient(:content_osrc:i_eg_deposit_gross_amt);
-					p_donor_partner_key = runclient(:content_osrc:p_donor_partner_key);
-					a_fund = runclient(:content_osrc:a_fund);
-					a_account_code = runclient(:content_osrc:a_account_code);
-					
-					// Auto fields.
-					i_eg_gift_date = runclient(getdate());
-					s_date_created = runclient(getdate());
-					s_created_by = runclient(user_name());
-					s_date_modified = runclient(getdate());
-					s_modified_by = runclient(user_name());
+					action = Refresh;
 					}
 				    }
 				
@@ -684,11 +707,50 @@ gift_associations "widget/page"
 				    text = "Delete";
 				    enabled = runclient(:edit_form:is_editable AND :content_osrc:is_override);
 				    
+				    // Deletes all line items of the transaction (not just the
+				    // row bound to edit_form).
+				    // event_confirm replaces the form's confirm_delete (this
+				    // connector doesn't route through it), and reports the
+				    // line-item count to the user.
 				    delete_button_connector "widget/connector"
 					{
 					event = Click;
-					target = edit_form;
-					action = Delete;
+					event_confirm = runclient(condition(
+					    :content_osrc:n_line_items > 1,
+					    'Delete this gift association and its ' + :content_osrc:n_line_items + ' line items?',
+					    'Delete this gift association?'
+					));
+					target = delete_osrc;
+					action = QueryParam;
+					
+					ledger   = runclient(:content_osrc:a_ledger_number);
+					trx_uuid = runclient(:content_osrc:i_eg_trx_uuid);
+					}
+				    }
+				
+				// Deletes every line item of a transaction.
+				// Note: edit_form's Delete only removes the one record
+				// bound to the form, leaving orphaned rows in the DB.
+				delete_osrc "widget/osrc"
+				    {
+				    delete_ledger_param   "widget/parameter" { param_name = ledger;   type = string; }
+				    delete_trx_uuid_param "widget/parameter" { param_name = trx_uuid; type = string; }
+				    
+				    sql = "
+					DELETE
+					    /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows
+					WHERE
+					    :a_ledger_number = :parameters:ledger AND
+					    :i_eg_trx_uuid   = :parameters:trx_uuid
+				    ";
+				    autoquery = never;
+				    baseobj = "/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows";
+				    
+				    refresh_content_after_delete "widget/connector"
+					{
+					event = EndQuery;
+					target = content_osrc;
+					action = Refresh;
 					}
 				    }
 				}
