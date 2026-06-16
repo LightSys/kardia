@@ -212,7 +212,7 @@ gift_associations "widget/page"
 		    
 		    -- Table display fields.
 		    donor_service_name = ''
-			+ isnull(:eg:i_eg_donor_name, 'null')
+			+ isnull(:eg:i_eg_donor_name, 'Missing')
 			+ isnull(' (' + nullif(:eg:i_eg_donor_address, '') + ')', ''),
 		    donor_service_desig_caption = ''
 			+ isnull(:eg:i_eg_desig_name + ' ', '')
@@ -222,14 +222,15 @@ gift_associations "widget/page"
 			+ isnull(:p:p_surname    + ' ', '')
 			+ isnull(:p:p_org_name   + ' ', '')
 			+ '('
-			+ isnull(:eg:p_donor_partner_key, 'null')
+			+ isnull(:eg:p_donor_partner_key, 'Missing')
 			+ ')',
 		    donor_kardia_desig_caption = condition(
 			:eg:i_eg_gift_amount = :eg:i_eg_deposit_gross_amt,
 			isnull(:f:a_fund_desc + ' ', '') + '(' + :eg:a_fund + ')',
 			'multiple (' + count(1) + ')'
 		    ),
-		    amount = isnull(:eg:i_eg_gift_amount, null),
+		    amount = isnull(:eg:i_eg_deposit_gross_amt, 'Missing'),
+		    amount_caption = isnull(:eg:i_eg_deposit_amt, 'Missing'),
 		    status = upper(ltrim(rtrim(:eg:i_eg_status))),
 		    gift_id = condition(
 			char_length(:eg:i_eg_gift_uuid) > 12,
@@ -247,11 +248,11 @@ gift_associations "widget/page"
 		    :eg:i_eg_donor_address,     -- Donor Addr
 		    :eg:i_eg_desig_name,        -- Desig Name
 		    :eg:i_eg_desig_notes,       -- Desig Notes
-		    :eg:i_eg_gift_interval,     -- Gift Interval
-		    :eg:i_eg_gift_amount,       -- Gift Amount
-		    :eg:i_eg_deposit_amt,       -- Deposit Amount
+		    :eg:i_eg_gift_interval,     -- Interval
+		    :eg:i_eg_gift_amount,       -- Gross Amount
 		    :eg:i_eg_net_amount,        -- Net Amount
-		    :eg:i_eg_deposit_gross_amt, -- Gross Amount
+		    :eg:i_eg_deposit_gross_amt, -- Deposit Gross Amount
+		    :eg:i_eg_deposit_amt,       -- Deposit Net Amount
 		    :eg:p_donor_partner_key,    -- Kardia Donor
 		    :eg:a_fund,                 -- Desig.
 		    :eg:a_account_code          -- GL Account
@@ -375,8 +376,9 @@ gift_associations "widget/page"
 		align = right;
 		caption_align = right;
 		fieldname = amount;
-		sort_fieldname = ':eg:i_eg_gift_amount';
-		title = "Amount";
+		caption_fieldname = amount_caption;
+		sort_fieldname = ':eg:i_eg_deposit_gross_amt';
+		title = "Amount Gross/Net";
 		}
 	    column_status_date "widget/table-column"
 		{
@@ -423,7 +425,9 @@ gift_associations "widget/page"
 		    service "widget/variable" { fieldname = i_eg_service; service_default "widget/hints" { default = runclient("N/A"); } }
 		    processor "widget/variable" { fieldname = i_eg_processor; processor_default "widget/hints" { default = runclient("N/A"); } }
 		    gift_amount "widget/variable" { fieldname = i_eg_gift_amount; gift_amount_default "widget/hints" { default = runclient(0); } }
-		    deposit_amt "widget/variable" { fieldname = i_eg_deposit_amt; deposit_amt_default "widget/hints" { default = runclient(0); } }
+		    net_amount "widget/variable" { fieldname = i_eg_net_amount; net_amount_default "widget/hints" { default = runclient(0); } }
+		    deposit_gross_amt "widget/variable" { fieldname = i_eg_deposit_gross_amt; deposit_gross_amt_default "widget/hints" { default = runclient(0); } }
+		    deposit_net_amt "widget/variable" { fieldname = i_eg_deposit_amt; deposit_net_amt_default "widget/hints" { default = runclient(0); } }
 		    gift_interval "widget/variable" { fieldname = i_eg_gift_interval; gift_interval_default "widget/hints" { default = runclient("never"); } }
 		    hidden_field_handler "widget/component" { path = "/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
 		    
@@ -637,43 +641,66 @@ gift_associations "widget/page"
 				    text = "Copy";
 				    enabled = runclient(:edit_form:is_editable);
 				    
+				    // Clones every line item of an aggregated row,
+				    // not just the row bound to the form.
 				    copy_connector "widget/connector"
 					{
-					event = Click;
+					event  = Click;
+					target = copy_osrc;
+					action = QueryParam;
+					
+					ledger            = runclient(:content_osrc:a_ledger_number);
+					source_trx_uuid   = runclient(:content_osrc:i_eg_trx_uuid);
+					new_trx_uuid      = runclient("FAKE_" + convert("string", round(rand() * 2147483646) + 1));
+					new_gift_uuid     = runclient("FAKE_" + convert("string", round(rand() * 2147483646) + 1));
+					gift_date         = runclient(getdate());
+					current_time      = runclient(getdate());
+					current_user_name = runclient(user_name());
+					}
+				    }
+	
+				// Copies every line item of a transaction as a new override
+				// transaction.
+				// We use INSERT ... SELECT to clone all line items atomically.
+				// The new records share a i_eg_trx_uuid / i_eg_gift_uuid while
+				// preserving each source row's i_eg_line_item / i_eg_desig_uuid.
+				copy_osrc "widget/osrc"
+				    {
+				    copy_ledger_param          "widget/parameter" { param_name = ledger;            type = string; }
+				    copy_source_trx_uuid_param "widget/parameter" { param_name = source_trx_uuid;   type = string; }
+				    copy_new_trx_uuid_param    "widget/parameter" { param_name = new_trx_uuid;      type = string; }
+				    copy_new_gift_uuid_param   "widget/parameter" { param_name = new_gift_uuid;     type = string; }
+				    copy_gift_date_param       "widget/parameter" { param_name = gift_date;         type = string; }
+				    copy_current_time_param    "widget/parameter" { param_name = current_time;      type = string; }
+				    copy_current_user_param    "widget/parameter" { param_name = current_user_name; type = string; }
+				    
+				    sql = "
+					INSERT
+					    /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows
+					SELECT
+					    *,
+					    i_eg_gift_uuid  = :parameters:new_gift_uuid,
+					    i_eg_trx_uuid   = :parameters:new_trx_uuid,
+					    i_eg_status     = 'override',
+					    i_eg_gift_date  = :parameters:gift_date,
+					    s_date_created  = :parameters:current_time,
+					    s_created_by    = :parameters:current_user_name,
+					    s_date_modified = :parameters:current_time,
+					    s_modified_by   = :parameters:current_user_name
+					FROM
+					    /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows
+					WHERE
+					    :a_ledger_number = :parameters:ledger AND
+					    :i_eg_trx_uuid   = :parameters:source_trx_uuid
+				    ";
+				    autoquery = never;
+				    baseobj = "/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows";
+				    
+				    refresh_content_after_copy "widget/connector"
+					{
+					event = EndQuery;
 					target = content_osrc;
-					action = Create;
-					
-					// ID fields.
-					a_ledger_number = runclient(:content_osrc:a_ledger_number);
-					i_eg_gift_uuid = runclient("FAKE_" + convert("string", round(rand() * 2147483646) + 1));
-					i_eg_trx_uuid = runclient("FAKE_" + convert("string", round(rand() * 2147483646) + 1));
-					i_eg_line_item = runclient(1);
-					i_eg_status = runclient("override");
-					
-					// General fields.
-					i_eg_service = runclient(:content_osrc:i_eg_service);
-					i_eg_processor = runclient(:content_osrc:i_eg_processor);
-					i_eg_donor_uuid = runclient(:content_osrc:i_eg_donor_uuid);
-					i_eg_donor_name = runclient(:content_osrc:i_eg_donor_name);
-					i_eg_donor_address = runclient(:content_osrc:i_eg_donor_address);
-					i_eg_desig_uuid = runclient(:content_osrc:i_eg_desig_uuid);
-					i_eg_desig_name = runclient(:content_osrc:i_eg_desig_name);
-					i_eg_desig_notes = runclient(:content_osrc:i_eg_desig_notes);
-					i_eg_gift_amount = runclient(:content_osrc:i_eg_gift_amount);
-					i_eg_gift_interval = runclient(:content_osrc:i_eg_gift_interval);
-					i_eg_deposit_amt = runclient(:content_osrc:i_eg_deposit_amt);
-					i_eg_net_amount = runclient(:content_osrc:i_eg_net_amount);
-					i_eg_deposit_gross_amt = runclient(:content_osrc:i_eg_deposit_gross_amt);
-					p_donor_partner_key = runclient(:content_osrc:p_donor_partner_key);
-					a_fund = runclient(:content_osrc:a_fund);
-					a_account_code = runclient(:content_osrc:a_account_code);
-					
-					// Auto fields.
-					i_eg_gift_date = runclient(getdate());
-					s_date_created = runclient(getdate());
-					s_created_by = runclient(user_name());
-					s_date_modified = runclient(getdate());
-					s_modified_by = runclient(user_name());
+					action = Refresh;
 					}
 				    }
 				
@@ -684,11 +711,50 @@ gift_associations "widget/page"
 				    text = "Delete";
 				    enabled = runclient(:edit_form:is_editable AND :content_osrc:is_override);
 				    
+				    // Deletes all line items of the transaction (not just the
+				    // row bound to edit_form).
+				    // event_confirm replaces the form's confirm_delete (this
+				    // connector doesn't route through it), and reports the
+				    // line-item count to the user.
 				    delete_button_connector "widget/connector"
 					{
 					event = Click;
-					target = edit_form;
-					action = Delete;
+					event_confirm = runclient(condition(
+					    :content_osrc:n_line_items > 1,
+					    'Delete this gift association and its ' + :content_osrc:n_line_items + ' line items?',
+					    'Delete this gift association?'
+					));
+					target = delete_osrc;
+					action = QueryParam;
+					
+					ledger   = runclient(:content_osrc:a_ledger_number);
+					trx_uuid = runclient(:content_osrc:i_eg_trx_uuid);
+					}
+				    }
+				
+				// Deletes every line item of a transaction.
+				// Note: edit_form's Delete only removes the one record
+				// bound to the form, leaving orphaned rows in the DB.
+				delete_osrc "widget/osrc"
+				    {
+				    delete_ledger_param   "widget/parameter" { param_name = ledger;   type = string; }
+				    delete_trx_uuid_param "widget/parameter" { param_name = trx_uuid; type = string; }
+				    
+				    sql = "
+					DELETE
+					    /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows
+					WHERE
+					    :a_ledger_number = :parameters:ledger AND
+					    :i_eg_trx_uuid   = :parameters:trx_uuid
+				    ";
+				    autoquery = never;
+				    baseobj = "/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows";
+				    
+				    refresh_content_after_delete "widget/connector"
+					{
+					event = EndQuery;
+					target = content_osrc;
+					action = Refresh;
 					}
 				    }
 				}
@@ -700,7 +766,6 @@ gift_associations "widget/page"
 				text = "Line Item Details";
 				enabled = runclient(
 				    :content_osrc:is_override AND
-				    :content_osrc:n_line_items > 1 AND
 				    not :edit_form:is_discardable
 				);
 				
@@ -800,9 +865,10 @@ gift_associations "widget/page"
 		    :eg:i_eg_desig_uuid,        -- Service: Desig. ID
 		    :eg:i_eg_desig_name,        -- Service: Desig. Name
 		    :eg:i_eg_desig_notes,       -- Service: Desig. Notes
-		    :eg:i_eg_gift_amount,       -- Gift Amount
-		    :eg:i_eg_deposit_gross_amt, -- Gross Amount
+		    :eg:i_eg_gift_amount,       -- Gross Amount
 		    :eg:i_eg_net_amount,        -- Net Amount
+		    :eg:i_eg_deposit_gross_amt, -- Deposit Gross Amount
+		    :eg:i_eg_deposit_amt,       -- Deposit Net Amount
 		    :eg:a_fund,                 -- Kardia: Fund/Desig
 		    :eg:a_account_code          -- Kardia: GL Account
 		FROM
@@ -843,7 +909,7 @@ gift_associations "widget/page"
 		deposit_net_label "widget/label"
 		    {
 		    y = 0; width = 120; height = 20; // x=line_item_info
-		    value = runclient("Net: " + :line_item_osrc:i_eg_net_amount);
+		    value = runclient("Net: " + :line_item_osrc:i_eg_deposit_amt);
 		    }
 		}
 	    
@@ -1092,15 +1158,12 @@ gift_associations "widget/page"
 				    y = 0; width = 90; height = 20; // x = split_buttons
 				    border_radius = 5;
 				    text = "Split Gift";
-				    enabled = runclient(
-					:line_item_osrc:i_eg_net_amount is not null AND
-					:line_item_osrc:i_eg_line_item == 1
-				    );
+				    enabled = runclient(:line_item_osrc:i_eg_line_item = 1);
 				    
 				    open_split_popup "widget/connector"
 					{
 					event = Click;
-					target = popover_split_trx;
+					target = split_trx_popup;
 					action = Open;
 					}
 				    }
@@ -1110,8 +1173,6 @@ gift_associations "widget/page"
 				    y = 0; width = 115; height = 20; // x = split_buttons
 				    border_radius = 5;
 				    text = "Remove Split";
-				    // TODO: Noah - I think there's an assumption about i_eg_line_item
-				    // here that might be invalid. Could you verify it?
 				    enabled = runclient(:line_item_osrc:i_eg_line_item > 1);
 				    
 				    trigger_unsplit_query "widget/connector"
@@ -1294,7 +1355,7 @@ gift_associations "widget/page"
     
     // Modal popover for entering the split amount, used by do_split_osrc.
     // Centered roughly over the line_item_window.
-    popover_split_trx "widget/childwindow"
+    split_trx_popup "widget/childwindow"
 	{
 	x = 325; y = 290; width = 350; height = 146;
 	
@@ -1306,18 +1367,18 @@ gift_associations "widget/page"
 	
 	// Background
 	background = null;
-	bgcolor = "#f8f8f8";
+	bgcolor    = "#f8f8f8";
 	
 	// Border
-	border_style = solid;
-	border_color = "#f8f8f8";
+	border_style  = solid;
+	border_color  = "#f8f8f8";
 	border_radius = 12;
 	
 	// Shadow
 	shadow_radius = 4;
 	shadow_offset = 2;
-	shadow_color = "#404040";
-	shadow_angle = 135;
+	shadow_color  = "#404040";
+	shadow_angle  = 135;
 	
 	focus_amount_on_open "widget/connector" { event = Open; target = split_popup_amount_field; action = SetFocus; }
 	init_remain_on_open "widget/connector" { event = Open; target = split_popup_remain_field; action = SetValue; Value = runclient(:line_item_osrc:i_eg_gift_amount); }
@@ -1338,11 +1399,11 @@ gift_associations "widget/page"
 	    
 	    split_popup_form "widget/form"
 		{
-		allow_new = yes; // y = split_popup_vbox
+		allow_new = yes;
 		
 		split_popup_remain_field "widget/component"
 		    {
-		    height = 20; label_width = 100;
+		    height = 20; label_width = 100; // y = split_popup_vbox
 		    path = "/sys/cmp/smart_field.cmp";
 		    text = "Remaining:";
 		    field = remain;
@@ -1351,7 +1412,7 @@ gift_associations "widget/page"
 		
 		split_popup_amount_field "widget/component"
 		    {
-		    height = 20; label_width = 100;
+		    height = 20; label_width = 100; // y = split_popup_vbox
 		    path = "/sys/cmp/smart_field.cmp";
 		    text = "Split Amount:";
 		    field = amount;
@@ -1400,7 +1461,7 @@ gift_associations "widget/page"
 		close_popup_on_form_discard "widget/connector"
 		    {
 		    event = Discard;
-		    target = popover_split_trx;
+		    target = split_trx_popup;
 		    action = Close;
 		    }
 		}
@@ -1425,7 +1486,7 @@ gift_associations "widget/page"
 		    
 		    submit_split_query "widget/connector"
 			{
-			event = Click;
+			event  = Click;
 			target = do_split_osrc;
 			action = QueryParam;
 			ledger = runclient(:line_item_osrc:a_ledger_number);
