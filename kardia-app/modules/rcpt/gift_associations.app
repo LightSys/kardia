@@ -1158,10 +1158,7 @@ gift_associations "widget/page"
 				    y = 0; width = 90; height = 20; // x = split_buttons
 				    border_radius = 5;
 				    text = "Split Gift";
-				    enabled = runclient(
-					:line_item_osrc:i_eg_net_amount is not null AND
-					:line_item_osrc:i_eg_line_item == 1
-				    );
+				    enabled = runclient(:line_item_osrc:i_eg_line_item = 1);
 				    
 				    open_split_popup "widget/connector"
 					{
@@ -1176,8 +1173,6 @@ gift_associations "widget/page"
 				    y = 0; width = 115; height = 20; // x = split_buttons
 				    border_radius = 5;
 				    text = "Remove Split";
-				    // TODO: Noah - I think there's an assumption about i_eg_line_item
-				    // here that might be invalid. Could you verify it?
 				    enabled = runclient(:line_item_osrc:i_eg_line_item > 1);
 				    
 				    trigger_unsplit_query "widget/connector"
