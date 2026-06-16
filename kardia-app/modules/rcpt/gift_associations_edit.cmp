@@ -32,6 +32,11 @@ gift_associations_edit "widget/component-decl"
 	enumlist = editable,readonly;
 	}
     
+    // Per-line gift/net amount fields of the parent form, for propagating
+    // updates on i_eg_deposit_gross_amt and i_eg_deposit_amt.
+    gift_amount "widget/variable" { fieldname = i_eg_gift_amount; form = form; }
+    net_amount  "widget/variable" { fieldname = i_eg_net_amount;  form = form; }
+
     column_layout "widget/hbox"
 	{
 	x = 0; y = 0; width = 590; height = 140; spacing = 5;
@@ -276,6 +281,17 @@ gift_associations_edit "widget/component-decl"
 			    condition = runserver(:this:edit_mode = "readonly" OR :this:visible_fields = "shared_only");
 			    style = readonly;
 			    }
+			
+			// Mirror edit to the hidden gift_amount field.
+			sync_gift_amount "widget/connector"
+			    {
+			    condition = runserver(:this:edit_mode = "editable" AND :this:visible_fields = "all");
+			    event = DataChange;
+			    event_condition = runclient(not :FromOSRC);
+			    target = gift_amount;
+			    action = SetValue;
+			    Value = runclient(:Value);
+			    }
 			}
 		    
 		    net_amount_field "widget/component"
@@ -297,6 +313,17 @@ gift_associations_edit "widget/component-decl"
 			    {
 			    condition = runserver(:this:edit_mode = "readonly" OR :this:visible_fields = "shared_only");
 			    style = readonly;
+			    }
+			
+			// Mirror edit to the hidden net_amount field.
+			sync_net_amount "widget/connector"
+			    {
+			    condition = runserver(:this:edit_mode = "editable" AND :this:visible_fields = "all");
+			    event = DataChange;
+			    event_condition = runclient(not :FromOSRC);
+			    target = net_amount;
+			    action = SetValue;
+			    Value = runclient(:Value);
 			    }
 			}
 		    }
