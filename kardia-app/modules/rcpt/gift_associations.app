@@ -372,13 +372,13 @@ gift_associations "widget/page"
 		}
 	    column_amount "widget/table-column"
 		{
-		width = 10;
+		width = 15;
 		align = right;
 		caption_align = right;
 		fieldname = amount;
 		caption_fieldname = amount_caption;
 		sort_fieldname = ':eg:i_eg_deposit_gross_amt';
-		title = "Amount Gross/Net";
+		title = "Gross/Net Amount";
 		}
 	    column_status_date "widget/table-column"
 		{
@@ -876,8 +876,10 @@ gift_associations "widget/page"
 		WHERE
 		    :eg:i_eg_trx_uuid = :parameters:target_trx_uuid AND
 		    :eg:a_ledger_number = " + quote(:this:ledger) + "
-		ORDER BY
-		    :eg:i_eg_line_item
+		-- TODO: Uncomment 'DEFAULT' after PR #127 is merged.
+		ORDER BY -- DEFAULT
+		    :eg:i_eg_line_item,
+		    :eg:i_eg_gift_date
 	    ");
 	    baseobj = "/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows";
 	    replicasize = 50;
@@ -932,6 +934,7 @@ gift_associations "widget/page"
 		demand_scrollbar  = yes;
 		allow_selection   = yes;
 		allow_deselection = yes;
+		allow_sorting     = yes;
 		
 		// Columns
 		column_desig_uuid "widget/table-column"
