@@ -214,9 +214,12 @@ gift_associations "widget/page"
 		    donor_service_name = ''
 			+ isnull(:eg:i_eg_donor_name, 'Missing')
 			+ isnull(' (' + nullif(:eg:i_eg_donor_address, '') + ')', ''),
-		    donor_service_desig_caption = ''
-			+ isnull(:eg:i_eg_desig_name + ' ', '')
-			+ isnull('(' + nullif(:eg:i_eg_desig_uuid, '') + ')', ''),
+		    donor_service_desig_caption = condition(
+			:eg:i_eg_gift_amount = :eg:i_eg_deposit_gross_amt,
+			''  + isnull(nullif(:eg:i_eg_desig_name, '') + ' ', '')
+			    + isnull('(' + nullif(:eg:i_eg_desig_uuid, '') + ')', ''),
+			'multiple (' + count(1) + ')'
+		    ),
 		    donor_kardia_name = ''
 			+ isnull(:p:p_given_name + ' ', '')
 			+ isnull(:p:p_surname    + ' ', '')
