@@ -937,17 +937,17 @@ gift_associations "widget/page"
 		allow_sorting     = yes;
 		
 		// Columns
-		column_desig_uuid "widget/table-column"
+		column_service_desig "widget/table-column"
 		    {
 		    width = 25;
 		    fieldname = i_eg_desig_uuid;
-		    title = "Service Desig. ID";
+		    title = "Service Desig.";
 		    }
-		column_line_item "widget/table-column"
+		column_kardia_desig "widget/table-column"
 		    {
-		    width = 10;
-		    fieldname = i_eg_line_item;
-		    title = "Line Item";
+		    width = 25;
+		    fieldname = a_fund;
+		    title = "Kardia Desig.";
 		    }
 		column_gift_amount "widget/table-column"
 		    {
