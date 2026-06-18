@@ -870,12 +870,22 @@ gift_associations "widget/page"
 		    :eg:i_eg_deposit_gross_amt, -- Deposit Gross Amount
 		    :eg:i_eg_deposit_amt,       -- Deposit Net Amount
 		    :eg:a_fund,                 -- Kardia: Fund/Desig
-		    :eg:a_account_code          -- Kardia: GL Account
+		    :eg:a_account_code,          -- Kardia: GL Account
+		    
+		    -- Display values
+		    service_desig = ''
+			+ isnull(:eg:i_eg_desig_name + ' ', '')
+			+ isnull('(' + nullif(:eg:i_eg_desig_uuid, '') + ')', ''),
+		    kardia_desig = ''
+			+ isnull(:f:a_fund_desc + ' ', '')
+			+ isnull('(' + nullif(:eg:a_fund, '') + ')', '')
 		FROM
-		    identity /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows eg
+		    identity /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows eg,
+		    /apps/kardia/data/Kardia_DB/a_fund/rows f
 		WHERE
 		    :eg:i_eg_trx_uuid = :parameters:target_trx_uuid AND
-		    :eg:a_ledger_number = " + quote(:this:ledger) + "
+		    :eg:a_ledger_number = " + quote(:this:ledger) + " AND
+		    :eg:a_fund *= :f:a_fund
 		-- TODO: Uncomment 'DEFAULT' after PR #127 is merged.
 		ORDER BY -- DEFAULT
 		    :eg:i_eg_line_item,
@@ -939,19 +949,19 @@ gift_associations "widget/page"
 		// Columns
 		column_service_desig "widget/table-column"
 		    {
-		    width = 25;
-		    fieldname = i_eg_desig_uuid;
-		    title = "Service Desig.";
+		    width = 30;
+		    fieldname = service_desig;
+		    title = "Service Designation";
 		    }
 		column_kardia_desig "widget/table-column"
 		    {
-		    width = 25;
-		    fieldname = a_fund;
-		    title = "Kardia Desig.";
+		    width = 30;
+		    fieldname = kardia_desig;
+		    title = "Kardia Designation";
 		    }
 		column_gift_amount "widget/table-column"
 		    {
-		    width = 15;
+		    width = 10;
 		    align = right;
 		    fieldname = i_eg_gift_amount;
 		    title = "Gift Amount";
