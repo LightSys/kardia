@@ -146,6 +146,7 @@ gift_associations_edit "widget/component-decl"
 				+ :pl:p_postal_code
 			    + '] ',
 			'')
+			+ '(' + :p:p_partner_key + ')'
 		    FROM
 			/apps/kardia/data/Kardia_DB/p_partner/rows p,
 			/apps/kardia/data/Kardia_DB/p_location/rows pl
@@ -378,7 +379,9 @@ gift_associations_edit "widget/component-decl"
 			    value = :c:a_fund + '', -- Stop failed auto-writes to DB.
 			    label = condition(
 				isnull(:cr:a_receiptable, 0) = 1,
-				:c:a_fund_desc + isnull(' - legacy #' + :c:a_legacy_code, ''),
+				''  + isnull(:c:a_fund_desc + ' ', '')
+				    + '(' + :c:a_fund + ')'
+				    + isnull(' - legacy #' + :c:a_legacy_code, ''),
 				'** CLOSED **'
 			    )
 			FROM
@@ -386,8 +389,8 @@ gift_associations_edit "widget/component-decl"
 			    /apps/kardia/data/Kardia_DB/a_fund_receipting/rows cr
 			WHERE
 			    :c:a_ledger_number = " + quote(:this:ledger) + " AND
-			    :cr:a_ledger_number =* :c:a_ledger_number AND
-			    :cr:a_fund =* :c:a_fund AND
+			    :c:a_ledger_number *= :cr:a_ledger_number AND
+			    :c:a_fund *= :cr:a_fund AND
 			    :c:a_is_posting = 1
 		    ");
 		    search_field_list = ""
@@ -434,7 +437,9 @@ gift_associations_edit "widget/component-decl"
 		    popup_sql = runserver("
 			SELECT
 			    value = :a_account_code + '', -- Stop failed auto-writes to DB.
-			    label = isnull(:a_acct_desc + ' ', '')
+			    label = ''
+				+ isnull(nullif(:a_acct_desc, '') + ' ', '')
+				+ isnull('(' + :a_account_code + ')', '')
 			FROM
 			    /apps/kardia/data/Kardia_DB/a_account/rows
 			WHERE

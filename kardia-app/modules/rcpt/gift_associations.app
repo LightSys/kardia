@@ -208,7 +208,7 @@ gift_associations "widget/page"
 		    
 		    -- Logical values.
 		    n_line_items = count(1),
-		    is_override = lower(ltrim(rtrim(:eg:i_eg_status))) = 'override',
+		    is_override = (lower(ltrim(rtrim(:eg:i_eg_status))) = 'override'),
 		    
 		    -- Table display fields.
 		    donor_service_name = ''
@@ -1024,10 +1024,12 @@ gift_associations "widget/page"
 				    popup_width = 335;
 				    popup_sql = runserver("
 					SELECT
-					    value = :c:a_fund + '',
-					    label = :c:a_fund + ' - ' + condition(
-						isnull(:cr:a_receiptable,0) = 1,
-						:c:a_fund_desc + isnull(' (legacy # ' + :c:a_legacy_code + ')',''),
+					    value = :c:a_fund + '', -- Stop failed auto-writes to DB.
+					    label = condition(
+						isnull(:cr:a_receiptable, 0) = 1,
+						''  + isnull(:c:a_fund_desc + ' ', '')
+						    + '(' + :c:a_fund + ')'
+						    + isnull(' - legacy #' + :c:a_legacy_code, ''),
 						'** CLOSED **'
 					    )
 					FROM
@@ -1035,8 +1037,8 @@ gift_associations "widget/page"
 					    /apps/kardia/data/Kardia_DB/a_fund_receipting/rows cr
 					WHERE
 					    :c:a_ledger_number = " + quote(:this:ledger) + " AND
-					    :cr:a_ledger_number =* :c:a_ledger_number AND
-					    :cr:a_fund =* :c:a_fund AND
+					    :c:a_ledger_number *= :cr:a_ledger_number AND
+					    :c:a_fund *= :cr:a_fund AND
 					    :c:a_is_posting = 1
 				    ");
 				    search_field_list = "*a_fund*,*a_fund_desc*,*a_legacy_code*";
@@ -1058,8 +1060,10 @@ gift_associations "widget/page"
 				    popup_width = 335;
 				    popup_sql = runserver("
 					SELECT
-					    value = :a_account_code + '',
-					    label = :a_account_code + ' - ' + isnull(:a_acct_desc, '')
+					    value = :a_account_code + '', -- Stop failed auto-writes to DB.
+					    label = ''
+						+ isnull(nullif(:a_acct_desc, '') + ' ', '')
+						+ isnull('(' + :a_account_code + ')', '')
 					FROM
 					    /apps/kardia/data/Kardia_DB/a_account/rows
 					WHERE
