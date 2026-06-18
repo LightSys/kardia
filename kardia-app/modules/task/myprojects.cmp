@@ -1643,38 +1643,41 @@ myprojects "widget/component-decl"
 			background="/apps/kardia/images/bg/lsblue_gradient.png";
 			border_radius=6;
 
-			tasks_label "widget/label"
+			tasks_labels_hbox "widget/hbox"
 			    {
-			    x=9; y=2;
-			    width=820;
-			    height=18;
-			    style=bold;
-			    font_size=18;
-			    value=runclient(:project_osrc:t_project_label + ' Tasks');
-			    }
+			    x=10; y=0; width=960; height=26; fl_width=100; spacing=10;
 
-			hide_done_label "widget/label"
-			    {
-			    x=875; y=4; width=80; height=18;
-			    align=right; style=bold;
-			    value=runclient('Hide done tasks');
-			    }
-
-			hide_done_cb "widget/checkbox"
-			    {
-			    x=956; y=5; width=16;
-
-			    hide_done_cb_hints "widget/hints"
+			    tasks_label "widget/label"
 				{
-				style=notnull;
-				default=0;
+				y=2; width=810; height=18; fl_width=100; // x = tasks_labels_hbox
+				style=bold;
+				font_size=18;
+				value=runclient(:project_osrc:t_project_label + ' Tasks');
 				}
 
-			    refresh_tasks_osrc_on_change "widget/connector"
+			    hide_done_label "widget/label"
 				{
-				event=DataChange;
-				target=tasks_osrc;
-				action=Refresh;
+				y=5; width=100; height=18; fl_width=0; // x = tasks_labels_hbox
+				align=right; style=bold;
+				value=runclient('Hide done tasks');
+				}
+
+			    hide_done_cb "widget/checkbox"
+				{
+				y=5; width=15; fl_width=0; // x = tasks_labels_hbox
+
+				hide_done_cb_hints "widget/hints"
+				    {
+				    style=notnull;
+				    default=0;
+				    }
+
+				refresh_tasks_osrc_on_change "widget/connector"
+				    {
+				    event=DataChange;
+				    target=tasks_osrc;
+				    action=Refresh;
+				    }
 				}
 			    }
 			}
@@ -2625,4 +2628,3 @@ myprojects "widget/component-decl"
 	    }
 	}
     }
-
