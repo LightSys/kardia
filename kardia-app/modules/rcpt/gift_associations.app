@@ -212,7 +212,7 @@ gift_associations "widget/page"
 		    
 		    -- Table display fields.
 		    donor_service_name = ''
-			+ isnull(:eg:i_eg_donor_name, 'Missing')
+			+ isnull(nullif(:eg:i_eg_donor_name, ''), 'Missing')
 			+ isnull(' (' + nullif(:eg:i_eg_donor_address, '') + ')', ''),
 		    donor_service_desig_caption = condition(
 			:eg:i_eg_gift_amount = :eg:i_eg_deposit_gross_amt,
@@ -221,26 +221,27 @@ gift_associations "widget/page"
 			'multiple (' + count(1) + ')'
 		    ),
 		    donor_kardia_name = ''
-			+ isnull(:p:p_given_name + ' ', '')
-			+ isnull(:p:p_surname    + ' ', '')
-			+ isnull(:p:p_org_name   + ' ', '')
+			+ isnull(nullif(:p:p_given_name, '') + ' ', '')
+			+ isnull(nullif(:p:p_surname,    '') + ' ', '')
+			+ isnull(nullif(:p:p_org_name,   '') + ' ', '')
 			+ '('
-			+ isnull(:eg:p_donor_partner_key, 'Missing')
+			+ isnull(nullif(:eg:p_donor_partner_key, ''), 'Missing')
 			+ ')',
 		    donor_kardia_desig_caption = condition(
 			:eg:i_eg_gift_amount = :eg:i_eg_deposit_gross_amt,
-			isnull(:f:a_fund_desc + ' ', '') + '(' + :eg:a_fund + ')',
+			''  + isnull(nullif(:f:a_fund_desc, '') + ' ', '')
+			    + isnull('(' + nullif(:eg:a_fund, '') + ')', ''),
 			'multiple (' + count(1) + ')'
 		    ),
 		    amount = isnull(:eg:i_eg_deposit_gross_amt, 'Missing'),
 		    amount_caption = isnull(:eg:i_eg_deposit_amt, 'Missing'),
-		    status = upper(ltrim(rtrim(:eg:i_eg_status))),
-		    gift_id = condition(
+		    status = isnull(upper(ltrim(rtrim(nullif(:eg:i_eg_status, '')))), 'Missing'),
+		    gift_id = nullif(condition(
 			char_length(:eg:i_eg_gift_uuid) > 12,
 			substring(:eg:i_eg_gift_uuid, 1, 12) + '...',
 			:eg:i_eg_gift_uuid
-		    ),
-		    gift_date = dateformat(:eg:i_eg_gift_date, 'M/d/yyyy'),
+		    ), 'Missing'),
+		    gift_date = isnull(dateformat(:eg:i_eg_gift_date, 'M/d/yyyy'), 'Missing'),
 		    
 		    -- Editable fields.
 		    :eg:i_eg_gift_uuid,         -- Gift uuid
