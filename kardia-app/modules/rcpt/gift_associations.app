@@ -208,36 +208,40 @@ gift_associations "widget/page"
 		    
 		    -- Logical values.
 		    n_line_items = count(1),
-		    is_override = lower(ltrim(rtrim(:eg:i_eg_status))) = 'override',
+		    is_override = (lower(ltrim(rtrim(:eg:i_eg_status))) = 'override'),
 		    
 		    -- Table display fields.
 		    donor_service_name = ''
-			+ isnull(:eg:i_eg_donor_name, 'Missing')
+			+ isnull(nullif(:eg:i_eg_donor_name, ''), '??')
 			+ isnull(' (' + nullif(:eg:i_eg_donor_address, '') + ')', ''),
-		    donor_service_desig_caption = ''
-			+ isnull(:eg:i_eg_desig_name + ' ', '')
-			+ isnull('(' + nullif(:eg:i_eg_desig_uuid, '') + ')', ''),
+		    donor_service_desig_caption = condition(
+			:eg:i_eg_gift_amount = :eg:i_eg_deposit_gross_amt,
+			''  + isnull(nullif(:eg:i_eg_desig_name, '') + ' ', '')
+			    + isnull('(' + nullif(:eg:i_eg_desig_uuid, '') + ')', ''),
+			'multiple (' + count(1) + ')'
+		    ),
 		    donor_kardia_name = ''
-			+ isnull(:p:p_given_name + ' ', '')
-			+ isnull(:p:p_surname    + ' ', '')
-			+ isnull(:p:p_org_name   + ' ', '')
+			+ isnull(nullif(:p:p_given_name, '') + ' ', '')
+			+ isnull(nullif(:p:p_surname,    '') + ' ', '')
+			+ isnull(nullif(:p:p_org_name,   '') + ' ', '')
 			+ '('
-			+ isnull(:eg:p_donor_partner_key, 'Missing')
+			+ isnull(nullif(:eg:p_donor_partner_key, ''), '??')
 			+ ')',
 		    donor_kardia_desig_caption = condition(
 			:eg:i_eg_gift_amount = :eg:i_eg_deposit_gross_amt,
-			isnull(:f:a_fund_desc + ' ', '') + '(' + :eg:a_fund + ')',
+			''  + isnull(nullif(:f:a_fund_desc, '') + ' ', '')
+			    + isnull('(' + nullif(:eg:a_fund, '') + ')', ''),
 			'multiple (' + count(1) + ')'
 		    ),
-		    amount = isnull(:eg:i_eg_deposit_gross_amt, 'Missing'),
-		    amount_caption = isnull(:eg:i_eg_deposit_amt, 'Missing'),
-		    status = upper(ltrim(rtrim(:eg:i_eg_status))),
-		    gift_id = condition(
+		    amount = isnull(:eg:i_eg_deposit_gross_amt, '??'),
+		    amount_caption = isnull(:eg:i_eg_deposit_amt, '??'),
+		    status = isnull(upper(ltrim(rtrim(nullif(:eg:i_eg_status, '')))), '??'),
+		    gift_id = nullif(condition(
 			char_length(:eg:i_eg_gift_uuid) > 12,
 			substring(:eg:i_eg_gift_uuid, 1, 12) + '...',
 			:eg:i_eg_gift_uuid
-		    ),
-		    gift_date = dateformat(:eg:i_eg_gift_date, 'M/d/yyyy'),
+		    ), '??'),
+		    gift_date = isnull(dateformat(:eg:i_eg_gift_date, 'M/d/yyyy'), '??'),
 		    
 		    -- Editable fields.
 		    :eg:i_eg_gift_uuid,         -- Gift uuid
@@ -870,12 +874,22 @@ gift_associations "widget/page"
 		    :eg:i_eg_deposit_gross_amt, -- Deposit Gross Amount
 		    :eg:i_eg_deposit_amt,       -- Deposit Net Amount
 		    :eg:a_fund,                 -- Kardia: Fund/Desig
-		    :eg:a_account_code          -- Kardia: GL Account
+		    :eg:a_account_code,          -- Kardia: GL Account
+		    
+		    -- Display values
+		    service_desig = ''
+			+ isnull(:eg:i_eg_desig_name + ' ', '')
+			+ isnull('(' + nullif(:eg:i_eg_desig_uuid, '') + ')', ''),
+		    kardia_desig = ''
+			+ isnull(:f:a_fund_desc + ' ', '')
+			+ isnull('(' + nullif(:eg:a_fund, '') + ')', '')
 		FROM
-		    identity /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows eg
+		    identity /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows eg,
+		    /apps/kardia/data/Kardia_DB/a_fund/rows f
 		WHERE
 		    :eg:i_eg_trx_uuid = :parameters:target_trx_uuid AND
-		    :eg:a_ledger_number = " + quote(:this:ledger) + "
+		    :eg:a_ledger_number = " + quote(:this:ledger) + " AND
+		    :eg:a_fund *= :f:a_fund
 		-- TODO: Uncomment 'DEFAULT' after PR #127 is merged.
 		ORDER BY -- DEFAULT
 		    :eg:i_eg_line_item,
@@ -937,21 +951,21 @@ gift_associations "widget/page"
 		allow_sorting     = yes;
 		
 		// Columns
-		column_desig_uuid "widget/table-column"
+		column_service_desig "widget/table-column"
 		    {
-		    width = 25;
-		    fieldname = i_eg_desig_uuid;
-		    title = "Service Desig. ID";
+		    width = 30;
+		    fieldname = service_desig;
+		    title = "Service Designation";
 		    }
-		column_line_item "widget/table-column"
+		column_kardia_desig "widget/table-column"
 		    {
-		    width = 10;
-		    fieldname = i_eg_line_item;
-		    title = "Line Item";
+		    width = 30;
+		    fieldname = kardia_desig;
+		    title = "Kardia Designation";
 		    }
 		column_gift_amount "widget/table-column"
 		    {
-		    width = 15;
+		    width = 10;
 		    align = right;
 		    fieldname = i_eg_gift_amount;
 		    title = "Gift Amount";
@@ -1010,10 +1024,12 @@ gift_associations "widget/page"
 				    popup_width = 335;
 				    popup_sql = runserver("
 					SELECT
-					    value = :c:a_fund + '',
-					    label = :c:a_fund + ' - ' + condition(
-						isnull(:cr:a_receiptable,0) = 1,
-						:c:a_fund_desc + isnull(' (legacy # ' + :c:a_legacy_code + ')',''),
+					    value = :c:a_fund + '', -- Stop failed auto-writes to DB.
+					    label = condition(
+						isnull(:cr:a_receiptable, 0) = 1,
+						''  + isnull(:c:a_fund_desc + ' ', '')
+						    + '(' + :c:a_fund + ')'
+						    + isnull(' - legacy #' + :c:a_legacy_code, ''),
 						'** CLOSED **'
 					    )
 					FROM
@@ -1021,8 +1037,8 @@ gift_associations "widget/page"
 					    /apps/kardia/data/Kardia_DB/a_fund_receipting/rows cr
 					WHERE
 					    :c:a_ledger_number = " + quote(:this:ledger) + " AND
-					    :cr:a_ledger_number =* :c:a_ledger_number AND
-					    :cr:a_fund =* :c:a_fund AND
+					    :c:a_ledger_number *= :cr:a_ledger_number AND
+					    :c:a_fund *= :cr:a_fund AND
 					    :c:a_is_posting = 1
 				    ");
 				    search_field_list = "*a_fund*,*a_fund_desc*,*a_legacy_code*";
@@ -1044,8 +1060,10 @@ gift_associations "widget/page"
 				    popup_width = 335;
 				    popup_sql = runserver("
 					SELECT
-					    value = :a_account_code + '',
-					    label = :a_account_code + ' - ' + isnull(:a_acct_desc, '')
+					    value = :a_account_code + '', -- Stop failed auto-writes to DB.
+					    label = ''
+						+ isnull(nullif(:a_acct_desc, '') + ' ', '')
+						+ isnull('(' + :a_account_code + ')', '')
 					FROM
 					    /apps/kardia/data/Kardia_DB/a_account/rows
 					WHERE
