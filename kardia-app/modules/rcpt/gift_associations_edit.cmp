@@ -451,7 +451,8 @@ gift_associations_edit "widget/component-decl"
 		    search_field_list = ""
 			+ "*a_account_code*,"
 			+ "*a_acct_desc*,"
-			+ "*a_acct_comment*";
+			+ "*a_acct_comment*,"
+			+ "*a_legacy_code*";
 		    key_name = a_account_code;
 		    
 		    required_gl_account_hints "widget/hints"
