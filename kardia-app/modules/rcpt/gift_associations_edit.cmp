@@ -139,13 +139,11 @@ gift_associations_edit "widget/component-decl"
 			    :p:p_org_name,
 			    :p:p_given_name + ' ' + :p:p_surname,
 			) + ' ', '')
-			+ isnull(
-			    ' ['
-				+ :pl:p_city + ', '
-				+ :pl:p_state_province + ' '
-				+ :pl:p_postal_code
-			    + '] ',
-			'')
+			+ isnull(' ['
+			    + :pl:p_city + ', '
+			    + :pl:p_state_province + ' '
+			    + :pl:p_postal_code
+			+ '] ', '')
 			+ '(' + :p:p_partner_key + ')'
 		    FROM
 			/apps/kardia/data/Kardia_DB/p_partner/rows p,
