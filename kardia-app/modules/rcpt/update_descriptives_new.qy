@@ -9,7 +9,8 @@ update_descriptives_new "system/query"
     sql = " declare collection tmp_gift_items scope application;
 	    declare collection a_descriptives scope application;
 	    declare collection a_descriptives_hist scope application;
-            declare collection tmp_intermediate_vals;
+		declare collection a_pledge scope query;
+        declare collection tmp_intermediate_vals;
 
 	    --This is the main file for our donor analytics application
 	    --The donor analytics is meant to make a new table, a_descriptives_hist, that keeps track of donor giving patterns and such
@@ -18,7 +19,7 @@ update_descriptives_new "system/query"
 	    --This organizes the data so that we can easily tell what kind of pattern a donor has, which can therefore be used when someone stops doing their normal pattern
 
 	    delete collection tmp_gift_items;
-            delete collection tmp_intermediate_vals;
+        delete collection tmp_intermediate_vals;
 
 	    print 'Working on descriptives' + isnull(' for fund ' + :parameters:fund + ',', '') + isnull(' for ledger ' + :parameters:ledger + ',', '') + isnull(' for donor ' + :parameters:donor + ',', '') - ',';
 
@@ -148,8 +149,8 @@ update_descriptives_new "system/query"
 		s_date_modified = getdate(),
 		s_modified_by = user_name()
 	    from
-		collection tmp_gift_items
-	    group by
+		collection tmp_gift_items t
+	    group by             
 		:ledger,
 		:fund,
 		:donor
@@ -159,6 +160,8 @@ update_descriptives_new "system/query"
 		:donor,
 		:giftdate desc
 	    ;
+        
+        -- From David: Is this block of code is being used to pull the data, then have the 3 history data to update it? Thanks! 
 
 	    -- Generate the amount history data, starting with the most recent gift amount.
 	    print 'Creating descriptives histories at ' + dateformat(getdate(), 'hh:mm:ss');
@@ -203,6 +206,27 @@ update_descriptives_new "system/query"
 		:seg,
 		:giftdate desc
 	    ;
+
+		-- Creating pledge collection
+		print 'Creating pledge collection at ' + dateformat(getdate(), 'hh:mm:ss');
+		insert into
+		collection a_pledge
+		select
+		a_ledger_number = :i:a_ledger_number,
+		p_donor_partner_id = :i:p_donor_partner_id,
+		a_fund = :i:a_fund,
+		a_pledge_id = :i:a_pledge_id,
+		a_is_active = i:a_is_active
+		a_intent_type = i:a_intent_type
+		a_amount = :i:a_amount,
+		a_total_amount = :i:a_total_amount,
+		a_giving_interval = :i:a_giving_interval,
+		a_gift_count = :i:a_gift_count,
+		a_pledge_date = :i:a_pledge_date,
+		a_start_date = :i:a_start_date,
+		a_end_date = :i:a:a_end_date
+		from 
+		/apps/kardia/data/Kardia_DB/a_pledge/rows i
 
 	    -- Update previous/next interval start/end dates
 	    print 'Updating segment start/end dates at ' + dateformat(getdate(), 'hh:mm:ss');
@@ -290,7 +314,7 @@ update_descriptives_new "system/query"
 		(:parameters:donor is null or :parameters:donor = :dh1:p_donor_partner_key) and
                 not :dh1:a_is_extra
 	    ;
-            update
+        update
 		collection a_descriptives_hist dh1
 	    set
 		:dh1:a_prev_end = (select :a_last_gift from collection a_descriptives_hist dh2 where :dh2:a_ledger_number = :dh1:a_ledger_number and :dh2:a_fund = :dh1:a_fund and :dh2:p_donor_partner_key = :dh1:p_donor_partner_key and :dh2:a_last_gift < :dh1:a_first_gift and :dh2:a_is_extra order by :dh2:a_last_gift desc limit 1),
@@ -303,7 +327,7 @@ update_descriptives_new "system/query"
 
             -- Correct NTL Tracking
 	    print 'Fixing next-to-last tracking at ' + dateformat(getdate(), 'hh:mm:ss');
-            update
+        update
 		collection a_descriptives_hist dh1
 	    set
 		:dh1:a_ntl_gift = (select nth(:t:giftdate, 2) from collection tmp_gift_items t where :t:ledger = :dh1:a_ledger_number and :t:fund = :dh1:a_fund and :t:donor = :dh1:p_donor_partner_key and :t:giftdate <= :dh1:a_last_gift order by :t:giftdate desc)
@@ -462,11 +486,39 @@ update_descriptives_new "system/query"
 		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
 	    ;
 
+
+
+        -- David: This is where the checks come in the code for the descriptives. And where I will try to give/insert ideas on the code 
+
+		-- add extra columns to the a_descriptives_hist and a_descriptives collections the first time data is inserted into them. 
+		-- Just make each check a bit column (it may be easier to make it an int column as use it like a bit; bits tend to have more limitations), 
+		-- and set everything to 0/false initially. Note that these collections are eventually inserted into corresponding database tables (of the same name), 
+		-- which will not have the new columns you added to the collections. 
+		-- Because of this, there is a need to use the information gained from your checks to update existing columns.
+		-- Also, I would like to add extra checks on this part of code. 
+
+
+        -- Where should this block of code go? What is the best place? 
+		-- Add extra columns to a_descriptives_hist collection
+		alter collection a_descriptives_hist
+		add column a_check_1 bit default 0,
+		add column a_check_2 bit default 0,
+		add column a_check_3 bit default 0;
+
+		-- Add extra columns to a_descriptives collection
+		alter collection a_descriptives
+		add column a_check_1 bit default 0,
+		add column a_check_2 bit default 0,
+		add column a_check_3 bit default 0;
+
+
+
+
 	    -- Overall adjustments to a_act_average_xyz for a_descriptives
 	    -- if the interval is biannual or less, lookback slightly less than a year from the most recent gift
             -- the lookahead date is half an interval past the most recent gift
 	    print 'Setting general stats at ' + dateformat(getdate(), 'hh:mm:ss');
-            update
+        update
 		identity collection a_descriptives d
 	    set
 		:a_act_lookahead_date = dateadd(day, convert(integer, round(0.5 * 30.5 * :a_act_average_interval)), :a_last_gift),
@@ -479,8 +531,8 @@ update_descriptives_new "system/query"
 		(:parameters:fund is null or :parameters:fund = :d:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
 	    ;
-            -- if the interval is greater than bi-annually, check back the last three intervals
-            update
+        -- if the interval is greater than bi-annually, check back the last three intervals 
+        update
 		identity collection a_descriptives d
 	    set
 		:a_act_lookahead_date = dateadd(day, convert(integer, round(0.5 * 30.5 * :a_act_average_interval)), :a_last_gift),
@@ -493,8 +545,7 @@ update_descriptives_new "system/query"
 		(:parameters:fund is null or :parameters:fund = :d:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
 	    ;
-            -- this handles one time gifts (and giving that falls all within half a month)
-	    update 
+            -- this handles one time gifts (and giving that falls all within half a month) 
 		identity collection a_descriptives d
 	    set
 		:a_act_average_interval = convert(double, null),
@@ -527,6 +578,33 @@ update_descriptives_new "system/query"
 		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
 	    ;
 
+        -- From the previous checks, thats why I made this to handle the pledges that are once every 1 year or more
+        -- (David): this handles pledges that are once every 1 year or more 
+	    update 
+		identity collection a_descriptives d
+	    set
+		:a_act_average_interval = convert(double, null),
+		:a_act_average_months = null,
+		:a_act_average_amount = convert(money, null),
+		--  (David) Added the third condition which is about checking the future date
+		:a_act_lookahead_date = condition(
+			getdate() < dateadd(day, convert(integer, round(0.5 * 30.5 * :a_act_average_interval)), :a_last_gift),
+			getdate(),
+			condition(
+				dateadd(day, convert(integer, round(0.5 * 30.5 * :a_act_average_interval)), :a_last_gift) > getdate(),
+				getdate(),
+				dateadd(day, convert(integer, round(0.5 * 30.5 * :a_act_average_interval)), :a_last_gift)
+			)
+		),
+		:a_act_lookback_date = :a_first_gift
+		where 
+		:a_act_average_interval >= 12 and -- Yes, it might be that it is interval.
+		(:parameters:fund is null or :parameters:fund = :d:a_fund) and
+		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
+		;
+
+
+
             -- Update a_act_average_xyz for a_descriptives_hist
             update
                 identity collection a_descriptives_hist dh
@@ -547,6 +625,26 @@ update_descriptives_new "system/query"
                 (:parameters:donor is null or :parameters:donor = :dh:p_donor_partner_key) and
                 :dh:is_approximate = 0
             ;
+
+		-- Update pledge information for a_descriptives_hist
+		update
+			identity collection a_descriptives_hist dh,
+			collection a_pledge p
+		set 
+			:dh:a_pledge_id = :p:a_pledge_id,
+			:dh:a_pledge_is_active = :p:a_is_active,
+			:dh:a_pledge_intent_type = :p:a_intent_type,
+			:dh:a_pledge_amount = :p:a_amount,
+			:dh:a_pledge_total_amount = :p:a_total_amount,
+			:dh:a_pledge_giving_interval = :p:a_giving_interval,
+			:dh:a_pledge_gift_count = :p:a_gift_count,
+			:dh:a_pledge_made_date = :p:a_pledge_date,
+			:dh:a_pledge_start_date = :p:a_start_date,
+			:dh:a_pledge_end_date = :p:a_end_date
+		where
+			:dh:a_ledger_number *= :p:a_ledger_number
+				and :dh:a_fund *= :p:a_fund
+				and :dh:p_donor_partner_key *= :p:p_donor_partner_id
 
 	    -- Update past/current flags on histories and on descriptives. For a history entry with
 	    -- more than one gift, we base the current/lapsed indicator on the gift interval compared to
@@ -604,41 +702,60 @@ update_descriptives_new "system/query"
 		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
 	    ;
 
-	    -- Identify increases in giving.  An increase is when the history entry has a larger monthly
-	    -- average than the immediately previous history entry that is not a one-time-extra gift. We
-	    -- also require that the history entry and its predecessor both have at least two gifts,
-            -- unless the giving interval is greater than 7 (effectively yearly), in which case any
-            -- number of gifts for either produces useful results.
-	    print 'Identifying increases at ' + dateformat(getdate(), 'hh:mm:ss');
-	    update
+
+        -- (David) Below here I will try to add checks if the amount doubles. I hope that it makes sense. If it dosent, please let me know and correct me. 
+
+
+		-- Identify increases in giving.  An increase is when the history entry has a larger monthly
+		-- average than the immediately previous history entry that is not a one-time-extra gift. We
+		-- also require that the history entry and its predecessor both have at least two gifts,
+			-- unless the giving interval is greater than 7 (effectively yearly), in which case any
+			-- number of gifts for either produces useful results.
+		print 'Identifying increases at ' + dateformat(getdate(), 'hh:mm:ss');
+		update
 		identity collection a_descriptives_hist dh
-	    set
+		set
 		:dh:a_increase_pct = condition(
-                                :dh:a_act_average_interval > 7 or (datediff(day, :dh:a_prev_end, :dh:a_first_gift) > 212 and :dh:a_count = 1),
-                                convert(double, :dh:a_amount) / convert(double, isnull((select :dh2:a_amount from collection a_descriptives_hist dh2 where :dh2:a_ledger_number = :dh:a_ledger_number and :dh2:a_fund = :dh:a_fund and :dh2:p_donor_partner_key = :dh:p_donor_partner_key and isnull(:dh2:a_is_extra, 0) = 0 and :dh2:a_last_gift < :dh:a_first_gift order by :dh2:a_last_gift desc limit 1), :dh:a_amount)) - 1.0,
-                                condition(
-                                        :dh:a_count > 1,
-                                        convert(double, :dh:a_amount) / condition(round(:dh:a_act_average_interval) < 1, 1, round(:dh:a_act_average_interval)) / convert(double, isnull((select :dh2:a_amount / condition(round(:dh2:a_act_average_interval) < 1, 1, round(:dh2:a_act_average_interval)) from collection a_descriptives_hist dh2 where :dh2:a_ledger_number = :dh:a_ledger_number and :dh2:a_fund = :dh:a_fund and :dh2:p_donor_partner_key = :dh:p_donor_partner_key and isnull(:dh2:a_is_extra, 0) = 0 and :dh2:a_last_gift < :dh:a_first_gift and :dh2:a_count > 1 order by :dh2:a_last_gift desc limit 1), :dh:a_amount / condition(round(:dh:a_act_average_interval) < 1, 1, round(:dh:a_act_average_interval)))) - 1.0,
-                                        null
-                                        )
-                                )
-	    where
+								:dh:a_act_average_interval > 7 or (datediff(day, :dh:a_prev_end, :dh:a_first_gift) > 212 and :dh:a_count = 1),
+								convert(double, :dh:a_amount) / convert(double, isnull((select :dh2:a_amount from collection a_descriptives_hist dh2 where :dh2:a_ledger_number = :dh:a_ledger_number and :dh2:a_fund = :dh:a_fund and :dh2:p_donor_partner_key = :dh:p_donor_partner_key and isnull(:dh2:a_is_extra, 0) = 0 and :dh2:a_last_gift < :dh:a_first_gift order by :dh2:a_last_gift desc limit 1), :dh:a_amount)) - 1.0,
+								condition(
+										:dh:a_count > 1,
+										convert(double, :dh:a_amount) / condition(round(:dh:a_act_average_interval) < 1, 1, round(:dh:a_act_average_interval)) / convert(double, isnull((select :dh2:a_amount / condition(round(:dh2:a_act_average_interval) < 1, 1, round(:dh2:a_act_average_interval)) from collection a_descriptives_hist dh2 where :dh2:a_ledger_number = :dh:a_ledger_number and :dh2:a_fund = :dh:a_fund and :dh2:p_donor_partner_key = :dh:p_donor_partner_key and isnull(:dh2:a_is_extra, 0) = 0 and :dh2:a_last_gift < :dh:a_first_gift and :dh2:a_count > 1 order by :dh2:a_last_gift desc limit 1), :dh:a_amount / condition(round(:dh:a_act_average_interval) < 1, 1, round(:dh:a_act_average_interval)))) - 1.0,
+										null
+										)
+								)
+		where
 		(:parameters:fund is null or :parameters:fund = :dh:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :dh:p_donor_partner_key) and
-                not isnull(:dh:a_is_extra, 0) != 0
-	    ;
-	    update
+				not isnull(:dh:a_is_extra, 0) != 0
+		;
+		update
 		identity collection a_descriptives_hist dh,
 		collection a_descriptives d
-	    set
+		set
 		:dh:a_increase_pct = condition((:dh:a_count > 1 or :d:a_act_average_interval > 1.8) and :dh:a_increase_pct > 0.001, :dh:a_increase_pct, null)
-	    where
+		where
 		:d:a_ledger_number = :dh:a_ledger_number and
 		:d:a_fund = :dh:a_fund and
 		:d:p_donor_partner_key = :dh:p_donor_partner_key and
 		(:parameters:fund is null or :parameters:fund = :dh:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :dh:p_donor_partner_key)
-	    ;
+		;
+
+		-- Check if the amount is doubled
+		print 'Checking if the amount is (at least) doubled at ' + dateformat(getdate(), 'hh:mm:ss');
+		update
+			identity collection a_descriptives_hist dh
+		set
+			:dh:a_is_doubled = condition(:dh:a_increase_pct >= 1.0, 1, 0) -- Using the dh:a_increase_pct to check if the amount is doubled or not (if the condition is wrong, should the first condition could be more than one and less than 2?)
+		where
+			(:parameters:fund is null or :parameters:fund = :dh:a_fund) and
+			(:parameters:donor is null or :parameters:donor = :dh:p_donor_partner_key) and
+			not isnull(:dh:a_is_extra, 0) != 0
+		;
+
+
+        -- (David) Below here I will try to add checks if the amount halves
 
 	    -- Identify decreases in giving. A decrease is when the history entry has a smaller monthly
 	    -- average than the immediately previous history entry that is not a one-time-extra gift. We
@@ -672,7 +789,22 @@ update_descriptives_new "system/query"
 		(:parameters:donor is null or :parameters:donor = :dh:p_donor_partner_key)
 	    ;
 
-	    -- Propagate informational flags/data to the overall giving descriptives
+
+		-- Check if the amount halves
+		print 'Checking if the amount (at least) halves at ' + dateformat(getdate(), 'hh:mm:ss');
+		update
+			identity collection a_descriptives_hist dh
+		set
+			:dh:a_is_halved = condition(:dh:a_decrease_pct > 0.5, 1, 0) -- Using the dh:a_decrease_pct to check if the amount halves or not 
+		where
+			(:parameters:fund is null or :parameters:fund = :dh:a_fund) and
+			(:parameters:donor is null or :parameters:donor = :dh:p_donor_partner_key) and
+			not isnull(:dh:a_is_extra, 0) != 0
+		;
+		(:parameters:donor is null or :parameters:donor = :d:p_donor_partner_key)
+	    ;
+
+		-- Propagate informational flags/data to the overall giving descriptives
 	    print 'Setting informational flags at ' + dateformat(getdate(), 'hh:mm:ss');
 	    update
 		identity collection a_descriptives d
