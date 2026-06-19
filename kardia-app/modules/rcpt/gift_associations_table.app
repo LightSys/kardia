@@ -49,13 +49,21 @@ gift_associations_table "widget/component-decl"
 	cx__case_insensitive = 1;
 	objname = runclient("eg");
 	field_list = ""
-	    + "*i_eg_donor_name*,"
+	    + "p_donor_partner_key,"
 	    + "*i_eg_desig_name*,"
 	    + "*i_eg_desig_notes*,"
-	    + "p_donor_partner_key,"
+	    + "*i_eg_donor_name*,"
+	    + "*i_eg_donor_given_name*,"
+	    + "*i_eg_donor_surname*,"
+	    + "*i_eg_donor_middle_name*,"
 	    + "*i_eg_donor_email*,"
-	    + "i_eg_donor_city*,"
-	    + "i_eg_donor_state";
+	    + "*i_eg_donor_address*,"
+	    + "*i_eg_donor_addr1*,"
+	    + "*i_eg_donor_addr2*,"
+	    + "*i_eg_donor_addr3*,"
+	    + "i_eg_donor_city,"
+	    + "i_eg_donor_state,"
+	    + "i_eg_donor_phone";
 	query = runclient(:filter_search_box:content);
 	}
 	
