@@ -1072,7 +1072,11 @@ gift_associations "widget/page"
 					ORDER BY
 					    :a_account_code
 				    ");
-				    search_field_list = "*a_account_code*";
+				    search_field_list = ""
+					+ "*a_account_code*,"
+					+ "*a_acct_desc*,"
+					+ "*a_acct_comment*,"
+					+ "*a_legacy_code*";
 				    key_name = a_account_code;
 				    
 				    gl_account_hints "widget/hints" { style = applyonchange,notnull,strnull; }
