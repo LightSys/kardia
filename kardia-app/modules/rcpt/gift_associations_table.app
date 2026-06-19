@@ -43,11 +43,22 @@ gift_associations_table "widget/component-decl"
 	{
 	source = gift_associations_table;
 	event = trigger_search;
-	target = search_trigger;
-	action = SetValue;
-	Value = runclient(1);
+	target = content_osrc;
+	action = QueryText;
+	    
+	cx__case_insensitive = 1;
+	objname = runclient("eg");
+	field_list = ""
+	    + "*i_eg_donor_name*,"
+	    + "*i_eg_desig_name*,"
+	    + "*i_eg_desig_notes*,"
+	    + "p_donor_partner_key,"
+	    + "*i_eg_donor_email*,"
+	    + "i_eg_donor_city*,"
+	    + "i_eg_donor_state";
+	query = runclient(:filter_search_box:content);
 	}
-    
+	
     content_osrc "widget/osrc"
 	{
 	filter_service_param "widget/parameter"
@@ -62,38 +73,6 @@ gift_associations_table "widget/component-decl"
 	    param_name = override_only;
 	    type = integer;
 	    default = runclient(condition(:filter_search_box:content = '', 1, 0));
-	    }
-	
-	// Allows multiple connectors to easily re-run the search.
-	search_trigger "widget/variable" { type = Integer; value=runclient(0); }
-	
-	run_search "widget/connector"
-	    {
-	    source = search_trigger;
-	    event = DataModify;
-	    target = content_osrc;
-	    action = QueryText;
-	    event_condition = runclient(:search_trigger:value = 1);
-	    
-	    cx__case_insensitive = 1;
-	    objname = runclient("eg");
-	    field_list = ""
-		+ "*i_eg_donor_name*,"
-		+ "*i_eg_desig_name*,"
-		+ "*i_eg_desig_notes*,"
-		+ "p_donor_partner_key,"
-		+ "*i_eg_donor_email*,"
-		+ "i_eg_donor_city*,"
-		+ "i_eg_donor_state";
-	    query = runclient(:filter_search_box:content);
-	    }
-	
-	reset_search_trigger "widget/connector"
-	    {
-	    event = EndQuery;
-	    target = search_trigger;
-	    action = SetValue;
-	    Value = runclient(0);
 	    }
 	
 	sql = runserver("
