@@ -148,7 +148,7 @@ gift_associations "widget/page"
 	    filter_search_box = filter_search_box;
 	    filter_service_dropdown = filter_service_dropdown;
 	    line_item_window = line_item_window;
-	    li_trx = li_trx;
+	    line_item_osrc = line_item_osrc;
 	    }
 	
 	load_associations_table "widget/connector"
@@ -174,10 +174,6 @@ gift_associations "widget/page"
 	    }
 	}
     
-    // li_trx tells the Line Item window which trx to load, so the default
-    // table and the history popup's table can both drive the shared window.
-    li_trx "widget/variable" { type = string; value = runclient(""); }
-    
     line_item_window "widget/childwindow"
 	{
 	x = 100; y = 115; width = 500; height = 475;
@@ -187,13 +183,6 @@ gift_associations "widget/page"
 	modal = yes;
 	visible = no;
 	
-	load_on_open "widget/connector"
-	    {
-	    event = Open;
-	    target = line_item_osrc;
-	    action = QueryParam;
-	    }
-	
 	line_item_osrc "widget/osrc"
 	    {
 	    // Get current transaction from client.
@@ -201,7 +190,6 @@ gift_associations "widget/page"
 		{
 		param_name = target_trx_uuid;
 		type = string;
-		default = runclient(:li_trx:value);
 		}
 	    
 	    sql = runserver("

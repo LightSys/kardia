@@ -36,7 +36,7 @@ gift_associations_edit "widget/component-decl"
     // updates on i_eg_deposit_gross_amt and i_eg_deposit_amt.
     gift_amount "widget/variable" { fieldname = i_eg_gift_amount; form = form; }
     net_amount  "widget/variable" { fieldname = i_eg_net_amount;  form = form; }
-
+    
     column_layout "widget/hbox"
 	{
 	x = 0; y = 0; width = 590; height = 140; spacing = 5;
@@ -223,7 +223,7 @@ gift_associations_edit "widget/component-decl"
 			ctl_type = label;
 			value = "See Details";
 			}
-
+		    
 		    desig_name_field "widget/component"
 			{
 			condition = runserver(:this:visible_fields = "all");

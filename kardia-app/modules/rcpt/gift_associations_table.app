@@ -10,18 +10,18 @@ gift_associations_table "widget/component-decl"
     
     expose_actions_for = content_osrc;
     expose_properties_for = content_osrc;
-        
+    
     ledger "widget/parameter" { type = string; deploy_to_client = yes; }
     
     // Parameters for linking to widgets on containing page.
     filter_search_box       "widget/parameter" { type = object; } // The search box widget used to filter entries.
     filter_service_dropdown "widget/parameter" { type = object; } // The dropdown widget used to filter by service.
     line_item_window        "widget/parameter" { type = object; } // The window that the Line Item Details button opens.
-    li_trx                  "widget/parameter" { type = object; } // Shared: trx_uuid that the Line Item Details window should load.
+    line_item_osrc          "widget/parameter" { type = object; } // OSRC of the shared Line Item Details window; for querying the selected trx.
     
     // History mode: Used internally for by the Association History button.
     // When is_history is set to 1, the table shows only one gift's
-    // association history (hiding the Association History button). 
+    // association history (hiding the Association History button).
     // The gift id itself is delivered at runtime via show_gift_history.
     is_history "widget/parameter" { type = integer; default = 0; }
     gift_id_var "widget/variable" { type = string; value = runclient(""); }
@@ -721,19 +721,20 @@ gift_associations_table "widget/component-decl"
 				not :edit_form:is_discardable
 			    );
 			    
-			    // Set list item trx for the shared window, then open it.
-			    set_li_trx "widget/connector"
-				{
-				event = Click;
-				target = li_trx;
-				action = SetValue;
-				Value = runclient(:content_osrc:i_eg_trx_uuid);
-				}
+			    // Open the shared Line Item window, then load the selected trx
+			    // into its OSRC by querying it directly.
 			    open_line_item_window "widget/connector"
 				{
 				event = Click;
 				target = line_item_window;
 				action = Open;
+				}
+			    query_line_items "widget/connector"
+				{
+				event = Click;
+				target = line_item_osrc;
+				action = QueryParam;
+				target_trx_uuid = runclient(:content_osrc:i_eg_trx_uuid);
 				}
 			    }
 			
@@ -767,7 +768,7 @@ gift_associations_table "widget/component-decl"
 		}
 	    }
 	}
-
+    
     // Popup showing one gift's full association history, using a nested copy
     // of this component set to history mode.
     history_window "widget/childwindow"
@@ -796,13 +797,13 @@ gift_associations_table "widget/component-decl"
 	history_table "widget/component"
 	    {
 	    x = 10; y = 40; width = 940; height = 550;
-	    path = "/apps/kardia/modules/rcpt/gift_associations_table.app";
+	    path = "/apps/kardia/modules/rcpt/gift_associations_table.cmp";
 	    mode = static;
 	    
 	    is_history = 1;
 	    ledger = runserver(:this:ledger);
 	    line_item_window = line_item_window;
-	    li_trx = li_trx;
+	    line_item_osrc = line_item_osrc;
 	    }
 	}
     
