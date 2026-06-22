@@ -18,7 +18,6 @@ gift_associations_table "widget/component-decl"
     filter_service_dropdown "widget/parameter" { type = object; } // The dropdown widget used to filter by service.
     line_item_window        "widget/parameter" { type = object; } // The window that the Line Item Details button opens.
     li_trx                  "widget/parameter" { type = object; } // Shared: trx_uuid that the Line Item Details window should load.
-    li_changed              "widget/parameter" { type = object; } // Shared: signals that a line item was saved, so tables should refresh.
     
     // History mode: Used internally for by the Association History button.
     // When is_history is set to 1, the table shows only one gift's
@@ -95,12 +94,24 @@ gift_associations_table "widget/component-decl"
 	action = QueryParam;
 	}
     
-    // Refresh when a line item is saved in the shared Line Item window.
-    on_line_item_changed "widget/connector"
+    // Refresh the visible table(s) after a line item is saved in the shared
+    // Line Item window.
+    refresh_tables "widget/component-decl-action" {}
+    on_refresh_tables_content "widget/connector"
 	{
-	source = li_changed;
-	event  = DataModify;
+	source = gift_associations_table;
+	event  = refresh_tables;
 	target = content_osrc;
+	action = Refresh;
+	}
+    on_refresh_tables_history "widget/connector"
+	{
+	// Pass on the event to the nested history table, unless
+	// we are that table.
+	condition = runserver(:this:is_history == 0);
+	source = gift_associations_table;
+	event  = refresh_tables;
+	target = history_table;
 	action = Refresh;
 	}
     
@@ -792,7 +803,6 @@ gift_associations_table "widget/component-decl"
 	    ledger = runserver(:this:ledger);
 	    line_item_window = line_item_window;
 	    li_trx = li_trx;
-	    li_changed = li_changed;
 	    }
 	}
     
