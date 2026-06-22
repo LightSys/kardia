@@ -1,0 +1,321 @@
+$Version=2$
+Receipts "system/report"
+    {
+    title = "LightSys Gift Receipt";
+    resolution = 300;
+    document_format="application/pdf";
+
+    ledger		"report/parameter"	{ type=string;	default=null; }
+    batch_number	"report/parameter"	{ type=integer;	default=null; }
+    gift_number		"report/parameter"	{ type=integer;	default=null; }
+    receipt_number	"report/parameter"	{ type=string;	default=null; }
+    partner_id		"report/parameter"	{ type=string;	default=null; }
+    address_full	"report/parameter"	{ type=integer;	default=0; }
+    types		"report/parameter"	{ type=string;	default='_'; }
+
+    pagewidth=85;
+    pageheight=66;
+    marginleft=10;
+    marginright=10;
+    margintop=4.2;
+    marginbottom=2.2;
+
+    // List of receipts to print
+    gifts "report/query"
+	{
+	sql =  runserver("
+		SELECT
+			*,
+			gift_date = isnull(:g:a_gift_postmark_date, :g:a_gift_received_date),
+			gift_year = datepart(year,isnull(:g:a_gift_postmark_date, :g:a_gift_received_date))
+		FROM
+			/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g,
+			/apps/kardia/data/Kardia_DB/a_gift_payment_type/rows gt
+		WHERE 
+			" + condition(:this:ledger is null, "", ":g:a_ledger_number = :this:ledger and") + "
+			" + condition(:this:batch_number is null, "", ":g:a_batch_number = :this:batch_number and") + "
+			" + condition(:this:gift_number is null, "", ":g:a_gift_number = :this:gift_number and") + "
+			" + condition(:this:receipt_number is null, "", ":g:a_receipt_number = :this:receipt_number and") + "
+			" + condition(:this:partner_id is null, "", ":g:p_donor_partner_id = :this:partner_id and") + "
+			:gt:a_gift_payment_type = :g:a_gift_type and
+			:gt:a_ledger_number = :g:a_ledger_number and
+			:gt:a_is_cash = 1 and
+			(:this:types = '_' or :this:types = :g:a_receipt_desired)
+		ORDER BY
+			:g:a_receipt_number");
+	}
+
+    thisrcpt_total "report/query"
+	{
+	sql =  runserver("
+		SELECT
+			ded_amt = isnull(sum(condition(:i:a_non_tax_deductible = 1, $0, :i:a_amount)),$0),
+			nonded_amt = isnull(sum(condition(:i:a_non_tax_deductible = 1, :i:a_amount, $0)),$0)
+		FROM
+			/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g,
+			/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i,
+			/apps/kardia/data/Kardia_DB/a_gift_payment_type/rows gt
+		WHERE
+			:g:p_donor_partner_id = :gifts:p_donor_partner_id and
+			:g:a_ledger_number = :gifts:a_ledger_number and
+			:g:a_receipt_number = :gifts:a_receipt_number and
+			:i:a_ledger_number = :g:a_ledger_number and
+			:i:a_batch_number = :g:a_batch_number and
+			:i:a_gift_number = :g:a_gift_number and
+			:gt:a_gift_payment_type = :g:a_gift_type and
+			:gt:a_ledger_number = :g:a_ledger_number and
+			:gt:a_is_cash = 1
+		");
+	}
+
+    ytd_total "report/query"
+	{
+	sql = runserver("
+		SELECT
+			ded_amt = isnull(sum(condition(:i:a_non_tax_deductible = 1, $0, :i:a_amount)),$0),
+			nonded_amt = isnull(sum(condition(:i:a_non_tax_deductible = 1, :i:a_amount, $0)),$0)
+		FROM
+			/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g,
+			/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i,
+			/apps/kardia/data/Kardia_DB/a_gift_payment_type/rows gt
+		WHERE
+			:g:p_donor_partner_id = :gifts:p_donor_partner_id and
+			:g:a_ledger_number = :gifts:a_ledger_number and
+			isnull(:g:a_gift_postmark_date, :g:a_gift_received_date) <= :gifts:gift_date and
+			datepart(year, isnull(:g:a_gift_postmark_date, :g:a_gift_received_date)) = datepart(year, :gifts:gift_date) and
+			:i:a_ledger_number = :g:a_ledger_number and
+			:i:a_batch_number = :g:a_batch_number and
+			:i:a_gift_number = :g:a_gift_number and
+			:gt:a_gift_payment_type = :g:a_gift_type and
+			:gt:a_ledger_number = :g:a_ledger_number and
+			:gt:a_is_cash = 1
+		");
+	}
+
+    gift_donor "report/query"
+	{
+	sql =  "SELECT
+			salutation=condition(char_length(:p:p_preferred_name) > 0, :p:p_preferred_name, :p:p_given_name),
+			:p:p_partner_key,
+			:p:p_partner_class,
+			:p:p_given_name,
+			:p:p_surname,
+			:p:p_org_name,
+			:p:p_title,
+			:l:p_in_care_of,
+			:l:p_address_1,
+			:l:p_address_2,
+			:l:p_address_3,
+			:l:p_city,
+			:l:p_state_province,
+			:l:p_postal_code,
+			:l:p_country_code,
+			p_country_name = upper(:c:p_country_name),
+			:af:p_format
+		FROM
+			/apps/kardia/data/Kardia_DB/p_partner/rows p,
+			/apps/kardia/data/Kardia_DB/p_location/rows l,
+			/apps/kardia/data/Kardia_DB/p_country/rows c,
+			/apps/kardia/data/Kardia_DB/p_address_format/rows af
+		WHERE
+			:p:p_partner_key = :gifts:p_donor_partner_id and
+			:l:p_revision_id = 0 and
+			:l:p_partner_key =* :p:p_partner_key and
+			:c:p_country_code =* :l:p_country_code and
+			:af:p_country_code =* :c:p_country_code and
+			:af:p_address_set = 'STANDARD'
+		ORDER BY
+			:l:p_record_status_code ASC
+		LIMIT 1
+		";
+	}
+
+    gift_items "report/query"
+	{
+	sql =  "SELECT
+			:i:a_amount,
+			:i:a_confidential,
+			:i:a_non_tax_deductible,
+			:i:a_comment,
+			:i:a_motivational_code,
+			:i:a_fund,
+			:i:a_recv_document_id,
+			:cc:a_fund_desc,
+			:ra:a_receipt_comment,
+			rcptcomm = condition(char_length(rtrim(isnull(:ra:a_receipt_comment,''))) > 0, :ra:a_receipt_comment, :cc:a_fund_desc)
+		FROM
+			/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i,
+			/apps/kardia/data/Kardia_DB/a_fund/rows cc,
+			/apps/kardia/data/Kardia_DB/a_fund_receipting_accts/rows ra
+		WHERE
+			:i:a_ledger_number = :gifts:a_ledger_number and
+			:i:a_batch_number = :gifts:a_batch_number and
+			:i:a_gift_number = :gifts:a_gift_number and
+			:cc:a_ledger_number = :i:a_ledger_number and
+			:cc:a_fund = :i:a_fund and
+			:ra:a_ledger_number =* :i:a_ledger_number and
+			:ra:a_fund =* :i:a_fund and
+			:ra:a_account_code =* :i:a_account_code
+		ORDER BY
+			:i:a_split_number
+		";
+	}
+
+    each_receipt "report/form"
+	{
+	source=gifts,gift_donor,ytd_total,thisrcpt_total;
+	mode=normal;
+	ffsep=yes;
+
+	hdrimg "report/image"
+	    {
+	    x=0; y=0; height=4.44; width=65;
+	    source = "/apps/kardia/modules/lightsys/ReceiptHeader2021.png";
+	    }
+
+	thankyou "report/area"
+	    {
+	    x=0; y=5; width=65; height=10;
+	    font=helvetica; 
+	    style=plain;
+	    fontsize=9;
+	    align=full;
+	    //lineheight=0.8;
+	    thankyou_text "report/data" 
+		{ 
+		align=full;
+		value=runserver('Dear ' + :gift_donor:salutation + ',\n\nBelow is a receipt for your gift; please keep it for your records.  LightSys is a tax-exempt 501(c)(3) non-profit ministry; therefore, your contribution is normally tax-deductible in the amount listed below on your receipt.  Thank you for supporting our work!\n\nFor His Kingdom,\n'); 
+		}
+	    sig_image "report/image"
+		{
+		x=0;width=12.4333; height=1.9;
+		source="/apps/kardia/modules/lightsys/BlackPixel.png";
+		}
+	    sig_text "report/data"
+		{
+		align=full;
+		value=runserver('\nGreg Beeley, Team Leader\nLightSys Technology Services, Inc.'); 
+		}
+	    }
+
+	sep_line "report/image"
+	    {
+	    x=0; y=16; width=65; height=0.02;
+	    source="/apps/kardia/modules/lightsys/BlackPixel.png";
+	    }
+
+	pls_retain "report/area"
+	    {
+	    x=0; y=17; width=65; height=1;
+	    font=courier;
+	    style=bold;
+	    fontsize=9;
+	    align=center;
+	    pls_retain_txt "report/data" { value='*** GIFT RECEIPT - PLEASE RETAIN FOR YOUR RECORDS ***'; }
+	    }
+
+	rcpt_summary "report/area"
+	    {
+	    x=0; y=19; width=65; height=19;
+	    font=courier;
+	    style=bold;
+	    fontsize=9;
+	    align=left;
+	    s1 "report/data" { style=bold; value='DONOR ID:'; }
+	    s2 "report/data" { xpos=15; style=plain; value=runserver(:gifts:p_donor_partner_id); }
+	    s3 "report/data" { style=bold; value='\nRECEIPT DATE:'; }
+	    s4 "report/data" { xpos=15; style=plain; dateformat="dd-MMM-yyyy"; value=runserver(isnull(:gifts:a_receipt_sent_date, getdate())); }
+	    s5 "report/data" { style=bold; value='\nRECEIPT NUMBER:'; }
+	    s6 "report/data" { xpos=15; style=plain; value=runserver(:gifts:a_receipt_number); }
+	    
+	    s7 "report/data" { style=bold; value='\n\nGIFT TO:\n\n\n'; }
+	    s8 "report/data" { style=bold; fontsize=12; value='    LightSys Technology Services, Inc.\n    PO Box 64527\n    Colorado Springs, CO  80962\n\n\n'; }
+	    s9 "report/data" { style=bold; value='GIFT FROM:\n\n\n'; }
+	    s10 "report/area" { style=bold; fontsize=12; x=4; width=61; margin=0; value=runserver(
+		    condition(char_length(:gift_donor:p_org_name) > 0, :gift_donor:p_org_name + '\n', '') + 
+		    condition(char_length(:gift_donor:p_given_name + :gift_donor:p_surname) > 0, condition(char_length(:gift_donor:p_org_name) > 0, 'Attn: ', '') + condition(char_length(rtrim(:gift_donor:p_title)) > 0, rtrim(:gift_donor:p_title) + ' ', '') + :gift_donor:p_given_name + ' ' + :gift_donor:p_surname + '\n', '') + 
+		    substitute(isnull(:gift_donor:p_format, '[:p_in_care_of]\n[:p_address_1]\n[:p_address_2]\n[:p_address_3]\n[:p_city], [:p_state_province] [:p_postal_code]\n[:p_country_name]'), 'l=gift_donor,p=gift_donor')); }
+	    }
+
+	rcpt_data "report/table"
+	    {
+	    x=0; y=38; width=65; height=11.8;
+	    innerborder=0.05;
+	    //outerborder=0;
+	    topborder=0.3;
+	    bottomborder=0.02;
+	    columns=5;
+	    widths=7.6,10,8.7,8.7,26;
+	    //widths=7,10,9,9,26;
+	    colsep=0.9;
+	    shadow=0;
+	    source=gift_items;
+
+	    rcpt_data_hdr "report/table-row"
+		{
+		font=helvetica;
+		fontsize=9;
+		header=yes;
+		bottomborder=0.05;
+		rdh1 "report/table-cell" { value='Check #'; align=center; style=bold; }
+		rdh2 "report/table-cell" { value='Gift Date'; align=center; style=bold; }
+		rdh3 "report/table-cell" { value='Total Amount'; align=center; style=bold; }
+		rdh4 "report/table-cell" { value='Tax Ded. Amt'; align=center; style=bold; }
+		rdh5 "report/table-cell" { value='For the Ministry of LightSys Through:'; align=center; style=bold; }
+		}
+
+	    rcpt_data_row "report/table-row"
+		{
+		font=courier;
+		fontsize=9;
+		rdr1 "report/table-cell" { value=runserver(:gift_items:a_recv_document_id); align=left; }
+		rdr2 "report/table-cell" { value=runserver(isnull(:gifts:a_gift_postmark_date,:gifts:a_gift_received_date)); dateformat="dd-MMM-yyyy"; align=left; }
+		rdr3 "report/table-cell" { value=runserver(:gift_items:a_amount); align=right; }
+		rdr4 "report/table-cell" { value=runserver(condition(:gift_items:a_non_tax_deductible == 1, $0, :gift_items:a_amount)); align=right; }
+		rdr5 "report/table-cell" { value=runserver(:gift_items:a_fund + ' ' + :gift_items:rcptcomm + condition(:gift_items:a_confidential == 1, " (ANON)", "")); align=left; }
+		//rdr5 "report/table-cell" { value=runserver(condition(char_length(isnull(convert(string,:gift_items:desig_code),'')) > 0, isnull('' + condition(:gift_items:anon_gift == 'Y', 'ANON', condition(:gift_items:gl_acct >= 4000, :gift_items:desig_code, 'PERSONAL')) + ' - ' + :gift_items:given_name + ' ' + :gift_items:surname, '(where most needed)'), :gift_items:desig)); align=left; }
+		}
+	    }
+
+	rcpt_data_summary "report/table"
+	    {
+	    x=0; y=50; width=65; height=2.5;
+	    innerborder=0.05;
+	    //outerborder=0;
+	    bottomborder=0.3;
+	    topborder=0.02;
+	    columns=5;
+	    widths=7.6,10,8.7,8.7,26;
+	    colsep=0.9;
+	    shadow=0;
+
+	    rcpt_data_summary_row "report/table-row"
+		{
+		font=courier;
+		fontsize=9;
+		rds1 "report/table-cell" { value=''; }
+		rds2 "report/table-cell" { lineheight=1; value=runserver('TOTAL:\n' + :gifts:gift_year + ' TO DATE:'); align=right; style=bold; }
+		rds3 "report/table-cell" { lineheight=1; value=runserver('' + (:thisrcpt_total:ded_amt + :thisrcpt_total:nonded_amt) + '\n' + (:ytd_total:ded_amt + :ytd_total:nonded_amt)); align=right; }
+		rds4 "report/table-cell" { lineheight=1; value=runserver('' + :thisrcpt_total:ded_amt + '\n' + :ytd_total:ded_amt); align=right; }
+		rds5 "report/table-cell" { value=''; }
+		}
+	    }
+
+	rcpt_footer "report/area"
+	    {
+	    x=0; y=53; width=65; height=4;
+	    font=helvetica;
+	    style=italic;
+	    fontsize=8;
+	    align=full;
+	    f1 "report/data" { value='Unless otherwise indicated, no goods or services were received by the donor in return for this gift.  Gifts given to LightSys are prayerfully managed under the oversight of the LightSys board of directors.  Contributions are solicited with the understanding that LightSys has complete discretion and control over the use of all donated funds, in accordance with applicable IRS regulations.  For more information, please refer to the LightSys document "Donor\'s Guide and FAQ".  Feel free to contact us at (404) 530-9797 if you have any questions about this receipt or about our policies.'; }
+	    }
+
+	cx "report/image"
+	    {
+	    x=63.5; y=57; width=1.5; height=0.9;
+	    source="/apps/kardia/modules/lightsys/CX.png";
+	    }
+	}
+    }
+
