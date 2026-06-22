@@ -14,9 +14,18 @@ gift_associations_table "widget/component-decl"
     ledger "widget/parameter" { type = string; deploy_to_client = yes; }
     
     // Parameters for linking to widgets on containing page.
-    filter_search_box "widget/parameter" { type = object; } // The search box widget used to filter entries.
+    filter_search_box       "widget/parameter" { type = object; } // The search box widget used to filter entries.
     filter_service_dropdown "widget/parameter" { type = object; } // The dropdown widget used to filter by service.
-    line_item_window "widget/parameter" { type = object; } // The window that the Line Item Details button opens.
+    line_item_window        "widget/parameter" { type = object; } // The window that the Line Item Details button opens.
+    li_trx                  "widget/parameter" { type = object; } // Shared: trx_uuid that the Line Item Details window should load.
+    li_changed              "widget/parameter" { type = object; } // Shared: signals that a line item was saved, so tables should refresh.
+    
+    // History mode: Used internally for by the Association History button.
+    // When is_history is set to 1, the table shows only one gift's
+    // association history (hiding the Association History button). 
+    // The gift id itself is delivered at runtime via show_gift_history.
+    is_history "widget/parameter" { type = integer; default = 0; }
+    gift_id_var "widget/variable" { type = string; value = runclient(""); }
     
     // Action to add a new blank override entry to the table.
     add_override "widget/component-decl-action" {}
@@ -67,10 +76,39 @@ gift_associations_table "widget/component-decl"
 	query = runclient(:filter_search_box:content);
 	}
 	
+    // History mode: The parent (default copy) calls show_gift_history on the
+    // nested copy, passing the clicked gift id; we store it and re-query.
+    show_gift_history "widget/component-decl-action" {}
+    on_show_gift_history_set "widget/connector"
+	{
+	source = gift_associations_table;
+	event  = show_gift_history;
+	target = gift_id_var;
+	action = SetValue;
+	Value  = runclient(:GiftId);
+	}
+    on_show_gift_history_query "widget/connector"
+	{
+	source = gift_associations_table;
+	event  = show_gift_history;
+	target = content_osrc;
+	action = QueryParam;
+	}
+    
+    // Refresh when a line item is saved in the shared Line Item window.
+    on_line_item_changed "widget/connector"
+	{
+	source = li_changed;
+	event  = DataModify;
+	target = content_osrc;
+	action = Refresh;
+	}
+    
     content_osrc "widget/osrc"
 	{
 	filter_service_param "widget/parameter"
 	    {
+	    condition = runserver(:this:is_history == 0);
 	    param_name = service;
 	    type = string;
 	    default = runclient(:filter_service_dropdown:value);
@@ -78,9 +116,19 @@ gift_associations_table "widget/component-decl"
 	
 	filter_override_only_param "widget/parameter"
 	    {
+	    condition = runserver(:this:is_history == 0);
 	    param_name = override_only;
 	    type = integer;
 	    default = runclient(condition(:filter_search_box:content = '', 1, 0));
+	    }
+	
+	// History mode: filter to a single gift, fed by gift_id_var at runtime.
+	gift_id_param "widget/parameter"
+	    {
+	    condition = runserver(:this:is_history == 1);
+	    param_name = gift_id;
+	    type = string;
+	    default = runclient(:gift_id_var:value);
 	    }
 	
 	sql = runserver("
@@ -95,7 +143,7 @@ gift_associations_table "widget/component-decl"
 		n_line_items = count(1),
 		is_override = (lower(ltrim(rtrim(:eg:i_eg_status))) = 'override'),
 		
-		-- Table display fields.
+		-- Table column display fields.
 		donor_service_name = ''
 		    + isnull(nullif(:eg:i_eg_donor_name, ''), '??')
 		    + isnull(' (' + nullif(:eg:i_eg_donor_address, '') + ')', ''),
@@ -121,6 +169,7 @@ gift_associations_table "widget/component-decl"
 		amount = isnull(:eg:i_eg_deposit_gross_amt, '??'),
 		amount_caption = isnull(:eg:i_eg_deposit_amt, '??'),
 		status = isnull(upper(ltrim(rtrim(nullif(:eg:i_eg_status, '')))), '??'),
+		service = isnull(:eg:i_eg_service, ''),
 		gift_id = nullif(condition(
 		    char_length(:eg:i_eg_gift_uuid) > 12,
 		    substring(:eg:i_eg_gift_uuid, 1, 12) + '...',
@@ -154,8 +203,11 @@ gift_associations_table "widget/component-decl"
 		:eg:a_fund *= :f:a_fund AND
 		:eg:a_ledger_number = " + quote(:this:ledger) + " AND
 		(:f:a_ledger_number is null OR :f:a_ledger_number = " + quote(:this:ledger) + ") AND
-		(:parameters:override_only = 0 OR lower(:eg:i_eg_status) = 'override') AND
-		(:parameters:service = 'any' OR :parameters:service = :eg:i_eg_service)
+		" + condition(:this:is_history = 1,
+		    ":eg:i_eg_gift_uuid = :parameters:gift_id",
+		    "(:parameters:override_only = 0 OR lower(:eg:i_eg_status) = 'override') AND "
+		  + "(:parameters:service = 'any'   OR :eg:i_eg_service = :parameters:service)"
+		) + "
 	    GROUP BY
 		:eg:i_eg_gift_date desc,
 		:eg:i_eg_gift_uuid,
@@ -658,6 +710,14 @@ gift_associations_table "widget/component-decl"
 				not :edit_form:is_discardable
 			    );
 			    
+			    // Set list item trx for the shared window, then open it.
+			    set_li_trx "widget/connector"
+				{
+				event = Click;
+				target = li_trx;
+				action = SetValue;
+				Value = runclient(:content_osrc:i_eg_trx_uuid);
+				}
 			    open_line_item_window "widget/connector"
 				{
 				event = Click;
@@ -668,10 +728,28 @@ gift_associations_table "widget/component-decl"
 			
 			history_button "widget/textbutton"
 			    {
+			    // Not visible in history mode.
+			    condition = runserver(:this:is_history == 0);
 			    x = 0; width = 140; height = 23; // y = button_col
 			    border_radius = 5;
 			    text = "Association History";
-			    enabled = no; // TODO: Implement.
+			    enabled = runclient(not :edit_form:is_discardable);
+			    
+			    // Pass the clicked gift id to the nested history cmp, then open
+			    // its popup window.
+			    show_history_connector "widget/connector"
+				{
+				event = Click;
+				target = history_table;
+				action = show_gift_history;
+				GiftId = runclient(:content_osrc:i_eg_gift_uuid);
+				}
+			    open_history_window_connector "widget/connector"
+				{
+				event = Click;
+				target = history_window;
+				action = Open;
+				}
 			    }
 			}
 		    }
@@ -679,16 +757,55 @@ gift_associations_table "widget/component-decl"
 	    }
 	}
 
-    // Reset the tab when leaving "New" mode (save or discard); formerly part
-    // of the page's "Add Override" button. Mirrors edit_tab.selected above
-    // (keep the two expressions in sync).
+    // Popup showing one gift's full association history, using a nested copy
+    // of this component set to history mode.
+    history_window "widget/childwindow"
+	{
+	condition = runserver(:this:is_history == 0);
+	x = 0; y = 0; width = 960; height = 600;
+	title = "Association History";
+	style = dialog;
+	toplevel = yes;
+	modal = yes;
+	visible = no;
+	
+	// Info for the entry whose Association History button was clicked.
+	history_header "widget/hbox"
+	    {
+	    x = 15; y = 5; width = 940; height = 30; spacing = 10;
+	    
+	    hdr_gift_id       "widget/label" { y = 5; width = 150; height = 20; value = runclient("Gift ID: "       + :content_osrc:gift_id); }
+	    hdr_service_donor "widget/label" { y = 5; width = 240; height = 20; value = runclient("Service Donor: " + :content_osrc:donor_service_name); }
+	    hdr_kardia_donor  "widget/label" { y = 5; width = 240; height = 20; value = runclient("Kardia Donor: "  + :content_osrc:donor_kardia_name); }
+	    hdr_deposit       "widget/label" { y = 5; width = 130; height = 20; value = runclient("Gross Deposit: " + :content_osrc:amount); }
+	    hdr_service       "widget/label" { y = 5; width = 100; height = 20; value = runclient("Service: "       + :content_osrc:service); }
+	    }
+	
+	// Nested copy (in history mode).
+	history_table "widget/component"
+	    {
+	    x = 10; y = 40; width = 940; height = 550;
+	    path = "/apps/kardia/modules/rcpt/gift_associations_table.app";
+	    mode = static;
+	    
+	    is_history = 1;
+	    ledger = runserver(:this:ledger);
+	    line_item_window = line_item_window;
+	    li_trx = li_trx;
+	    li_changed = li_changed;
+	    }
+	}
+    
+    // Reset our tab display when the form leaves "New" mode and focus is
+    // returned to the previously selected record.
     on_exit_new_mode_set_tab "widget/connector"
 	{
 	source = edit_form;
-	event = ModeChange;
+	event  = ModeChange;
 	target = edit_tab;
 	action = SetTab;
 	event_condition = runclient(:OldMode = "New" AND :NewMode != "New");
+	
 	TabIndex = runclient(condition(
 	    :content_osrc:n_line_items > 1,
 	    condition(:content_osrc:is_override, 2, 4), // view_shared_editable, view_shared_readonly

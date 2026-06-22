@@ -148,6 +148,8 @@ gift_associations "widget/page"
 	    filter_search_box = filter_search_box;
 	    filter_service_dropdown = filter_service_dropdown;
 	    line_item_window = line_item_window;
+	    li_trx = li_trx;
+	    li_changed = li_changed;
 	    }
 	
 	load_associations_table "widget/connector"
@@ -173,6 +175,12 @@ gift_associations "widget/page"
 	    }
 	}
     
+    // li_changed tracks when the list item window updates tables so that
+    // dependant tables can refresh. li_trx tells the line item window which
+    // trx to load, allowing external cmps to use the window. 
+    li_changed "widget/variable" { type = integer; value = runclient(0); }
+    li_trx "widget/variable" { type = string; value = runclient(""); }
+    
     line_item_window "widget/childwindow"
 	{
 	x = 100; y = 115; width = 500; height = 475;
@@ -196,7 +204,7 @@ gift_associations "widget/page"
 		{
 		param_name = target_trx_uuid;
 		type = string;
-		default = runclient(:associations_table:i_eg_trx_uuid);
+		default = runclient(:li_trx:value);
 		}
 	    
 	    sql = runserver("
@@ -577,12 +585,13 @@ gift_associations "widget/page"
 					FromKeyboard = 1;
 					FromOSRC = 0;
 					}
-					
+				    
 				    line_item_refresh_on_save "widget/connector"
 					{
 					event = Click;
-					target = associations_table;
-					action = Refresh;
+					target = li_changed;
+					action = SetValue;
+					Value = runclient(:li_changed:value + 1);
 					}
 				    }
 				
@@ -657,8 +666,8 @@ gift_associations "widget/page"
 	replicasize = 2;
 	baseobj = "/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows";
 	
-	on_split_refresh_li      "widget/connector" { event = EndQuery; target = line_item_osrc;     action = Refresh; }
-	on_split_refresh_content "widget/connector" { event = EndQuery; target = associations_table; action = Refresh; }
+	on_split_refresh_li      "widget/connector" { event = EndQuery; target = line_item_osrc; action = Refresh; }
+	on_split_refresh_content "widget/connector" { event = EndQuery; target = li_changed;     action = SetValue; Value = runclient(:li_changed:value + 1); }
 	}
     
     // Removes a split by capturing its amount/net, deleting the row,
@@ -712,8 +721,8 @@ gift_associations "widget/page"
 	replicasize = 2;
 	baseobj = "/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows";
 	
-	on_unsplit_refresh_li      "widget/connector" { event = EndQuery; target = line_item_osrc;     action = Refresh; }
-	on_unsplit_refresh_content "widget/connector" { event = EndQuery; target = associations_table; action = Refresh; }
+	on_unsplit_refresh_li      "widget/connector" { event = EndQuery; target = line_item_osrc; action = Refresh; }
+	on_unsplit_refresh_content "widget/connector" { event = EndQuery; target = li_changed;     action = SetValue; Value = runclient(:li_changed:value + 1); }
 	}
     
     // Modal popover for entering the split amount, used by do_split_osrc.
