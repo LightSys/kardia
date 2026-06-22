@@ -141,7 +141,7 @@ gift_associations "widget/page"
 	associations_table "widget/component"
 	    {
 	    x = 10; y = 50; width = 960; height = 590;
-	    path = "/apps/kardia/modules/rcpt/gift_associations_table.app";
+	    path = "/apps/kardia/modules/rcpt/gift_associations_table.cmp";
 	    mode = static;
 	    
 	    ledger = runserver(:this:ledger);
