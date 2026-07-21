@@ -150,7 +150,7 @@ gift_associations_table "widget/component-decl"
 		:eg:i_eg_desig_uuid,
 		:eg:i_eg_line_item,
 		
-		-- Logical values.
+		-- Logic values.
 		n_line_items = count(1),
 		is_override = (lower(ltrim(rtrim(:eg:i_eg_status))) = 'override'),
 		
@@ -716,10 +716,8 @@ gift_associations_table "widget/component-decl"
 			    x = 0; width = 140; height = 23; // y = button_col
 			    border_radius = 5;
 			    text = "Line Item Details";
-			    enabled = runclient(
-				:content_osrc:is_override AND
-				not :edit_form:is_discardable
-			    );
+			    // Enabled for all rows; nonoverride transactions open read-only.
+			    enabled = runclient(not :edit_form:is_discardable);
 			    
 			    // Open the shared Line Item window, then load the selected trx
 			    // into its OSRC by querying it directly.
