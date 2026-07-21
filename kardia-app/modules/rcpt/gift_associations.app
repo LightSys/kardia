@@ -400,7 +400,7 @@ gift_associations "widget/page"
 				    {
 				    y = 0; width = 90; height = 20; // x = split_buttons
 				    border_radius = 5;
-				    text = "Split Gift";
+				    text = "Add Split";
 				    enabled = runclient(:line_item_osrc:is_override AND :line_item_osrc:i_eg_line_item = 1);
 				    
 				    open_split_popup "widget/connector"
