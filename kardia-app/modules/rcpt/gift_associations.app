@@ -272,6 +272,7 @@ gift_associations "widget/page"
 		
 		// Layout
 		rowheight = null;
+		min_rowheight = 25; // Prevent clipping.
 		cellvspacing = 4;
 		inner_padding = 4;
 		colsep = 0;
