@@ -194,6 +194,7 @@ gift_associations "widget/page"
 	    
 	    sql = runserver("
 		SELECT
+		    -- Table column values.
 		    :eg:a_ledger_number,        -- Primary key: ledger
 		    :eg:i_eg_trx_uuid,          -- Primary key: transaction UUID
 		    :eg:i_eg_line_item,         -- Line Item
@@ -207,13 +208,16 @@ gift_associations "widget/page"
 		    :eg:a_fund,                 -- Kardia: Fund/Desig
 		    :eg:a_account_code,         -- Kardia: GL Account
 		    
-		    -- Display values
+		    -- Display values.
 		    service_desig = ''
 			+ isnull(:eg:i_eg_desig_name + ' ', '')
 			+ isnull('(' + nullif(:eg:i_eg_desig_uuid, '') + ')', ''),
 		    kardia_desig = ''
 			+ isnull(:f:a_fund_desc + ' ', '')
-			+ isnull('(' + nullif(:eg:a_fund, '') + ')', '')
+			+ isnull('(' + nullif(:eg:a_fund, '') + ')', ''),
+		    
+		    -- Logic values.
+		    is_override = (lower(ltrim(rtrim(:eg:i_eg_status))) = 'override')
 		FROM
 		    identity /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows eg,
 		    /apps/kardia/data/Kardia_DB/a_fund/rows f
@@ -332,163 +336,39 @@ gift_associations "widget/page"
 			    bgcolor = "#e0e0e0";
 			    style = "lowered";
 			    
-			    kardia_label "widget/label"
+			    line_item_fields_tab "widget/tab"
 				{
-				x = 10; y = 5; width = 300; height = 16;
-				font_size = 12; style = bold;
-				text = "Kardia Association:";
-				}
-			    
-			    kardia_row "widget/hbox"
-				{
-				x = 10; y = 24; width = 445; height = 24; spacing = 10;
+				x = 0; y = 0; width = 455; height = 160;
 				
-				fund_desig_field "widget/component"
-				    {
-				    y = 0; width = 215; height = 24; label_width = 80; // x = kardia_row
-				    path = "/apps/kardia/modules/base/editbox_table.cmp";
-				    text = "Fund/Desig.:";
-				    field = a_fund;
-				    
-				    // Popup
-				    popup_text = "Select a Designation:";
-				    popup_width = 335;
-				    popup_sql = runserver("
-					SELECT
-					    value = :c:a_fund + '', -- Stop failed auto-writes to DB.
-					    label = condition(
-						isnull(:cr:a_receiptable, 0) = 1,
-						''  + isnull(:c:a_fund_desc + ' ', '')
-						    + '(' + :c:a_fund + ')'
-						    + isnull(' - legacy #' + :c:a_legacy_code, ''),
-						'** CLOSED **'
-					    )
-					FROM
-					    /apps/kardia/data/Kardia_DB/a_fund/rows c,
-					    /apps/kardia/data/Kardia_DB/a_fund_receipting/rows cr
-					WHERE
-					    :c:a_ledger_number = " + quote(:this:ledger) + " AND
-					    :c:a_ledger_number *= :cr:a_ledger_number AND
-					    :c:a_fund *= :cr:a_fund AND
-					    :c:a_is_posting = 1
-				    ");
-				    search_field_list = "*a_fund*,*a_fund_desc*,*a_legacy_code*";
-				    search_objname = c;
-				    key_name = a_fund;
-				    
-				    fund_desig_hints "widget/hints" { style = applyonchange,notnull,strnull; }
-				    }
+				bgcolor = transparent;
+				border_color = transparent;
+				tab_location = none;
 				
-				gl_account_field "widget/component"
-				    {
-				    y = 0; width = 215; height = 24; label_width = 80; // x = kardia_row
-				    path = "/apps/kardia/modules/base/editbox_table.cmp";
-				    text = "GL Account:";
-				    field = a_account_code;
-				    
-				    // Popup
-				    popup_text = "Select a GL Account:";
-				    popup_width = 335;
-				    popup_sql = runserver("
-					SELECT
-					    value = :a_account_code + '', -- Stop failed auto-writes to DB.
-					    label = ''
-						+ isnull(nullif(:a_acct_desc, '') + ' ', '')
-						+ isnull('(' + :a_account_code + ')', '')
-					FROM
-					    /apps/kardia/data/Kardia_DB/a_account/rows
-					WHERE
-					    :a_ledger_number = " + quote(:this:ledger) + " AND
-					    :a_is_posting = 1
-					ORDER BY
-					    :a_account_code
-				    ");
-				    search_field_list = ""
-					+ "*a_account_code*,"
-					+ "*a_acct_desc*,"
-					+ "*a_acct_comment*,"
-					+ "*a_legacy_code*";
-				    key_name = a_account_code;
-				    
-				    gl_account_hints "widget/hints" { style = applyonchange,notnull,strnull; }
-				    }
-				}
-			    
-			    kardia_service_divider "widget/pane"
-				{
-				x = 10; y = 52; width = 440; height = 2; style = border;
-				}
-			    
-			    service_label "widget/label"
-				{
-				x = 10; y = 58; width = 300; height = 16;
-				font_size = 12; style = bold;
-				text = "Giving Service Info:";
-				}
-			    
-			    service_row "widget/hbox"
-				{
-				x = 10; y = 77; width = 445; height = 80; spacing = 20;
+				selected = runclient(condition(
+				    :line_item_osrc:is_override,
+				    editable_line_item_page,
+				    readonly_line_item_page
+				));
 				
-				service_info_left_col "widget/vbox"
+				editable_line_item_page "widget/tabpage"
 				    {
-				    y = 0; width = 210; height = 80; spacing = 8; // x = service_row
-				    
-				    gift_amount_field "widget/component"
+				    editable_line_item_cols "widget/component"
 					{
-					x = 0; width = 210; height = 20; label_width = 80; // y = service_info_left_col
-					path = "/sys/cmp/smart_field.cmp";
-					text = "Gift Amount";
-					ctl_type = editbox;
-					field = i_eg_gift_amount;
-					
-					gift_amount_hints "widget/hints" { style = applyonchange; }
-					}
-				    
-				    net_amount_field "widget/component"
-					{
-					x = 0; width = 210; height = 20; label_width = 80; // y = service_info_left_col
-					path = "/sys/cmp/smart_field.cmp";
-					text = "Net Amount:";
-					ctl_type = editbox;
-					field = i_eg_net_amount;
-					
-					net_amount_hints "widget/hints" { style = applyonchange; }
-					}
-				    
-				    desig_id_field "widget/component"
-					{
-					x = 0; width = 210; height = 20; label_width = 80; // y = service_info_left_col
-					path = "/sys/cmp/smart_field.cmp";
-					text = "Desig. ID:";
-					ctl_type = editbox;
-					field = i_eg_desig_uuid;
-					
-					desig_id_hints "widget/hints" { style = applyonchange; }
+					x = 0; y = 0; width = 455; height = 160;
+					path = "/apps/kardia/modules/rcpt/gift_associations_line_item_edit.cmp";
+					edit_mode = "editable";
+					ledger = runserver(:this:ledger);
 					}
 				    }
 				
-				service_info_right_col "widget/vbox"
+				readonly_line_item_page "widget/tabpage"
 				    {
-				    y = 0; width = 210; height = 80; spacing = 2; // x = service_row
-				    
-				    desig_notes_label "widget/label"
+				    readonly_line_item_cols "widget/component"
 					{
-					x = 0; width = 210; height = 15; // y = service_info_right_col
-					text = "Desig. Notes:";
-					style = italic;
-					}
-				    
-				    desig_notes_field "widget/component"
-					{
-					x = 0; width = 210; height = 60; // y = service_info_right_col
-					path = "/sys/cmp/smart_field.cmp";
-					text = "";
-					label_width = 0;
-					ctl_type = textarea;
-					field = i_eg_desig_notes;
-					
-					desig_notes_hints "widget/hints" { style = applyonchange; }
+					x = 0; y = 0; width = 455; height = 160;
+					path = "/apps/kardia/modules/rcpt/gift_associations_line_item_edit.cmp";
+					edit_mode = "readonly";
+					ledger = runserver(:this:ledger);
 					}
 				    }
 				}
@@ -514,7 +394,7 @@ gift_associations "widget/page"
 				    y = 0; width = 90; height = 20; // x = split_buttons
 				    border_radius = 5;
 				    text = "Split Gift";
-				    enabled = runclient(:line_item_osrc:i_eg_line_item = 1);
+				    enabled = runclient(:line_item_osrc:is_override AND :line_item_osrc:i_eg_line_item = 1);
 				    
 				    open_split_popup "widget/connector"
 					{
@@ -529,7 +409,7 @@ gift_associations "widget/page"
 				    y = 0; width = 115; height = 20; // x = split_buttons
 				    border_radius = 5;
 				    text = "Remove Split";
-				    enabled = runclient(:line_item_osrc:i_eg_line_item > 1);
+				    enabled = runclient(:line_item_osrc:is_override AND :line_item_osrc:i_eg_line_item > 1);
 				    
 				    trigger_unsplit_query "widget/connector"
 					{
@@ -560,7 +440,7 @@ gift_associations "widget/page"
 				    y = 0; width = 55; height = 22; // x = line_item_save_cancel_buttons
 				    border_radius = 5;
 				    text = "Save";
-				    enabled = runclient(:line_item_edit_form:is_savable);
+				    enabled = runclient(:line_item_osrc:is_override AND :line_item_edit_form:is_savable);
 				    
 				    line_item_save_connector "widget/connector"
 					{
