@@ -72,9 +72,11 @@ gift_associations "widget/page"
 		    Value = runclient("");
 		    }
 		
+		// Re-run the search after the box is cleared.
 		trigger_clear_search "widget/connector"
 		    {
-		    event = EscapePressed;
+		    event = DataChange;
+		    event_condition = runclient(isnull(:Value, '') = '');
 		    target = associations_table;
 		    action = trigger_search;
 		    }
@@ -326,6 +328,10 @@ gift_associations "widget/page"
 			enter_mode = save;
 			tab_revealed_only = yes;
 			
+			// Refresh the association table after the save commits.
+			// Mirrors the split/unsplit osrcs.
+			refresh_content_on_save "widget/connector" { event = DataSaved; target = associations_table; action = refresh_tables; }
+			
 			hidden_ledger "widget/variable" { fieldname = a_ledger_number; }
 			hidden_trx_uuid "widget/variable" { fieldname = i_eg_trx_uuid; }
 			hidden_line_item "widget/variable" { fieldname = i_eg_line_item; }
@@ -394,7 +400,7 @@ gift_associations "widget/page"
 				    {
 				    y = 0; width = 90; height = 20; // x = split_buttons
 				    border_radius = 5;
-				    text = "Split Gift";
+				    text = "Add Split";
 				    enabled = runclient(:line_item_osrc:is_override AND :line_item_osrc:i_eg_line_item = 1);
 				    
 				    open_split_popup "widget/connector"
@@ -450,12 +456,6 @@ gift_associations "widget/page"
 					action = Save;
 					FromKeyboard = 1;
 					FromOSRC = 0;
-					}
-				    
-				    line_item_refresh_on_save "widget/connector"
-					{
-					event = Click;
-					target = associations_table; action = refresh_tables;
 					}
 				    }
 				
@@ -661,7 +661,7 @@ gift_associations "widget/page"
 			action = SetValue;
 			Value = runclient('$' + (0
 			    + convert(double, :line_item_osrc:i_eg_gift_amount)
-			    - convert(double, isnull(:split_popup_amount_field:content, '0'))
+			    - convert(double, isnull(nullif(:Value, ''), '0'))
 			    + .0001
 			));
 			}
