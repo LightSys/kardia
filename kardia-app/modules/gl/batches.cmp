@@ -84,6 +84,7 @@ batches "widget/component-decl"
 		readahead=200;
 		autoquery=never;
 		indicates_activity = no;
+		refresh_interval=120000;
 
 		period_sync "widget/rule"
 		    {
