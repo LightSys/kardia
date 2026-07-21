@@ -661,7 +661,7 @@ gift_associations "widget/page"
 			action = SetValue;
 			Value = runclient('$' + (0
 			    + convert(double, :line_item_osrc:i_eg_gift_amount)
-			    - convert(double, isnull(:split_popup_amount_field:content, '0'))
+			    - convert(double, isnull(nullif(:Value, ''), '0'))
 			    + .0001
 			));
 			}
