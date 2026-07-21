@@ -72,9 +72,11 @@ gift_associations "widget/page"
 		    Value = runclient("");
 		    }
 		
+		// Re-run the search after the box is cleared.
 		trigger_clear_search "widget/connector"
 		    {
-		    event = EscapePressed;
+		    event = DataChange;
+		    event_condition = runclient(isnull(:Value, '') = '');
 		    target = associations_table;
 		    action = trigger_search;
 		    }
@@ -326,6 +328,10 @@ gift_associations "widget/page"
 			enter_mode = save;
 			tab_revealed_only = yes;
 			
+			// Refresh the association table after the save commits.
+			// Mirrors the split/unsplit osrcs.
+			refresh_content_on_save "widget/connector" { event = DataSaved; target = associations_table; action = refresh_tables; }
+			
 			hidden_ledger "widget/variable" { fieldname = a_ledger_number; }
 			hidden_trx_uuid "widget/variable" { fieldname = i_eg_trx_uuid; }
 			hidden_line_item "widget/variable" { fieldname = i_eg_line_item; }
@@ -450,12 +456,6 @@ gift_associations "widget/page"
 					action = Save;
 					FromKeyboard = 1;
 					FromOSRC = 0;
-					}
-				    
-				    line_item_refresh_on_save "widget/connector"
-					{
-					event = Click;
-					target = associations_table; action = refresh_tables;
 					}
 				    }
 				
