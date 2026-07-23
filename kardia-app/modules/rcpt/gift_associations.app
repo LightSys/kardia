@@ -227,8 +227,7 @@ gift_associations "widget/page"
 		    :eg:i_eg_trx_uuid = :parameters:target_trx_uuid AND
 		    :eg:a_ledger_number = " + quote(:this:ledger) + " AND
 		    :eg:a_fund *= :f:a_fund
-		-- TODO: Uncomment 'DEFAULT' after PR #127 is merged.
-		ORDER BY -- DEFAULT
+		ORDER BY DEFAULT
 		    :eg:i_eg_line_item,
 		    :eg:i_eg_gift_date
 	    ");

@@ -433,13 +433,11 @@ gift_associations_table "widget/component-decl"
 			    
 			    gift_id_hints "widget/hints"
 				{
-				// TODO: Replace placeholder below with the specified value
-				// after the namespace bug is fixed.
-				default = "Oops!"; //runclient(condition(
-			    // 	char_length(:gift_uuid:value) > 12,
-			    // 	substring(:gift_uuid:value, 1, 12) + "...",
-			    // 	:gift_uuid:value
-			    //     ));
+				default = runclient(condition(
+				    char_length(:gift_uuid:value) > 12,
+				    substring(:gift_uuid:value, 1, 12) + "...",
+				    :gift_uuid:value
+			        ));
 				}
 			    }
 			
