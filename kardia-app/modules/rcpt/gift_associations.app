@@ -336,6 +336,25 @@ gift_associations "widget/page"
 			hidden_line_item "widget/variable" { fieldname = i_eg_line_item; }
 			line_item_hidden_field_handler "widget/component" { path = "/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
 			
+			// Real (nonoverride) transactions are view-only.  The readonly hints
+			// lock the fields on data load, but the shared form re-enables them
+			// if it enters Modify mode.  Disabling the whole form on load fixes
+			// this so they remain locked.
+			lock_readonly_line_item "widget/connector"
+			    {
+			    event = DataLoaded;
+			    target = line_item_edit_form;
+			    action = Disable;
+			    event_condition = runclient(not :line_item_osrc:is_override);
+			    }
+			unlock_override_line_item "widget/connector"
+			    {
+			    event = DataLoaded;
+			    target = line_item_edit_form;
+			    action = Enable;
+			    event_condition = runclient(:line_item_osrc:is_override);
+			    }
+			
 			line_item_edit_pane "widget/pane"
 			    {
 			    x = 5; y = 15; width = 455; height = 235;
