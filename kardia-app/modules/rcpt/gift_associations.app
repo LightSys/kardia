@@ -286,7 +286,7 @@ gift_associations "widget/page"
 		demand_scrollbar  = yes;
 		allow_selection   = yes;
 		allow_deselection = yes;
-		allow_sorting     = yes;
+		allow_sorting     = no;
 		
 		// Columns
 		column_service_desig "widget/table-column"
