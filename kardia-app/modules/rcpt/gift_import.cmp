@@ -658,7 +658,7 @@ gift_import "widget/component-decl"
 						splittrx_btn "widget/textbutton"
 						    {
 						    width=130;
-						    text = "Split Gift";
+						    text = "Add Split";
 						    enabled = runclient(:gift_import_osrc:i_eg_net_amount is not null and :gift_import_osrc:a_batch_number is null and :gift_import_osrc:i_eg_line_item == 1);
 						    split_cn "widget/connector" { event=Click; target=popover_splittrx; action=Open; }
 						    }
@@ -2425,4 +2425,3 @@ gift_import "widget/component-decl"
 	    }
 	}
     }
-
