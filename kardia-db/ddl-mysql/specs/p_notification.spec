@@ -27,9 +27,12 @@ p_notification "application/filespec"
     p_sent_date "filespec/column" { type=datetime; id=14; }
     p_ack_date "filespec/column" { type=datetime; id=15; }
     p_response "filespec/column" { type=string; id=16; }
-    s_date_created "filespec/column" { type=datetime; id=17; }
-    s_created_by "filespec/column" { type=string; id=18; }
-    s_date_modified "filespec/column" { type=datetime; id=19; }
-    s_modified_by "filespec/column" { type=string; id=20; }
-    __cx_osml_control "filespec/column" { type=string; id=21; }
+    p_data_1 "filespec/column" { type=string; id=17; }
+    p_data_2 "filespec/column" { type=string; id=18; }
+    p_data_3 "filespec/column" { type=string; id=19; }
+    s_date_created "filespec/column" { type=datetime; id=20; }
+    s_created_by "filespec/column" { type=string; id=21; }
+    s_date_modified "filespec/column" { type=datetime; id=22; }
+    s_modified_by "filespec/column" { type=string; id=23; }
+    __cx_osml_control "filespec/column" { type=string; id=24; }
     }

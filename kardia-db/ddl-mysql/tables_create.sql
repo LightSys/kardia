@@ -748,6 +748,9 @@ create table p_notification (
         p_sent_date                           datetime  null,          /* date the notification was actually sent --  */
         p_ack_date                            datetime  null,          /* date the notification was read or acknowledged by the recipient (this may not be available for all notification types) --  */
         p_response                            varchar(900)  null,      /* response, if any, from the notification recipient --  */
+        p_data_1                              varchar(255)  null,      /* Misc data field 1, notification source dependent. --  */
+        p_data_2                              varchar(255)  null,      /* Misc data field 2, notification source dependent. --  */
+        p_data_3                              varchar(255)  null,      /* Misc data field 3, notification source dependent. --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -765,6 +768,9 @@ create table p_notification_type (
         p_notify_type_desc                    varchar(255)  not null,  /* longer description for the notification type --  */
         p_message                             varchar(900)  null,      /* Text to include in the notification message --  */
         p_object_label                        varchar(255)  not null,  /* Short label for the object being referenced by the object ID in p_notification --  */
+        p_data_1_label                        varchar(48)  null,       /* Misc data field 1 label --  */
+        p_data_2_label                        varchar(48)  null,       /* Misc data field 2 label --  */
+        p_data_3_label                        varchar(48)  null,       /* Misc data field 3 label --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
