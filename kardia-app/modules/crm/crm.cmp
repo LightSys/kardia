@@ -222,8 +222,7 @@ crm "widget/component-decl"
 		event_condition=runclient(:Button == 'Menu');
 		target=menu_overlay;
 		action=Open;
-		open_x=runclient(:crm_layout:width - 198);
-		open_y=76;
+		origin=runclient(:Origin);
 		collaborator=runclient(:collaborator_osrc:p_partner_key);
 		}
 	    }
