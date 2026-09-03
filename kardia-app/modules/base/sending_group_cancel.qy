@@ -1,0 +1,35 @@
+$Version=2$
+sending_group_cancel "system/query"
+    {
+    key "query/parameter" { type=string; }
+
+    sql = " -- Mark our group and refresh contact data from current prefs.
+	    update
+		identity /apps/kardia/data/Kardia_DB/p_notification/rows n
+	    set
+		:n:p_status = 'N',
+		:n:p_sending_group_key = null,
+		:n:p_sent_date = null,
+		:n:p_ack_date = null,
+		:n:p_response = null,
+		:n:s_date_modified = getdate(),
+		:n:s_modified_by = user_name()
+	    where
+		:n:p_sending_group_key = :parameters:key and
+		:n:p_status != 'S' and :n:p_status != 'D'
+	    ;
+
+	    -- Return the sending key data.
+	    select
+		:parameters:key,
+		notification_cnt = isnull(sum(count(1)), 0),
+		recipient_cnt = isnull(count(count(1)), 0)
+	    from
+		identity /apps/kardia/data/Kardia_DB/p_notification/rows n
+	    where
+		:p_sending_group_key = :sending_info:key
+	    group by
+		:p_recip_partner_key
+	    ;	
+	    ";
+    }

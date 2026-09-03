@@ -47,8 +47,8 @@ notifications "widget/component-decl"
 			:n:p_recip_partner_key,
 			:n:p_notify_method,
 			:n:p_notify_method_item,
-			:n:p_contact_id,
-			:n:p_contact_data,
+			:n:p_recip_contact_id,
+			:n:p_recip_contact_data,
 			:n:p_status,
 			:n:p_sending_group_key,
 			:n:p_sent_date,
@@ -125,7 +125,7 @@ notifications "widget/component-decl"
 		nc_type "widget/table-column" { title="Notification"; fieldname=p_notify_type_desc; width=240; style=bold; caption_value=runclient(condition(:notify_osrc:p_message is null, :notify_osrc:p_object_label + ': ' + :notify_osrc:p_object_id, :notify_osrc:p_message)); wrap=yes; }
 		nc_event "widget/table-column" { title="Event Date"; value=runclient(substring(convert(string,:notify_osrc:p_event_date),1,11)); width=140; style=bold; caption_value=runclient('Notification #' + convert(string,:notify_osrc:p_notify_id)); }
 		nc_recip "widget/table-column" { title="Recipient"; fieldname=recip_name; width=150; style=bold; caption_value=runclient('Partner ' + :notify_osrc:p_recip_partner_key); }
-		nc_method "widget/table-column" { title="Method"; fieldname=p_notify_method_label; width=150; style=bold; caption_fieldname=p_contact_data; }
+		nc_method "widget/table-column" { title="Method"; fieldname=p_notify_method_label; width=150; style=bold; caption_fieldname=p_recip_contact_data; }
 
 		nc_detail "widget/table-row-detail"
 		    {
@@ -155,7 +155,7 @@ notifications "widget/component-decl"
 			    {
 			    height=18; widget_class="row-detail"; spacing=4;
 			    d_dlv_lbl "widget/label" { width=110; height=18; widget_class="row-detail"; style=bold; text="Delivery:"; }
-			    d_dlv_val "widget/label" { width=698; height=18; widget_class="row-detail"; value=runclient(:notify_osrc:p_notify_method_desc + ' (item ' + convert(string,:notify_osrc:p_notify_method_item) + ') to ' + condition(:notify_osrc:p_contact_data is null, '(contact not yet resolved)', :notify_osrc:p_contact_data)); }
+			    d_dlv_val "widget/label" { width=698; height=18; widget_class="row-detail"; value=runclient(:notify_osrc:p_notify_method_desc + ' (item ' + convert(string,:notify_osrc:p_notify_method_item) + ') to ' + condition(:notify_osrc:p_recip_contact_data is null, '(contact not yet resolved)', :notify_osrc:p_recip_contact_data)); }
 			    }
 			d_dates "widget/hbox"
 			    {

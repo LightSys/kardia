@@ -1,0 +1,77 @@
+$Version=2$
+gift_notifications_sent "system/report"
+    {
+    title = "Gift Notifications Confirmation";
+
+    document_format="application/pdf";
+    resolution = 300;
+    pagewidth=85;
+    pageheight=66;
+    marginleft=2.5;
+    marginright=2.5;
+    margintop=3;
+    marginbottom=3;
+
+    sending_key "report/parameter" { type=string; style=notnull; }
+
+    sending_group_qy "report/query"
+	{
+	sql = "	select
+		    key = :p_sending_group_key,
+		    notification_cnt = isnull(sum(count(1)), 0),
+		    recipient_cnt = isnull(count(count(1)), 0)
+		from
+		    identity /apps/kardia/data/Kardia_DB/p_notification/rows n
+		where
+		    :p_sending_group_key = :this:sending_key and
+		    :this:sending_key is not null
+		group by
+		    :p_recip_partner_key
+		having
+		    :key is not null
+		;
+		";
+	}
+
+    marksent_qy "report/query"
+	{
+	sql = "	exec /apps/kardia/modules/base/sending_group_marksent.qy key=:this:sending_key";
+	}
+
+    overall_form "report/form"
+	{
+	moneyformat = "-###,###,##0.00";
+	dateformat = "dd-MMM-yyyy";
+
+	source = sending_group_qy, marksent_qy;
+
+	hdrimg "report/image"
+	    {
+	    x=67.85;y=0;height=4;
+	    width = 12.15;
+	    source = /apps/kardia/data/Site.struct:site_report_logo;
+	    }
+
+	rpt_title "report/area"
+	    {
+	    x=0; y=0; width=80; height=4;
+	    font=helvetica;
+	    align=left;
+	    t_d0 "report/data" { fontsize=15; style=bold; value = runserver("Gift Notifications Confirmation\n"); }
+	    t_d2 "report/data" { fontsize=8; value = runserver("Notifications: " + :sending_group_qy:notification_cnt + "\n"); }
+	    t_d3 "report/data" { fontsize=8; value = runserver("Recipients: " + :sending_group_qy:recipient_cnt + "\n"); }
+	    t_d4 "report/data" { fontsize=8; value = runserver("Printed by: " + user_name() + " on " + getdate() + "\n"); dateformat="dd-MMM-yyyy hh:mm:ss"; }
+	    }
+
+	rpt_confirm "report/area"
+	    {
+	    x=0; width=80; height=2;
+	    font=helvetica;
+	    align=left;
+	    fontsize=10;
+
+	    c_d0 "report/data" { value = "This sending group has been marked as sent.\n"; }
+	    }
+	}
+    }
+
