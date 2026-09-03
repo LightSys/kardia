@@ -72,7 +72,9 @@ gift_notifications "system/report"
 		from
 		    /apps/kardia/data/Kardia_DB/p_notification/rows n
 		where
-		    :n:p_sending_group_key = :sending_group_qy:key
+		    :n:p_sending_group_key = :sending_group_qy:key and
+		    :n:p_recip_partner_key = :recips_qy:p_recip_partner_key and
+		    :n:p_recip_contact_data = :recips_qy:p_recip_contact_data
 		";
 	}
 
