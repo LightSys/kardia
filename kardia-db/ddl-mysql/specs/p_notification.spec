@@ -20,8 +20,8 @@ p_notification "application/filespec"
     p_recip_partner_key "filespec/column" { type=string; id=7; }
     p_notify_method "filespec/column" { type=integer; id=8; }
     p_notify_method_item "filespec/column" { type=integer; id=9; }
-    p_contact_id "filespec/column" { type=integer; id=10; }
-    p_contact_data "filespec/column" { type=string; id=11; }
+    p_recip_contact_id "filespec/column" { type=integer; id=10; }
+    p_recip_contact_data "filespec/column" { type=string; id=11; }
     p_status "filespec/column" { type=string; id=12; }
     p_sending_group_key "filespec/column" { type=string; id=13; }
     p_sent_date "filespec/column" { type=datetime; id=14; }
