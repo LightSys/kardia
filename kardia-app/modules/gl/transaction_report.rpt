@@ -42,6 +42,11 @@ transaction_report "system/report"
 	{
 	sql = "	declare object info;
 
+		select
+			:info:startdate = convert(datetime, :this:startdate),
+			:info:enddate = convert(datetime, :this:enddate)
+		;
+
 		-- Starting period based on startperiod parameter
 		select
 			:info:startyear = :a_parent_period,
@@ -62,9 +67,9 @@ transaction_report "system/report"
 		from
 			/apps/kardia/data/Kardia_DB/a_period/rows p
 		where
-			:this:startdate is not null and
-			:p:a_start_date <= :this:startdate and
-			:p:a_end_date >= :this:startdate and
+			:info:startdate is not null and
+			:p:a_start_date <= :info:startdate and
+			:p:a_end_date >= :info:startdate and
 			:p:a_summary_only = 0 and
 			:p:a_ledger_number = :this:ledger and
 			(:info:startperiod is null or :info:startperiod < :p:a_period)
@@ -106,7 +111,9 @@ transaction_report "system/report"
 		select
 			:info:startperiod,
 			:info:startyear,
-			:info:obperiod
+			:info:obperiod,
+			:info:startdate,
+			:info:enddate
 		";
 	}
 
@@ -129,25 +136,34 @@ transaction_report "system/report"
 			/apps/kardia/data/Kardia_DB/a_transaction/rows t,
 			/apps/kardia/data/Kardia_DB/a_fund/rows c
 		where
+			-- Basic structure
 			:t:a_ledger_number = :this:ledger and
 			:t:a_fund = :c:a_fund and
 			:c:a_ledger_number = :this:ledger and
-			not (:this:startperiod is null and :this:startdate is null and :this:year_period is null) and
-			:t:a_period >= :period_qy:obperiod and
-			(:t:a_transaction_type = 'T' or :t:a_period = :period_qy:obperiod) and
+
+			-- Basic criteria
 			(:this:balfund is null or :this:balfund = :c:a_bal_fund) and
 			(:this:fund is null or :this:fund = :t:a_fund) and
 			(:this:account is null or :this:account = :t:a_account_code) and
 			(:this:ctlaccount is null or :this:ctlaccount = :t:a_account_category) and
-			(:this:batch is null or :this:batch = :t:a_batch_number) and
-			(:this:startperiod is null or :t:a_period < :this:startperiod) and
-			(:this:endperiod is null or :t:a_period <= :this:endperiod) and
-			(:this:startdate is null or :t:a_effective_date < :this:startdate) and
-			(:this:enddate is null or :t:a_effective_date <= :this:enddate) and
+			(:this:origin is null or :t:a_origin = :this:origin) and
 			(:this:hide1900 = 0 or :t:a_account_code != '1900') and
 			(:this:onlyequity = 0 or :t:a_account_code >= '3000') and
 			(:this:onlyequity = 0 or :t:a_account_code <= '5999') and
-			(:this:origin is null or :t:a_origin = :this:origin)
+
+			-- No balance forward if viewing one batch
+			:this:batch is null and
+
+			-- Period and date range specification
+			:t:a_period >= :period_qy:obperiod and
+			(:t:a_transaction_type = 'T' or :t:a_period = :period_qy:obperiod) and
+			(:this:startperiod is null or :t:a_period < :this:startperiod or :t:a_period = :period_qy:obperiod) and
+			(:this:startperiod is null or :t:a_period < :this:startperiod or :t:a_transaction_type = 'B') and
+			(:this:endperiod is null or :t:a_period <= :this:endperiod) and
+			(:period_qy:startdate is null or :t:a_effective_date < :period_qy:startdate or :t:a_transaction_type = 'B') and
+			(:period_qy:enddate is null or :t:a_effective_date <= :period_qy:enddate)
+			--not (:this:startperiod is null and :period_qy:startdate is null and :this:year_period is null) and
+			--(:this:startperiod is not null or :period_qy:startdate is not null or :t:a_transaction_type = 'B') and
 		";
 	}
 
@@ -179,26 +195,34 @@ transaction_report "system/report"
 			/apps/kardia/data/Kardia_DB/a_fund/rows c,
 			/apps/kardia/data/Kardia_DB/a_account/rows a
 		where
+			-- Basic structure
 			:t:a_ledger_number = :this:ledger and
 			:t:a_fund *= :c:a_fund and
 			:t:a_account_code *= :a:a_account_code and
 			:c:a_ledger_number =* :t:a_ledger_number and
 			:a:a_ledger_number =* :t:a_ledger_number and
-			:t:a_period >= :period_qy:obperiod and
-			(:t:a_transaction_type = 'T' or :t:a_period = :period_qy:obperiod) and
+
+			-- Basic criteria
 			(:this:balfund is null or :this:balfund = :c:a_bal_fund) and
 			(:this:fund is null or :this:fund = :t:a_fund) and
 			(:this:account is null or :this:account = :t:a_account_code) and
 			(:this:ctlaccount is null or :this:ctlaccount = :t:a_account_category) and
-			(:this:batch is null or :this:batch = :t:a_batch_number) and
-			(:this:startperiod is null or :t:a_period >= :this:startperiod) and
-			(:this:endperiod is null or :t:a_period <= :this:endperiod) and
-			(:this:startdate is null or :t:a_effective_date >= :this:startdate) and
-			(:this:enddate is null or :t:a_effective_date <= :this:enddate) and
+			(:this:origin is null or :t:a_origin = :this:origin) and
 			(:this:hide1900 = 0 or :t:a_account_code != '1900') and
 			(:this:onlyequity = 0 or :t:a_account_code >= '3000') and
 			(:this:onlyequity = 0 or :t:a_account_code <= '5999') and
-			(:this:origin is null or :t:a_origin = :this:origin)
+
+			-- Batch controls
+			(:this:batch is not null or :t:a_transaction_type = 'T') and
+			(:this:batch is null or :this:batch = :t:a_batch_number) and
+
+			-- Period and date range specification
+			:t:a_period >= :period_qy:obperiod and
+			(:t:a_transaction_type = 'T' or :t:a_period = :period_qy:obperiod) and
+			(:this:startperiod is null or :t:a_period >= :this:startperiod) and
+			(:this:endperiod is null or :t:a_period <= :this:endperiod) and
+			(:period_qy:startdate is null or :t:a_effective_date >= :period_qy:startdate) and
+			(:period_qy:enddate is null or :t:a_effective_date <= :period_qy:enddate)
 		order by " +
 
 			    condition(:this:sortby == "pbjt", ":t:a_period, :t:a_batch_number, :t:a_journal_number, :t:a_transaction_number", "") +
