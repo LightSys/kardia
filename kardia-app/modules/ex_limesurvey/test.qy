@@ -1,0 +1,10 @@
+$Version=2$
+test "system/query"
+    {
+    sql = " select
+		:name,
+		:size
+	    from
+		/apps/kardia/modules
+	    ";
+    }

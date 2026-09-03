@@ -1,0 +1,11 @@
+$Version=2$
+myquery "system/query"
+    {
+    id "query/parameter" { type=integer; }
+    
+    sql = "select name = eval(\":j:'\" +:cit:i_crm_field_first_name + \"'\", \"O\") 
+    from identity wildcard ./testjson.json/responses/* j , /apps/kardia/data/Kardia_DB/i_crm_import_type/rows cit
+    WHERE
+            :cit:i_crm_import_type_id = 1
+            ";
+    }

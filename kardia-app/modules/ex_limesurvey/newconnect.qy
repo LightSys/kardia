@@ -1,0 +1,25 @@
+// File that manages the API connections with limesurvery
+
+$Version=2$
+
+activity "system/query"
+{
+    
+    //    sql = "select :\"Set-Cookie\" from object /apps/kardia/modules/ex_limesurvey/get_key.http";
+    sql = "declare object KEY;
+
+          select
+                 :KEY:API_KEY=:result
+          from
+                  object /apps/kardia/modules/ex_limesurvey/get_key.http
+          ;
+
+          select
+                 content_type = 'application/json',
+                 inner_type = 'application/json',
+                 objcontent = convert(string,from_base64(:result))
+          from
+                 object expression('/apps/kardia/modules/ex_limesurvey/get_survey_responses.http?KEY='+:KEY:API_KEY)
+
+          ";
+}

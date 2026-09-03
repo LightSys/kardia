@@ -1,0 +1,6 @@
+// Get the API key to make limesurevy API calls
+
+method "http/parameter" { type=string; usage=post; source=none; default="get_session_key"; }
+	"params.devel" "http/parameter" { type=string; usage=post; source=none; default="value 0"; }
+	"params.fuel-pull-lieu" "http/parameter" { type=string; usage=post; source=none; default="value 1"; }
+	id "http/parameter" { type=integer; usage=post; source=none; default=1; }
