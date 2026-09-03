@@ -128,8 +128,8 @@ staffmaint "widget/component-decl"
 		    t_id "widget/table-column" { title="ID"; fieldname=p_partner_key; width=60; }
 		    t_name "widget/table-column" { title="Name"; fieldname=disp_name; width=160; }
 		    t_email "widget/table-column" { title="Email"; fieldname=email; width=200; }
-		    t_kardia "widget/table-column" { title="Kardia"; fieldname=p_kardia_login; width=80; }
-		    t_kardiaweb "widget/table-column" { title=runserver( (select isnull(:s_config_value, 'KardiaWeb') from /apps/kardia/data/Kardia_DB/s_config/rows where :s_config_name = 'KardiaWebName') ); fieldname=p_kardiaweb_login; width=80; }
+		    t_kardia "widget/table-column" { title="Username"; fieldname=p_kardia_login; width=80; }
+		    //t_kardiaweb "widget/table-column" { title=runserver( (select isnull(:s_config_value, 'KardiaWeb') from /apps/kardia/data/Kardia_DB/s_config/rows where :s_config_name = 'KardiaWebName') ); fieldname=p_kardiaweb_login; width=80; }
 		    //t_fundlist "widget/table-column" { title="Funds"; fieldname=fundlist; width=200; }
 
 		    staff_cols_repeat "widget/repeat"

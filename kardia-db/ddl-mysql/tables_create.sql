@@ -741,12 +741,16 @@ create table p_notification (
         p_recip_partner_key                   varchar(10)  not null,   /* partner key of the person to receive the notification --  */
         p_notify_method                       integer  not null,       /* notification method (p_notification_method) --  */
         p_notify_method_item                  integer  not null,       /* notification method line item. --  */
-        p_contact_id                          integer  null,           /* the p_contact_info ID from the notification method preference at the time the notification was SENT. Denormalization for historical recordkeeping. --  */
-        p_contact_data                        varchar(255)  null,      /* the p_contact_info data, including phone country/area, for the notification method at the time the notification was SENT. Denormalization for historical recordkeeping. --  */
-        p_status                              char(1)  not null,       /* status of this notification: (N)ew, (U)pdated, (S)ent, (D)eleted/discarded --  */
+        p_recip_contact_id                    integer  null,           /* the p_contact_info ID from the notification method preference at the time the notification was SENT. Denormalization for historical recordkeeping. --  */
+        p_recip_contact_data                  varchar(255)  null,      /* the p_contact_info data, including phone country/area, for the notification method at the time the notification was SENT. Denormalization for historical recordkeeping. --  */
+        p_status                              char(1)  not null,       /* status of this notification: (N)ew, (U)pdated, (P)rocessing, (S)ent, (D)eleted/discarded, (F)ailed --  */
+        p_sending_group_key                   varchar(80)  null,       /* a unique code used to group notifications together in a batch for sending --  */
         p_sent_date                           datetime  null,          /* date the notification was actually sent --  */
         p_ack_date                            datetime  null,          /* date the notification was read or acknowledged by the recipient (this may not be available for all notification types) --  */
         p_response                            varchar(900)  null,      /* response, if any, from the notification recipient --  */
+        p_data_1                              varchar(255)  null,      /* Misc data field 1, notification source dependent. --  */
+        p_data_2                              varchar(255)  null,      /* Misc data field 2, notification source dependent. --  */
+        p_data_3                              varchar(255)  null,      /* Misc data field 3, notification source dependent. --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -764,6 +768,9 @@ create table p_notification_type (
         p_notify_type_desc                    varchar(255)  not null,  /* longer description for the notification type --  */
         p_message                             varchar(900)  null,      /* Text to include in the notification message --  */
         p_object_label                        varchar(255)  not null,  /* Short label for the object being referenced by the object ID in p_notification --  */
+        p_data_1_label                        varchar(48)  null,       /* Misc data field 1 label --  */
+        p_data_2_label                        varchar(48)  null,       /* Misc data field 2 label --  */
+        p_data_3_label                        varchar(48)  null,       /* Misc data field 3 label --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */

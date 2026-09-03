@@ -1,0 +1,198 @@
+$Version=2$
+notifications "widget/component-decl"
+    {
+    width=828;
+    height=584;
+
+    partner "widget/parameter" { type=string; default=null; }
+
+    notify_vbox "widget/vbox"
+	{
+	x=0; y=0;
+	width=828; height=584;
+	spacing=8;
+
+	title_hbox "widget/hbox"
+	    {
+	    height=24;
+	    spacing=8;
+	    title_label "widget/label" { width=572; style=bold; font_size=16; text="Manage Notification Queue"; }
+	    showqueue_btn "widget/textbutton"
+		{
+		width=120;
+		text="Show Queue";
+		showqueue_cn "widget/connector" { event=Click; target=notify_osrc; action=QueryParam; show_all=0; }
+		}
+	    showall_btn "widget/textbutton"
+		{
+		width=120;
+		text="Show All";
+		showall_cn "widget/connector" { event=Click; target=notify_osrc; action=QueryParam; show_all=1; }
+		}
+	    }
+	title_sep "widget/pane" { height=2; style=lowered; }
+
+	notify_osrc "widget/osrc"
+	    {
+	    show_all "widget/parameter" { type=integer; default=0; }
+	    no_partner "widget/parameter" { type=string; param_name=partner; default=runserver(:notifications:partner); }
+
+	    sql = " SELECT
+			:n:p_notify_id,
+			:n:p_notify_type,
+			:n:p_event_date,
+			:n:p_object_id,
+			:n:p_message,
+			:n:p_source_partner_key,
+			:n:p_recip_partner_key,
+			:n:p_notify_method,
+			:n:p_notify_method_item,
+			:n:p_recip_contact_id,
+			:n:p_recip_contact_data,
+			:n:p_status,
+			:n:p_sending_group_key,
+			:n:p_sent_date,
+			:n:p_ack_date,
+			:n:p_response,
+			:n:s_date_created,
+			:n:s_created_by,
+			:n:s_date_modified,
+			:n:s_modified_by,
+			:nt:p_notify_type_label,
+			:nt:p_notify_type_desc,
+			:nt:p_object_label,
+			:nm:p_notify_method_label,
+			:nm:p_notify_method_desc,
+			:nm:p_expects_ack,
+			recip_name = condition(char_length(rtrim(:pp:p_org_name)) > 0, :pp:p_org_name + ' ' + condition(char_length(:pp:p_given_name + :pp:p_surname) > 0, '- ', ''), '') + isnull(:pp:p_given_name + ' ','') + isnull(:pp:p_surname + ' ',''),
+			status_desc = condition(:n:p_status == 'N', 'New',
+				      condition(:n:p_status == 'U', 'Updated',
+				      condition(:n:p_status == 'P', 'Processing',
+				      condition(:n:p_status == 'S', 'Sent',
+				      condition(:n:p_status == 'D', 'Discarded',
+				      condition(:n:p_status == 'F', 'Failed', :n:p_status)))))),
+			status_img = condition(:n:p_status == 'S', '/sys/images/green_check.gif',
+				     condition(:n:p_status == 'F', '/sys/images/red_x.gif',
+				     condition(:n:p_status == 'D', '/sys/images/red_x.gif',
+				     condition(:n:p_status == 'N' or :n:p_status = 'U', '/sys/images/dotted_check.gif',
+				     condition(:n:p_status == 'P', '/sys/images/wait_spinner.gif',
+					 '/sys/images/trans_1.gif'))))),
+			status_date = condition(:n:p_sent_date is null, :n:p_event_date, :n:p_sent_date),
+			can_delete = has_endorsement('kardia:sys_admin','kardia')
+		    FROM
+			identity /apps/kardia/data/Kardia_DB/p_notification/rows n,
+			/apps/kardia/data/Kardia_DB/p_notification_type/rows nt,
+			/apps/kardia/data/Kardia_DB/p_notification_method/rows nm,
+			/apps/kardia/data/Kardia_DB/p_partner/rows pp
+		    WHERE
+			:nt:p_notify_type = :n:p_notify_type and
+			:nm:p_notify_method = :n:p_notify_method and
+			:pp:p_partner_key = :n:p_recip_partner_key and
+			(:parameters:partner is null or :n:p_recip_partner_key = :parameters:partner) and
+			(:parameters:show_all == 1 or
+			    (:n:p_status != 'S' and :n:p_status != 'D') or
+			    dateadd(day,2,:n:p_sent_date) > getdate() or
+			    dateadd(day,2,:n:s_date_modified) > getdate())
+		    ORDER BY
+			:n:p_event_date desc,
+			:n:p_notify_id desc
+		    ";
+	    readahead=30;
+	    replicasize=30;
+	    autoquery=onfirstreveal;
+	    refresh_interval = 60000;
+
+	    notify_table "widget/table"
+		{
+		height=542;
+		overlap_scrollbar = yes;
+		demand_scrollbar = yes;
+		initial_selection = no;
+		max_rowheight=64;
+		colsep = 0;
+		cellvspacing=4;
+		inner_padding=2;
+		row_border_radius=4;
+		row_shadow_color="#a0a0a0";
+		row_shadow_radius=2;
+		row_shadow_offset=1;
+		row_shadow_angle=135;
+		rowcache_size=200;
+		nodata_message = "No notifications in the queue.";
+
+		nc_img "widget/table-column" { title=""; fieldname=status_img; type=image; width=40; align=center; image_maxwidth=32; }
+		nc_status "widget/table-column" { title="Status"; fieldname=status_desc; width=100; style=bold; caption_value=runclient(substring(convert(string,:notify_osrc:status_date),1,11)); }
+		nc_type "widget/table-column" { title="Notification"; fieldname=p_notify_type_desc; width=240; style=bold; caption_value=runclient(condition(:notify_osrc:p_message is null, :notify_osrc:p_object_label + ': ' + :notify_osrc:p_object_id, :notify_osrc:p_message)); wrap=yes; }
+		nc_event "widget/table-column" { title="Event Date"; value=runclient(substring(convert(string,:notify_osrc:p_event_date),1,11)); width=140; style=bold; caption_value=runclient('Notification #' + convert(string,:notify_osrc:p_notify_id)); }
+		nc_recip "widget/table-column" { title="Recipient"; fieldname=recip_name; width=150; style=bold; caption_value=runclient('Partner ' + :notify_osrc:p_recip_partner_key); }
+		nc_method "widget/table-column" { title="Method"; fieldname=p_notify_method_label; width=150; style=bold; caption_fieldname=p_recip_contact_data; }
+
+		nc_detail "widget/table-row-detail"
+		    {
+		    display_for=runclient(1);
+		    height=156;
+		    width=828;
+
+		    detail_vbox "widget/vbox"
+			{
+			x=8; y=6;
+			width=812; height=144;
+			spacing=2;
+
+			d_msg "widget/hbox"
+			    {
+			    height=18; spacing=4;
+			    d_msg_lbl "widget/label" { width=110; height=18; widget_class="row-detail"; style=bold; text="Message:"; }
+			    d_msg_val "widget/label" { width=698; height=18; widget_class="row-detail"; value=runclient(condition(:notify_osrc:p_message is null, '(no additional message text)', :notify_osrc:p_message)); }
+			    }
+			d_obj "widget/hbox"
+			    {
+			    height=18; widget_class="row-detail"; spacing=4;
+			    d_obj_lbl "widget/label" { width=110; height=18; widget_class="row-detail"; style=bold; text="Object:"; }
+			    d_obj_val "widget/label" { width=698; height=18; widget_class="row-detail"; value=runclient(:notify_osrc:p_object_label + ' = ' + :notify_osrc:p_object_id); }
+			    }
+			d_dlv "widget/hbox"
+			    {
+			    height=18; widget_class="row-detail"; spacing=4;
+			    d_dlv_lbl "widget/label" { width=110; height=18; widget_class="row-detail"; style=bold; text="Delivery:"; }
+			    d_dlv_val "widget/label" { width=698; height=18; widget_class="row-detail"; value=runclient(:notify_osrc:p_notify_method_desc + ' (item ' + convert(string,:notify_osrc:p_notify_method_item) + ') to ' + condition(:notify_osrc:p_recip_contact_data is null, '(contact not yet resolved)', :notify_osrc:p_recip_contact_data)); }
+			    }
+			d_dates "widget/hbox"
+			    {
+			    height=18; widget_class="row-detail"; spacing=4;
+			    d_dates_lbl "widget/label" { width=110; height=18; widget_class="row-detail"; style=bold; text="Dates:"; }
+			    d_dates_val "widget/label" { width=698; height=18; widget_class="row-detail"; value=runclient('Event ' + substring(convert(string,:notify_osrc:p_event_date),1,19) + '   /   Sent ' + condition(:notify_osrc:p_sent_date is null, '(not sent)', substring(convert(string,:notify_osrc:p_sent_date),1,19)) + '   /   Ack ' + condition(:notify_osrc:p_ack_date is null, '(none)', substring(convert(string,:notify_osrc:p_ack_date),1,19))); }
+			    }
+			d_queue "widget/hbox"
+			    {
+			    height=18; widget_class="row-detail"; spacing=4;
+			    d_queue_lbl "widget/label" { width=110; height=18; widget_class="row-detail"; style=bold; text="Queue Info:"; }
+			    d_queue_val "widget/label" { width=698; height=18; widget_class="row-detail"; value=runclient('#' + convert(string,:notify_osrc:p_notify_id) + '   /   Type ' + :notify_osrc:p_notify_type + '   /   Batch ' + condition(:notify_osrc:p_sending_group_key is null, '(none)', :notify_osrc:p_sending_group_key) + '   /   Source partner ' + condition(:notify_osrc:p_source_partner_key is null, '(none)', :notify_osrc:p_source_partner_key)); }
+			    }
+			d_resp "widget/hbox"
+			    {
+			    height=18; widget_class="row-detail"; spacing=4;
+			    d_resp_lbl "widget/label" { width=110; height=18; widget_class="row-detail"; style=bold; text="Response:"; }
+			    d_resp_val "widget/label" { width=698; height=18; widget_class="row-detail"; value=runclient(condition(:notify_osrc:p_response is null, '(no response recorded)', :notify_osrc:p_response)); }
+			    }
+
+			d_btns "widget/hbox"
+			    {
+			    height=24; width=812; spacing=8;
+			    align=center;
+
+			    delete_btn "widget/textbutton"
+				{
+				width=180; height=24;
+				text = "Delete Notification";
+				enabled=runclient(:notify_osrc:can_delete);
+
+				on_delete "widget/connector" { event=Click; target=notify_osrc; action=Delete; }
+				}
+			    }
+			}
+		    }
+		}
+	    }
+	}
+    }

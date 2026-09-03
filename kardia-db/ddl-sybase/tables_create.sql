@@ -23,10 +23,10 @@ go
 insert ra values('a_batch','Batches',':a_batch_desc')
 go
 
-insert ra values('a_cost_center','Cost Centers',':a_cc_desc')
+insert ra values('a_fund','Funds',':a_fund_desc')
 go
 
-insert ra values('a_cost_center_prefix','CostCtr Prefixes',':a_cc_prefix_desc')
+insert ra values('a_fund_prefix','Fund Prefixes',':a_fund_prefix_desc')
 go
 
 insert ra values('a_period','Periods',':a_period_desc')
@@ -67,7 +67,7 @@ create table p_partner (
         p_no_mail_reason                      char(1)  null,           /* Reason why p_no_mail is set: (U)ndeliverable, (O)ffice Request, (P)ersonal Request, (M)issionary Request, (D)eceased, (T)emporarily Away, (I)nactive Donor, (X) Other. --  */
         p_no_solicitations                    bit,                     /*  --  */
         p_no_mail                             bit,                     /*  --  */
-        p_cost_center                         varchar(20)  null,       /* The cost center number (see a_cost_center) associated with the partner, if applicable. --  */
+        a_fund                                varchar(20)  null,       /* The fund code (see a_fund) associated with the partner, if applicable. --  */
         p_best_contact                        char(10)  null,          /*  --  */
         p_merged_with                         char(10)  null,          /* new key id after merge --  */
         p_legacy_key_1                        char(10)  null,          /* old system --  */
@@ -230,26 +230,6 @@ create table p_contact_usage (
 go
 
 
-/* p_contact_usage_type */
-print "Creating table p_contact_usage_type"
-
-create table p_contact_usage_type (
-        p_contact_usage_type_code             varchar(4)  not null,    /* Unique code for this usage type --  */
-        p_system_provided                     bit  not null,           /* 1 = this code is provided with the system and cannot be changed or removed --  */
-        p_use_for_locations                   bit  not null,           /* 1 = this code can be used for p_location records. --  */
-        p_use_for_contacts                    bit  not null,           /* 1 = this code can be used for contact data (phone, email, etc.) --  */
-        p_contact_types                       varchar(32)  not null,   /* a list of contact type codes that this code applies to. --  */
-        p_contact_usage_label                 varchar(80)  not null,   /* The label/description for this usage code. --  */
-        s_date_created                        datetime  not null,      /*  --  */
-        s_created_by                          varchar(20)  not null,   /*  --  */
-        s_date_modified                       datetime  not null,      /*  --  */
-        s_modified_by                         varchar(20)  not null,   /*  --  */
-        __cx_osml_control                     varchar(255)  null       /*  --  */
-
-)
-go
-
-
 /* p_partner_relationship */
 print "Creating table p_partner_relationship"
 
@@ -260,25 +240,6 @@ create table p_partner_relationship (
         p_relation_comments                   varchar(900)  null,      /*  --  */
         p_relation_start_date                 datetime  null,          /*  --  */
         p_relation_end_date                   datetime  null,          /*  --  */
-        s_date_created                        datetime  not null,      /*  --  */
-        s_created_by                          varchar(20)  not null,   /*  --  */
-        s_date_modified                       datetime  not null,      /*  --  */
-        s_modified_by                         varchar(20)  not null,   /*  --  */
-        __cx_osml_control                     varchar(255)  null       /*  --  */
-
-)
-go
-
-
-/* p_partner_relationship_type */
-print "Creating table p_partner_relationship_type"
-
-create table p_partner_relationship_type (
-        p_relation_type                       integer  not null,       /* brother, wife, son, etc. See p_partner_relationship_type. --  */
-        p_relation_type_label                 varchar(40)  not null,   /*  --  */
-        p_relation_type_desc                  varchar(900)  null,      /*  --  */
-        p_relation_type_rev_label             varchar(40)  not null,   /* label for relationship applied in reverse --  */
-        p_relation_type_rev_desc              varchar(900)  null,      /* description for relationship applied in reverse --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -361,6 +322,72 @@ create table p_staff (
         p_kardiaweb_login                     varchar(128)  null,      /* The Kardia self-service website login of the staff member. --  */
         p_preferred_email_id                  integer  null,           /* Preferred email (p_contact_info) for receiving reports and such from Kardia --  */
         p_preferred_location_id               integer  null,           /* Preferred location (p_location) for receiving reports and such from Kardia --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+)
+go
+
+
+/* p_banking_details */
+print "Creating table p_banking_details"
+
+create table p_banking_details (
+        p_banking_details_key                 integer  not null,       /* banking details key (autonumbered) --  */
+        p_banking_type                        char(1)  not null,       /* type of account (C=checking, S=savings, R=revolving credit account such as VISA/MC) --  */
+        p_banking_card_type                   char(2)  null,           /* type of revolving credit - VI = visa, MC = mastercard, AE = american express, DI = discover, etc. --  */
+        p_partner_id                          char(10)  null,          /* partner id of the account owner (if relevant) --  */
+        p_bank_partner_id                     char(10)  null,          /* partner id of the financial institution itself (if available) --  */
+        p_bank_account_name                   varchar(80)  not null,   /* name on the account (e.g., name on visa card, etc.) --  */
+        p_bank_account_number                 varchar(32)  null,       /* number of the account --  */
+        p_bank_routing_number                 varchar(32)  null,       /* routing number, if applicable --  */
+        p_next_check_number                   integer  null,           /* next check number to use when writing checks --  */
+        p_bank_expiration                     datetime  null,          /* expiration date on account --  */
+        a_ledger_number                       char(10)  null,          /* GL ledger associated with this bank account --  */
+        a_account_code                        char(16)  null,          /* GL account associated with this bank account --  */
+        p_comment                             varchar(255)  null,      /* comments / description of bank account --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+)
+go
+
+
+/* p_contact_usage_type */
+print "Creating table p_contact_usage_type"
+
+create table p_contact_usage_type (
+        p_contact_usage_type_code             varchar(4)  not null,    /* Unique code for this usage type --  */
+        p_system_provided                     bit  not null,           /* 1 = this code is provided with the system and cannot be changed or removed --  */
+        p_use_for_locations                   bit  not null,           /* 1 = this code can be used for p_location records. --  */
+        p_use_for_contacts                    bit  not null,           /* 1 = this code can be used for contact data (phone, email, etc.) --  */
+        p_contact_types                       varchar(32)  not null,   /* a list of contact type codes that this code applies to. --  */
+        p_contact_usage_label                 varchar(80)  not null,   /* The label/description for this usage code. --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+)
+go
+
+
+/* p_partner_relationship_type */
+print "Creating table p_partner_relationship_type"
+
+create table p_partner_relationship_type (
+        p_relation_type                       integer  not null,       /* brother, wife, son, etc. See p_partner_relationship_type. --  */
+        p_relation_type_label                 varchar(40)  not null,   /*  --  */
+        p_relation_type_desc                  varchar(900)  null,      /*  --  */
+        p_relation_type_rev_label             varchar(40)  not null,   /* label for relationship applied in reverse --  */
+        p_relation_type_rev_desc              varchar(900)  null,      /* description for relationship applied in reverse --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -454,134 +481,107 @@ create table p_pol_division (
 )
 go
 print "Data for p_pol_division"
-insert into p_pol_division select p_country_code='US', p_pol_division='AL', p_pol_division_name='Alabama', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+insert into p_pol_division select p_country_code='US', p_pol_division='AL', p_pol_division_name='Alabama', p_record_status_code='A', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
 go
-insert into p_pol_division select p_country_code='US', p_pol_division='GA', p_pol_division_name='Georgia', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+insert into p_pol_division select p_country_code='US', p_pol_division='GA', p_pol_division_name='Georgia', p_record_status_code='A', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
 go
-insert into p_pol_division select p_country_code='US', p_pol_division='HI', p_pol_division_name='Hawaii', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+insert into p_pol_division select p_country_code='US', p_pol_division='HI', p_pol_division_name='Hawaii', p_record_status_code='A', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
 go
-insert into p_pol_division select p_country_code='US', p_pol_division='ID', p_pol_division_name='Idaho', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+insert into p_pol_division select p_country_code='US', p_pol_division='ID', p_pol_division_name='Idaho', p_record_status_code='A', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
 go
-insert into p_pol_division select p_country_code='US', p_pol_division='IL', p_pol_division_name='Illinois', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+insert into p_pol_division select p_country_code='US', p_pol_division='IL', p_pol_division_name='Illinois', p_record_status_code='A', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
 go
-insert into p_pol_division select p_country_code='US', p_pol_division='IN', p_pol_division_name='Indiana', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+insert into p_pol_division select p_country_code='US', p_pol_division='IN', p_pol_division_name='Indiana', p_record_status_code='A', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
 go
-insert into p_pol_division select p_country_code='US', p_pol_division='IA', p_pol_division_name='Iowa', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+insert into p_pol_division select p_country_code='US', p_pol_division='IA', p_pol_division_name='Iowa', p_record_status_code='A', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
 go
-insert into p_pol_division select p_country_code='US', p_pol_division='KS', p_pol_division_name='Kansas', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+insert into p_pol_division select p_country_code='US', p_pol_division='KS', p_pol_division_name='Kansas', p_record_status_code='A', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
 go
-insert into p_pol_division select p_country_code='US', p_pol_division='KY', p_pol_division_name='Kentucky', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+insert into p_pol_division select p_country_code='US', p_pol_division='KY', p_pol_division_name='Kentucky', p_record_status_code='A', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
 go
-insert into p_pol_division select p_country_code='US', p_pol_division='LA', p_pol_division_name='Louisiana', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+insert into p_pol_division select p_country_code='US', p_pol_division='LA', p_pol_division_name='Louisiana', p_record_status_code='A', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
 go
-insert into p_pol_division select p_country_code='US', p_pol_division='ME', p_pol_division_name='Maine', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+insert into p_pol_division select p_country_code='US', p_pol_division='ME', p_pol_division_name='Maine', p_record_status_code='A', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
 go
-insert into p_pol_division select p_country_code='US', p_pol_division='AK', p_pol_division_name='Alaska', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+insert into p_pol_division select p_country_code='US', p_pol_division='AK', p_pol_division_name='Alaska', p_record_status_code='A', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
 go
-insert into p_pol_division select p_country_code='US', p_pol_division='MD', p_pol_division_name='Maryland', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+insert into p_pol_division select p_country_code='US', p_pol_division='MD', p_pol_division_name='Maryland', p_record_status_code='A', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
 go
-insert into p_pol_division select p_country_code='US', p_pol_division='MA', p_pol_division_name='Massachusetts', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+insert into p_pol_division select p_country_code='US', p_pol_division='MA', p_pol_division_name='Massachusetts', p_record_status_code='A', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
 go
-insert into p_pol_division select p_country_code='US', p_pol_division='MI', p_pol_division_name='Michigan', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+insert into p_pol_division select p_country_code='US', p_pol_division='MI', p_pol_division_name='Michigan', p_record_status_code='A', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
 go
-insert into p_pol_division select p_country_code='US', p_pol_division='MN', p_pol_division_name='Minnesota', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+insert into p_pol_division select p_country_code='US', p_pol_division='MN', p_pol_division_name='Minnesota', p_record_status_code='A', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
 go
-insert into p_pol_division select p_country_code='US', p_pol_division='MS', p_pol_division_name='Mississippi', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+insert into p_pol_division select p_country_code='US', p_pol_division='MS', p_pol_division_name='Mississippi', p_record_status_code='A', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
 go
-insert into p_pol_division select p_country_code='US', p_pol_division='MO', p_pol_division_name='Missouri', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+insert into p_pol_division select p_country_code='US', p_pol_division='MO', p_pol_division_name='Missouri', p_record_status_code='A', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
 go
-insert into p_pol_division select p_country_code='US', p_pol_division='MT', p_pol_division_name='Montana', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+insert into p_pol_division select p_country_code='US', p_pol_division='MT', p_pol_division_name='Montana', p_record_status_code='A', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
 go
-insert into p_pol_division select p_country_code='US', p_pol_division='NE', p_pol_division_name='Nebraska', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+insert into p_pol_division select p_country_code='US', p_pol_division='NE', p_pol_division_name='Nebraska', p_record_status_code='A', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
 go
-insert into p_pol_division select p_country_code='US', p_pol_division='NV', p_pol_division_name='Nevada', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+insert into p_pol_division select p_country_code='US', p_pol_division='NV', p_pol_division_name='Nevada', p_record_status_code='A', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
 go
-insert into p_pol_division select p_country_code='US', p_pol_division='NH', p_pol_division_name='New Hampshire', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+insert into p_pol_division select p_country_code='US', p_pol_division='NH', p_pol_division_name='New Hampshire', p_record_status_code='A', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
 go
-insert into p_pol_division select p_country_code='US', p_pol_division='AZ', p_pol_division_name='Arizona', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+insert into p_pol_division select p_country_code='US', p_pol_division='AZ', p_pol_division_name='Arizona', p_record_status_code='A', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
 go
-insert into p_pol_division select p_country_code='US', p_pol_division='NJ', p_pol_division_name='New Jersey', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+insert into p_pol_division select p_country_code='US', p_pol_division='NJ', p_pol_division_name='New Jersey', p_record_status_code='A', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
 go
-insert into p_pol_division select p_country_code='US', p_pol_division='NM', p_pol_division_name='New Mexico', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+insert into p_pol_division select p_country_code='US', p_pol_division='NM', p_pol_division_name='New Mexico', p_record_status_code='A', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
 go
-insert into p_pol_division select p_country_code='US', p_pol_division='NY', p_pol_division_name='New York', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+insert into p_pol_division select p_country_code='US', p_pol_division='NY', p_pol_division_name='New York', p_record_status_code='A', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
 go
-insert into p_pol_division select p_country_code='US', p_pol_division='NC', p_pol_division_name='North Carolina', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+insert into p_pol_division select p_country_code='US', p_pol_division='NC', p_pol_division_name='North Carolina', p_record_status_code='A', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
 go
-insert into p_pol_division select p_country_code='US', p_pol_division='ND', p_pol_division_name='North Dakota', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+insert into p_pol_division select p_country_code='US', p_pol_division='ND', p_pol_division_name='North Dakota', p_record_status_code='A', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
 go
-insert into p_pol_division select p_country_code='US', p_pol_division='OH', p_pol_division_name='Ohio', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+insert into p_pol_division select p_country_code='US', p_pol_division='OH', p_pol_division_name='Ohio', p_record_status_code='A', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
 go
-insert into p_pol_division select p_country_code='US', p_pol_division='OK', p_pol_division_name='Oklahoma', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+insert into p_pol_division select p_country_code='US', p_pol_division='OK', p_pol_division_name='Oklahoma', p_record_status_code='A', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
 go
-insert into p_pol_division select p_country_code='US', p_pol_division='OR', p_pol_division_name='Oregon', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+insert into p_pol_division select p_country_code='US', p_pol_division='OR', p_pol_division_name='Oregon', p_record_status_code='A', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
 go
-insert into p_pol_division select p_country_code='US', p_pol_division='PA', p_pol_division_name='Pennsylvania', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+insert into p_pol_division select p_country_code='US', p_pol_division='PA', p_pol_division_name='Pennsylvania', p_record_status_code='A', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
 go
-insert into p_pol_division select p_country_code='US', p_pol_division='RI', p_pol_division_name='Rhode Island', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+insert into p_pol_division select p_country_code='US', p_pol_division='RI', p_pol_division_name='Rhode Island', p_record_status_code='A', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
 go
-insert into p_pol_division select p_country_code='US', p_pol_division='AR', p_pol_division_name='Arkansas', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+insert into p_pol_division select p_country_code='US', p_pol_division='AR', p_pol_division_name='Arkansas', p_record_status_code='A', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
 go
-insert into p_pol_division select p_country_code='US', p_pol_division='SC', p_pol_division_name='South Carolina', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+insert into p_pol_division select p_country_code='US', p_pol_division='SC', p_pol_division_name='South Carolina', p_record_status_code='A', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
 go
-insert into p_pol_division select p_country_code='US', p_pol_division='SD', p_pol_division_name='South Dakota', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+insert into p_pol_division select p_country_code='US', p_pol_division='SD', p_pol_division_name='South Dakota', p_record_status_code='A', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
 go
-insert into p_pol_division select p_country_code='US', p_pol_division='TN', p_pol_division_name='Tennessee', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+insert into p_pol_division select p_country_code='US', p_pol_division='TN', p_pol_division_name='Tennessee', p_record_status_code='A', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
 go
-insert into p_pol_division select p_country_code='US', p_pol_division='TX', p_pol_division_name='Texas', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+insert into p_pol_division select p_country_code='US', p_pol_division='TX', p_pol_division_name='Texas', p_record_status_code='A', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
 go
-insert into p_pol_division select p_country_code='US', p_pol_division='UT', p_pol_division_name='Utah', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+insert into p_pol_division select p_country_code='US', p_pol_division='UT', p_pol_division_name='Utah', p_record_status_code='A', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
 go
-insert into p_pol_division select p_country_code='US', p_pol_division='VT', p_pol_division_name='Vermont', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+insert into p_pol_division select p_country_code='US', p_pol_division='VT', p_pol_division_name='Vermont', p_record_status_code='A', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
 go
-insert into p_pol_division select p_country_code='US', p_pol_division='VA', p_pol_division_name='Virginia', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+insert into p_pol_division select p_country_code='US', p_pol_division='VA', p_pol_division_name='Virginia', p_record_status_code='A', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
 go
-insert into p_pol_division select p_country_code='US', p_pol_division='WA', p_pol_division_name='Washington', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+insert into p_pol_division select p_country_code='US', p_pol_division='WA', p_pol_division_name='Washington', p_record_status_code='A', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
 go
-insert into p_pol_division select p_country_code='US', p_pol_division='WV', p_pol_division_name='West Virginia', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+insert into p_pol_division select p_country_code='US', p_pol_division='WV', p_pol_division_name='West Virginia', p_record_status_code='A', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
 go
-insert into p_pol_division select p_country_code='US', p_pol_division='WI', p_pol_division_name='Wisconsin', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+insert into p_pol_division select p_country_code='US', p_pol_division='WI', p_pol_division_name='Wisconsin', p_record_status_code='A', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
 go
-insert into p_pol_division select p_country_code='US', p_pol_division='CA', p_pol_division_name='California', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+insert into p_pol_division select p_country_code='US', p_pol_division='CA', p_pol_division_name='California', p_record_status_code='A', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
 go
-insert into p_pol_division select p_country_code='US', p_pol_division='WY', p_pol_division_name='Wyoming', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+insert into p_pol_division select p_country_code='US', p_pol_division='WY', p_pol_division_name='Wyoming', p_record_status_code='A', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
 go
-insert into p_pol_division select p_country_code='US', p_pol_division='DC', p_pol_division_name='Washington DC', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+insert into p_pol_division select p_country_code='US', p_pol_division='DC', p_pol_division_name='Washington DC', p_record_status_code='A', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
 go
-insert into p_pol_division select p_country_code='US', p_pol_division='CO', p_pol_division_name='Colorado', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+insert into p_pol_division select p_country_code='US', p_pol_division='CO', p_pol_division_name='Colorado', p_record_status_code='A', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
 go
-insert into p_pol_division select p_country_code='US', p_pol_division='CT', p_pol_division_name='Connecticut', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+insert into p_pol_division select p_country_code='US', p_pol_division='CT', p_pol_division_name='Connecticut', p_record_status_code='A', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
 go
-insert into p_pol_division select p_country_code='US', p_pol_division='DE', p_pol_division_name='Delaware', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+insert into p_pol_division select p_country_code='US', p_pol_division='DE', p_pol_division_name='Delaware', p_record_status_code='A', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
 go
-insert into p_pol_division select p_country_code='US', p_pol_division='FL', p_pol_division_name='Florida', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
-go
-
-
-/* p_banking_details */
-print "Creating table p_banking_details"
-
-create table p_banking_details (
-        p_banking_details_key                 integer  not null,       /* banking details key (autonumbered) --  */
-        p_banking_type                        char(1)  not null,       /* type of account (C=checking, S=savings, R=revolving credit account such as VISA/MC) --  */
-        p_banking_card_type                   char(2)  null,           /* type of revolving credit - VI = visa, MC = mastercard, AE = american express, DI = discover, etc. --  */
-        p_partner_id                          char(10)  null,          /* partner id of the account owner (if relevant) --  */
-        p_bank_partner_id                     char(10)  null,          /* partner id of the financial institution itself (if available) --  */
-        p_bank_account_name                   varchar(80)  not null,   /* name on the account (e.g., name on visa card, etc.) --  */
-        p_bank_account_number                 varchar(32)  null,       /* number of the account --  */
-        p_bank_routing_number                 varchar(32)  null,       /* routing number, if applicable --  */
-        p_next_check_number                   integer  null,           /* next check number to use when writing checks --  */
-        p_bank_expiration                     datetime  null,          /* expiration date on account --  */
-        a_ledger_number                       char(10)  null,          /* GL ledger associated with this bank account --  */
-        a_account_code                        char(16)  null,          /* GL account associated with this bank account --  */
-        p_comment                             varchar(255)  null,      /* comments / description of bank account --  */
-        s_date_created                        datetime  not null,      /*  --  */
-        s_created_by                          varchar(20)  not null,   /*  --  */
-        s_date_modified                       datetime  not null,      /*  --  */
-        s_modified_by                         varchar(20)  not null,   /*  --  */
-        __cx_osml_control                     varchar(255)  null       /*  --  */
-
-)
+insert into p_pol_division select p_country_code='US', p_pol_division='FL', p_pol_division_name='Florida', p_record_status_code='A', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
 go
 
 
@@ -657,50 +657,12 @@ create table p_gazetteer (
 go
 
 
-/* p_dup_check_tmp */
-print "Creating table p_dup_check_tmp"
-
-create table p_dup_check_tmp (
-        p_partner_key                         char(10)  not null,      /* partner key of a potential duplicate record. --  */
-        s_username                            varchar(20)  not null,   /* name of the user that is looking for the dups --  */
-        p_score                               int  not null,           /* the "score" that we want to order the potential duplicate record in. --  */
-        p_comment                             varchar(255)  not null,  /* a comment describing what is similar about this duplicate record. --  */
-        s_date_created                        datetime  not null,      /*  --  */
-        s_created_by                          varchar(20)  not null,   /*  --  */
-        s_date_modified                       datetime  not null,      /*  --  */
-        s_modified_by                         varchar(20)  not null,   /*  --  */
-        __cx_osml_control                     varchar(255)  null       /*  --  */
-
-)
-go
-
-
-/* p_partner_sort_tmp */
-print "Creating table p_partner_sort_tmp"
-
-create table p_partner_sort_tmp (
-        p_partner_key                         char(10)  not null,      /* partner key --  */
-        s_username                            varchar(20)  not null,   /* name of the user --  */
-        p_sort_session_id                     integer  not null,       /* ID of sort session, a unique integer. --  */
-        p_sortkey                             varchar(255)  not null,  /* the sorting key, determining the order in which sorted records are returned. --  */
-        p_location_id                         integer  null,           /* the location record to use for this partner --  */
-        p_contact_id                          integer  null,           /* the contact record to use for this partner --  */
-        s_date_created                        datetime  not null,      /*  --  */
-        s_created_by                          varchar(20)  not null,   /*  --  */
-        s_date_modified                       datetime  not null,      /*  --  */
-        s_modified_by                         varchar(20)  not null,   /*  --  */
-        __cx_osml_control                     varchar(255)  null       /*  --  */
-
-)
-go
-
-
 /* p_acquisition_code */
 print "Creating table p_acquisition_code"
 
 create table p_acquisition_code (
         p_acquisition_code                    char(3)  not null,       /* The 3-character acquisition code for how we originally came in contact with the person --  */
-        p_acquisition_name                    varchar(32)  not null,   /* A brief description or label for the acquisition code --  */
+        p_acquisition_name                    varchar(48)  not null,   /* A brief description or label for the acquisition code --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -729,6 +691,26 @@ go
 insert into p_acquisition_code select p_acquisition_code='UNI', p_acquisition_name='Met at a College or University', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
 go
 insert into p_acquisition_code select p_acquisition_code='RAN', p_acquisition_name='Met at Random / Divine Appointment', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+go
+
+
+/* p_partner_sort_tmp */
+print "Creating table p_partner_sort_tmp"
+
+create table p_partner_sort_tmp (
+        p_partner_key                         char(10)  not null,      /* partner key --  */
+        s_username                            varchar(20)  not null,   /* name of the user --  */
+        p_sort_session_id                     integer  not null,       /* ID of sort session, a unique integer. --  */
+        p_sortkey                             varchar(255)  not null,  /* the sorting key, determining the order in which sorted records are returned. --  */
+        p_location_id                         integer  null,           /* the location record to use for this partner --  */
+        p_contact_id                          integer  null,           /* the contact record to use for this partner --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+)
 go
 
 
@@ -799,6 +781,24 @@ create table p_search_stage_criteria (
         p_search_stage_id                     integer  not null,       /* ID of search stage --  */
         p_criteria_name                       varchar(32)  not null,   /* the criteria name. --  */
         p_criteria_value                      varchar(900)  null,      /* the criteria's value. --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+)
+go
+
+
+/* p_dup_check_tmp */
+print "Creating table p_dup_check_tmp"
+
+create table p_dup_check_tmp (
+        p_partner_key                         char(10)  not null,      /* partner key of a potential duplicate record. --  */
+        s_username                            varchar(20)  not null,   /* name of the user that is looking for the dups --  */
+        p_score                               int  not null,           /* the "score" that we want to order the potential duplicate record in. --  */
+        p_comment                             varchar(255)  not null,  /* a comment describing what is similar about this duplicate record. --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -882,6 +882,103 @@ create table p_merge (
 go
 
 
+/* p_notification */
+print "Creating table p_notification"
+
+create table p_notification (
+        p_notify_id                           integer  not null,       /* id of the message --  */
+        p_notify_type                         varchar(4)  not null,    /* notification type code (p_notification_type) --  */
+        p_event_date                          datetime  not null,      /* date the event happened which triggered the notification --  */
+        p_object_id                           varchar(255)  not null,  /* an object ID for the event triggering the notification. for example, a gift record primary key. --  */
+        p_message                             varchar(900)  null,      /* additional text provided as a part of the notification --  */
+        p_source_partner_key                  varchar(10)  null,       /* the ID of the partner triggering the notification, if any. For example, the donor ID for a gift. --  */
+        p_recip_partner_key                   varchar(10)  not null,   /* partner key of the person to receive the notification --  */
+        p_notify_method                       integer  not null,       /* notification method (p_notification_method) --  */
+        p_notify_method_item                  integer  not null,       /* notification method line item. --  */
+        p_recip_contact_id                    integer  null,           /* the p_contact_info ID from the notification method preference at the time the notification was SENT. Denormalization for historical recordkeeping. --  */
+        p_recip_contact_data                  varchar(255)  null,      /* the p_contact_info data, including phone country/area, for the notification method at the time the notification was SENT. Denormalization for historical recordkeeping. --  */
+        p_status                              char(1)  not null,       /* status of this notification: (N)ew, (U)pdated, (P)rocessing, (S)ent, (D)eleted/discarded, (F)ailed --  */
+        p_sending_group_key                   varchar(80)  null,       /* a unique code used to group notifications together in a batch for sending --  */
+        p_sent_date                           datetime  null,          /* date the notification was actually sent --  */
+        p_ack_date                            datetime  null,          /* date the notification was read or acknowledged by the recipient (this may not be available for all notification types) --  */
+        p_response                            varchar(900)  null,      /* response, if any, from the notification recipient --  */
+        p_data_1                              varchar(255)  null,      /* Misc data field 1, notification source dependent. --  */
+        p_data_2                              varchar(255)  null,      /* Misc data field 2, notification source dependent. --  */
+        p_data_3                              varchar(255)  null,      /* Misc data field 3, notification source dependent. --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+)
+go
+
+
+/* p_notification_type */
+print "Creating table p_notification_type"
+
+create table p_notification_type (
+        p_notify_type                         varchar(4)  not null,    /* notification type code --  */
+        p_notify_type_label                   varchar(10)  not null,   /* short label for the notification type --  */
+        p_notify_type_desc                    varchar(255)  not null,  /* longer description for the notification type --  */
+        p_message                             varchar(900)  null,      /* Text to include in the notification message --  */
+        p_object_label                        varchar(255)  not null,  /* Short label for the object being referenced by the object ID in p_notification --  */
+        p_data_1_label                        varchar(48)  null,       /* Misc data field 1 label --  */
+        p_data_2_label                        varchar(48)  null,       /* Misc data field 2 label --  */
+        p_data_3_label                        varchar(48)  null,       /* Misc data field 3 label --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+)
+go
+
+
+/* p_notification_method */
+print "Creating table p_notification_method"
+
+create table p_notification_method (
+        p_notify_method                       integer  not null,       /* id of the notification method --  */
+        p_notify_method_label                 varchar(10)  not null,   /* notification method short label --  */
+        p_notify_method_desc                  varchar(255)  not null,  /* longer description of the notification method --  */
+        p_allowed_contact_types               varchar(32)  null,       /* list of p_contact_type(s) that are allowed for this notification method. --  */
+        p_expects_ack                         bit  not null,           /* whether this method anticipates an message-seen acknowledgement from the recipient (0=no, 1=yes) --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+)
+go
+
+
+/* p_notification_pref */
+print "Creating table p_notification_pref"
+
+create table p_notification_pref (
+        p_notify_type                         varchar(4)  not null,    /* notification type code (p_notification_type) --  */
+        p_notify_method                       integer  not null,       /* notification method (p_notification_method) --  */
+        p_notify_method_item                  integer  not null,       /* notification method line item (for example, if the recipient wants notifications sent via SMS to two phone numbers) --  */
+        p_recip_partner_key                   varchar(10)  not null,   /* recipient's partner key --  */
+        p_recip_contact_id                    integer  null,           /* the p_contact_info ID of the contact method for the notification, if applicable. --  */
+        p_enabled                             bit  not null,           /* whether this type of notification is desired (0=no, 1=yes) --  */
+        p_frequency                           integer  null,           /* the maximum frequency (in hours between notifications) for receiving this type of notification. For example, this could be used to batch up and send email notifications daily (every 24 hours). --  */
+        p_pause_until_date                    datetime  null,          /* pause sending notifications until after the given date. --  */
+        p_pause_discard                       bit  not null,           /* whether to queue up (0) or discard (1) notifications that occur before the pause_until date above. --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+)
+go
+
+
 /* m_list */
 print "Creating table m_list"
 
@@ -895,9 +992,9 @@ create table m_list (
         m_discard_after                       datetime  null,          /* for temporary lists/extracts --  */
         m_list_frozen                         bit,                     /* do not permit add/remove memberships --  */
         m_date_sent                           datetime  null,          /*  --  */
-        m_charge_ledger                       char(10)  null,          /* who to charge for publ. costs --  */
+        a_charge_ledger                       char(10)  null,          /* who to charge for publ. costs --  */
         p_postal_mode                         char(1)  null,           /* B-Bulk F-FirstClass Used to set postal modes on mailings --  */
-        m_charge_cost_ctr                     varchar(20)  null,       /*  --  */
+        a_charge_fund                         varchar(20)  null,       /*  --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -1004,19 +1101,19 @@ create table e_contact_history_type (
 )
 go
 print "Data for e_contact_history_type"
-insert into e_contact_history_type select e_contact_history_type=1, e_short_name='Phone', e_description='Phone Call', e_user_selectable=1, s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+insert into e_contact_history_type select e_contact_history_type=1, e_short_name='Phone', e_description='Phone Call', e_user_selectable=1, e_is_notes=0, e_is_inperson=0, s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
 go
-insert into e_contact_history_type select e_contact_history_type=2, e_short_name='Email', e_description='Email Message', e_user_selectable=1, s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+insert into e_contact_history_type select e_contact_history_type=2, e_short_name='Email', e_description='Email Message', e_user_selectable=1, e_is_notes=0, e_is_inperson=0, s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
 go
-insert into e_contact_history_type select e_contact_history_type=3, e_short_name='Conversation', e_description='In-Person Conversation', e_user_selectable=1, s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+insert into e_contact_history_type select e_contact_history_type=3, e_short_name='Conversation', e_description='In-Person Conversation', e_user_selectable=1, e_is_notes=0, e_is_inperson=1, s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
 go
-insert into e_contact_history_type select e_contact_history_type=4, e_short_name='Note', e_description='Note', e_user_selectable=1, s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+insert into e_contact_history_type select e_contact_history_type=4, e_short_name='Note', e_description='Note', e_user_selectable=1, e_is_notes=1, e_is_inperson=0, s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
 go
-insert into e_contact_history_type select e_contact_history_type=5, e_short_name='Pray', e_description='Prayer/Praise Item', e_user_selectable=1, s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+insert into e_contact_history_type select e_contact_history_type=5, e_short_name='Pray', e_description='Prayer/Praise Item', e_user_selectable=1, e_is_notes=1, e_is_inperson=0, s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
 go
-insert into e_contact_history_type select e_contact_history_type=6, e_short_name='SignUp', e_description='Sign Up List', e_user_selectable=1, s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+insert into e_contact_history_type select e_contact_history_type=6, e_short_name='SignUp', e_description='Sign Up List', e_user_selectable=1, e_is_notes=0, e_is_inperson=1, s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
 go
-insert into e_contact_history_type select e_contact_history_type=7, e_short_name='Update', e_description='Update', e_user_selectable=1, s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+insert into e_contact_history_type select e_contact_history_type=7, e_short_name='Update', e_description='Update', e_user_selectable=1, e_is_notes=0, e_is_inperson=0, s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
 go
 
 
@@ -1037,30 +1134,6 @@ create table e_contact_history (
         e_contact_date                        datetime  not null,      /* The date and time that the contact took place --  */
         e_notes                               varchar(900)  null,      /* Notes regarding this contact --  */
         e_message_id                          varchar(255)  null,      /* Message-ID header field of email message, or similar unique ID for other communications --  */
-        s_date_created                        datetime  not null,      /*  --  */
-        s_created_by                          varchar(20)  not null,   /*  --  */
-        s_date_modified                       datetime  not null,      /*  --  */
-        s_modified_by                         varchar(20)  not null,   /*  --  */
-        __cx_osml_control                     varchar(255)  null       /*  --  */
-
-)
-go
-
-
-/* e_activity */
-print "Creating table e_activity"
-
-create table e_activity (
-        e_activity_group_id                   integer  not null,       /* A unique ID identifying the group of contact activity items that are being aggregated. --  */
-        e_activity_id                         integer  not null,       /* A unique ID identifying a single activity item within a group of items. --  */
-        p_partner_key                         char(10)  not null,      /* The partner involved in the activity --  */
-        e_whom                                char(10)  null,          /* The collaborator (with the organization) that was involved in the communication, if any. --  */
-        e_initiation                          char(1)  null,           /* Set to 'P' if the engaging partner initiated the activity, or 'C' if the collaborator (organization) initiated the activity. --  */
-        e_sort_key                            varchar(20)  null,       /* A value we can use to sort this activity data, if needed --  */
-        e_activity_date                       datetime  not null,      /* The date that the activity took place --  */
-        e_activity_type                       char(4)  not null,       /* The type of activity. --  */
-        e_reference_info                      varchar(900)  null,      /* Information we can use to track back to the source data of the activity (such as a history ID, a gift ledger+batch+giftid, or such). --  */
-        e_info                                varchar(900)  null,      /* Informational notes regarding this activity --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -1435,6 +1508,23 @@ create table e_partner_document (
 go
 
 
+/* e_text_expansion */
+print "Creating table e_text_expansion"
+
+create table e_text_expansion (
+        e_exp_tag                             varchar(16)  not null,   /* The short tag to be expanded --  */
+        e_exp_desc                            varchar(64)  not null,   /* A brief description of the tag/expansion --  */
+        e_exp_expansion                       varchar(900)  not null,  /* The expansion of the short tag (i.e., a phrase or paragraph). --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+)
+go
+
+
 /* e_workflow_type */
 print "Creating table e_workflow_type"
 
@@ -1712,6 +1802,55 @@ create table e_data_highlight (
 go
 
 
+/* e_activity */
+print "Creating table e_activity"
+
+create table e_activity (
+        e_activity_group_id                   integer  not null,       /* A unique ID identifying the group of contact activity items that are being aggregated. --  */
+        e_activity_id                         integer  not null,       /* A unique ID identifying a single activity item within a group of items. --  */
+        p_partner_key                         char(10)  not null,      /* The partner involved in the activity --  */
+        e_whom                                char(10)  null,          /* The collaborator (with the organization) that was involved in the communication, if any. --  */
+        e_initiation                          char(1)  null,           /* Set to 'P' if the engaging partner initiated the activity, or 'C' if the collaborator (organization) initiated the activity. --  */
+        e_sort_key                            varchar(20)  null,       /* A value we can use to sort this activity data, if needed --  */
+        e_activity_date                       datetime  not null,      /* The date that the activity took place --  */
+        e_activity_type                       char(4)  not null,       /* The type of activity. --  */
+        e_reference_info                      varchar(900)  null,      /* Information we can use to track back to the source data of the activity (such as a history ID, a gift ledger+batch+giftid, or such). --  */
+        e_info                                varchar(900)  null,      /* Informational notes regarding this activity --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+)
+go
+
+
+/* e_trackactivity */
+print "Creating table e_trackactivity"
+
+create table e_trackactivity (
+        p_partner_key                         char(10)  not null,      /* The partner whose track information we are displaying --  */
+        e_username                            varchar(20)  not null,   /* The username of the user viewing the partner --  */
+        e_sort_key                            varchar(32)  not null,   /* Controls the display order (steps by sequence, requirements by step sequence and req ID) --  */
+        e_track_id                            integer  not null,       /* The ID of the track being displayed --  */
+        e_step_id                             integer  not null,       /* The ID of the step being displayed --  */
+        e_object_type                         char(1)  not null,       /* 'S' for step and 'R' for requirement --  */
+        e_completion_status                   char(1)  not null,       /* I/C/E for steps, I/C/W for requirements --  */
+        e_object_name                         varchar(32)  not null,   /* The "name" of the step or requirement being displayed (for linkage to a data editing form) --  */
+        e_object_label                        varchar(64)  not null,   /* The main visual label for the step or requirement --  */
+        e_object_desc                         varchar(255)  not null,  /* The brief description of the step or requirement --  */
+        e_object_comm                         varchar(900)  null,      /* Any comments associated with the step or requirement --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+)
+go
+
+
 /* e_ack */
 print "Creating table e_ack"
 
@@ -1756,48 +1895,6 @@ go
 insert into e_ack_type select e_ack_type=3, e_ack_type_label='Comment', e_ack_type_desc='Comment', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
 go
 insert into e_ack_type select e_ack_type=4, e_ack_type_label='Viewed', e_ack_type_desc='Viewed', s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
-go
-
-
-/* e_trackactivity */
-print "Creating table e_trackactivity"
-
-create table e_trackactivity (
-        p_partner_key                         char(10)  not null,      /* The partner whose track information we are displaying --  */
-        e_username                            varchar(20)  not null,   /* The username of the user viewing the partner --  */
-        e_sort_key                            varchar(32)  not null,   /* Controls the display order (steps by sequence, requirements by step sequence and req ID) --  */
-        e_track_id                            integer  not null,       /* The ID of the track being displayed --  */
-        e_step_id                             integer  not null,       /* The ID of the step being displayed --  */
-        e_object_type                         char(1)  not null,       /* 'S' for step and 'R' for requirement --  */
-        e_completion_status                   char(1)  not null,       /* I/C/E for steps, I/C/W for requirements --  */
-        e_object_name                         varchar(32)  not null,   /* The "name" of the step or requirement being displayed (for linkage to a data editing form) --  */
-        e_object_label                        varchar(64)  not null,   /* The main visual label for the step or requirement --  */
-        e_object_desc                         varchar(255)  not null,  /* The brief description of the step or requirement --  */
-        e_object_comm                         varchar(900)  null,      /* Any comments associated with the step or requirement --  */
-        s_date_created                        datetime  not null,      /*  --  */
-        s_created_by                          varchar(20)  not null,   /*  --  */
-        s_date_modified                       datetime  not null,      /*  --  */
-        s_modified_by                         varchar(20)  not null,   /*  --  */
-        __cx_osml_control                     varchar(255)  null       /*  --  */
-
-)
-go
-
-
-/* e_text_expansion */
-print "Creating table e_text_expansion"
-
-create table e_text_expansion (
-        e_exp_tag                             varchar(16)  not null,   /* The short tag to be expanded --  */
-        e_exp_desc                            varchar(64)  not null,   /* A brief description of the tag/expansion --  */
-        e_exp_expansion                       varchar(900)  not null,  /* The expansion of the short tag (i.e., a phrase or paragraph). --  */
-        s_date_created                        datetime  not null,      /*  --  */
-        s_created_by                          varchar(20)  not null,   /*  --  */
-        s_date_modified                       datetime  not null,      /*  --  */
-        s_modified_by                         varchar(20)  not null,   /*  --  */
-        __cx_osml_control                     varchar(255)  null       /*  --  */
-
-)
 go
 
 
@@ -2250,7 +2347,7 @@ create table a_analysis_attr (
         a_attr_code                           char(8)  not null,       /* analysis attribute code (alphanumeric allowed) --  */
         a_ledger_number                       char(10)  not null,      /* ledger number that uses this attribute --  */
         a_desc                                varchar(255)  not null,  /* description of attribute --  */
-        a_cc_enab                             bit  not null,           /* whether to enable this attr for cost centers --  */
+        a_fund_enab                           bit  not null,           /* whether to enable this attr for funds --  */
         a_acct_enab                           bit  not null,           /* whether to enable this attr for GL accounts --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
@@ -2280,13 +2377,17 @@ create table a_analysis_attr_value (
 go
 
 
-/* a_cc_analysis_attr */
-print "Creating table a_cc_analysis_attr"
+/* a_fund_analysis_attr */
+print "Creating table a_fund_analysis_attr"
 
-create table a_cc_analysis_attr (
+create table a_fund_analysis_attr (
         a_attr_code                           char(8)  not null,       /* analysis attribute code (alphanumeric allowed) --  */
         a_ledger_number                       char(10)  not null,      /* ledger number that uses this attribute --  */
-        a_cost_center                         char(20)  not null,      /* cost center --  */
+        a_fund                                char(20)  not null,      /* fund --  */
+        a_hist_id                             int  default 0  not null,
+                                                                      /* auto-incrementing ID for the history of this analysis attribute value. 0 for the current value, 1, 2, 3, etc., for previous values. --  */
+        a_start_date                          datetime  null,          /* starting validity date for this value, null if no starting date (used in conjunction with a_hist_id and a_end_date) --  */
+        a_end_date                            datetime  null,          /* ending validity date for this value, null if no ending date, i.e. if this item is current (used in conjunction with a_hist_id and a_end_date) --  */
         a_value                               varchar(255)  null,      /* analysis attribute value --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
@@ -2305,6 +2406,10 @@ create table a_acct_analysis_attr (
         a_attr_code                           char(8)  not null,       /* analysis attribute code (alphanumeric allowed) --  */
         a_ledger_number                       char(10)  not null,      /* ledger number that uses this attribute --  */
         a_account_code                        char(16)  not null,      /* GL account code --  */
+        a_hist_id                             int  default 0  not null,
+                                                                      /* auto-incrementing ID for the history of this analysis attribute value. 0 for the current value, 1, 2, 3, etc., for previous values. --  */
+        a_start_date                          datetime  null,          /* starting validity date for this value, null if no starting date (used in conjunction with a_hist_id and a_end_date) --  */
+        a_end_date                            datetime  null,          /* ending validity date for this value, null if no ending date, i.e. if this item is current (used in conjunction with a_hist_id and a_end_date) --  */
         a_value                               varchar(255)  null,      /* analysis attribute value --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
@@ -2316,23 +2421,23 @@ create table a_acct_analysis_attr (
 go
 
 
-/* a_cost_center */
-print "Creating table a_cost_center"
+/* a_fund */
+print "Creating table a_fund"
 
-create table a_cost_center (
-        a_cost_center                         char(20)  not null,      /* cost center code (alphanumeric allowed) --  */
-        a_ledger_number                       char(10)  not null,      /* ledger number that uses this cost center --  */
-        a_parent_cost_center                  char(20)  null,          /* cost center that this data rolls up into for reporting (within same ledger) --  */
-        a_bal_cost_center                     char(20)  not null,      /* a_bal_cost_center = a_is_balancing?a_cost_center:a_parent_cost_center --  */
-        a_cost_center_class                   char(3)  null,           /* classification (could be others too): (ADM)inistration & General, (FUN)draising, (MIN)istry / Program Services. --  */
-        a_reporting_level                     int  not null,           /* at what detail level should this costctr be shown (in reports); smaller number = less detail, more generalized report --  */
-        a_is_posting                          bit,                     /* enables posting to this cost center --  */
-        a_is_external                         bit,                     /* Does the cost center represent a subdivision of the local entity, or is it foreign/external? --  */
-        a_is_balancing                        bit,                     /* Is this a true cost center which self-balances (satisfies the accounting equation), or is it merely a fund within a cost center? --  */
+create table a_fund (
+        a_fund                                char(20)  not null,      /* fund code (alphanumeric allowed) --  */
+        a_ledger_number                       char(10)  not null,      /* ledger number that uses this fund --  */
+        a_parent_fund                         char(20)  null,          /* fund that this data rolls up into for reporting (within same ledger) --  */
+        a_bal_fund                            char(20)  not null,      /* a_bal_fund = a_is_balancing?a_fund:a_parent_fund --  */
+        a_fund_class                          char(3)  null,           /* classification (could be others too): (ADM)inistration & General, (FUN)draising, (MIN)istry / Program Services. --  */
+        a_reporting_level                     int  not null,           /* at what detail level should this fund be shown (in reports); smaller number = less detail, more generalized report --  */
+        a_is_posting                          bit,                     /* enables posting to this fund --  */
+        a_is_external                         bit,                     /* Does the fund represent a subdivision of the local entity, or is it foreign/external? --  */
+        a_is_balancing                        bit,                     /* Is this a true fund which self-balances (satisfies the accounting equation), or is it merely a fund within a fund? --  */
         a_restricted_type                     char(1)  not null,       /* Fund restriction code: N = not restricted, T = temporarily restricted, P = permanently restricted --  */
-        a_cc_desc                             char(32)  null,          /* short description of cost center, for reporting --  */
-        a_cc_comments                         varchar(255)  null,      /* comments / long description of cost center --  */
-        a_legacy_code                         varchar(32)  null,       /* Legacy cost center code, from data import --  */
+        a_fund_desc                           char(32)  null,          /* short description of fund, for reporting --  */
+        a_fund_comments                       varchar(255)  null,      /* comments / long description of fund --  */
+        a_legacy_code                         varchar(32)  null,       /* Legacy fund code, from data import --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -2351,7 +2456,7 @@ create table a_account (
         a_ledger_number                       char(10)  not null,      /* ledger number that uses this account --  */
         a_parent_account_code                 char(16)  null,          /* account that this data rolls up into for reporting (within same ledger) --  */
         a_acct_type                           char(1)  not null,       /* type of account: (A)sset, (L)iability, (Q)Equity, (R)evenue, (E)xpense --  */
-        a_account_class                       char(3)  null,           /* classification (used for managing which accts go with which cost centers) --  */
+        a_account_class                       char(3)  null,           /* classification (used for managing which accts go with which fund) --  */
         a_reporting_level                     int  not null,           /* at what detail level should this account be shown (in reports); smaller number = less detail, more generalized report --  */
         p_banking_details_key                 char(10)  null,          /* esp. for Asset accounts, this is the relevant bank account data --  */
         a_is_contra                           bit,                     /* is this a contra account - if so a_parent_account_code gives main account it balances against --  */
@@ -2442,15 +2547,15 @@ create table a_account_category (
 go
 
 
-/* a_cc_acct */
-print "Creating table a_cc_acct"
+/* a_fund_acct */
+print "Creating table a_fund_acct"
 
-create table a_cc_acct (
+create table a_fund_acct (
         a_ledger_number                       char(10)  not null,      /* ledger number --  */
         a_period                              char(8)  not null,       /* the high level accounting period (i.e., year) --  */
-        a_cost_center                         char(20)  not null,      /* cost center code --  */
+        a_fund                                char(20)  not null,      /* fund code --  */
         a_account_code                        char(16)  not null,      /* GL account code --  */
-        a_cc_acct_class                       char(3)  null,           /* classification (could be others too): (ADM)inistration & General, (FUN)draising, (MIN)istry / Program Services. --  */
+        a_fund_acct_class                     char(3)  null,           /* classification (could be others too): (ADM)inistration & General, (FUN)draising, (MIN)istry / Program Services. --  */
         a_opening_balance                     money  not null,         /* opening balance for the period (year) --  */
         a_current_balance                     money  not null,         /* current balance for the period (year) --  */
         s_date_created                        datetime  not null,      /*  --  */
@@ -2587,7 +2692,7 @@ create table a_transaction (
         a_period                              char(8)  not null,       /* Accounting period this transaction is recorded in. --  */
         a_effective_date                      datetime  not null,      /* Effective date of transaction (e.g., accrual date) --  */
         a_transaction_type                    char(1)  not null,       /* B=Beginning balance, E=Ending (closing of exp/rev into equity), T=Transaction (normal) --  */
-        a_cost_center                         char(20)  not null,      /* Cost center this transaction is posted to. --  */
+        a_fund                                char(20)  not null,      /* Fund this transaction is posted to. --  */
         a_account_category                    char(8)  not null,       /* Broad category of account (object) --  */
         a_account_code                        char(16)  not null,      /* GL Account that this transaction is posted to --  */
         a_amount                              money  not null,         /* Amount of debit or credit --  */
@@ -2637,7 +2742,7 @@ create table a_transaction_tmp (
         a_period                              char(8)  not null,       /* Accounting period this transaction is recorded in. --  */
         a_effective_date                      datetime  not null,      /* Effective date of transaction (e.g., accrual date) --  */
         a_transaction_type                    char(1)  not null,       /* B=Beginning balance, E=Ending (closing of exp/rev into equity), T=Transaction (normal) --  */
-        a_cost_center                         char(20)  not null,      /* Cost center this transaction is posted to. --  */
+        a_fund                                char(20)  not null,      /* Fund this transaction is posted to. --  */
         a_account_category                    char(8)  not null,       /* Broad category of account (object) --  */
         a_account_code                        char(16)  not null,      /* GL Account that this transaction is posted to --  */
         a_amount                              money  not null,         /* Amount of debit or credit --  */
@@ -2693,13 +2798,13 @@ create table a_account_class (
 go
 
 
-/* a_cost_center_class */
-print "Creating table a_cost_center_class"
+/* a_fund_class */
+print "Creating table a_fund_class"
 
-create table a_cost_center_class (
-        a_cost_center_class                   char(3)  not null,       /* costctr class (alphanumeric allowed) --  */
-        a_ledger_number                       char(10)  not null,      /* ledger number that uses this costctr class --  */
-        a_acct_class_desc                     varchar(255)  not null,  /* description of costctr class --  */
+create table a_fund_class (
+        a_fund_class                          char(3)  not null,       /* fund class (alphanumeric allowed) --  */
+        a_ledger_number                       char(10)  not null,      /* ledger number that uses this fund class --  */
+        a_fund_class_desc                     varchar(255)  not null,  /* description of fund class --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -2729,14 +2834,14 @@ create table a_reporting_level (
 go
 
 
-/* a_cost_center_prefix */
-print "Creating table a_cost_center_prefix"
+/* a_fund_prefix */
+print "Creating table a_fund_prefix"
 
-create table a_cost_center_prefix (
-        a_cost_center_prefix                  char(20)  not null,      /* cost center prefix (alphanumeric allowed) --  */
-        a_ledger_number                       char(10)  not null,      /* ledger number that uses this cost center prefix --  */
-        a_cc_prefix_desc                      char(32)  null,          /* short description of cost center prefix, for reporting --  */
-        a_cc_prefix_comments                  varchar(255)  null,      /* comments / long description of cost center prefix --  */
+create table a_fund_prefix (
+        a_fund_prefix                         char(20)  not null,      /* fund prefix (alphanumeric allowed) --  */
+        a_ledger_number                       char(10)  not null,      /* ledger number that uses this fund prefix --  */
+        a_fund_prefix_desc                    char(32)  null,          /* short description of fund prefix, for reporting --  */
+        a_fund_prefix_comments                varchar(255)  null,      /* comments / long description of fund prefix --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -2747,12 +2852,12 @@ create table a_cost_center_prefix (
 go
 
 
-/* a_cc_staff */
-print "Creating table a_cc_staff"
+/* a_fund_staff */
+print "Creating table a_fund_staff"
 
-create table a_cc_staff (
+create table a_fund_staff (
         a_ledger_number                       char(10)  not null,      /* ledger number (a_ledger) --  */
-        a_cost_center                         char(20)  not null,      /* cost center code (a_cost_center) --  */
+        a_fund                                char(20)  not null,      /* fund code (a_fund) --  */
         p_staff_partner_key                   varchar(10)  not null,   /* Partner key (p_partner) --  */
         p_start_date                          datetime  null,          /* starting date that data is available to fund manager --  */
         p_end_date                            datetime  null,          /* ending date that data is available to fund manager --  */
@@ -2819,6 +2924,129 @@ create table a_currency_exch_rate (
 go
 
 
+/* a_bank_recon */
+print "Creating table a_bank_recon"
+
+create table a_bank_recon (
+        a_ledger_number                       char(10)  not null,      /* ledger number for this reconciliation --  */
+        a_account_code                        char(16)  not null,      /* GL account that we're reconciling --  */
+        a_statement_id                        int(11)  not null,       /* ID used to differentiate reconciliations for the same account. --  */
+        a_period                              char(8)  not null,       /* accounting period for this reconciliation, typically calculated based on end date --  */
+        a_end_date                            datetime  not null,      /* Ending date from the bank statement --  */
+        a_bank_start_balance                  money  null,             /* Starting balance from the bank statement --  */
+        a_bank_end_balance                    money  not null,         /* Ending balance from the bank statement --  */
+        a_comment                             varchar(900)  null,      /* Comments on this account's reconciliation. --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+)
+go
+
+
+/* a_bank_recon_item */
+print "Creating table a_bank_recon_item"
+
+create table a_bank_recon_item (
+        a_ledger_number                       char(10)  not null,      /* ledger number for this reconciliation --  */
+        a_line_item                           integer  not null,       /* An autoincrement integer line item ID --  */
+        a_account_code                        char(16)  not null,      /* GL account that we're reconciling --  */
+        a_statement_id                        int(11)  null,           /* the reconciliation statement to associate this line item with once it is marked reconciled --  */
+        a_origin                              char(2)  null,           /* The type of line item - GL, CD, CR, DE. NULL indicates it exists only in the bank reconciliation. --  */
+        a_batch_key                           int(11)  null,           /* The batch part of the primary key of the source of the line item, such as from a_subtrx_cashdisb. --  */
+        a_group_key                           int(11)  null,           /* The group part of the primary key of the source of the line item, such as from a_subtrx_cashdisb. --  */
+        a_item_key                            int(11)  null,           /* The item part of the primary key of the source of the line item, such as from a_subtrx_cashdisb. --  */
+        a_amount                              money  null,             /* The amount of the reconciliation line item --  */
+        a_is_reconciled                       bit  default 0,          /* Whether the line item is reconciled or not. --  */
+        a_comment                             varchar(255)  null,      /* Comments on the line item. --  */
+        a_item_date                           datetime  not null,      /* The primary date associated with the transaction, such as the effective date from the GL. --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+)
+go
+
+
+/* a_bank_recon_accts */
+print "Creating table a_bank_recon_accts"
+
+create table a_bank_recon_accts (
+        a_ledger_number                       char(10)  not null,      /* ledger number for the account --  */
+        a_account_code                        char(16)  not null,      /* GL account to allow/disallow --  */
+        a_is_reconcilable                     bit(1)  default 0  null,
+                                                                      /* Whether or not the account can be reconciled --  */
+        a_is_customizable                     bit(1)  default 0  null,
+                                                                      /* Whether or not to allow the account to have line items that exist only in the reconciliation app. --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+)
+go
+
+
+/* a_dimension */
+print "Creating table a_dimension"
+
+create table a_dimension (
+        a_dimension                           char(20)  not null,      /* dimension code (alphanumeric allowed) --  */
+        a_ledger_number                       char(10)  not null,      /* ledger number that uses this fund --  */
+        a_is_posting                          bit,                     /* enables use of this dimension --  */
+        a_dim_desc                            char(32)  null,          /* short description of dimension, for reporting and UI --  */
+        a_dim_comments                        varchar(255)  null,      /* comments / long description of dimension --  */
+        a_legacy_code                         varchar(32)  null,       /* Legacy dimension code, from data import --  */
+        a_default_item                        varchar(20)  null,       /* Default item to use for this dimension. --  */
+        a_start_date                          datetime  null,          /* Starting date this dimension can be used --  */
+        a_end_date                            datetime  null,          /* Ending date this dimension can be used --  */
+        a_lock_position                       integer  null,           /* If set (1-3), locks this dimension to dimension #1, #2, or #3 in the UI, where applicable. --  */
+        a_lock_always_show                    bit  not null,           /* If position locked, always show this dimension, but leave it disabled if not applicable to the transaction. --  */
+        a_required                            bit  not null,           /* Whether this dimension must be specified, where applicable. --  */
+        a_dim_usage                           char(1)  not null,       /* What types of transactions this dimension can apply to: R = revenue only, E = expense only, B = both revenue and expense. --  */
+        a_dim_fund                            char(20)  null,          /* If specified, this dimension only applies to a specific fund. --  */
+        a_dim_fund_class                      char(3)  null,           /* If specified, this dimension only applies to a specific fund class. --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+)
+go
+
+
+/* a_dimension_item */
+print "Creating table a_dimension_item"
+
+create table a_dimension_item (
+        a_dimension                           char(20)  not null,      /* dimension code (alphanumeric allowed) --  */
+        a_ledger_number                       char(10)  not null,      /* ledger number that uses this fund --  */
+        a_dimension_item                      char(20)  not null,      /* dimension item code (alphanumeric allowed) --  */
+        a_is_posting                          bit  not null,           /* enables use of this dimension item --  */
+        a_dim_item_desc                       char(32)  null,          /* short description of dimension item, for reporting and UI --  */
+        a_dim_item_comments                   varchar(255)  null,      /* comments / long description of dimension item --  */
+        a_legacy_code                         varchar(32)  null,       /* Legacy dimension item code, from data import --  */
+        a_start_date                          datetime  null,          /* Starting date this dimension item can be used --  */
+        a_end_date                            datetime  null,          /* Ending date this dimension item can be used --  */
+        a_dim_item_usage                      char(1)  not null,       /* What types of transactions this dimension item can apply to: R = revenue only, E = expense only, B = both revenue and expense. --  */
+        a_dim_item_fund                       char(20)  null,          /* If specified, this dimension item only applies to a specific fund. --  */
+        a_dim_item_fund_class                 char(3)  null,           /* If specified, this dimension item only applies to a specific fund class. --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+)
+go
+
+
 /* a_payroll */
 print "Creating table a_payroll"
 
@@ -2828,9 +3056,9 @@ create table a_payroll (
         a_payroll_id                          integer  not null,       /* unique ID for this payroll entry --  */
         p_payee_partner_key                   char(10)  not null,      /* partner ID of the payee. --  */
         a_payee_name                          char(80)  null,          /* if necessary, this can be used to adjust the name used in payroll. --  */
-        a_priority                            integer  null,           /* if more than one payroll in a cost ctr, this sets the priority (higher number = higher priority) --  */
+        a_priority                            integer  null,           /* if more than one payroll in a fund, this sets the priority (higher number = higher priority) --  */
         a_payroll_interval                    char(2)  not null,       /* interval (OW = once weekly, BW = biweekly, OD = daily, SM = semimonthly, OM = once monthly, MS = misc) --  */
-        a_cost_center                         char(20)  not null,      /* cost center that this payroll takes place within --  */
+        a_fund                                char(20)  not null,      /* Fund that this payroll takes place within --  */
         a_start_date                          datetime  null,          /* starting date that this payroll record applies to --  */
         a_end_date                            datetime  null,          /* ending date that this payroll record applies to --  */
         s_date_created                        datetime  not null,      /*  --  */
@@ -2912,9 +3140,9 @@ create table a_payroll_group (
         a_payroll_interval                    char(2)  not null,       /* interval (OW = once weekly, BW = biweekly, OD = daily, SM = semimonthly, OM = once monthly, MS = misc) --  */
         a_acct_method                         char(1)  not null,       /* accounting method: (A)ccrual - pay accrues on last date of pay period, or (C)ash - pay accrues on payment date --  */
         a_paydate_delay                       integer  not null,       /* the number of days after end date of period when payroll is typically paid (0 for issue on exact end date) --  */
-        a_cost_center                         char(20)  not null,      /* default cost center that this payroll takes place within (can be overridden on payee entries) --  */
-        a_liab_cost_center                    char(20)  null,          /* cost center to xfer payroll liabilities to, if any --  */
-        a_cash_cost_center                    char(20)  null,          /* cost center for handling cash for payroll, if any --  */
+        a_fund                                char(20)  not null,      /* default fund that this payroll takes place within (can be overridden on payee entries) --  */
+        a_liab_fund                           char(20)  null,          /* fund to xfer payroll liabilities to, if any --  */
+        a_cash_fund                           char(20)  null,          /* fund for handling cash for payroll, if any --  */
         a_issue_checks                        bit  not null,           /* whether we write the checks (1) or some outside entity does (0) and we just record the total transaction. --  */
         a_service_bureau_id                   integer  null,           /* partner id of payroll service bureau that is being used, if any --  */
         a_service_bureau_group_name           varchar(64)  null,       /* identifier of this payroll group at the payroll service bureau --  */
@@ -2937,10 +3165,10 @@ create table a_payroll_import (
         a_payroll_id                          integer  not null,       /* unique ID for this payroll entry --  */
         p_payee_partner_key                   char(10)  not null,      /* partner ID of the payee. --  */
         a_payee_name                          char(80)  null,          /* if necessary, this can be used to adjust the name used in payroll. --  */
-        a_priority                            integer  null,           /* if more than one payroll in a cost ctr, this sets the priority (higher number = higher priority) --  */
+        a_priority                            integer  null,           /* if more than one payroll in a fund, this sets the priority (higher number = higher priority) --  */
         a_payroll_interval                    char(2)  not null,       /* interval (OW = once weekly, BW = biweekly, OD = daily, SM = semimonthly, OM = once monthly, MS = misc) --  */
         a_ledger_number                       char(10)  not null,      /* ledger number that will be doing the payroll. --  */
-        a_cost_center                         char(20)  not null,      /* cost center that this payroll takes place within --  */
+        a_fund                                char(20)  not null,      /* fund that this payroll takes place within --  */
         a_start_date                          datetime  null,          /* starting date that this payroll record applies to --  */
         a_end_date                            datetime  null,          /* ending date that this payroll record applies to --  */
         s_date_created                        datetime  not null,      /*  --  */
@@ -2972,10 +3200,10 @@ create table a_payroll_item (
         a_filing_status                       char(1)  null,           /* for tax withholding, the filing status. --  */
         a_allowances                          integer  null,           /* for tax withholding, the number of withholding allowances claimed (e.g., on W4) --  */
         a_dependent_allowances                integer  null,           /* for tax withholding, the number of withholding allowances claimed for dependents (some states, such as Georgia/Indiana) --  */
-        a_ref_cost_center                     char(20)  null,          /* for receivables/payables/etc, the cost center to check --  */
+        a_ref_fund                            char(20)  null,          /* for receivables/payables/etc, the fund to check --  */
         a_ref_account_code                    char(10)  null,          /* for receivables/payables/etc, the gl account to check --  */
-        a_xfer_cost_center                    char(20)  null,          /* for line items that reference an outside cost ctr / fund. --  */
-        a_xfer_account_code                   char(10)  null,          /* gl acct to use in outside cost ctr / fund. --  */
+        a_xfer_fund                           char(20)  null,          /* for line items that reference an outside fund. --  */
+        a_xfer_account_code                   char(10)  null,          /* gl acct to use in outside fund. --  */
         a_start_date                          datetime  null,          /* starting date that this payroll item record applies to --  */
         a_end_date                            datetime  null,          /* ending date that this payroll item record applies to --  */
         s_date_created                        datetime  not null,      /*  --  */
@@ -3005,10 +3233,10 @@ create table a_payroll_item_import (
         a_filing_status                       char(1)  null,           /* for tax withholding, the filing status. --  */
         a_allowances                          integer  null,           /* for tax withholding, the number of withholding allowances claimed (e.g., on W4) --  */
         a_dependent_allowances                integer  null,           /* for tax withholding, the number of withholding allowances claimed for dependents (some states, such as Georgia/Indiana) --  */
-        a_ref_cost_center                     char(20)  null,          /* for receivables/payables/etc, the cost center to check --  */
+        a_ref_fund                            char(20)  null,          /* for receivables/payables/etc, the fund to check --  */
         a_ref_account_code                    char(10)  null,          /* for receivables/payables/etc, the gl account to check --  */
-        a_xfer_cost_center                    char(20)  null,          /* for line items that reference an outside cost ctr / fund. --  */
-        a_xfer_account_code                   char(10)  null,          /* gl acct to use in outside cost ctr / fund. --  */
+        a_xfer_fund                           char(20)  null,          /* for line items that reference an outside fund. --  */
+        a_xfer_account_code                   char(10)  null,          /* gl acct to use in outside fund. --  */
         a_start_date                          datetime  null,          /* starting date that this payroll item record applies to --  */
         a_end_date                            datetime  null,          /* ending date that this payroll item record applies to --  */
         s_date_created                        datetime  not null,      /*  --  */
@@ -3031,7 +3259,7 @@ create table a_payroll_item_type (
         a_payroll_item_subclass_code          char(2)  null,           /* specific category of payroll item --  */
         a_payroll_item_form_sequence          integer  null,           /* order this item comes in on the payroll form. --  */
         a_ref_account_code                    char(10)  null,          /* default GL account code to use for items of this type --  */
-        a_xfer_cost_center                    char(20)  null,          /* default cost center to use when this item involves an xfer --  */
+        a_xfer_fund                           char(20)  null,          /* default fund to use when this item involves an xfer --  */
         a_xfer_account_code                   char(10)  null,          /* default gl account to use when this item involves an xfer --  */
         a_state_province                      char(2)  null,           /* State/Province that this tax table relates to. --  */
         a_desc                                varchar(32)  null,       /* description for this code --  */
@@ -3227,15 +3455,15 @@ create table a_salary_review (
 go
 
 
-/* a_cc_admin_fee */
-print "Creating table a_cc_admin_fee"
+/* a_fund_admin_fee */
+print "Creating table a_fund_admin_fee"
 
-create table a_cc_admin_fee (
-        a_cost_center                         char(20)  not null,      /* cost center code (alphanumeric allowed) --  */
-        a_ledger_number                       char(10)  not null,      /* ledger number that uses this cost center --  */
-        a_admin_fee_type                      char(3)  not null,       /* admin fee type to apply to this cost center (and subsidiaries) --  */
-        a_default_subtype                     char(1)  null,           /* default subtype to use for gifts to this costctr --  */
-        a_percentage                          float  null,             /* percent to deduct for this cost center, if different from a_admin_fee_type:a_default_percentage --  */
+create table a_fund_admin_fee (
+        a_fund                                char(20)  not null,      /* fund code (alphanumeric allowed) --  */
+        a_ledger_number                       char(10)  not null,      /* ledger number that uses this fund --  */
+        a_admin_fee_type                      char(3)  not null,       /* admin fee type to apply to this fund (and subsidiaries) --  */
+        a_default_subtype                     char(1)  null,           /* default subtype to use for gifts to this fund --  */
+        a_percentage                          float  null,             /* percent to deduct for this fund, if different from a_admin_fee_type:a_default_percentage --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -3299,8 +3527,8 @@ create table a_admin_fee_type_item (
         a_ledger_number                       char(10)  not null,      /* ledger number that uses this admin fee type --  */
         a_admin_fee_type                      char(3)  not null,       /* admin fee type --  */
         a_admin_fee_subtype                   char(1)  not null,       /* admin fee subtype - e.g., for variable percentages. --  */
-        a_dest_cost_center                    char(20)  not null,      /* destination cost center for the admin fee proceeds --  */
-        a_percentage                          float  not null,         /* percent of gift to go to the above cost center --  */
+        a_dest_fund                           char(20)  not null,      /* destination fund for the admin fee proceeds --  */
+        a_percentage                          float  not null,         /* percent of gift to go to the above fund --  */
         a_is_fixed                            bit  default 0,          /* if fee is scaled up or down, will the scaling apply to this fee item? --  */
         a_comment                             varchar(255)  null,      /* comments for this admin fee type item --  */
         s_date_created                        datetime  not null,      /*  --  */
@@ -3320,8 +3548,8 @@ create table a_admin_fee_type_item_tmp (
         a_ledger_number                       char(10)  not null,      /* ledger number that uses this admin fee type --  */
         a_admin_fee_type                      char(3)  not null,       /* admin fee type --  */
         a_admin_fee_subtype                   char(1)  not null,       /* admin fee subtype - e.g., for variable percentages. --  */
-        a_dest_cost_center                    char(20)  not null,      /* destination cost center for the admin fee proceeds --  */
-        a_percentage                          float  not null,         /* percent of gift to go to the above cost center --  */
+        a_dest_fund                           char(20)  not null,      /* destination fund for the admin fee proceeds --  */
+        a_percentage                          float  not null,         /* percent of gift to go to the above fund --  */
         a_is_fixed                            bit  default 0,          /* if fee is scaled up or down, will the scaling apply to this fee item? --  */
         a_comment                             varchar(255)  null,      /* comments for this admin fee type item --  */
         s_date_created                        datetime  not null,      /*  --  */
@@ -3334,12 +3562,12 @@ create table a_admin_fee_type_item_tmp (
 go
 
 
-/* a_cc_receipting */
-print "Creating table a_cc_receipting"
+/* a_fund_receipting */
+print "Creating table a_fund_receipting"
 
-create table a_cc_receipting (
-        a_cost_center                         char(20)  not null,      /* cost center code (alphanumeric allowed) --  */
-        a_ledger_number                       char(10)  not null,      /* ledger number that uses this cost center --  */
+create table a_fund_receipting (
+        a_fund                                char(20)  not null,      /* fund code (alphanumeric allowed) --  */
+        a_ledger_number                       char(10)  not null,      /* ledger number that uses this fund --  */
         a_receiptable                         bit  default 1,          /* can we receipt revenue (gifts) into this account? --  */
         a_disposition                         char(1)  null,           /* Donor management disposition of fund: N = not interesting, O = one-time gifts typical, R = recurring gifts typical --  */
         s_date_created                        datetime  not null,      /*  --  */
@@ -3352,16 +3580,16 @@ create table a_cc_receipting (
 go
 
 
-/* a_cc_receipting_accts */
-print "Creating table a_cc_receipting_accts"
+/* a_fund_receipting_accts */
+print "Creating table a_fund_receipting_accts"
 
-create table a_cc_receipting_accts (
-        a_cost_center                         char(20)  not null,      /* cost center code (alphanumeric allowed) --  */
-        a_ledger_number                       char(10)  not null,      /* ledger number that uses this cost center --  */
+create table a_fund_receipting_accts (
+        a_fund                                char(20)  not null,      /* fund code (alphanumeric allowed) --  */
+        a_ledger_number                       char(10)  not null,      /* ledger number that uses this fund --  */
         a_account_code                        char(16)  not null,      /* a GL account that we can receipt into for this fund. --  */
         a_non_tax_deductible                  bit  default 0,          /* are cash receipts tax deductible? --  */
         a_is_default                          bit  default 0,          /* is this the default receipting acct for this fund? --  */
-        a_receipt_comment                     varchar(64)  null,       /* text to use in place of a_cc_desc from a_cost_center, when printing receipts. --  */
+        a_receipt_comment                     varchar(64)  null,       /* text to use in place of a_fund_desc from a_fund, when printing receipts. --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -3411,7 +3639,7 @@ create table a_gift_payment_type (
         a_is_default                          bit  default 0,          /* is this the default payment type? --  */
         a_is_enabled                          bit  default 1,          /* is this payment type enabled? --  */
         a_is_cash                             bit  default 1,          /* is this payment type a cash (check, cash, credit card, etc.) or noncash (in-kind) gift? --  */
-        a_payment_cost_center                 char(20)  null,          /* cost center for payment (defaults to value in a_config) --  */
+        a_payment_fund                        char(20)  null,          /* fund for payment (defaults to value in a_config) --  */
         a_payment_account_code                char(16)  null,          /* GL account for payment (defaults to value in a_config) --  */
         a_desig_account_code                  char(16)  null,          /* GL account code for designations, to force a specific one --  */
         a_min_gift                            money  null,             /* Minimum gift for this payment type --  */
@@ -3466,14 +3694,14 @@ create table a_subtrx_gift (
         a_batch_number                        integer  not null,       /* Batch id for this gift. --  */
         a_gift_number                         integer  not null,       /* sequential gift number in the batch. --  */
         a_period                              char(8)  not null,       /* Accounting period this transaction is recorded in. --  */
-        a_cost_center                         char(20)  not null,      /* Which fund the gift is given to. --  */
+        a_fund                                char(20)  not null,      /* Which fund the gift is given to. --  */
         a_account_code                        char(16)  not null,      /* Which GL Account this gift posts to in the above fund. --  */
         a_amount                              money  not null,         /* Amount of the gift. --  */
         a_posted                              bit  default 0,          /* Has this transaction been posted (in this table)? --  */
         a_posted_to_gl                        bit  default 0,          /* Has this transaction been posted to the GL - yes (1) or no (0)? --  */
         a_gift_type                           char(1)  not null,       /* Type of gift: (C)ash, chec(K), credit car(D), (E)FT --  */
         a_gift_admin_fee                      float  null,             /* Total administration fee percent to use (optionally specified by user) --  */
-        a_gift_admin_subtype                  char(1)  null,           /* Admin fee subtype to use (overrides that specified in a_cc_admin_fee) --  */
+        a_gift_admin_subtype                  char(1)  null,           /* Admin fee subtype to use (overrides that specified in a_fund_admin_fee) --  */
         a_calc_admin_fee                      float  null,             /* Total administration fee percent as calculated by the system (set by admin fee logic) --  */
         a_calc_admin_fee_type                 char(3)  null,           /* admin fee type as calculated by the system (set by admin fee logic) --  */
         a_calc_admin_fee_subtype              char(1)  null,           /* admin fee subtype as calculated by the system (set by admin fee logic) --  */
@@ -3554,7 +3782,7 @@ create table a_subtrx_gift_item (
         a_gift_number                         integer  not null,       /* sequential gift number in the batch. --  */
         a_split_number                        integer  not null,       /* sequential split number for line items in a gift (split gift between multiple designations) --  */
         a_period                              char(8)  not null,       /* Accounting period this transaction is recorded in. --  */
-        a_cost_center                         char(20)  not null,      /* Which fund the gift is given to. --  */
+        a_fund                                char(20)  not null,      /* Which fund the gift is given to. --  */
         a_account_code                        char(16)  not null,      /* Which GL Account this gift posts to in the above fund. --  */
         a_amount                              money  not null,         /* Amount of the gift. --  */
         a_foreign_amount                      money  null,             /* Amount of the gift in the donor's foreign currency --  */
@@ -3568,7 +3796,7 @@ create table a_subtrx_gift_item (
         a_posted                              bit  default 0,          /* Has this transaction been posted (in this table)? --  */
         a_posted_to_gl                        bit  default 0,          /* Has this transaction been posted to the GL - yes (1) or no (0)? --  */
         a_gift_admin_fee                      float  null,             /* Total administration fee percent to use (optionally specified by user) --  */
-        a_gift_admin_subtype                  char(1)  null,           /* Admin fee subtype to use (overrides that specified in a_cc_admin_fee) --  */
+        a_gift_admin_subtype                  char(1)  null,           /* Admin fee subtype to use (overrides that specified in a_fund_admin_fee) --  */
         a_calc_admin_fee                      float  null,             /* Total administration fee percent as calculated by the system (set by admin fee logic) --  */
         a_calc_admin_fee_type                 char(3)  null,           /* admin fee type as calculated by the system (set by admin fee logic) --  */
         a_calc_admin_fee_subtype              char(1)  null,           /* admin fee subtype as calculated by the system (set by admin fee logic) --  */
@@ -3608,7 +3836,7 @@ create table a_subtrx_gift_intent (
         a_pledge_id                           integer  null,           /* Reference to pledges table to associate this gift intent with a pledge --  */
         p_dn_donor_partner_id                 char(10)  not null,      /* Donor ID making the pledge - denormalized (from gift_group) --  */
         p_dn_ack_partner_id                   char(10)  null,          /* Acknowledgement ID making the pledge - denormalized (from gift_group) --  */
-        a_cost_center                         char(20)  null,          /* Fund being pledged to --  */
+        a_fund                                char(20)  null,          /* Fund being pledged to --  */
         a_intent_type                         varchar(1)  not null,    /* Intent type: P=pledge, F=faith promise, I=intention --  */
         a_amount                              money  null,             /* Amount for this intent (e.g. monthly amount) - UI should default copy from gift data --  */
         a_total_amount                        money  null,             /* Total amount for this intent (e.g. total pledge) --  */
@@ -3640,12 +3868,12 @@ create table a_subtrx_gift_rcptcnt (
 go
 
 
-/* a_cc_auto_subscribe */
-print "Creating table a_cc_auto_subscribe"
+/* a_fund_auto_subscribe */
+print "Creating table a_fund_auto_subscribe"
 
-create table a_cc_auto_subscribe (
-        a_cost_center                         char(20)  not null,      /* cost center code (alphanumeric allowed) --  */
-        a_ledger_number                       char(10)  not null,      /* ledger number that uses this cost center --  */
+create table a_fund_auto_subscribe (
+        a_fund                                char(20)  not null,      /* fund code (alphanumeric allowed) --  */
+        a_ledger_number                       char(10)  not null,      /* ledger number that uses this fund --  */
         m_list_code                           varchar(20)  not null,   /* the mailing list code of the mailing to subscribe the donor to. --  */
         a_minimum_gift                        money  null,             /* sets a minimum gift before automatic subscription takes place. --  */
         a_subscribe_months                    integer  null,           /* how many months to subscribe the donor (or indefinitely, if null) --  */
@@ -3669,7 +3897,7 @@ create table a_motivational_code (
         a_motivational_code_status            char(1)  not null,       /* status of this motivational code: A=Active, O=Obsolete. --  */
         a_parent_motivational_code            varchar(16)  null,       /* motivational code parent or category --  */
         m_list_code                           varchar(20)  null,       /* (Optional) mailing list associated with this motivational code --  */
-        a_cost_center                         varchar(20)  null,       /* Optional cost center associated with this motivational code --  */
+        a_fund                                varchar(20)  null,       /* Optional fund associated with this motivational code --  */
         a_account_code                        varchar(16)  null,       /* Optional GL account associated with this motivational code --  */
         a_gift_admin_fee                      float  null,             /* Optional override percentage for admin fees for gifts on this motiv code. --  */
         a_gift_admin_subtype                  char(1)  null,           /* Optional override admin subtype for admin fees for gifts on this motiv code. --  */
@@ -3691,7 +3919,7 @@ print "Creating table a_giving_pattern"
 create table a_giving_pattern (
         a_ledger_number                       char(10)  not null,      /* ledger number for this giving pattern --  */
         p_donor_partner_key                   char(10)  not null,      /* Partner ID for the donor --  */
-        a_cost_center                         char(20)  not null,      /* fund that this donor is giving toward --  */
+        a_fund                                char(20)  not null,      /* fund that this donor is giving toward --  */
         a_pattern_id                          integer  not null,       /* sequential integer ID of this giving pattern record. --  */
         a_history_id                          integer  not null,       /* sequential integer ID of the history of this giving pattern record. --  */
         a_review                              varchar(16)  null,       /* An identifier for the support review this entry is associated with --  */
@@ -3701,8 +3929,8 @@ create table a_giving_pattern (
         a_start_date                          datetime  not null,      /* Date that this donor began this current giving pattern --  */
         a_end_date                            datetime  null,          /* Date that we expect the donor to end this giving pattern (NOT A LEGAL OBLIGATION ON THE DONOR'S PART) --  */
         a_evaluation_date                     datetime  not null,      /* Date that this giving pattern was determined --  */
-        a_actual_cost_center                  char(20)  null,          /* Actual cost center that the donor donated to, if not to the one listed above. --  */
-        a_percent                             float  null,             /* Percent of gift (0.00 to 1.00) allocated to this fund, if a_actual_cost_center is supplied. --  */
+        a_actual_fund                         char(20)  null,          /* Actual fund that the donor donated to, if not to the one listed above. --  */
+        a_percent                             float  null,             /* Percent of gift (0.00 to 1.00) allocated to this fund, if a_actual_fund is supplied. --  */
         a_comment                             varchar(255)  null,      /* Giving pattern comments --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
@@ -3720,11 +3948,11 @@ print "Creating table a_giving_pattern_allocation"
 create table a_giving_pattern_allocation (
         a_ledger_number                       char(10)  not null,      /* ledger number for this giving pattern --  */
         p_donor_partner_key                   char(10)  not null,      /* Partner ID for the donor --  */
-        a_cost_center                         char(20)  not null,      /* fund that this donor is giving toward --  */
+        a_fund                                char(20)  not null,      /* fund that this donor is giving toward --  */
         a_pattern_id                          integer  not null,       /* sequential integer ID of this giving pattern record. --  */
         a_history_id                          integer  not null,       /* sequential integer ID of the history of this giving pattern record. --  */
         a_review                              varchar(16)  null,       /* An identifier for the support review this entry is associated with --  */
-        a_actual_cost_center                  char(20)  not null,      /* Actual cost center that the donor donated to --  */
+        a_actual_fund                         char(20)  not null,      /* Actual fund that the donor donated to --  */
         a_percent                             float  not null,         /* Percent of gift (0.00 to 1.00) allocated to this fund --  */
         a_comment                             varchar(255)  null,      /* Comments --  */
         s_date_created                        datetime  not null,      /*  --  */
@@ -3743,7 +3971,7 @@ print "Creating table a_giving_pattern_flag"
 create table a_giving_pattern_flag (
         a_ledger_number                       char(10)  not null,      /* ledger number for this giving pattern --  */
         p_donor_partner_key                   char(10)  not null,      /* Partner ID for the donor --  */
-        a_cost_center                         char(20)  not null,      /* fund that this donor is giving toward --  */
+        a_fund                                char(20)  not null,      /* fund that this donor is giving toward --  */
         a_pattern_id                          integer  not null,       /* sequential integer ID of this giving pattern record. --  */
         a_history_id                          integer  not null,       /* sequential integer ID of the giving pattern flag (since past/historical ones are kept around). However this DOES NOT relate to the history ID in the a_giving_pattern table. --  */
         a_review                              varchar(16)  null,       /* An identifier for the support review this flag is associated with, if any --  */
@@ -3769,7 +3997,7 @@ print "Creating table a_funding_target"
 
 create table a_funding_target (
         a_ledger_number                       char(10)  not null,      /* ledger number for the fund --  */
-        a_cost_center                         char(20)  not null,      /* fund that we're establishing a target for --  */
+        a_fund                                char(20)  not null,      /* fund that we're establishing a target for --  */
         a_target_id                           integer  not null,       /* sequential integer ID of this funding target record. --  */
         a_target_desc                         varchar(255)  not null,  /* Description for this funding target --  */
         a_review                              varchar(16)  null,       /* Support review ID that this target is connected with, if available --  */
@@ -3810,7 +4038,7 @@ print "Creating table a_support_review_target"
 
 create table a_support_review_target (
         a_ledger_number                       char(10)  not null,      /* ledger number for this fund --  */
-        a_cost_center                         char(20)  not null,      /* fund that is being reviewed --  */
+        a_fund                                char(20)  not null,      /* fund that is being reviewed --  */
         a_target_id                           integer  not null,       /* ID of the funding target we're working with --  */
         a_review                              varchar(16)  not null,   /* ID of the support review we're looking at --  */
         a_amount                              money  not null,         /* Amount of money that was actually raised thusfar --  */
@@ -3832,7 +4060,7 @@ print "Creating table a_descriptives"
 create table a_descriptives (
         a_ledger_number                       char(10)  not null,      /* ledger number for the donations --  */
         p_donor_partner_key                   char(10)  not null,      /* Partner ID for the donor --  */
-        a_cost_center                         char(20)  not null,      /* fund that this donor is giving toward --  */
+        a_fund                                char(20)  not null,      /* fund that this donor is giving toward --  */
         a_first_gift                          datetime  null,          /* first gift date --  */
         a_first_gift_amount                   money  null,             /* first gift amount --  */
         a_last_gift                           datetime  null,          /* most recent gift date --  */
@@ -3882,7 +4110,7 @@ print "Creating table a_descriptives_hist"
 create table a_descriptives_hist (
         a_ledger_number                       char(10)  not null,      /* ledger number for the donations --  */
         p_donor_partner_key                   char(10)  not null,      /* Partner ID for the donor --  */
-        a_cost_center                         char(20)  not null,      /* fund that this donor is giving toward --  */
+        a_fund                                char(20)  not null,      /* fund that this donor is giving toward --  */
         a_hist_id                             integer  not null,       /* unique id for this history entry --  */
         a_amount                              money  not null,         /* amount given --  */
         a_first_gift                          datetime  null,          /* first gift date --  */
@@ -3920,7 +4148,7 @@ create table a_pledge (
         a_pledge_id                           integer  not null,       /* ID of this pledge --  */
         a_is_active                           bit  not null,           /* Active pledge? --  */
         p_donor_partner_id                    char(10)  not null,      /* Donor ID making the pledge --  */
-        a_cost_center                         char(20)  null,          /* Fund being pledged to --  */
+        a_fund                                char(20)  null,          /* Fund being pledged to --  */
         a_intent_type                         varchar(1)  not null,    /* Intent type: P=pledge, F=faith promise, I=intention, R=online recurring --  */
         a_amount                              money  null,             /* Periodic amount for this intent (e.g. monthly) - UI should default copy from gift data --  */
         a_total_amount                        money  null,             /* Total amount this intent (e.g. pledged total for the year) --  */
@@ -3974,7 +4202,7 @@ create table a_subtrx_cashdisb (
         a_effective_date                      datetime  not null,      /* Effective date of disbursement (e.g., accrual date) --  */
         a_cash_account_code                   char(10)  not null,      /* Cash account the funds are disbursed from --  */
         a_amount                              money  not null,         /* Amount of disbursement --  */
-        a_cost_center                         char(20)  not null,      /* Cost center for the expense / liability side of the transaction --  */
+        a_fund                                char(20)  not null,      /* Fund for the expense / liability side of the transaction --  */
         a_account_code                        char(10)  not null,      /* GL account for the expense / liability side of the transaction --  */
         a_payee_partner_key                   char(10)  not null,      /* Partner id of the payee (recipient) --  */
         a_check_number                        varchar(16)  null,       /* Check number being issued --  */
@@ -3986,7 +4214,8 @@ create table a_subtrx_cashdisb (
         a_paid_by                             varchar(20)  null,       /* Who paid the check --  */
         a_paid_date                           datetime  null,          /* When the check was paid --  */
         a_reconciled                          bit  default 0,          /* Has this check been reconciled to the bank account (e.g. no longer outstanding) --  */
-        a_comment                             varchar(255)  null,      /* Xfer comments --  */
+        a_memo                                varchar(255)  null,      /* Check memo line / overall comment --  */
+        a_comment                             varchar(900)  null,      /* Line item specific comments --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -4046,9 +4275,9 @@ create table a_subtrx_payable_item (
         a_occurrence_date                     datetime  null,          /* When the event happened that triggered this payable (e.g. date of expense on an expense report) --  */
         a_accrued_date                        datetime  not null,      /* When the payable accrues as an expense --  */
         a_amount                              money  not null,         /* Amount of payable --  */
-        a_cost_center                         char(20)  not null,      /* Cost center for the expense generated by the payable --  */
+        a_fund                                char(20)  not null,      /* Fund for the expense generated by the payable --  */
         a_account_code                        char(10)  not null,      /* GL account for the expense generated by the payable --  */
-        a_liab_cost_center                    char(20)  not null,      /* Cost center for the liability generated by the payable --  */
+        a_liab_fund                           char(20)  not null,      /* Fund for the liability generated by the payable --  */
         a_liab_account_code                   char(10)  not null,      /* GL account for the liability generated by the payable --  */
         a_comment                             varchar(255)  null,      /* Payable comments --  */
         s_date_created                        datetime  not null,      /*  --  */
@@ -4070,8 +4299,8 @@ create table a_subtrx_xfer (
         a_journal_number                      integer  not null,       /* journal id for this transfer (one per transfer) --  */
         a_period                              char(8)  not null,       /* Accounting period this transfer is recorded in. --  */
         a_effective_date                      datetime  not null,      /* Effective date of transfer (e.g., accrual date) --  */
-        a_source_cost_center                  char(20)  not null,      /* Cost center the funds are coming from --  */
-        a_dest_cost_center                    char(20)  not null,      /* Cost center the funds are going to --  */
+        a_source_fund                         char(20)  not null,      /* Fund that the money is coming from --  */
+        a_dest_fund                           char(20)  not null,      /* Fund that the money is going to --  */
         a_amount                              money  not null,         /* Amount to transfer --  */
         a_in_gl                               bit  default 0,          /* Has this transfer been posted into the GL - yes (1) or no (0)? --  */
         a_comment                             varchar(255)  null,      /* Xfer comments --  */
@@ -4122,10 +4351,55 @@ create table a_subtrx_cashxfer (
         a_effective_date                      datetime  not null,      /* Effective date of transfer (e.g., accrual date) --  */
         a_source_cash_acct                    char(16)  not null,      /* Account the funds are coming from --  */
         a_dest_cash_acct                      char(16)  not null,      /* Account the funds are going to --  */
-        a_cost_center                         char(20)  not null,      /* Cost Center in which to perform the cash transfer --  */
+        a_fund                                char(20)  not null,      /* Fund in which to perform the cash transfer --  */
         a_amount                              money  not null,         /* Amount to transfer --  */
         a_in_gl                               bit  default 0,          /* Has this transfer been posted into the GL - yes (1) or no (0)? --  */
         a_comment                             varchar(255)  null,      /* Xfer comments --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+)
+go
+
+
+/* i_association */
+print "Creating table i_association"
+
+create table i_association (
+        i_assoc_service                       varchar(16)  not null,   /* Code for the external service --  */
+        i_assoc_type                          varchar(16)  not null,   /* Code for the association type (currently supported: 'partner' for partner/donor) --  */
+        i_assoc_external_id                   varchar(80)  not null,   /* External identifier (e.g., giving service donor ID) --  */
+        i_assoc_hist_id                       integer  not null,       /* Sequential id of this association - so we can record how associations change over time and refer back to them --  */
+        i_assoc_start_date                    datetime  null,          /* Starting date this association applies to. Null if no starting date. --  */
+        i_assoc_end_date                      datetime  null,          /* Ending date this association applies to. Null if no ending date. --  */
+        i_assoc_id                            varchar(80)  not null,   /* Internal identifier (e.g., Kardia partner ID) --  */
+        i_assoc_future                        integer  null,           /* Future applicability of this mapping: 0=low, 1=medium, 2=high --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+)
+go
+
+
+/* i_acct_association */
+print "Creating table i_acct_association"
+
+create table i_acct_association (
+        a_ledger_number                       char(10)  not null,      /* Accounting ledger (legal entity) --  */
+        i_assoc_service                       varchar(16)  not null,   /* Code for the external service --  */
+        i_assoc_type                          varchar(16)  not null,   /* Code for the association type (currently supported: 'fund', 'account', 'donoraccount') --  */
+        i_assoc_external_id                   varchar(80)  not null,   /* External identifier (e.g., giving service donor ID) --  */
+        i_assoc_hist_id                       integer  not null,       /* Sequential id of this association - so we can record how associations change over time and refer back to them --  */
+        i_assoc_start_date                    datetime  null,          /* Starting date this association applies to. Null if no starting date. --  */
+        i_assoc_end_date                      datetime  null,          /* Ending date this association applies to. Null if no ending date. --  */
+        i_assoc_id                            varchar(80)  not null,   /* Internal identifier (e.g., Kardia partner ID) --  */
+        i_assoc_future                        integer  null,           /* Future applicability of this mapping: 0=low, 1=medium, 2=high --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -4141,54 +4415,70 @@ print "Creating table i_eg_gift_import"
 
 create table i_eg_gift_import (
         a_ledger_number                       char(10)  not null,      /* ledger number for this gift. --  */
-        i_eg_gift_uuid                        char(36)  not null,      /* UUID for the gift record (xml:gift-id) --  */
+        i_eg_gift_uuid                        char(36)  not null,      /* UUID for the gift record --  */
         i_eg_desig_uuid                       varchar(36)  not null,   /* ID of designation that the donor chose --  */
-        i_eg_trx_uuid                         char(36)  not null,      /* UUID for the transaction record (xml:txn-id) --  */
-        i_eg_donor_uuid                       char(36)  not null,      /* UUID for the donor (xml:giver-id) --  */
+        i_eg_line_item                        integer  not null,       /* unique ID for the gift item (in case there is more than one line item to the same designation) --  */
+        i_eg_trx_uuid                         char(36)  not null,      /* UUID for the transaction record --  */
+        i_eg_donor_uuid                       char(36)  not null,      /* UUID for the donor --  */
         i_eg_donor_alt_id                     char(36)  null,          /* alternate ID for the donor --  */
         i_eg_account_uuid                     varchar(36)  null,       /* ID of donation account that the donor used --  */
         i_eg_service                          varchar(16)  null,       /* Service ID (e.g. EG, EGS, SS) from Kardia online giving service plugin --  */
-        i_eg_status                           varchar(16)  not null,   /* processing status (paid, pending, returned) (xml:status) --  */
-        i_eg_returned_status                  varchar(16)  null,       /* Reason for a return (xml:returned-status) --  */
-        i_eg_processor                        varchar(80)  not null,   /* Name of payment processor (xml:processor) --  */
-        i_eg_donor_name                       varchar(80)  not null,   /* Name (given name and surname) of the donor (xml:name) --  */
+        i_eg_status                           varchar(16)  not null,   /* processing status (paid, pending, returned) --  */
+        i_eg_returned_status                  varchar(16)  null,       /* Reason for a return --  */
+        i_eg_processor                        varchar(80)  not null,   /* Name of payment processor --  */
+        i_eg_donor_name                       varchar(80)  not null,   /* Name (given name and surname) of the donor --  */
         i_eg_donor_given_name                 varchar(80)  null,       /* given name of the donor --  */
         i_eg_donor_surname                    varchar(80)  null,       /* surname of the donor --  */
         i_eg_donor_middle_name                varchar(80)  null,       /* middle name of the donor --  */
         i_eg_donor_prefix                     varchar(80)  null,       /* prefix/title of donor --  */
         i_eg_donor_suffix                     varchar(80)  null,       /* suffix (jr/sr/etc) of donor --  */
-        i_eg_donor_addr1                      varchar(80)  null,       /* Address line 1 of donor. (xml:address-line-1) --  */
-        i_eg_donor_addr2                      varchar(80)  null,       /* Address line 2 of donor. (xml:address-line-2) --  */
+        i_eg_donor_address                    varchar(160)  null,      /* Unparsed address of donor (for future use) --  */
+        i_eg_donor_addr1                      varchar(80)  null,       /* Address line 1 of donor. --  */
+        i_eg_donor_addr2                      varchar(80)  null,       /* Address line 2 of donor. --  */
         i_eg_donor_addr3                      varchar(80)  null,       /* Address line 3 of donor. --  */
-        i_eg_donor_city                       varchar(80)  null,       /* City of donor. (xml:city) --  */
-        i_eg_donor_state                      varchar(80)  null,       /* State of donor. (xml:state) --  */
-        i_eg_donor_postal                     varchar(80)  null,       /* Postal Code of donor. (xml:postal) --  */
-        i_eg_donor_country                    varchar(80)  null,       /* Country of donor. (xml:country) --  */
-        i_eg_donor_phone                      varchar(80)  null,       /* Phone number of donor. (xml:phone) --  */
-        i_eg_donor_email                      varchar(80)  null,       /* Email address of donor. (xml:email) --  */
-        i_eg_gift_amount                      money  not null,         /* amount of gift (xml:amount) --  */
+        i_eg_donor_city                       varchar(80)  null,       /* City of donor. --  */
+        i_eg_donor_state                      varchar(80)  null,       /* State of donor. --  */
+        i_eg_donor_postal                     varchar(80)  null,       /* Postal Code of donor. --  */
+        i_eg_donor_country                    varchar(80)  null,       /* Country of donor. --  */
+        i_eg_donor_phone                      varchar(80)  null,       /* Phone number of donor. (unparsed) --  */
+        i_eg_donor_phone_country              varchar(10)  null,       /* Country code in phone number --  */
+        i_eg_donor_phone_area                 varchar(10)  null,       /* Area (second level) code in phone number --  */
+        i_eg_donor_phone_line                 varchar(20)  null,       /* Line number (remaining parts) in phone number --  */
+        i_eg_donor_phone_ext                  varchar(20)  null,       /* Extension number in phone number (for future use) --  */
+        i_eg_donor_email                      varchar(80)  null,       /* Email address of donor. --  */
+        i_eg_gift_amount                      money  not null,         /* amount of gift (in our local currency) --  */
+        i_eg_gift_currency_foreign_amt        money  null,             /* amount of the gift in the foreign currency --  */
         i_eg_gift_currency                    varchar(16)  null,       /* currency of gift (e.g. USD, CAD, etc) --  */
-        i_eg_gift_pmt_type                    varchar(16)  null,       /* Payment type (xml:payment-type) --  */
-        i_eg_gift_lastfour                    char(4)  null,           /* Last four digits of account number (xml:last-four) --  */
-        i_eg_gift_interval                    varchar(16)  not null,   /* Recurring gift interval (xml:recurring-interval) --  */
-        i_eg_gift_date                        datetime  not null,      /* Date of gift (xml:given-on) --  */
-        i_eg_gift_trx_date                    datetime  null,          /* Date of transaction (xml:txn-date) --  */
-        i_eg_gift_settlement_date             datetime  null,          /* Date of payment settlement (xml:settlement-date) --  */
+        i_eg_gift_currency_date               datetime  null,          /* date of exchange rate conversion for a foreign currency gift --  */
+        i_eg_gift_currency_exch_rate          double  null,            /* currency exchange rate on the exchange date for a foreign currency gift --  */
+        i_eg_gift_pmt_type                    varchar(16)  null,       /* Payment type --  */
+        i_eg_gift_lastfour                    char(4)  null,           /* Last four digits of account number --  */
+        i_eg_gift_interval                    varchar(16)  not null,   /* Recurring gift interval --  */
+        i_eg_gift_start_date                  datetime  null,          /* Starting date of recurring gift --  */
+        i_eg_gift_end_date                    datetime  null,          /* Ending date of recurring gift --  */
+        i_eg_gift_count                       integer  null,           /* Number of gifts to be given in a recurring gift schedule --  */
+        i_eg_gift_date                        datetime  not null,      /* Date of gift --  */
+        i_eg_gift_trx_date                    datetime  null,          /* Date of transaction --  */
+        i_eg_gift_settlement_date             datetime  null,          /* Date of payment settlement --  */
         i_eg_receipt_desired                  varchar(255)  null,      /* The "Send My Receipt:" field --  */
         i_eg_anonymous                        varchar(255)  null,      /* The "Anonymous Gift:" field --  */
         i_eg_prayforme                        varchar(255)  null,      /* The "May We Pray For You?" field --  */
-        i_eg_desig_name                       varchar(80)  not null,   /* Gift designation/purpose (xml:designation) --  */
-        i_eg_desig_notes                      varchar(255)  null,      /* Notes provided by donor (xml:notes) --  */
-        i_eg_net_amount                       money  null,             /* Net gift (less fees for this transaction) (xml:net) --  */
-        i_eg_deposit_date                     datetime  null,          /* Date that this gift was deposited into the ministry's account (xml:deposit-date) --  */
-        i_eg_deposit_uuid                     char(36)  null,          /* ID of the deposit. (xml:deposit-id) --  */
+        i_eg_desig_name                       varchar(80)  not null,   /* Gift designation/purpose --  */
+        i_eg_desig_notes                      varchar(255)  null,      /* Notes provided by donor --  */
+        i_eg_net_amount                       money  null,             /* Net gift (less fees for this transaction) --  */
+        i_eg_deposit_date                     datetime  null,          /* Date that this gift was deposited into the ministry's account --  */
+        i_eg_deposit_uuid                     char(36)  null,          /* ID of the deposit. --  */
+        i_eg_contra_deposit_uuid              char(36)  null,          /* ID of a contra-deposit, if applicable --  */
         i_eg_deposit_status                   char(16)  null,          /* status of the deposit --  */
-        i_eg_deposit_gross_amt                money  null,             /* gross amount of the deposit before fees (xml:deposit-gross) --  */
-        i_eg_deposit_amt                      money  null,             /* net amount of the deposit (xml:deposit-net) --  */
+        i_eg_deposit_gross_amt                money  null,             /* gross amount of the deposit before fees --  */
+        i_eg_deposit_amt                      money  null,             /* net amount of the deposit --  */
+        i_eg_is_modified                      integer  null,           /* Set to 1 to indicate that this line item was derived or modified and does not exactly match upstream giving service data. --  */
+        i_eg_is_donorfee                      integer  null,           /* Set to 1 to indicate that this line item is a donor-paid admin fee and thus may need special treatment later. --  */
+        i_eg_postprocess                      varchar(255)  null,      /* Postprocessing module control flags --  */
         p_donor_partner_key                   char(10)  null,          /* Kardia partner key assigned by import process --  */
         i_eg_donormap_confidence              integer  null,           /* Confidence of mapping: 0=low, 1=medium, 2=high --  */
         i_eg_donormap_future                  integer  null,           /* Future applicability of donor mapping: 0=low, 1=medium, 2=high --  */
-        a_cost_center                         char(20)  null,          /* Kardia fund assigned by import process --  */
+        a_fund                                char(20)  null,          /* Kardia fund assigned by import process --  */
         i_eg_fundmap_confidence               integer  null,           /* Confidence of mapping: 0=low, 1=medium, 2=high --  */
         i_eg_fundmap_future                   integer  null,           /* Future applicability of the fund mapping: 0=low, 1=medium, 2=high --  */
         a_account_code                        char(16)  null,          /* Kardia GL account code assigned by import process --  */
@@ -4234,7 +4524,7 @@ print "Creating table i_eg_giving_url"
 
 create table i_eg_giving_url (
         a_ledger_number                       char(10)  not null,      /* ledger number for the fund --  */
-        a_cost_center                         char(20)  not null,      /* Kardia fund, or * to give a default URL for all funds in the ledger. --  */
+        a_fund                                char(20)  not null,      /* Kardia fund, or * to give a default URL for all funds in the ledger. --  */
         i_eg_url                              varchar(255)  not null,  /* URL a donor can visit to give an online donation. --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
@@ -4253,12 +4543,28 @@ create table i_crm_partner_import (
         i_crm_import_id                       integer  not null,       /* unique import ID for this record in the given import data session. --  */
         i_crm_import_session_id               integer  not null,       /* import session ID (unique for imported data set) --  */
         i_crm_import_type_id                  integer  null,           /* type of import being done (ref. i_crm_import_type table) --  */
+        i_crm_import_status                   char(1)  not null,       /* status of this import record: A = fully automated complete, I = incomplete (needs user Q/A), C = complete (after manual Q/A) --  */
         i_crm_external_key                    varchar(64)  null,       /* external key for data import source --  */
         i_crm_partner_key                     char(10)  null,          /* Partner key for newly inserted record --  */
         i_crm_create_partner                  bit  not null,           /* whether to create a new partner (and possibly address/location) record (0=no, 1=yes) --  */
         i_crm_create_email                    bit  not null,           /* whether to create a new email address record for the partner --  */
         i_crm_create_phone                    bit  not null,           /* whether to create a new phone# record for partner --  */
-        i_crm_comment                         varchar(255)  null,      /* Comment for newly created record --  */
+        i_crm_surname                         varchar(64)  null,       /* surname (last name / family name) --  */
+        i_crm_given_name                      varchar(64)  null,       /* given name / first name. If the source has a middle name, it is combined into this field. --  */
+        i_crm_date                            datetime  null,          /* date the data was created on the data source --  */
+        i_crm_org_name                        varchar(64)  null,       /* name of organization --  */
+        i_crm_phone                           varchar(80)  null,       /* phone number --  */
+        i_crm_email                           varchar(80)  null,       /* email address --  */
+        i_crm_address1                        varchar(80)  null,       /* Address Line 1 --  */
+        i_crm_address2                        varchar(80)  null,       /* Address Line 2 --  */
+        i_crm_address3                        varchar(80)  null,       /* Address Line 3 --  */
+        i_crm_in_care_of                      varchar(80)  null,       /* in-care-of --  */
+        i_crm_city                            varchar(80)  null,       /* City --  */
+        i_crm_state_province                  varchar(64)  null,       /* State/Province code --  */
+        i_crm_postal_code                     char(12)  null,          /* Postal (zip) code --  */
+        i_crm_country_code                    char(2)  null,           /* Country code - ISO-3166-2 with the UK exception. If the import data has a different country code system, it is converted before this value is set. --  */
+        i_crm_comment                         varchar(255)  null,      /* Comment for the new partner record --  */
+        i_crm_addr_comment                    varchar(255)  null,      /* Comment for the new address record --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -4281,6 +4587,8 @@ create table i_crm_partner_import_option (
         i_crm_tag_strength                    float  null,             /* strength value for tag (default 1.0) --  */
         i_crm_tag_certainty                   float  null,             /* certainty value for tag (default 1.0) --  */
         i_crm_task_due_days                   integer  null,           /* for tasks, how soon the task will be due (in days, from the import date) --  */
+        i_crm_track_step                      integer  null,           /* for tracks, the step to put the person in --  */
+        i_crm_req_fulfill                     integer  null,           /* for requirements, the requirement ID to fulfill --  */
         i_crm_collab_id                       char(10)  null,          /* partner key for collaborator being added. --  */
         i_crm_create_option                   bit  not null,           /* Whether to create this option at all --  */
         s_date_created                        datetime  not null,      /*  --  */
@@ -4298,9 +4606,13 @@ print "Creating table i_crm_import_type"
 
 create table i_crm_import_type (
         i_crm_import_type_id                  integer  not null,       /* unique import type --  */
+        i_crm_import_type_desc                varchar(255)  not null,  /* Import type description --  */
+        i_crm_import_type_subsys              char(4)  not null,       /* A 4-letter abbreviation of the subsystem using this import specification. Use "LSDB" for Limesurvey data import from the backend database, "LSAP" for Limesurvey import from API. --  */
+        i_crm_import_type_path                varchar(255)  null,      /* Data source path for this data import, if available, such as the database table path or the HTTP web services client path. --  */
         i_crm_field_pk                        varchar(255)  null,      /* field to be used for import key (this won't become the Partner Key, but will be stored in the legacy key 1 field) --  */
         i_crm_field_surname                   varchar(255)  null,      /* field for surname (last name / family name) field. --  */
-        i_crm_field_given_name                varchar(255)  null,      /* field for given name / first name --  */
+        i_crm_field_given_name                varchar(255)  null,      /* field for given name / first name. If the import source does not have separate surname/given name fields, then this is the complete name field and i_crm_field_surname is null. --  */
+        i_crm_field_middle_name               varchar(255)  null,      /* field for middle name, null if there is no middle name field (or if middle name is combined into the given name field) --  */
         i_crm_field_date                      varchar(255)  null,      /* field for date the data was created --  */
         i_crm_field_org_name                  varchar(255)  null,      /* field for name of organization --  */
         i_crm_field_phone                     varchar(255)  null,      /* field(spec) for phone number --  */
@@ -4313,7 +4625,7 @@ create table i_crm_import_type (
         i_crm_field_stateprov                 varchar(255)  null,      /* field(spec) for State/Province --  */
         i_crm_field_postal_code               varchar(255)  null,      /* field(spec) for Postal (zip) code --  */
         i_crm_field_country                   varchar(255)  null,      /* field(spec) for Country. --  */
-        i_crm_country_type                    varchar(12)  null,       /* What code set (or full name) to be used for interpreting country data --  */
+        i_crm_country_type                    varchar(16)  null,       /* What code set (or full name) to be used for interpreting country data: iso_3166_2, iso_3166_3, fips_40, iso_3166_2_uk (with the UK exception), or full. --  */
         i_crm_field_comment                   varchar(255)  null,      /* field(spec) for Partner Comment --  */
         i_crm_field_addr_comment              varchar(255)  null,      /* field(spec) for Address Comment --  */
         s_date_created                        datetime  not null,      /*  --  */
@@ -4332,12 +4644,19 @@ print "Creating table i_crm_import_type_option"
 create table i_crm_import_type_option (
         i_crm_import_type_id                  integer  not null,       /* unique import type --  */
         i_crm_import_type_option_id           integer  not null,       /* the identifier for the option in this import type --  */
-        i_crm_option_type                     char(1)  not null,       /* T = tag, K = track, C = collaborator, I = interaction, N = note, F = task(followup) --  */
-        i_crm_option_class                    integer  not null,       /* the classification of the option (for tags, this is the tag type. for tracks, the track type. etc.) --  */
-        i_crm_option_comment                  varchar(900)  null,      /* a comment to be added for the option. This can contain substitute() specs, to include various fields as needed. --  */
+        i_crm_import_type_option_desc         varchar(255)  null,      /* a description of this import option --  */
+        i_crm_option_field                    varchar(255)  null,      /* field name for the source data for this option --  */
+        i_crm_option_value                    varchar(255)  null,      /* for conditional data creation, this is the field value for this option required for this data to be created --  */
+        i_crm_option_type                     char(1)  not null,       /* T = tag, K = track, C = collaborator, I = interaction, N = note, F = task(followup), D = data field, R = track step requirement --  */
+        i_crm_option_class                    integer  null,           /* the classification of the option (for tags, this is the tag type ID. for tracks or requirements, the track ID. data item ID for data fields, etc.) --  */
+        i_crm_option_comment                  varchar(900)  null,      /* a comment to be added for the option. This can contain substitute() function specs, to include various fields as needed. --  */
         i_crm_tag_strength                    float  null,             /* strength value for tag (default 1.0) --  */
+        i_crm_tag_strength_expr               varchar(900)  null,      /* expression to give the tag strength (provided object: "import" attribute "value", i.e. :import:value) --  */
         i_crm_tag_certainty                   float  null,             /* certainty value for tag (default 1.0) --  */
+        i_crm_tag_certainty_expr              varchar(900)  null,      /* expression to give the tag certainty (provided object: "import" attribute "value", i.e. :import:value) --  */
         i_crm_task_due_days                   integer  null,           /* for tasks, how soon the task will be due (in days, from the import date) --  */
+        i_crm_track_step                      integer  null,           /* for tracks, this is the step to put the person in. If null, the person is put in the starting step (by e_step_sequence). If the person is already in the track, setting this moves them to this step. --  */
+        i_crm_req_fulfill                     integer  null,           /* for step requirements, this is which requirement ID to fulfill (track provided in option class, step provided in i_crm_track_step) --  */
         i_crm_collab_id                       char(10)  null,          /* partner key for collaborator being added. --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
@@ -4839,6 +5158,18 @@ go
 insert into s_sec_endorsement_type select s_endorsement="kardia:portal_manage", s_endorsement_desc="Manage Missionary Portal", s_endorsement_context_type="kardia", s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
 go
 insert into s_sec_endorsement_type select s_endorsement="kardia:lists", s_endorsement_desc="View Mailing Lists", s_endorsement_context_type="kardia", s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+go
+insert into s_sec_endorsement_type select s_endorsement="kardia:dep", s_endorsement_desc="View Deposit Data", s_endorsement_context_type="kardia:ledger", s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+go
+insert into s_sec_endorsement_type select s_endorsement="kardia:dep_entry", s_endorsement_desc="Enter Deposit Data", s_endorsement_context_type="kardia:ledger", s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+go
+insert into s_sec_endorsement_type select s_endorsement="kardia:dep_manage", s_endorsement_desc="Manage Deposit Data", s_endorsement_context_type="kardia:ledger", s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+go
+insert into s_sec_endorsement_type select s_endorsement="kardia:recon", s_endorsement_desc="View Bank Reconciliation Data", s_endorsement_context_type="kardia:ledger", s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+go
+insert into s_sec_endorsement_type select s_endorsement="kardia:recon_entry", s_endorsement_desc="Update Bank Recon Info", s_endorsement_context_type="kardia:ledger", s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
+go
+insert into s_sec_endorsement_type select s_endorsement="kardia:recon_perform", s_endorsement_desc="Perform Bank Reconciliation", s_endorsement_context_type="kardia:ledger", s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
 go
 insert into s_sec_endorsement_type select s_endorsement="kardia:lists_manage", s_endorsement_desc="Manage Mailing Lists", s_endorsement_context_type="kardia", s_date_created='3-14-08', s_created_by='IMPORT',s_date_modified='3-14-08',s_modified_by='IMPORT',__cx_osml_control=null
 go

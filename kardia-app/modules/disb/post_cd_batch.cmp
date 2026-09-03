@@ -76,6 +76,45 @@ post_cd_batch "widget/component-decl"
 			:d:a_period = :parameters:a_period
 		;
 
+		-- Generate notifications
+		INSERT INTO
+			/apps/kardia/data/Kardia_DB/p_notification/rows
+		SELECT
+			p_notify_type = 'PAY',
+			p_event_date = :d:a_effective_date,
+			p_object_id = :d:name,
+			p_message = 'Payment sent for ' + sum(:d:a_amount) + sum(isnull(', ' + :d:a_comment), '')),
+			p_source_partner_key = null,
+			p_recip_partner_key = :np:p_recip_partner_key,
+			:np:p_notify_method,
+			:np:p_notify_method_item,
+			p_contact_id = :np:p_recip_contact_id,
+			p_contact_data = isnull(:ci:p_phone_country + ' ', '') + isnull(:ci:p_phone_area_city + ' ', '') + :ci:p_contact_data,
+			p_status = 'N',
+			p_sent_date = null,
+			p_ack_date = null,
+			p_response = null,
+			s_date_created = getdate(),
+			s_created_by = user_name(),
+			s_date_modified = getdate(),
+			s_modified_by = user_name()
+		FROM
+			/apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows d,
+			/apps/kardia/data/Kardia_DB/p_notification_pref/rows np,
+			/apps/kardia/data/Kardia_DB/p_contact_info/rows ci	    -- recipient contact data
+		WHERE
+			:d:a_ledger_number = :parameters:a_ledger_number and
+			:d:a_batch_number = :parameters:a_batch_number and
+			:np:p_notify_type = 'PAY' and
+			:np:p_recip_partner_key = :d:a_payee_partner_key and
+			:np:p_enabled = 1 and
+			(:np:p_pause_until_date is null or :np:p_pause_until_date <= getdate() or :np:p_pause_discard = 0) and
+			:ci:p_partner_key = :np:p_recip_partner_key and
+			:ci:p_contact_id = :np:p_recip_contact_id
+		GROUP BY
+			:d:a_payee_partner_key
+		;
+
 		-- Mark payees via p_payee as 'payments allowed'.
 		insert
 		    /apps/kardia/data/Kardia_DB/p_payee/rows

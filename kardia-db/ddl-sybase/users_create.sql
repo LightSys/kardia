@@ -37,13 +37,7 @@ go
 /* p_contact_usage */
 
 
-/* p_contact_usage_type */
-
-
 /* p_partner_relationship */
-
-
-/* p_partner_relationship_type */
 
 
 /* p_church */
@@ -58,6 +52,15 @@ go
 /* p_staff */
 
 
+/* p_banking_details */
+
+
+/* p_contact_usage_type */
+
+
+/* p_partner_relationship_type */
+
+
 /* p_bulk_postal_code */
 
 
@@ -67,7 +70,7 @@ go
 /* p_country */
 
 
-/* p_banking_details */
+/* p_pol_division */
 
 
 /* p_banking_type */
@@ -79,13 +82,10 @@ go
 /* p_gazetteer */
 
 
-/* p_dup_check_tmp */
+/* p_acquisition_code */
 
 
 /* p_partner_sort_tmp */
-
-
-/* p_acquisition_code */
 
 
 /* p_partner_search */
@@ -100,10 +100,37 @@ go
 /* p_search_stage_criteria */
 
 
+/* p_dup_check_tmp */
+
+
+/* p_nondup */
+
+
+/* p_dup */
+
+
+/* p_merge */
+
+
+/* p_notification */
+
+
+/* p_notification_type */
+
+
+/* p_notification_method */
+
+
+/* p_notification_pref */
+
+
 /* m_list */
 
 
 /* m_list_membership */
+
+
+/* m_list_document */
 
 
 /* e_contact_autorecord */
@@ -113,9 +140,6 @@ go
 
 
 /* e_contact_history */
-
-
-/* e_activity */
 
 
 /* e_engagement_track */
@@ -166,6 +190,9 @@ go
 /* e_partner_document */
 
 
+/* e_text_expansion */
+
+
 /* e_workflow_type */
 
 
@@ -190,6 +217,9 @@ go
 /* e_data_item_type */
 
 
+/* e_data_item_type_value */
+
+
 /* e_data_item_group */
 
 
@@ -202,16 +232,16 @@ go
 /* e_data_highlight */
 
 
-/* e_ack */
-
-
-/* e_ack_type */
+/* e_activity */
 
 
 /* e_trackactivity */
 
 
-/* e_text_expansion */
+/* e_ack */
+
+
+/* e_ack_type */
 
 
 /* e_text_search_word */
@@ -253,6 +283,15 @@ go
 /* h_benefits */
 
 
+/* r_group_sched */
+
+
+/* r_group_sched_param */
+
+
+/* r_group_sched_report */
+
+
 /* r_group */
 
 
@@ -280,13 +319,13 @@ go
 /* a_analysis_attr_value */
 
 
-/* a_cc_analysis_attr */
+/* a_fund_analysis_attr */
 
 
 /* a_acct_analysis_attr */
 
 
-/* a_cost_center */
+/* a_fund */
 
 
 /* a_account */
@@ -301,7 +340,7 @@ go
 /* a_account_category */
 
 
-/* a_cc_acct */
+/* a_fund_acct */
 
 
 /* a_period */
@@ -328,25 +367,49 @@ go
 /* a_account_class */
 
 
-/* a_cost_center_class */
+/* a_fund_class */
 
 
 /* a_reporting_level */
 
 
-/* a_cost_center_prefix */
+/* a_fund_prefix */
 
 
-/* a_cc_staff */
+/* a_fund_staff */
 
 
 /* a_ledger_office */
+
+
+/* a_currency */
+
+
+/* a_currency_exch_rate */
+
+
+/* a_bank_recon */
+
+
+/* a_bank_recon_item */
+
+
+/* a_bank_recon_accts */
+
+
+/* a_dimension */
+
+
+/* a_dimension_item */
 
 
 /* a_payroll */
 
 
 /* a_payroll_period */
+
+
+/* a_payroll_period_payee */
 
 
 /* a_payroll_group */
@@ -367,6 +430,9 @@ go
 /* a_payroll_item_class */
 
 
+/* a_payroll_item_subclass */
+
+
 /* a_payroll_form_group */
 
 
@@ -382,7 +448,7 @@ go
 /* a_salary_review */
 
 
-/* a_cc_admin_fee */
+/* a_fund_admin_fee */
 
 
 /* a_admin_fee_type */
@@ -397,13 +463,19 @@ go
 /* a_admin_fee_type_item_tmp */
 
 
-/* a_cc_receipting */
+/* a_fund_receipting */
 
 
-/* a_cc_receipting_accts */
+/* a_fund_receipting_accts */
 
 
 /* a_receipt_type */
+
+
+/* a_gift_payment_type */
+
+
+/* a_receipt_mailing */
 
 
 /* a_subtrx_gift */
@@ -415,10 +487,13 @@ go
 /* a_subtrx_gift_item */
 
 
+/* a_subtrx_gift_intent */
+
+
 /* a_subtrx_gift_rcptcnt */
 
 
-/* a_cc_auto_subscribe */
+/* a_fund_auto_subscribe */
 
 
 /* a_motivational_code */
@@ -448,6 +523,12 @@ go
 /* a_descriptives_hist */
 
 
+/* a_pledge */
+
+
+/* a_intent_type */
+
+
 /* a_subtrx_cashdisb */
 
 
@@ -464,6 +545,12 @@ go
 
 
 /* a_subtrx_cashxfer */
+
+
+/* i_association */
+
+
+/* i_acct_association */
 
 
 /* i_eg_gift_import */
@@ -506,6 +593,9 @@ go
 
 
 /* t_sprint */
+
+
+/* t_sprint_project */
 
 
 /* t_sprint_time */
@@ -584,3 +674,9 @@ go
 
 
 /* s_global_search */
+
+
+/* s_stats_cache */
+
+
+/* s_document_scanner */

@@ -409,15 +409,6 @@ fundmaint "widget/component-decl"
 				    }
 				}
 
-			    form_vbox2 "widget/vbox"
-				{
-				height=72; x=193; y=10;
-				spacing=6;
-				width=140;
-
-
-				}
-
 			    formbtn_hbox "widget/hbox"
 				{
 				x=10; y=290; height = 24; width = 640;

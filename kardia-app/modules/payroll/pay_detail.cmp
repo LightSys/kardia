@@ -430,7 +430,7 @@ pay_detail_cmp "widget/component-decl"
 		{
 		x=8;y=294;width=762;height=26;
 		path = "/sys/cmp/form_controls.cmp";
-		deletable = no;
+		//deletable = no;
 		object_name = "Pay Item";
 		}
 

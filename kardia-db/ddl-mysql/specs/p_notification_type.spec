@@ -16,9 +16,12 @@ p_notification_type "application/filespec"
     p_notify_type_desc "filespec/column" { type=string; id=3; }
     p_message "filespec/column" { type=string; id=4; }
     p_object_label "filespec/column" { type=string; id=5; }
-    s_date_created "filespec/column" { type=datetime; id=6; }
-    s_created_by "filespec/column" { type=string; id=7; }
-    s_date_modified "filespec/column" { type=datetime; id=8; }
-    s_modified_by "filespec/column" { type=string; id=9; }
-    __cx_osml_control "filespec/column" { type=string; id=10; }
+    p_data_1_label "filespec/column" { type=string; id=6; }
+    p_data_2_label "filespec/column" { type=string; id=7; }
+    p_data_3_label "filespec/column" { type=string; id=8; }
+    s_date_created "filespec/column" { type=datetime; id=9; }
+    s_created_by "filespec/column" { type=string; id=10; }
+    s_date_modified "filespec/column" { type=datetime; id=11; }
+    s_modified_by "filespec/column" { type=string; id=12; }
+    __cx_osml_control "filespec/column" { type=string; id=13; }
     }

@@ -114,6 +114,8 @@ fm_revexp_chart "widget/component-decl"
 		    :t:a_period
 		order by
 		    :t:a_period asc
+		having
+		    :p:a_period is not null
 		;
 
 		update
@@ -175,6 +177,7 @@ fm_revexp_chart "widget/component-decl"
 		{
 		color=runserver(:this:revbar_color);
 		y_column="Revenue";
+		label="Revenue";
 		}
 	    
 	    series2 "widget/chart-series"
@@ -188,6 +191,7 @@ fm_revexp_chart "widget/component-decl"
 		{
 		color=runserver(:this:expbar_color);
 		y_column="Expense";
+		label="Expense";
 		}
 	    
 	    series4 "widget/chart-series"

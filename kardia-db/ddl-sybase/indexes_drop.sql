@@ -4,7 +4,7 @@ go
 
 
 /* p_partner */
-drop index p_partner.p_cost_ctr_idx
+drop index p_partner.p_fund_idx
 go
 drop index p_partner.p_given_name_idx
 go
@@ -73,21 +73,11 @@ go
 /* go */
 
 
-/* p_contact_usage_type */
-/* drop index p_contact_usage_type.p_contact_ut_pk */ 
-/* go */
-
-
 /* p_partner_relationship */
 /* drop index p_partner_relationship.p_partner_relationship_pk */ 
 /* go */
 drop index p_partner_relationship.p_relate_reverse_idx
 go
-
-
-/* p_partner_relationship_type */
-/* drop index p_partner_relationship_type.p_relat_type_pk */ 
-/* go */
 
 
 /* p_church */
@@ -118,6 +108,27 @@ drop index p_staff.p_staff_weblogin_idx
 go
 
 
+/* p_banking_details */
+drop index p_banking_details.p_bankd_acct_idx
+go
+drop index p_banking_details.p_bankd_bpartner_idx
+go
+drop index p_banking_details.p_bankd_partner_idx
+go
+/* drop index p_banking_details.p_banking_details_pk */ 
+/* go */
+
+
+/* p_contact_usage_type */
+/* drop index p_contact_usage_type.p_contact_ut_pk */ 
+/* go */
+
+
+/* p_partner_relationship_type */
+/* drop index p_partner_relationship_type.p_relat_type_pk */ 
+/* go */
+
+
 /* p_bulk_postal_code */
 /* drop index p_bulk_postal_code.p_bulk_code_pk */ 
 /* go */
@@ -135,17 +146,6 @@ go
 
 /* p_pol_division */
 /* drop index p_pol_division.p_poldiv_pk */ 
-/* go */
-
-
-/* p_banking_details */
-drop index p_banking_details.p_bankd_acct_idx
-go
-drop index p_banking_details.p_bankd_bpartner_idx
-go
-drop index p_banking_details.p_bankd_partner_idx
-go
-/* drop index p_banking_details.p_banking_details_pk */ 
 /* go */
 
 
@@ -174,20 +174,13 @@ go
 /* go */
 
 
-/* p_dup_check_tmp */
-drop index p_dup_check_tmp.p_dc_username_idx
-go
-/* drop index p_dup_check_tmp.p_dupcheck_pk */ 
+/* p_acquisition_code */
+/* drop index p_acquisition_code.p_acqcode_pk */ 
 /* go */
 
 
 /* p_partner_sort_tmp */
 /* drop index p_partner_sort_tmp.p_sort_pk */ 
-/* go */
-
-
-/* p_acquisition_code */
-/* drop index p_acquisition_code.p_acqcode_pk */ 
 /* go */
 
 
@@ -213,6 +206,13 @@ go
 /* go */
 
 
+/* p_dup_check_tmp */
+drop index p_dup_check_tmp.p_dc_username_idx
+go
+/* drop index p_dup_check_tmp.p_dupcheck_pk */ 
+/* go */
+
+
 /* p_nondup */
 /* drop index p_nondup.p_nondup_pk */ 
 /* go */
@@ -232,6 +232,36 @@ go
 /* go */
 drop index p_merge.p_merge_rev_idx
 go
+
+
+/* p_notification */
+/* drop index p_notification.p_notify_pk */ 
+/* go */
+drop index p_notification.p_notify_recip_idx
+go
+drop index p_notification.p_notify_send_idx
+go
+drop index p_notification.p_notify_source_idx
+go
+drop index p_notification.p_notify_type_idx
+go
+
+
+/* p_notification_type */
+/* drop index p_notification_type.p_notify_type_pk */ 
+/* go */
+
+
+/* p_notification_method */
+/* drop index p_notification_method.p_notify_method_pk */ 
+/* go */
+
+
+/* p_notification_pref */
+drop index p_notification_pref.p_notify_partner_idx
+go
+/* drop index p_notification_pref.p_notify_pref_pk */ 
+/* go */
 
 
 /* m_list */
@@ -277,17 +307,6 @@ go
 drop index e_contact_history.e_cnt_hist_type_idx
 go
 drop index e_contact_history.e_cnt_hist_whom_idx
-go
-
-
-/* e_activity */
-drop index e_activity.e_act_par_idx
-go
-/* drop index e_activity.e_act_pk */ 
-/* go */
-drop index e_activity.e_act_sort_idx
-go
-drop index e_activity.e_act_type_idx
 go
 
 
@@ -419,6 +438,11 @@ drop index e_partner_document.e_pardoc_work_idx
 go
 
 
+/* e_text_expansion */
+/* drop index e_text_expansion.e_exp_pk */ 
+/* go */
+
+
 /* e_workflow_type */
 /* drop index e_workflow_type.e_work_pk */ 
 /* go */
@@ -524,6 +548,22 @@ go
 /* go */
 
 
+/* e_activity */
+drop index e_activity.e_act_par_idx
+go
+/* drop index e_activity.e_act_pk */ 
+/* go */
+drop index e_activity.e_act_sort_idx
+go
+drop index e_activity.e_act_type_idx
+go
+
+
+/* e_trackactivity */
+/* drop index e_trackactivity.e_trkact_pk */ 
+/* go */
+
+
 /* e_ack */
 drop index e_ack.e_ack_obj_idx
 go
@@ -539,16 +579,6 @@ go
 
 /* e_ack_type */
 /* drop index e_ack_type.e_ackt_pk */ 
-/* go */
-
-
-/* e_trackactivity */
-/* drop index e_trackactivity.e_trkact_pk */ 
-/* go */
-
-
-/* e_text_expansion */
-/* drop index e_text_expansion.e_exp_pk */ 
 /* go */
 
 
@@ -711,8 +741,8 @@ go
 /* go */
 
 
-/* a_cc_analysis_attr */
-/* drop index a_cc_analysis_attr.a_cc_an_attr_pk */ 
+/* a_fund_analysis_attr */
+/* drop index a_fund_analysis_attr.a_fund_an_attr_pk */ 
 /* go */
 
 
@@ -721,16 +751,16 @@ go
 /* go */
 
 
-/* a_cost_center */
-drop index a_cost_center.a_cc_bal_idx
+/* a_fund */
+drop index a_fund.a_fund_bal_idx
 go
-drop index a_cost_center.a_cc_ledger_number_idx
+drop index a_fund.a_fund_ledger_number_idx
 go
-drop index a_cost_center.a_cc_legacy_idx
+drop index a_fund.a_fund_legacy_idx
 go
-drop index a_cost_center.a_cc_parent_idx
+drop index a_fund.a_fund_parent_idx
 go
-/* drop index a_cost_center.a_cost_center_pk */ 
+/* drop index a_fund.a_fund_pk */ 
 /* go */
 
 
@@ -764,8 +794,8 @@ go
 /* go */
 
 
-/* a_cc_acct */
-/* drop index a_cc_acct.a_cc_acct_pk */ 
+/* a_fund_acct */
+/* drop index a_fund_acct.a_fund_acct_pk */ 
 /* go */
 
 
@@ -803,13 +833,13 @@ go
 /* go */
 drop index a_transaction.a_trx_batch_idx
 go
-/* drop index a_transaction.a_trx_cc_clustered_idx */ 
-/* go */
-drop index a_transaction.a_trx_cc_quicksum_idx
-go
-drop index a_transaction.a_trx_ccperiod_idx
-go
 drop index a_transaction.a_trx_donor_id_idx
+go
+/* drop index a_transaction.a_trx_fund_clustered_idx */ 
+/* go */
+drop index a_transaction.a_trx_fund_quicksum_idx
+go
+drop index a_transaction.a_trx_fundperiod_idx
 go
 drop index a_transaction.a_trx_journal_idx
 go
@@ -826,11 +856,11 @@ go
 /* go */
 drop index a_transaction_tmp.a_trxt_batch_idx
 go
-/* drop index a_transaction_tmp.a_trxt_cc_clustered_idx */ 
-/* go */
-drop index a_transaction_tmp.a_trxt_cc_quicksum_idx
-go
 drop index a_transaction_tmp.a_trxt_donor_id_idx
+go
+/* drop index a_transaction_tmp.a_trxt_fund_clustered_idx */ 
+/* go */
+drop index a_transaction_tmp.a_trxt_fund_quicksum_idx
 go
 drop index a_transaction_tmp.a_trxt_journal_idx
 go
@@ -845,8 +875,8 @@ go
 /* go */
 
 
-/* a_cost_center_class */
-/* drop index a_cost_center_class.a_costctr_class_pk */ 
+/* a_fund_class */
+/* drop index a_fund_class.a_fund_class_pk */ 
 /* go */
 
 
@@ -855,15 +885,17 @@ go
 /* go */
 
 
-/* a_cost_center_prefix */
-drop index a_cost_center_prefix.a_cc_pfx_ledger_number_idx
+/* a_fund_prefix */
+drop index a_fund_prefix.a_fund_pfx_ledger_number_idx
 go
-/* drop index a_cost_center_prefix.a_cost_center_prefix_pk */ 
+/* drop index a_fund_prefix.a_fund_prefix_pk */ 
 /* go */
 
 
-/* a_cc_staff */
-/* drop index a_cc_staff.a_cc_staff_pk */ 
+/* a_fund_staff */
+drop index a_fund_staff.a_fund_staff_partner_idx
+go
+/* drop index a_fund_staff.a_fund_staff_pk */ 
 /* go */
 
 
@@ -882,8 +914,51 @@ go
 /* go */
 
 
+/* a_bank_recon */
+/* drop index a_bank_recon.a_recon_pk */ 
+/* go */
+
+
+/* a_bank_recon_item */
+drop index a_bank_recon_item.a_recon_foreign_idx
+go
+/* drop index a_bank_recon_item.a_recon_item_pk */ 
+/* go */
+
+
+/* a_bank_recon_accts */
+/* drop index a_bank_recon_accts.a_recon_accts_pk */ 
+/* go */
+
+
+/* a_dimension */
+drop index a_dimension.a_dim_fund_class_idx
+go
+drop index a_dimension.a_dim_fund_idx
+go
+drop index a_dimension.a_dim_ledger_number_idx
+go
+drop index a_dimension.a_dim_legacy_idx
+go
+/* drop index a_dimension.a_dim_pk */ 
+/* go */
+
+
+/* a_dimension_item */
+drop index a_dimension_item.a_dim_item_fund_class_idx
+go
+drop index a_dimension_item.a_dim_item_fund_idx
+go
+drop index a_dimension_item.a_dim_item_ledger_number_idx
+go
+drop index a_dimension_item.a_dim_item_legacy_idx
+go
+/* drop index a_dimension_item.a_dim_item_pk */ 
+/* go */
+
+
 /* a_payroll */
-drop index a_payroll.a_payroll_cc_idx
+drop index a_payroll.a_payroll_fund_idx
 go
 drop index a_payroll.a_payroll_payee_idx
 go
@@ -904,12 +979,14 @@ go
 
 
 /* a_payroll_group */
+drop index a_payroll_group.a_payroll_fund_idx
+go
 /* drop index a_payroll_group.a_payroll_grp_pk */ 
 /* go */
 
 
 /* a_payroll_import */
-drop index a_payroll_import.a_payrolli_cc_idx
+drop index a_payroll_import.a_payrolli_fund_idx
 go
 drop index a_payroll_import.a_payrolli_payee_idx
 go
@@ -971,9 +1048,11 @@ drop index a_salary_review.a_salreview_review_idx
 go
 
 
-/* a_cc_admin_fee */
-/* drop index a_cc_admin_fee.a_cc_admin_fee_pk */ 
+/* a_fund_admin_fee */
+/* drop index a_fund_admin_fee.a_fund_admin_fee_pk */ 
 /* go */
+drop index a_fund_admin_fee.a_fundaf_ledger_number_idx
+go
 
 
 /* a_admin_fee_type */
@@ -1000,19 +1079,19 @@ drop index a_admin_fee_type_item_tmp.a_afti_tmp_ledger_number_idx
 go
 
 
-/* a_cc_receipting */
-/* drop index a_cc_receipting.a_cc_receipting_pk */ 
+/* a_fund_receipting */
+/* drop index a_fund_receipting.a_fund_receipting_pk */ 
 /* go */
-drop index a_cc_receipting.a_ccr_ledger_number_idx
+drop index a_fund_receipting.a_fundr_ledger_number_idx
 go
 
 
-/* a_cc_receipting_accts */
-/* drop index a_cc_receipting_accts.a_cc_rcptacct_pk */ 
+/* a_fund_receipting_accts */
+/* drop index a_fund_receipting_accts.a_fund_rcptacct_pk */ 
 /* go */
-drop index a_cc_receipting_accts.a_ccra_acct_number_idx
+drop index a_fund_receipting_accts.a_fundra_acct_number_idx
 go
-drop index a_cc_receipting_accts.a_ccra_ledger_number_idx
+drop index a_fund_receipting_accts.a_fundra_ledger_number_idx
 go
 
 
@@ -1034,10 +1113,10 @@ go
 /* a_subtrx_gift */
 drop index a_subtrx_gift.a_gifttrx_batch_idx
 go
-/* drop index a_subtrx_gift.a_gifttrx_cc_clustered_idx */ 
-/* go */
 drop index a_subtrx_gift.a_gifttrx_donor_id_idx
 go
+/* drop index a_subtrx_gift.a_gifttrx_fund_clustered_idx */ 
+/* go */
 drop index a_subtrx_gift.a_gifttrx_gift_idx
 go
 /* drop index a_subtrx_gift.a_gifttrx_pk */ 
@@ -1066,13 +1145,15 @@ go
 /* go */
 drop index a_subtrx_gift_item.a_gifttrxi_ack_idx
 go
-/* drop index a_subtrx_gift_item.a_gifttrxi_cc_clustered_idx */ 
-/* go */
 drop index a_subtrx_gift_item.a_gifttrxi_datetype_idx
 go
 drop index a_subtrx_gift_item.a_gifttrxi_donor_idx
 go
+/* drop index a_subtrx_gift_item.a_gifttrxi_fund_clustered_idx */ 
+/* go */
 drop index a_subtrx_gift_item.a_gifttrxi_gift_idx
+go
+drop index a_subtrx_gift_item.a_gifttrxi_hash_idx
 go
 drop index a_subtrx_gift_item.a_gifttrxi_mcode_idx
 go
@@ -1100,17 +1181,17 @@ go
 /* go */
 
 
-/* a_cc_auto_subscribe */
-drop index a_cc_auto_subscribe.a_cc_as_ledger_number_idx
+/* a_fund_auto_subscribe */
+drop index a_fund_auto_subscribe.a_fund_as_ledger_number_idx
 go
-drop index a_cc_auto_subscribe.a_cc_as_listcode_idx
+drop index a_fund_auto_subscribe.a_fund_as_listcode_idx
 go
-/* drop index a_cc_auto_subscribe.a_cc_auto_subscribe_pk */ 
+/* drop index a_fund_auto_subscribe.a_fund_auto_subscribe_pk */ 
 /* go */
 
 
 /* a_motivational_code */
-drop index a_motivational_code.a_motiv_code_cc
+drop index a_motivational_code.a_motiv_code_fund
 go
 drop index a_motivational_code.a_motiv_code_list
 go
@@ -1173,7 +1254,7 @@ go
 
 
 /* a_descriptives */
-drop index a_descriptives.a_descr_cc_idx
+drop index a_descriptives.a_descr_fund_idx
 go
 drop index a_descriptives.a_descr_par_idx
 go
@@ -1182,7 +1263,7 @@ go
 
 
 /* a_descriptives_hist */
-drop index a_descriptives_hist.a_descrhist_cc_idx
+drop index a_descriptives_hist.a_descrhist_fund_idx
 go
 drop index a_descriptives_hist.a_descrhist_merge_idx
 go
@@ -1242,6 +1323,30 @@ go
 /* a_subtrx_cashxfer */
 /* drop index a_subtrx_cashxfer.a_subtrx_cashxfer_pk */ 
 /* go */
+drop index a_subtrx_cashxfer.a_subtrx_cxf_batch_idx
+go
+/* drop index a_subtrx_cashxfer.a_subtrx_cxf_fund_clustered_idx */ 
+/* go */
+drop index a_subtrx_cashxfer.a_subtrx_cxf_fund_rev1_idx
+go
+drop index a_subtrx_cashxfer.a_subtrx_cxf_fund_rev2_idx
+go
+drop index a_subtrx_cashxfer.a_subtrx_cxf_journal_idx
+go
+
+
+/* i_association */
+drop index i_association.i_assoc_int_idx
+go
+/* drop index i_association.i_assoc_pk */ 
+/* go */
+
+
+/* i_acct_association */
+drop index i_acct_association.i_acct_assoc_int_idx
+go
+/* drop index i_acct_association.i_acct_assoc_pk */ 
+/* go */
 
 
 /* i_eg_gift_import */
@@ -1257,7 +1362,7 @@ go
 /* go */
 drop index i_eg_gift_import.i_eg_kdepbatch_idx
 go
-drop index i_eg_gift_import.i_eg_kdoncc_idx
+drop index i_eg_gift_import.i_eg_kdonfund_idx
 go
 drop index i_eg_gift_import.i_eg_kdonor_idx
 go
@@ -1266,6 +1371,10 @@ go
 drop index i_eg_gift_import.i_eg_kfund_idx
 go
 drop index i_eg_gift_import.i_eg_kgiftbatch_idx
+go
+drop index i_eg_gift_import.i_eg_postproc_idx
+go
+drop index i_eg_gift_import.i_eg_stats_idx
 go
 
 
@@ -1347,6 +1456,8 @@ go
 /* t_sprint_project */
 /* drop index t_sprint_project.t_sprintproj_pk */ 
 /* go */
+drop index t_sprint_project.t_sprintproj_rev_idx
+go
 
 
 /* t_sprint_time */
