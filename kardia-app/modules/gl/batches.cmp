@@ -146,6 +146,7 @@ batches "widget/component-decl"
 			    {
 			    allow_new = yes;
 			    allow_query = no;
+			    allow_nodata = yes;
 
 			    copy_batch_cmp "widget/component"
 				{
@@ -232,10 +233,30 @@ batches "widget/component-decl"
 			{
 			width = 172;
 			height = 40;
-			text = "Copy Journal Entries";
+			text = runclient("Copy Journal Entries" + isnull(" into Batch " + :batch_osrc:a_batch_number, ""));
 			enabled = runclient(:new_batch_form:is_editable and not (:new_batch_form:glpost == 1) and :periods_osrc:a_status == 'O' and :batch_osrc:a_origin = 'GL');
 
 			copy_cn "widget/connector" { event=Click; target=copy_batch_form; action=Edit; }
+			}
+		    import_trx "widget/textbutton"
+			{
+			width = 172;
+			height = 40;
+			text = runclient("Import CSV Data" + isnull(" into Batch " + :batch_osrc:a_batch_number, ""));
+			enabled = runclient(:new_batch_form:is_editable and not (:new_batch_form:glpost == 1) and :periods_osrc:a_status == 'O' and :batch_osrc:a_origin = 'GL');
+
+			import_cn "widget/connector"
+			    {
+			    event=Click;
+			    target=batches;
+			    action=Launch;
+			    Source = runclient("/apps/kardia/modules/gl/gl_import.app");
+			    Width=1000;
+			    Height=700;
+			    ledger=runclient(:batch_osrc:a_ledger_number);
+			    batch=runclient(:batch_osrc:a_batch_number);
+			    send_refresh=batches;
+			    }
 			}
 
 		    sep_line4 "widget/pane" { height=2; fl_height=0; style=lowered; }

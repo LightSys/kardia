@@ -1,0 +1,1072 @@
+$Version=2$
+gl_import "widget/component-decl"
+    {
+    width=980; height=680;
+
+    ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; deploy_to_client=yes; }
+    batch "widget/parameter" { type=integer; default=null; deploy_to_client=yes; }
+    send_refresh "widget/parameter" { type=object; default=null; deploy_to_client=yes; }
+
+    import_hbox "widget/hbox"
+	{
+	x=0; y=0; width=980; height=680;
+	spacing=15;
+
+	info_osrc "widget/osrc"
+	    {
+	    o_ledger "widget/parameter" { type=string; param_name=ledger; default=runclient(:ledger:value); }
+	    o_batch "widget/parameter" { type=integer; param_name=batch; default=runclient(:batch:value); }
+	    sql = " select
+			:l:a_ledger_number,
+			:l:a_ledger_desc,
+			:b:a_batch_number,
+			:b:a_batch_desc,
+			:b:a_period,
+			:b:a_origin,
+			batch_info = '' + :b:a_batch_number + ' - ' + :b:a_batch_desc,
+			balance = (select isnull(sum(:a_amount), $0) from /apps/kardia/data/Kardia_DB/a_transaction/rows t where :t:a_ledger_number = :b:a_ledger_number and :t:a_batch_number= :b:a_batch_number),
+			recs = (select count(1) from /apps/kardia/data/Kardia_DB/a_transaction/rows t where :t:a_ledger_number = :b:a_ledger_number and :t:a_batch_number= :b:a_batch_number),
+			posted = condition((select count(1) from /apps/kardia/data/Kardia_DB/a_transaction/rows t where :t:a_ledger_number = :b:a_ledger_number and :t:a_batch_number= :b:a_batch_number and :t:a_posted = 1) > 0, 'Yes', 'No'),
+			maxjnl = (select isnull(max(:t:a_journal_number), 0) from /apps/kardia/data/Kardia_DB/a_transaction/rows t where :t:a_ledger_number = :b:a_ledger_number and :t:a_batch_number= :b:a_batch_number)
+		    from
+			/apps/kardia/data/Kardia_DB/a_ledger/rows l,
+			/apps/kardia/data/Kardia_DB/a_batch/rows b
+		    where
+			:l:a_ledger_number = :parameters:ledger and
+			:b:a_ledger_number = :l:a_ledger_number and
+			:b:a_batch_number = :parameters:batch
+		    ";
+	    autoquery=onload;
+	    replicasize=2;
+	    readahead=2;
+
+	    on_batch_load "widget/connector"
+		{
+		event=EndQuery;
+		event_condition=runclient(:info_osrc:posted != 'No' or :info_osrc:a_origin != 'GL' or :info_osrc:a_batch_number is null);
+		target=popover_nogo;
+		action=Open;
+		IsModal=1;
+		}
+
+	    info_form "widget/form"
+		{
+		info_pane "widget/pane"
+		    {
+		    width=210;
+		    style=flat;
+		    bgcolor="#f8f8f8";
+		    border_radius=12;
+		    shadow_radius=4;
+		    shadow_offset=2;
+		    shadow_color="#808080";
+		    shadow_angle=135;
+
+		    info_vbox "widget/vbox"
+			{
+			x=10; y=10;
+			width=188;
+			height=678;
+			spacing=10;
+
+			info_title "widget/component"
+			    {
+			    path="/apps/kardia/modules/base/section_label.cmp";
+			    height=26;
+			    fl_height=0;
+			    text="Import Into Batch:";
+			    }
+
+			info_ledger "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=label; height=12; label_width=60; text="Ledger:"; field=a_ledger_number; }
+			info_batch "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=label; height=24; label_width=60; label_valign=top; text="Batch:"; field=batch_info; }
+			info_balance "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=label; height=12; label_width=60; text="Balance:"; field=balance; }
+			info_recs "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=label; height=12; label_width=60; text="Records:"; field=recs; }
+			info_post "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=label; height=12; label_width=60; text="Posted:"; field=posted; }
+			info_period "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=label; height=12; label_width=60; text="Period:"; field=a_period; }
+
+			sep1 "widget/autolayoutspacer" { height=10; }
+
+			file_title "widget/component"
+			    {
+			    path="/apps/kardia/modules/base/section_label.cmp";
+			    height=26;
+			    fl_height=0;
+			    text="From File:";
+			    }
+
+			file_name "widget/label" { height=24; value=runclient('File: '); }
+			file_recs "widget/label" { height=12; value=runclient('Records: '); }
+			}
+		    }
+		}
+	    }
+
+	import_tab "widget/tab"
+	    {
+	    width=755;
+	    tab_location=none;
+	    //background="/apps/kardia/images/bg/light_bgnd2.jpg";
+	    bgcolor="#f8f8f8";
+	    border_radius=12;
+	    shadow_radius=4;
+	    shadow_offset=2;
+	    shadow_color="#808080";
+	    shadow_angle=135;
+
+	    import_1_file "widget/tabpage"
+		{
+		i1f_vbox "widget/vbox"
+		    {
+		    x=10;
+		    y=10;
+		    width=733;
+		    height=658;
+		    spacing=10;
+
+		    i1f_title "widget/component"
+			{
+			path="/apps/kardia/modules/base/section_label.cmp";
+			height=26;
+			fl_height=0;
+			text="Step 1:  Select or Upload a File";
+			}
+
+		    file_osrc "widget/osrc"
+			{
+			sql = "	select
+				    :name,
+				    :size,
+				    :last_modification
+				from
+				    identity /apps/kardia/files/gl
+				where
+				    right(:name, 4) = '.csv'
+				order by default
+				    :last_modification desc
+				";
+			replicasize=200;
+			readahead=200;
+			autoquery=oneachreveal;
+
+			file_table "widget/table"
+			    {
+			    height=588;
+			    titlebar=no;
+			    overlap_scrollbar=yes;
+			    demand_scrollbar=yes;
+			    rowheight=null;
+			    cellvspacing=4;
+			    inner_padding=2;
+			    colsep=0;
+			    row_border_radius=6;
+			    row_shadow_radius=2;
+			    row_shadow_offset=1;
+			    row_shadow_color="#a0a0a0";
+			    row_shadow_angle=135;
+
+			    ft_selectbar "widget/table-row-detail"
+				{
+				height=30;
+
+				ft_form "widget/form"
+				    {
+				    ft_hbox "widget/hbox"
+					{
+					x=0; y=5;
+					width=731;
+					height=24;
+					spacing=10;
+					align=center;
+
+					ft_select "widget/textbutton"
+					    {
+					    height=24;
+					    width=130;
+					    text = "Import This File";
+
+					    ft_on_select "widget/connector"
+						{
+						event=Click;
+						target=import_tab;
+						action=SetTab;
+						TabIndex=2;
+						}
+					    }
+
+					ft_delete "widget/textbutton"
+					    {
+					    height=24;
+					    width=130;
+					    text = "Delete File";
+
+					    ft_on_delete "widget/connector"
+						{
+						event=Click;
+						target=ft_form;
+						action=Delete;
+						}
+					    }
+					}
+				    }
+				}
+
+			    ft_name "widget/table-column" { fieldname=name; width=400; }
+			    ft_size "widget/table-column" { fieldname=size; width=100; }
+			    ft_date "widget/table-column" { fieldname=last_modification; width=200; }
+			    }
+
+			ft_upload "widget/textbutton"
+			    {
+			    height=24;
+			    width=130;
+			    text = "Upload File...";
+
+			    on_select "widget/connector"
+				{
+				event=Click;
+				target=upload;
+				action=Prompt;
+				}
+			    }
+
+			upload "widget/fileupload"
+			    {
+			    multiselect = no;
+			    fieldname = "file";
+			    target = "/apps/kardia/files/gl";
+
+			    on_file_selected "widget/connector"
+				{
+				event=DataChange;
+				action=Submit;
+				}
+
+			    on_complete "widget/connector"
+				{
+				event=UploadComplete;
+				target=file_osrc;
+				action=Refresh;
+				}
+
+			    on_error "widget/connector"
+				{
+				event=UploadError;
+				target=gl_import;
+				action=Alert;
+				Message=runclient("File upload failed.  Please make sure your uploaded file is a .csv file.");
+				}
+			    }
+			}
+		    }
+		}
+
+	    import_2_fields "widget/tabpage"
+		{
+		i2f_vbox "widget/vbox"
+		    {
+		    x=10;
+		    y=10;
+		    width=733;
+		    height=658;
+		    spacing=10;
+
+		    i2f_title "widget/component"
+			{
+			path="/apps/kardia/modules/base/section_label.cmp";
+			height=26;
+			fl_height=0;
+			text="Step 2:  Configure Import Data Fields";
+			}
+
+		    i2f_file_osrc "widget/osrc"
+			{
+			i2f_filename "widget/parameter" { param_name=filename; type=string; default=runclient(:file_osrc:name); }
+			sql = " select
+				    fname = :parameters:filename,
+				    reccnt = (select count(1) from expression ('/apps/kardia/files/gl/' + :parameters:filename + '/rows')),
+				    fieldcnt = (select count(1) from expression ('/apps/kardia/files/gl/' + :parameters:filename + '/columns')),
+				    fields = (select isnull(sum(:name + ', ') - ', ', '(none available)') from expression ('/apps/kardia/files/gl/' + :parameters:filename + '/columns'))
+				";
+			replicasize=2;
+			readahead=2;
+			autoquery=oneachreveal;
+
+			update_filename "widget/connector" { event=EndQuery; target=file_name; action=SetValue; Value=runclient('File: ' + isnull(:i2f_file_osrc:fname, '')); }
+			update_filerecs "widget/connector" { event=EndQuery; target=file_recs; action=SetValue; Value=runclient('Records: ' + isnull(:i2f_file_osrc:reccnt, '')); }
+			update_status "widget/connector" { event=EndQuery; target=i4f_status; action=SetValue; Value=runclient("Status: Import not started."); }
+
+			on_fileinfo_load_date "widget/connector"
+			    {
+			    event=EndQuery;
+			    target=date_dd;
+			    action=SetItems;
+			    SQL = runclient("select label='(today)', value='(today)'; select label='(manual)', value='(manual)'; select label = :name, value = :name from /apps/kardia/files/gl/" + :i2f_file_osrc:fname + "/columns");
+			    }
+
+			on_fileinfo_load_per "widget/connector"
+			    {
+			    condition=0;
+			    event=EndQuery;
+			    target=per_dd;
+			    action=SetItems;
+			    SQL = runclient("select label='(automatic)', value='(automatic)'; select label='(manual)', value='(manual)'; select label = :name, value = :name from /apps/kardia/files/gl/" + :i2f_file_osrc:fname + "/columns");
+			    }
+
+			on_fileinfo_load_amt "widget/connector"
+			    {
+			    event=EndQuery;
+			    target=amt_dd;
+			    action=SetItems;
+			    SQL = runclient("select label='(unused)', value='(unused)'; select label='-zero-', value='-zero-'; select label = :name, value = :name from /apps/kardia/files/gl/" + :i2f_file_osrc:fname + "/columns");
+			    }
+
+			on_fileinfo_load_cred "widget/connector"
+			    {
+			    event=EndQuery;
+			    target=cred_dd;
+			    action=SetItems;
+			    SQL = runclient("select label='(unused)', value='(unused)'; select label = :name, value = :name from /apps/kardia/files/gl/" + :i2f_file_osrc:fname + "/columns");
+			    }
+
+			on_fileinfo_load_deb "widget/connector"
+			    {
+			    event=EndQuery;
+			    target=deb_dd;
+			    action=SetItems;
+			    SQL = runclient("select label='(unused)', value='(unused)'; select label = :name, value = :name from /apps/kardia/files/gl/" + :i2f_file_osrc:fname + "/columns");
+			    }
+
+			on_fileinfo_load_fund "widget/connector"
+			    {
+			    event=EndQuery;
+			    target=fund_dd;
+			    action=SetItems;
+			    SQL = runclient("select label='(manual)', value='(manual)'; select label = :name, value = :name from /apps/kardia/files/gl/" + :i2f_file_osrc:fname + "/columns");
+			    }
+
+			on_fileinfo_load_acct "widget/connector"
+			    {
+			    event=EndQuery;
+			    target=acct_dd;
+			    action=SetItems;
+			    SQL = runclient("select label='(manual)', value='(manual)'; select label = :name, value = :name from /apps/kardia/files/gl/" + :i2f_file_osrc:fname + "/columns");
+			    }
+
+			on_fileinfo_load_ctl "widget/connector"
+			    {
+			    event=EndQuery;
+			    target=ctl_dd;
+			    action=SetItems;
+			    SQL = runclient("select label='(automatic)', value='(automatic)'; select label='(manual)', value='(manual)'; select label = :name, value = :name from /apps/kardia/files/gl/" + :i2f_file_osrc:fname + "/columns");
+			    }
+
+			on_fileinfo_load_comm "widget/connector"
+			    {
+			    event=EndQuery;
+			    target=comm_dd;
+			    action=SetItems;
+			    SQL = runclient("select label='(manual)', value='(manual)'; select label = :name, value = :name from /apps/kardia/files/gl/" + :i2f_file_osrc:fname + "/columns");
+			    }
+
+			i2f_file_form "widget/form"
+			    {
+			    i2f_name "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=label; height=12; label_width=100; text="Filename:"; value=runclient(:file_osrc:name); label_valign=top; }
+			    i2f_recs "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=label; height=12; label_width=100; text="# of Records:"; field=reccnt; label_valign=top; }
+			    i2f_fields "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=label; height=12; label_width=100; text="# of Fields:"; field=fieldcnt; label_valign=top; }
+			    i2f_fieldlist "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=label; height=24; label_width=100; text="Field List:"; field=fields; label_valign=top; }
+			    }
+
+			i2f_fields_osrc "widget/osrc"
+			    {
+			    i2f_f_filename "widget/parameter" { param_name=filename; type=string; default=runclient(:file_osrc:name); }
+			    sql = " declare collection fields scope application;
+				    declare object fileinfo scope application;
+
+				    -- Only clear the fields collection if we're working with a different file entirely
+				    delete from collection fields where (:fileinfo:filename is null or :fileinfo:filename != :parameters:filename);
+				    select :fileinfo:filename = :parameters:filename;
+
+				    insert collection fields select ord=1, userfield=convert(string, null), value=convert(string, null), kardiafield='Date', descrip='Effective date of the transaction line item', moddate=getdate() on duplicate :kardiafield update set :moddate = getdate();
+				    --insert collection fields select ord=2, userfield=convert(string, null), value=convert(string, null), kardiafield='Period', descrip='Accounting period (date must be within this period)', moddate=getdate() on duplicate :kardiafield update set :moddate = getdate();
+				    insert collection fields select ord=3, userfield=convert(string, null), value=convert(string, null), kardiafield='Amount (combined)', descrip='Combined amount - positive is debit, negative is credit', moddate=getdate() on duplicate :kardiafield update set :moddate = getdate();
+				    insert collection fields select ord=4, userfield=convert(string, null), value=convert(string, null), kardiafield='Credit Amount', descrip='Credit amount, use this and Debit Amount if not using a combined amount', moddate=getdate() on duplicate :kardiafield update set :moddate = getdate();
+				    insert collection fields select ord=5, userfield=convert(string, null), value=convert(string, null), kardiafield='Debit Amount', descrip='Debit amount, user this and Credit Amount if not using a combined amount', moddate=getdate() on duplicate :kardiafield update set :moddate = getdate();
+				    insert collection fields select ord=6, userfield=convert(string, null), value=convert(string, null), kardiafield='Fund Code', descrip='Fund or sub-fund code', moddate=getdate() on duplicate :kardiafield update set :moddate = getdate();
+				    insert collection fields select ord=7, userfield=convert(string, null), value=convert(string, null), kardiafield='GL Account Code', descrip='GL Account code', moddate=getdate() on duplicate :kardiafield update set :moddate = getdate();
+				    insert collection fields select ord=8, userfield=convert(string, null), value=convert(string, null), kardiafield='GL Account Ctl', descrip='GL Account control code, leave blank for automatic or if not using this', moddate=getdate() on duplicate :kardiafield update set :moddate = getdate();
+				    insert collection fields select ord=9, userfield=convert(string, null), value=convert(string, null), kardiafield='Comment', descrip='General comments or notes on this transaction line item', moddate=getdate() on duplicate :kardiafield update set :moddate = getdate();
+
+				    update
+					identity collection fields f,
+					expression ('/apps/kardia/files/gl/' + :parameters:filename + '/columns') uf
+				    set 
+					:f:userfield = :uf:name
+				    where
+					:f:kardiafield = 'Date' and
+					(charindex('date', lower(:uf:name)) > 0) and
+					:f:userfield is null
+				    ;
+				    update
+					identity collection fields f
+				    set 
+					:f:userfield = '(today)'
+				    where
+					:f:kardiafield = 'Date' and
+					:f:userfield is null
+				    ;
+
+				--    update
+				--	identity collection fields f,
+				--	expression ('/apps/kardia/files/gl/' + :parameters:filename + '/columns') uf
+				--    set 
+				--	:f:userfield = :uf:name
+				--    where
+				--	:f:kardiafield = 'Period' and
+				--	(charindex('period', lower(:uf:name)) > 0) and
+				--	:f:userfield is null
+				--    ;
+				--    update
+				--	identity collection fields f
+				--    set 
+				--	:f:userfield = '(automatic)'
+				--    where
+				--	:f:kardiafield = 'Period' and
+				--	:f:userfield is null
+				--    ;
+
+				    update
+					identity collection fields f,
+					expression ('/apps/kardia/files/gl/' + :parameters:filename + '/columns') uf
+				    set 
+					:f:userfield = :uf:name
+				    where
+					:f:kardiafield = 'Credit Amount' and
+					(charindex('credit', lower(:uf:name)) > 0) and
+					:f:userfield is null
+				    ;
+				    update
+					identity collection fields f
+				    set 
+					:f:userfield = '(unused)'
+				    where
+					:f:kardiafield = 'Credit Amount' and
+					:f:userfield is null
+				    ;
+
+				    update
+					identity collection fields f,
+					expression ('/apps/kardia/files/gl/' + :parameters:filename + '/columns') uf
+				    set 
+					:f:userfield = :uf:name
+				    where
+					:f:kardiafield = 'Debit Amount' and
+					(charindex('debit', lower(:uf:name)) > 0) and
+					:f:userfield is null
+				    ;
+				    update
+					identity collection fields f
+				    set 
+					:f:userfield = '(unused)'
+				    where
+					:f:kardiafield = 'Debit Amount' and
+					:f:userfield is null
+				    ;
+
+				    update
+					identity collection fields f,
+					expression ('/apps/kardia/files/gl/' + :parameters:filename + '/columns') uf
+				    set 
+					:f:userfield = :uf:name
+				    where
+					:f:kardiafield = 'Amount (combined)' and
+					(charindex('amount', lower(:uf:name)) > 0 or charindex('amt', lower(:uf:name)) > 0) and
+					(charindex('credit', lower(:uf:name)) == 0) and
+					(charindex('debit', lower(:uf:name)) == 0) and
+					:f:userfield is null
+				    ;
+				    update
+					identity collection fields f
+				    set 
+					:f:userfield = '-zero-'
+				    where
+					:f:kardiafield = 'Amount (combined)' and
+					:f:userfield is null and
+					isnull((select :f2:userfield from collection fields f2 where :f2:kardiafield = 'Credit Amount'), '(unused)') = '(unused)' and
+					isnull((select :f3:userfield from collection fields f3 where :f3:kardiafield = 'Debit Amount'), '(unused)') = '(unused)'
+				    ;
+				    update
+					identity collection fields f
+				    set 
+					:f:userfield = '(unused)'
+				    where
+					:f:kardiafield = 'Amount (combined)' and
+					:f:userfield is null and
+					(isnull((select :f2:userfield from collection fields f2 where :f2:kardiafield = 'Credit Amount'), '(unused)') != '(unused)' or
+					 isnull((select :f3:userfield from collection fields f3 where :f3:kardiafield = 'Debit Amount'), '(unused)') != '(unused)')
+				    ;
+
+				    update
+					identity collection fields f,
+					expression ('/apps/kardia/files/gl/' + :parameters:filename + '/columns') uf
+				    set 
+					:f:userfield = :uf:name
+				    where
+					:f:kardiafield = 'Fund Code' and
+					(charindex('fund', lower(:uf:name)) > 0) and
+					:f:userfield is null
+				    ;
+
+				    update
+					identity collection fields f,
+					expression ('/apps/kardia/files/gl/' + :parameters:filename + '/columns') uf
+				    set 
+					:f:userfield = :uf:name
+				    where
+					:f:kardiafield = 'GL Account Code' and
+					(charindex('account', lower(:uf:name)) > 0 or charindex('acct', lower(:uf:name)) > 0) and
+					(charindex('ctl', lower(:uf:name)) == 0) and
+					(charindex('control', lower(:uf:name)) == 0) and
+					(charindex('cat', lower(:uf:name)) == 0) and
+					:f:userfield is null
+				    ;
+
+				    update
+					identity collection fields f,
+					expression ('/apps/kardia/files/gl/' + :parameters:filename + '/columns') uf
+				    set 
+					:f:userfield = :uf:name
+				    where
+					:f:kardiafield = 'GL Account Ctl' and
+					(charindex('ctl', lower(:uf:name)) > 0 or charindex('control', lower(:uf:name)) > 0 or charindex('cat', lower(:uf:name)) > 0) and
+					:f:userfield is null
+				    ;
+				    update
+					identity collection fields f
+				    set 
+					:f:userfield = '(automatic)'
+				    where
+					:f:kardiafield = 'GL Account Ctl' and
+					:f:userfield is null
+				    ;
+
+				    update
+					identity collection fields f,
+					expression ('/apps/kardia/files/gl/' + :parameters:filename + '/columns') uf
+				    set 
+					:f:userfield = :uf:name
+				    where
+					:f:kardiafield = 'Comment' and
+					(charindex('text', lower(:uf:name)) > 0 or charindex('note', lower(:uf:name)) > 0 or charindex('comm', lower(:uf:name)) > 0) and
+					:f:userfield is null
+				    ;
+
+				    select
+					:kardiafield,
+					:userfield,
+					:descrip,
+					:value
+				    from
+					collection fields
+				    order by default
+					:ord
+				    ";
+			    autoquery=oneachreveal;
+			    replicasize=200;
+			    readahead=200;
+
+			    i2f_fields_table "widget/table"
+				{
+				height=488;
+				titlebar=yes;
+				overlap_scrollbar=yes;
+				demand_scrollbar=yes;
+				rowheight=null;
+				cellvspacing=4;
+				inner_padding=2;
+				colsep=0;
+				row_border_radius=6;
+				row_shadow_radius=2;
+				row_shadow_offset=1;
+				row_shadow_color="#a0a0a0";
+				row_shadow_angle=135;
+
+				date_edit "widget/table-row-detail"
+				    {
+				    height=32;
+				    width=733;
+				    display_for=runclient(:i2f_fields_osrc:kardiafield == 'Date');
+
+				    date_form "widget/form"
+					{
+					date_dd "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=dropdown; width=300; label_width=10; height=24; x=354; y=4; field=userfield; numdisplay=12; date_dd_change "widget/connector" { event=DataModify; target=date_form; action=Save; } }
+					}
+				    }
+
+				period_edit "widget/table-row-detail"
+				    {
+				    condition=0;
+				    height=32;
+				    width=733;
+				    display_for=runclient(:i2f_fields_osrc:kardiafield == 'Period');
+
+				    per_form "widget/form"
+					{
+					per_dd "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=dropdown; width=300; label_width=10; height=24; x=354; y=4; field=userfield; numdisplay=12; per_dd_change "widget/connector" { event=DataModify; target=per_form; action=Save; } }
+					}
+				    }
+
+				amt_edit "widget/table-row-detail"
+				    {
+				    height=32;
+				    width=733;
+				    display_for=runclient(:i2f_fields_osrc:kardiafield == 'Amount (combined)');
+
+				    amt_form "widget/form"
+					{
+					amt_dd "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=dropdown; width=300; label_width=10; height=24; x=354; y=4; field=userfield; numdisplay=12; amt_dd_change "widget/connector" { event=DataModify; target=amt_form; action=Save; } }
+					}
+				    }
+
+				cred_edit "widget/table-row-detail"
+				    {
+				    height=32;
+				    width=733;
+				    display_for=runclient(:i2f_fields_osrc:kardiafield == 'Credit Amount');
+
+				    cred_form "widget/form"
+					{
+					cred_dd "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=dropdown; width=300; label_width=10; height=24; x=354; y=4; field=userfield; numdisplay=12; cred_dd_change "widget/connector" { event=DataModify; target=cred_form; action=Save; } }
+					}
+				    }
+
+				deb_edit "widget/table-row-detail"
+				    {
+				    height=32;
+				    width=733;
+				    display_for=runclient(:i2f_fields_osrc:kardiafield == 'Debit Amount');
+
+				    deb_form "widget/form"
+					{
+					deb_dd "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=dropdown; width=300; label_width=10; height=24; x=354; y=4; field=userfield; numdisplay=12; deb_dd_change "widget/connector" { event=DataModify; target=deb_form; action=Save; } }
+					}
+				    }
+
+				fund_edit "widget/table-row-detail"
+				    {
+				    height=32;
+				    width=733;
+				    display_for=runclient(:i2f_fields_osrc:kardiafield == 'Fund Code');
+
+				    fund_form "widget/form"
+					{
+					fund_dd "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=dropdown; width=300; label_width=10; height=24; x=354; y=4; field=userfield; numdisplay=12; fund_dd_change "widget/connector" { event=DataModify; target=fund_form; action=Save; } }
+					}
+				    }
+
+				acct_edit "widget/table-row-detail"
+				    {
+				    height=32;
+				    width=733;
+				    display_for=runclient(:i2f_fields_osrc:kardiafield == 'GL Account Code');
+
+				    acct_form "widget/form"
+					{
+					acct_dd "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=dropdown; width=300; label_width=10; height=24; x=354; y=4; field=userfield; numdisplay=12; acct_dd_change "widget/connector" { event=DataModify; target=acct_form; action=Save; } }
+					}
+				    }
+
+				ctl_edit "widget/table-row-detail"
+				    {
+				    height=32;
+				    width=733;
+				    display_for=runclient(:i2f_fields_osrc:kardiafield == 'GL Account Ctl');
+
+				    ctl_form "widget/form"
+					{
+					ctl_dd "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=dropdown; width=300; label_width=10; height=24; x=354; y=4; field=userfield; numdisplay=12; ctl_dd_change "widget/connector" { event=DataModify; target=ctl_form; action=Save; } }
+					}
+				    }
+
+				comm_edit "widget/table-row-detail"
+				    {
+				    height=32;
+				    width=733;
+				    display_for=runclient(:i2f_fields_osrc:kardiafield == 'Comment');
+
+				    comm_form "widget/form"
+					{
+					comm_dd "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=dropdown; width=300; label_width=10; height=24; x=354; y=4; field=userfield; numdisplay=12; comm_dd_change "widget/connector" { event=DataModify; target=comm_form; action=Save; } }
+					}
+				    }
+
+				value_edit "widget/table-row-detail"
+				    {
+				    height=32;
+				    width=733;
+				    display_for=runclient(:i2f_fields_osrc:userfield == '(manual)');
+
+				    value_form "widget/form"
+					{
+					value_editbox "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=editbox; width=300; label_width=10; height=24; x=354; y=4; field=value; empty_desc="enter a manual value"; value_change "widget/connector" { event=DataChange; event_condition=runclient(:FromKeyboard); event_delay=0.1; target=value_form; action=Save; } }
+					value_save "widget/component" { path="/sys/cmp/save_btn.cmp"; x=664; y=4; width=18; height=18; }
+					}
+				    }
+
+				flt_field "widget/table-column" { fieldname=kardiafield; caption_fieldname=descrip; width=150; style=bold; title="Kardia Field"; }
+				flt_yourfield "widget/table-column" { value=runclient(isnull(:i2f_fields_osrc:userfield, '') + condition(:i2f_fields_osrc:userfield == '(manual)' and :i2f_fields_osrc:value is not null, ' - ' + :i2f_fields_osrc:value, '')); width=150; style=bold; title="From Your Data"; }
+				}
+			    }
+			}
+
+		    i2f_ctls_hbox "widget/hbox"
+			{
+			height=24;
+			align=center;
+			spacing=473;
+
+			i2f_prev "widget/textbutton"
+			    {
+			    text = "<< Previous";
+			    height=24;
+			    width=130;
+
+			    on_i2f_prev "widget/connector"
+				{
+				event=Click;
+				target=import_tab;
+				action=SetTab;
+				TabIndex=1;
+				}
+			    }
+
+			i2f_next "widget/textbutton"
+			    {
+			    text = "Next >>";
+			    height=24;
+			    width=130;
+
+			    on_i2f_next "widget/connector"
+				{
+				event=Click;
+				target=import_tab;
+				action=SetTab;
+				TabIndex=3;
+				}
+			    }
+			}
+		    }
+		}
+
+	    import_3_preview "widget/tabpage"
+		{
+		i3p_vbox "widget/vbox"
+		    {
+		    x=10;
+		    y=10;
+		    width=733;
+		    height=658;
+		    spacing=10;
+
+		    i3p_title "widget/component"
+			{
+			path="/apps/kardia/modules/base/section_label.cmp";
+			height=26;
+			fl_height=0;
+			text="Step 3:  Preview Data To Be Imported";
+			}
+
+		    preview_osrc "widget/osrc"
+			{
+			i3p_f_filename "widget/parameter" { param_name=filename; type=string; default=runclient(:file_osrc:name); }
+			i3p_f_ledger "widget/parameter" { param_name=ledger; type=string; default=runclient(:ledger:value); }
+			i3p_f_period "widget/parameter" { param_name=period; type=string; default=runclient(:info_osrc:a_period); }
+
+			sql = " exec /apps/kardia/modules/gl/gl_import_preview.qy filename=:parameters:filename, ledger=:parameters:ledger, period=:parameters:period ";
+
+			readahead=200;
+			replicasize=200;
+			autoquery=oneachreveal;
+
+			preview_table "widget/table"
+			    {
+			    height=488;
+			    titlebar=yes;
+			    overlap_scrollbar=yes;
+			    demand_scrollbar=yes;
+			    rowheight=null;
+			    cellvspacing=4;
+			    inner_padding=2;
+			    colsep=0;
+			    row_border_radius=6;
+			    row_shadow_radius=2;
+			    row_shadow_offset=1;
+			    row_shadow_color="#a0a0a0";
+			    row_shadow_angle=135;
+
+			    pt_line "widget/table-column" { title="#"; fieldname=a_transaction_number; width=20; }
+			    pt_date "widget/table-column" { title="Date"; fieldname=date_txt; width=80; }
+			    pt_per "widget/table-column" { title="Period"; fieldname=a_period; width=70; }
+			    pt_fund "widget/table-column" { title="Fund"; fieldname=a_fund; width=70; }
+			    pt_acct "widget/table-column" { title="Account"; fieldname=a_account_code; width=70; }
+			    pt_ctl "widget/table-column" { title="Ctl"; fieldname=a_account_category; width=50; }
+			    pt_comm "widget/table-column" { title="Comment"; fieldname=a_comment; width=160; }
+			    pt_deb "widget/table-column" { title="Debit (+)"; fieldname=debit_amt; width=100; align=right; }
+			    pt_cred "widget/table-column" { title="Credit (-)"; fieldname=credit_amt; width=100; textcolor=runclient('#f00000'); align=right; }
+			    }
+			}
+
+		    validity_osrc "widget/osrc"
+			{
+			i3p_v_filename "widget/parameter" { param_name=filename; type=string; default=runclient(:file_osrc:name); }
+			i3p_v_ledger "widget/parameter" { param_name=ledger; type=string; default=runclient(:ledger:value); }
+			i3p_v_batch "widget/parameter" { param_name=batch; type=integer; default=runclient(:batch:value); }
+			i3p_v_period "widget/parameter" { param_name=period; type=string; default=runclient(:info_osrc:a_period); }
+
+			sql = " declare collection transactions scope application;
+				delete from collection transactions;
+
+				insert into
+				    collection transactions
+				select
+				    *,
+				    a_ledger_number = :parameters:ledger,
+				    a_batch_number = :parameters:batch
+				from 
+				    expression('/apps/kardia/modules/gl/gl_import_preview.qy?filename=' + :parameters:filename + '&ledger=' + :parameters:ledger + '&period=' + :parameters:period)
+				;
+
+				exec /apps/kardia/modules/gl/verify_batch.qy ledger=:parameters:ledger, batch=:parameters:batch
+				";
+
+			autoquery = oneachreveal;
+			replicasize = 10;
+			readahead = 10;
+
+			trx_validity_tbl "widget/table"
+			    {
+			    height=90;
+			    mode=dynamicrow;
+			    titlebar=no;
+			    demand_scrollbar=yes;
+			    overlap_scrollbar = yes;
+			    show_selection = no;
+			    nodata_message = runclient(condition(not :validity_osrc:cx__pending, "checking transactions; one moment...", "(no problems found)"));
+
+			    //t_jnlv "widget/table-column" { title=""; fieldname="a_journal_number"; width=50; }
+			    t_trxv "widget/table-column" { title=""; fieldname="a_transaction_number"; width=50; }
+			    t_msg "widget/table-column" { title="Correct any issues shown below:"; fieldname="msg"; width=600; textcolor=runclient('#f00000'); }
+			    }
+			}
+
+		    i3p_ctls_hbox "widget/hbox"
+			{
+			height=24;
+			align=center;
+			spacing=10;
+
+			i3p_prev "widget/textbutton"
+			    {
+			    text = "<< Previous";
+			    height=24;
+			    width=130;
+
+			    on_i3p_prev "widget/connector"
+				{
+				event=Click;
+				target=import_tab;
+				action=SetTab;
+				TabIndex=2;
+				}
+			    }
+
+			i3p_label "widget/label"
+			    {
+			    fl_width=30;
+			    width=453;
+			    align=center;
+			    value=runclient(condition(:validity_osrc:msg is not null, 'Please correct any errors before continuing.', ''));
+			    }
+
+			i3p_next "widget/textbutton"
+			    {
+			    text = "Next >>";
+			    height=24;
+			    width=130;
+			    enabled=runclient(:validity_osrc:msg is null and not :validity_osrc:cx__pending);
+
+			    on_i3p_next "widget/connector"
+				{
+				event=Click;
+				target=import_tab;
+				action=SetTab;
+				TabIndex=4;
+				}
+			    }
+			}
+		    }
+		}
+
+	    import_4_finalize "widget/tabpage"
+		{
+		i4f_vbox "widget/vbox"
+		    {
+		    x=10;
+		    y=10;
+		    width=733;
+		    height=658;
+		    spacing=10;
+
+		    i4f_title "widget/component"
+			{
+			path="/apps/kardia/modules/base/section_label.cmp";
+			height=26;
+			fl_height=0;
+			text="Step 4:  Import The Data";
+			}
+
+		    ib_hbox "widget/hbox"
+			{
+			height=24;
+			align=center;
+
+			i4f_import_btn "widget/textbutton"
+			    {
+			    height=24;
+			    width=130;
+			    text = "Import Data";
+
+			    do_import "widget/connector" { event=Click; target=i4f_do_import; action=QueryParam; }
+			    }
+			}
+
+		    i4f_status "widget/label"
+			{
+			height=12;
+			align=center;
+			value=runclient("Status: Import not started");
+			}
+
+		    i4f_sep "widget/autolayoutspacer" { height=532; }
+
+		    i4f_ctls_hbox "widget/hbox"
+			{
+			height=24;
+			align=center;
+			spacing=473;
+
+			i4f_prev "widget/textbutton"
+			    {
+			    text = "<< Previous";
+			    height=24;
+			    width=130;
+
+			    on_i4f_prev "widget/connector"
+				{
+				event=Click;
+				target=import_tab;
+				action=SetTab;
+				TabIndex=3;
+				}
+			    }
+
+			i4f_next "widget/textbutton"
+			    {
+			    text = "Start Again";
+			    height=24;
+			    width=130;
+
+			    on_i4f_next "widget/connector"
+				{
+				event=Click;
+				target=import_tab;
+				action=SetTab;
+				TabIndex=1;
+				}
+			    }
+			}
+		    }
+
+		i4f_do_import "widget/osrc"
+		    {
+		    i4f_f_filename "widget/parameter" { param_name=filename; type=string; default=runclient(:file_osrc:name); }
+		    i4f_f_ledger "widget/parameter" { param_name=ledger; type=string; default=runclient(:ledger:value); }
+		    i4f_f_batch "widget/parameter" { param_name=batch; type=integer; default=runclient(:batch:value); }
+		    i4f_f_jnl "widget/parameter" { param_name=journal; type=integer; default=runclient(:info_osrc:maxjnl + 1); }
+		    i4f_f_period "widget/parameter" { param_name=period; type=string; default=runclient(:info_osrc:a_period); }
+
+		    sql = " insert
+				/apps/kardia/data/Kardia_DB/a_transaction/rows t
+			    select
+				a_ledger_number = :parameters:ledger,
+				a_batch_number = :parameters:batch,
+				a_journal_number = :parameters:journal,
+				:p:a_transaction_number,
+				a_period = :parameters:period,
+				:p:a_effective_date,
+				a_transaction_type = 'T',
+				:p:a_fund,
+				:p:a_account_category,
+				:p:a_account_code,
+				:p:a_amount,
+				a_posted = 0,
+				a_modified = 1,
+				a_corrected = 0,
+				a_correcting = 0,
+				a_reconciled = 0,
+				a_postprocessed = 0,
+				a_postprocess_type = 'XX',
+				a_origin = 'GL',
+				a_receipt_sent = 0,
+				a_receipt_desired = 0,
+				a_first_gift = 0,
+				s_date_created = getdate(),
+				s_created_by = user_name(),
+				s_date_modified = getdate(),
+				s_modified_by = user_name()
+			    from
+				expression('/apps/kardia/modules/gl/gl_import_preview.qy?filename=' + :parameters:filename + '&ledger=' + :parameters:ledger + '&period=' + :parameters:period) p
+			    ;
+
+			    select
+				importcnt = count(1),
+				balance = isnull(sum(:a_amount), $0)
+			    from
+				/apps/kardia/data/Kardia_DB/a_transaction/rows t
+			    where
+				:a_ledger_number = :parameters:ledger and
+				:a_batch_number = :parameters:batch and
+				:a_journal_number = :parameters:journal
+			    ";
+
+		    readahead=2;
+		    replicasize=2;
+		    autoquery=never;
+
+		    on_import "widget/connector" { event=EndQuery; target=i4f_status; action=SetValue; Value=runclient('Import complete.  ' + :i4f_do_import:importcnt + ' records imported having a balance of ' + :i4f_do_import:balance + '.'); }
+		    on_import2 "widget/connector" { event=EndQuery; target=info_osrc; action=Refresh; }
+		    refresh_parent_on_import "widget/connector" { event=EndQuery; target=send_refresh; action=Refresh; Batch=runclient(:batch:value); }
+		    }
+		}
+	    }
+	}
+
+    popover_nogo "widget/childwindow"
+	{
+	widget_class="popover";
+	width=400; height=120;
+	x=290; y=280;
+
+	nogo_vbox "widget/vbox"
+	    {
+	    x=10; y=10;
+	    width=378;
+	    height=198;
+	    spacing=10;
+
+	    nogo_title "widget/label" { height=16; font_size=16; style=bold; align=center; value=runclient("Cannot Import Into Batch " + :batch:value); }
+
+	    nogo_desc "widget/label" { height=48; value=runclient("Batch " + isnull(:batch:value, "(not specified)") + " in ledger " + isnull(:ledger:value, "(not specified)") + " is not eligible for modification because " + condition(:info_osrc:a_batch_number is null, "it could not be located in the system", condition(:info_osrc:posted != 'No', "it has already been posted to the GL", "it was created in subjournal " + :info_osrc:a_origin + " instead of directly in the GL")) + ".  Please select a different batch to import data into."); }
+	    }
+	}
+    }
+

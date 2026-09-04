@@ -1,0 +1,42 @@
+$Version=2$
+verify_batch "system/query"
+    {
+    ledger "query/parameter" { type=string; style=notnull; }
+    batch "query/parameter" { type=integer; style=notnull; }
+
+    sql = " SELECT
+		    a_journal_number = 'Jnl ' + :t:a_journal_number,
+		    a_transaction_number = 'Trx ' + :t:a_transaction_number,
+		    msg =
+			  condition(:a:a_account_code is null, 'Invalid GL Account ' + :t:a_account_code,
+			   condition(:ac:a_account_category is null, 'Invalid Ctl Acct ' + :t:a_account_category,
+			    condition(:c:a_fund is null, 'Invalid Fund ' + :t:a_fund,
+			     condition(substring(isnull(:t:a_account_code,' '),1,1) != substring(isnull(:t:a_account_category,' '),1,1), 'Account / Ctl Acct Mismatch (' + :t:a_account_code + ' vs ' + :t:a_account_category + ')',
+			      condition(:t:a_period != :b:a_period, 'Trx Period ' + :t:a_period + ' / Batch Period ' + :b:a_period + ' Mismatch',
+			       condition(:t:a_effective_date > :p:a_end_date or :t:a_effective_date < :p:a_start_date, 'Trx Date ' + substring(convert(string,:t:a_effective_date),1,11) + ' Not In Period ' + :t:a_period,
+				'OK'))))))
+	    FROM
+		    /apps/kardia/data/Kardia_DB/a_batch/rows b,
+		    /apps/kardia/data/Kardia_DB/a_period/rows p,
+		    --identity /apps/kardia/data/Kardia_DB/a_transaction/rows t,
+		    identity collection transactions t,
+		    /apps/kardia/data/Kardia_DB/a_fund/rows c,
+		    /apps/kardia/data/Kardia_DB/a_account/rows a,
+		    /apps/kardia/data/Kardia_DB/a_account_category/rows ac
+	    WHERE
+		    :b:a_ledger_number = :parameters:ledger and
+		    :b:a_batch_number = :parameters:batch and
+		    :t:a_ledger_number = :b:a_ledger_number and
+		    :t:a_batch_number = :b:a_batch_number and
+		    :p:a_ledger_number = :b:a_ledger_number and
+		    :p:a_period = :b:a_period and
+		    :c:a_ledger_number =* :t:a_ledger_number and
+		    :c:a_fund =* :t:a_fund and
+		    :a:a_ledger_number =* :t:a_ledger_number and
+		    :a:a_account_code =* :t:a_account_code and
+		    :ac:a_ledger_number =* :t:a_ledger_number and
+		    :ac:a_account_category =* :t:a_account_category
+	    HAVING
+		    :msg != 'OK'
+	    ";
+    }

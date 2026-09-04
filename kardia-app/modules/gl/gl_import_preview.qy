@@ -1,0 +1,113 @@
+$Version=2$
+gl_import_preview "system/query"
+    {
+    filename "query/parameter" { type=string; style=notnull; }
+    ledger "query/parameter" { type=string; style=notnull; }
+    period "query/parameter" { type=string; style=notnull; }
+
+    sql = " declare collection fields scope application;
+	    declare collection preview;
+
+	    -- We obtain this just once to avoid values differing by a second or so
+	    declare object info;
+	    select :info:today = getdate();
+  
+	    -- Build the basic preview of the import data
+	    insert into
+		collection preview
+	    select
+		a_journal_number = 1,
+		a_transaction_number = convert(integer, :f:name) + 1,
+		a_effective_date = (select condition(:fl:userfield = '(today)',
+						:info:today,
+						convert(datetime, condition(:fl:userfield = '(manual)',
+						    isnull(:fl:value, :info:today),
+						    isnull(eval(':' + :fl:userfield, 'C', 'f'), :info:today)
+						))
+					    )
+				    from collection fields fl where :fl:kardiafield = 'Date'),
+		--a_period = (select condition(:fl:userfield = '(automatic)',
+		--				'(automatic)',
+		--				condition(:fl:userfield = '(manual)',
+		--				    convert(string, isnull(:fl:value, '(automatic)')),
+		--				    eval(':' + :fl:userfield, 'C', 'f')
+		--				)
+		--			    )
+		--		    from collection fields fl where :fl:kardiafield = 'Period'),
+		a_period = :parameters:period,
+		a_fund = (select condition(:fl:userfield = '(manual)',
+						convert(string, isnull(:fl:value, 'ERROR')),
+						isnull(eval(':' + :fl:userfield, 'C', 'f'), 'ERROR')
+					    )
+				    from collection fields fl where :fl:kardiafield = 'Fund Code'),
+		a_account_code = (select condition(:fl:userfield = '(manual)',
+						convert(string, isnull(:fl:value, 'ERROR')),
+						isnull(eval(':' + :fl:userfield, 'C', 'f'), 'ERROR')
+					    )
+				    from collection fields fl where :fl:kardiafield = 'GL Account Code'),
+		a_account_category = (select condition(:fl:userfield = '(automatic)',
+						'(automatic)',
+						condition(:fl:userfield = '(manual)',
+						    convert(string, isnull(:fl:value, '(automatic)')),
+						    eval(':' + :fl:userfield, 'C', 'f')
+						)
+					    )
+				    from collection fields fl where :fl:kardiafield = 'GL Account Ctl'),
+		a_comment = (select condition(:fl:userfield = '(manual)',
+						convert(string, isnull(:fl:value, '')),
+						eval(':' + :fl:userfield, 'C', 'f')
+					    )
+				    from collection fields fl where :fl:kardiafield = 'Comment'),
+		a_amount = (select convert(money, condition(:fl:userfield = '(unused)',
+						null,
+						condition(:fl:userfield = '-zero-',
+						    $0,
+						    eval(':' + :fl:userfield, 'C', 'f')
+						)
+					    ))
+				    from collection fields fl where :fl:kardiafield = 'Amount (combined)'),
+		a_credit_amount = (select convert(money, condition(:fl:userfield = '(unused)',
+						null,
+						eval(':' + :fl:userfield, 'C', 'f')
+					    ))
+				    from collection fields fl where :fl:kardiafield = 'Credit Amount'),
+		a_debit_amount = (select convert(money, condition(:fl:userfield = '(unused)',
+						null,
+						eval(':' + :fl:userfield, 'C', 'f')
+					    ))
+				    from collection fields fl where :fl:kardiafield = 'Debit Amount')
+	    from
+		expression ('/apps/kardia/files/gl/' + :parameters:filename + '/rows') f
+	    ;
+
+	    -- Period fixup for automatic determination based on date.
+	    update
+		collection preview p
+	    set
+		:p:a_period = isnull(condition(:p:a_period != '(automatic)', :p:a_period, (select :a_period from /apps/kardia/data/Kardia_DB/a_period/rows per where :per:a_ledger_number = :parameters:ledger and :per:a_summary_only = 0 and :per:a_start_date <= :p:a_effective_date and :per:a_end_date >= :p:a_effective_date)), 'ERROR')
+	    ;
+
+	    -- Account ctl fixup for automatic determination based on account code.
+	    update
+		collection preview p
+	    set
+		:p:a_account_category = isnull(condition(:p:a_account_category != '(automatic)', :p:a_account_category, (select :a:a_default_category from /apps/kardia/data/Kardia_DB/a_account/rows a where :a:a_ledger_number = :parameters:ledger and :a:a_account_code = :p:a_account_code)), 'ERROR')
+	    ;
+
+	    -- Amount fixup based on separate credit/debit amounts, if needed.
+	    update
+		collection preview p
+	    set
+		:p:a_amount = condition(:a_amount is not null, :p:a_amount, condition(:p:a_credit_amount is not null, $0 - :p:a_credit_amount, condition(:p:a_debit_amount is not null, :p:a_debit_amount)))
+	    ;
+
+	    -- Return the data to the caller
+	    select
+		*,
+		date_txt = dateformat(:a_effective_date, 'yyyy-MM-dd'),
+		credit_amt = condition(:a_amount < $0, :a_amount, null),
+		debit_amt = condition(:a_amount > $0, :a_amount, null)
+	    from
+		identity collection preview
+	    ";
+    }
