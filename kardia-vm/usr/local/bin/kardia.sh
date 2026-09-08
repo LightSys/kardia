@@ -245,7 +245,7 @@ function AsRoot
 	"$@"
     else
 	echo "Switching to root..."
-	sleep 0.4
+	sleep 0.1
 	if [ "$1" != "" ]; then
 	    if [ $(type -t "$1") = "function" ]; then
 		/usr/bin/sudo /usr/local/bin/kardia.sh "$@"
@@ -2375,7 +2375,7 @@ function screenCheck
 	screen -d -m -S "$SNAME"
 	# wait for screen to start
 	while true; do
-	    sleep 0.5
+	    sleep 0.02
 	    IS_STARTED=$(screen -list | grep "$SNAME")
 	    if [ "$IS_STARTED" != "" ]; then
 		break
@@ -2393,9 +2393,9 @@ function screenPassCtrlC
     if [ "$SNAME" = "" ]; then
 	SNAME=Centrallix
     fi
-    sleep 0.2
+    sleep 0.1
     screen -S "$SNAME" -p 0 -X stuff ""
-    sleep 0.2
+    sleep 0.1
     }
 
 function cxStop
@@ -2416,15 +2416,15 @@ function cxStop
 		echo "No pid found for centrallix - already dead?"
 	    fi
 	    #Root && service centrallix stop
-	    sleep 0.5
+	    sleep 0.2
 	    ;;
 	console)
 	    screenCheck
 	    echo "Stopping Centrallix in a console..."
 	    screenPassCtrlC
-	    sleep 0.1
+	    sleep 0.01
 	    killall -u "$USER" centrallix 2>/dev/null
-	    sleep 0.1
+	    sleep 0.01
 	    killall -u "$USER" -9 centrallix 2>/dev/null
 	    ;;
 	gdb)
@@ -2434,17 +2434,17 @@ function cxStop
 		screenPassCtrlC
 		screen -S Centrallix -p 0 -X stuff "quit
 "
-		sleep 0.1
+		sleep 0.01
 		screen -S Centrallix -p 0 -X stuff "y
 "
-		sleep 0.1
+		sleep 0.01
 		killall -u "$USER" gdb 2>/dev/null
-		sleep 0.1
+		sleep 0.01
 		killall -9 -u "$USER" gdb 2>/dev/null
 	    fi
-	    sleep 0.1
+	    sleep 0.01
 	    killall -u "$USER" centrallix 2>/dev/null
-	    sleep 0.1
+	    sleep 0.01
 	    killall -u "$USER" -9 centrallix 2>/dev/null
 	    ;;
     esac
@@ -2466,7 +2466,7 @@ function cxStart
 	    cxARGS="-q -d -c /usr/local/etc/centrallix.conf -p /var/run/centrallix.pid"
 
 	    Root && $centrallix $cxARGS
-	    sleep 0.5
+	    sleep 0.1
 	    ;;
 	console)
 	    screenCheck
@@ -2474,7 +2474,7 @@ function cxStart
 	    screenPassCtrlC
 	    screen -S Centrallix -p 0 -X stuff "$CXBIN -c $CXCONF
 "
-	    sleep 0.5
+	    sleep 0.1
 	    ;;
 	gdb)
 	    screenCheck
@@ -2482,19 +2482,18 @@ function cxStart
 	    screenPassCtrlC
 	    screen -S Centrallix -p 0 -X stuff "gdb $CXBIN
 "
-	    sleep 0.1
+	    sleep 0.01
 	    screen -S Centrallix -p 0 -X stuff "set pagination off
 "
-	    sleep 0.1
+	    sleep 0.01
 	    screen -S Centrallix -p 0 -X stuff "handle SIGPIPE nostop noprint
 "
-	    sleep 0.1
+	    sleep 0.01
 	    screen -S Centrallix -p 0 -X stuff "handle SIG33 nostop noprint
 "
-	    sleep 0.1
-	    screen -S Centrallix -p 0 -X stuff "run -c $CXCONF
+	    sleep 0.01
+	    screen -S Centrallix -p 0 -X stuff "run -q -c $CXCONF
 "
-	    sleep 0.5
 	    ;;
     esac
     }
