@@ -35,6 +35,7 @@ myprojects "widget/component-decl"
 	{
 	x=800; y=0; width=200; height=98;
 	path="menu.cmp";
+	attach_to=menu_btn;
 
 	onItemSelect_1 "widget/connector" { event=ItemSelected; target=menu_overlay; action=Close; }
 	onItemSelect_Logout "widget/connector"
@@ -515,8 +516,6 @@ myprojects "widget/component-decl"
 			    event=Click; 
 			    target=menu_overlay;
 			    action=Open;
-			    open_x=runclient(:main_vbox:width - 198);
-			    open_y=76;
 			    }
 			}
 		    }
@@ -2581,4 +2580,3 @@ myprojects "widget/component-decl"
 	    }
 	}
     }
-
