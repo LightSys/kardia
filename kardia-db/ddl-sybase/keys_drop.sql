@@ -39,7 +39,7 @@ go
 
 
 alter table p_partner
-	drop constraint p_cost_ctr_idx
+	drop constraint p_fund_idx
 go
 
 
@@ -108,18 +108,8 @@ alter table p_contact_usage
 go
 
 
-alter table p_contact_usage_type
-	drop constraint p_contact_ut_pk
-go
-
-
 alter table p_partner_relationship
 	drop constraint p_partner_relationship_pk
-go
-
-
-alter table p_partner_relationship_type
-	drop constraint p_relat_type_pk
 go
 
 
@@ -153,26 +143,6 @@ alter table p_staff
 go
 
 
-alter table p_bulk_postal_code
-	drop constraint p_bulk_code_pk
-go
-
-
-alter table p_zipranges
-	drop constraint p_bulk_code_pk
-go
-
-
-alter table p_country
-	drop constraint p_country_code_pk
-go
-
-
-alter table p_pol_division
-	drop constraint p_poldiv_pk
-go
-
-
 alter table p_banking_details
 	drop constraint p_banking_details_pk
 go
@@ -190,6 +160,36 @@ go
 
 alter table p_banking_details
 	drop constraint p_bankd_acct_idx
+go
+
+
+alter table p_contact_usage_type
+	drop constraint p_contact_ut_pk
+go
+
+
+alter table p_partner_relationship_type
+	drop constraint p_relat_type_pk
+go
+
+
+alter table p_bulk_postal_code
+	drop constraint p_bulk_code_pk
+go
+
+
+alter table p_zipranges
+	drop constraint p_bulk_code_pk
+go
+
+
+alter table p_country
+	drop constraint p_country_code_pk
+go
+
+
+alter table p_pol_division
+	drop constraint p_poldiv_pk
 go
 
 
@@ -223,18 +223,13 @@ alter table p_gazetteer
 go
 
 
-alter table p_dup_check_tmp
-	drop constraint p_dupcheck_pk
+alter table p_acquisition_code
+	drop constraint p_acqcode_pk
 go
 
 
 alter table p_partner_sort_tmp
 	drop constraint p_sort_pk
-go
-
-
-alter table p_acquisition_code
-	drop constraint p_acqcode_pk
 go
 
 
@@ -258,6 +253,11 @@ alter table p_search_stage_criteria
 go
 
 
+alter table p_dup_check_tmp
+	drop constraint p_dupcheck_pk
+go
+
+
 alter table p_nondup
 	drop constraint p_nondup_pk
 go
@@ -270,6 +270,46 @@ go
 
 alter table p_merge
 	drop constraint p_merge_pk
+go
+
+
+alter table p_notification
+	drop constraint p_notify_pk
+go
+
+
+alter table p_notification
+	drop constraint p_notify_recip_idx
+go
+
+
+alter table p_notification
+	drop constraint p_notify_source_idx
+go
+
+
+alter table p_notification
+	drop constraint p_notify_type_idx
+go
+
+
+alter table p_notification
+	drop constraint p_notify_send_idx
+go
+
+
+alter table p_notification_type
+	drop constraint p_notify_type_pk
+go
+
+
+alter table p_notification_method
+	drop constraint p_notify_method_pk
+go
+
+
+alter table p_notification_pref
+	drop constraint p_notify_pref_pk
 go
 
 
@@ -320,26 +360,6 @@ go
 
 alter table e_contact_history
 	drop constraint e_cnt_hist_whom_idx
-go
-
-
-alter table e_activity
-	drop constraint e_act_pk
-go
-
-
-alter table e_activity
-	drop constraint e_act_type_idx
-go
-
-
-alter table e_activity
-	drop constraint e_act_par_idx
-go
-
-
-alter table e_activity
-	drop constraint e_act_sort_idx
 go
 
 
@@ -493,6 +513,11 @@ alter table e_partner_document
 go
 
 
+alter table e_text_expansion
+	drop constraint e_exp_pk
+go
+
+
 alter table e_workflow_type
 	drop constraint e_work_pk
 go
@@ -643,6 +668,31 @@ alter table e_data_highlight
 go
 
 
+alter table e_activity
+	drop constraint e_act_pk
+go
+
+
+alter table e_activity
+	drop constraint e_act_type_idx
+go
+
+
+alter table e_activity
+	drop constraint e_act_par_idx
+go
+
+
+alter table e_activity
+	drop constraint e_act_sort_idx
+go
+
+
+alter table e_trackactivity
+	drop constraint e_trkact_pk
+go
+
+
 alter table e_ack
 	drop constraint e_ack_pk
 go
@@ -670,16 +720,6 @@ go
 
 alter table e_ack_type
 	drop constraint e_ackt_pk
-go
-
-
-alter table e_trackactivity
-	drop constraint e_trkact_pk
-go
-
-
-alter table e_text_expansion
-	drop constraint e_exp_pk
 go
 
 
@@ -843,8 +883,8 @@ alter table a_analysis_attr_value
 go
 
 
-alter table a_cc_analysis_attr
-	drop constraint a_cc_an_attr_pk
+alter table a_fund_analysis_attr
+	drop constraint a_fund_an_attr_pk
 go
 
 
@@ -853,23 +893,23 @@ alter table a_acct_analysis_attr
 go
 
 
-alter table a_cost_center
-	drop constraint a_cost_center_pk
+alter table a_fund
+	drop constraint a_fund_pk
 go
 
 
-alter table a_cost_center
-	drop constraint a_cc_parent_idx
+alter table a_fund
+	drop constraint a_fund_parent_idx
 go
 
 
-alter table a_cost_center
-	drop constraint a_cc_legacy_idx
+alter table a_fund
+	drop constraint a_fund_legacy_idx
 go
 
 
-alter table a_cost_center
-	drop constraint a_cc_bal_idx
+alter table a_fund
+	drop constraint a_fund_bal_idx
 go
 
 
@@ -903,8 +943,8 @@ alter table a_account_category
 go
 
 
-alter table a_cc_acct
-	drop constraint a_cc_acct_pk
+alter table a_fund_acct
+	drop constraint a_fund_acct_pk
 go
 
 
@@ -939,7 +979,7 @@ go
 
 
 alter table a_transaction
-	drop constraint a_trx_cc_clustered_idx
+	drop constraint a_trx_fund_clustered_idx
 go
 
 
@@ -959,7 +999,7 @@ go
 
 
 alter table a_transaction_tmp
-	drop constraint a_trxt_cc_clustered_idx
+	drop constraint a_trxt_fund_clustered_idx
 go
 
 
@@ -978,8 +1018,8 @@ alter table a_account_class
 go
 
 
-alter table a_cost_center_class
-	drop constraint a_costctr_class_pk
+alter table a_fund_class
+	drop constraint a_fund_class_pk
 go
 
 
@@ -988,13 +1028,13 @@ alter table a_reporting_level
 go
 
 
-alter table a_cost_center_prefix
-	drop constraint a_cost_center_prefix_pk
+alter table a_fund_prefix
+	drop constraint a_fund_prefix_pk
 go
 
 
-alter table a_cc_staff
-	drop constraint a_cc_staff_pk
+alter table a_fund_staff
+	drop constraint a_fund_staff_pk
 go
 
 
@@ -1010,6 +1050,61 @@ go
 
 alter table a_currency_exch_rate
 	drop constraint a_curr_pk
+go
+
+
+alter table a_bank_recon
+	drop constraint a_recon_pk
+go
+
+
+alter table a_bank_recon_item
+	drop constraint a_recon_item_pk
+go
+
+
+alter table a_bank_recon_accts
+	drop constraint a_recon_accts_pk
+go
+
+
+alter table a_dimension
+	drop constraint a_dim_pk
+go
+
+
+alter table a_dimension
+	drop constraint a_dim_legacy_idx
+go
+
+
+alter table a_dimension
+	drop constraint a_dim_fund_idx
+go
+
+
+alter table a_dimension
+	drop constraint a_dim_fund_class_idx
+go
+
+
+alter table a_dimension_item
+	drop constraint a_dim_item_pk
+go
+
+
+alter table a_dimension_item
+	drop constraint a_dim_item_legacy_idx
+go
+
+
+alter table a_dimension_item
+	drop constraint a_dim_item_fund_idx
+go
+
+
+alter table a_dimension_item
+	drop constraint a_dim_item_fund_class_idx
 go
 
 
@@ -1049,7 +1144,7 @@ go
 
 
 alter table a_payroll_import
-	drop constraint a_payrolli_cc_idx
+	drop constraint a_payrolli_fund_idx
 go
 
 
@@ -1103,8 +1198,8 @@ alter table a_salary_review
 go
 
 
-alter table a_cc_admin_fee
-	drop constraint a_cc_admin_fee_pk
+alter table a_fund_admin_fee
+	drop constraint a_fund_admin_fee_pk
 go
 
 
@@ -1128,13 +1223,13 @@ alter table a_admin_fee_type_item_tmp
 go
 
 
-alter table a_cc_receipting
-	drop constraint a_cc_receipting_pk
+alter table a_fund_receipting
+	drop constraint a_fund_receipting_pk
 go
 
 
-alter table a_cc_receipting_accts
-	drop constraint a_cc_rcptacct_pk
+alter table a_fund_receipting_accts
+	drop constraint a_fund_rcptacct_pk
 go
 
 
@@ -1159,7 +1254,7 @@ go
 
 
 alter table a_subtrx_gift
-	drop constraint a_gifttrx_cc_clustered_idx
+	drop constraint a_gifttrx_fund_clustered_idx
 go
 
 
@@ -1199,7 +1294,7 @@ go
 
 
 alter table a_subtrx_gift_item
-	drop constraint a_gifttrxi_cc_clustered_idx
+	drop constraint a_gifttrxi_fund_clustered_idx
 go
 
 
@@ -1243,6 +1338,11 @@ alter table a_subtrx_gift_item
 go
 
 
+alter table a_subtrx_gift_item
+	drop constraint a_gifttrxi_hash_idx
+go
+
+
 alter table a_subtrx_gift_intent
 	drop constraint a_gifttrxin_pk
 go
@@ -1253,8 +1353,8 @@ alter table a_subtrx_gift_rcptcnt
 go
 
 
-alter table a_cc_auto_subscribe
-	drop constraint a_cc_auto_subscribe_pk
+alter table a_fund_auto_subscribe
+	drop constraint a_fund_auto_subscribe_pk
 go
 
 
@@ -1383,6 +1483,21 @@ alter table a_subtrx_cashxfer
 go
 
 
+alter table a_subtrx_cashxfer
+	drop constraint a_subtrx_cxf_fund_clustered_idx
+go
+
+
+alter table i_association
+	drop constraint i_assoc_pk
+go
+
+
+alter table i_acct_association
+	drop constraint i_acct_assoc_pk
+go
+
+
 alter table i_eg_gift_import
 	drop constraint i_eg_gift_import_pk
 go
@@ -1400,11 +1515,6 @@ go
 
 alter table i_eg_gift_import
 	drop constraint i_eg_kfund_idx
-go
-
-
-alter table i_eg_gift_import
-	drop constraint i_eg_efund_idx
 go
 
 
@@ -1430,6 +1540,16 @@ go
 
 alter table i_eg_gift_import
 	drop constraint i_eg_kdepbatch_idx
+go
+
+
+alter table i_eg_gift_import
+	drop constraint i_eg_stats_idx
+go
+
+
+alter table i_eg_gift_import
+	drop constraint i_eg_postproc_idx
 go
 
 

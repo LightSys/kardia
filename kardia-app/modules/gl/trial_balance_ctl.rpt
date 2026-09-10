@@ -15,9 +15,9 @@ trial_balance "system/report"
     // Parameters for GL Trial Balance
     ledger "report/parameter" { type=string; default=null; }
     fund "report/parameter" { type=string; default=null; }
-    year_period "report/parameter" { type=string; default=runserver( (select :a_period from /apps/kardia/data/Kardia_DB/a_period/rows where datepart(month, :a_start_date) = 1 and datepart(month, :a_end_date) = 12 and datepart(year, :a_end_date) = datepart(year, getdate())) ); }
-    ref_period "report/parameter" { type=string; default=runserver( (select first(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_summary_only = 0 and datepart(year, :a_end_date) = datepart(year, getdate()) order by :a_start_date) ); }
-    end_period "report/parameter" { type=string; default=runserver( (select last(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_summary_only = 0 and datepart(year, :a_end_date) = datepart(year, getdate()) order by :a_start_date) ); }
+    year_period "report/parameter" { type=string; default=runserver( (select :a_period from /apps/kardia/data/Kardia_DB/a_period/rows pp where :pp:a_summary_only = 1 and :pp:a_ledger_number = :this:ledger and getdate() <= :pp:a_end_date and getdate() >= :pp:a_start_date limit 1) ); }
+    ref_period "report/parameter" { type=string; default=runserver( (select :a_period from /apps/kardia/data/Kardia_DB/a_period/rows p where :p:a_summary_only = 0 and :p:a_parent_period = :this:year_period and :p:a_ledger_number = :this:ledger order by :p:a_start_date asc limit 1) ); }
+    end_period "report/parameter" { type=string; default=runserver( (select :a_period from /apps/kardia/data/Kardia_DB/a_period/rows p where :p:a_summary_only = 0 and :p:a_parent_period = :this:year_period and :p:a_ledger_number = :this:ledger order by :p:a_start_date desc limit 1) ); }
     pagesep "report/parameter" { type=integer; default=0; }
     show1900 "report/parameter" { type=integer; default=1; }
     unposted "report/parameter" { type=integer; default=0; }
@@ -28,9 +28,10 @@ trial_balance "system/report"
 	sql = "select * from /apps/kardia/data/Kardia_DB/a_ledger/rows l where :l:a_ledger_number = :this:ledger";
 	}
 
+    // Find the starting period for the year (may be earlier than ref period)
     period_qy "report/query"
 	{
-	sql = "select :p:a_period_desc, first_period = min(:p2:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows p, /apps/kardia/data/Kardia_DB/a_period/rows p2 where :p:a_period = :this:end_period and :p:a_ledger_number = :this:ledger and :p2:a_parent_period = :p:a_parent_period and :p2:a_ledger_number = :this:ledger";
+	sql = "select first_period = min(:p2:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows p, /apps/kardia/data/Kardia_DB/a_period/rows p2 where :p:a_period = :this:end_period and :p:a_ledger_number = :this:ledger and :p2:a_parent_period = :p:a_parent_period and :p2:a_ledger_number = :this:ledger";
 	}
 
     accts_qy "report/query"

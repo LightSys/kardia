@@ -1,0 +1,58 @@
+$Version=2$
+sending_group_create "system/query"
+    {
+    method "query/parameter" { type=integer; }
+    type "query/parameter" { type=string; }
+
+    sql = " declare object sending_info;
+
+	    -- Generate a random sending group key
+	    select :sending_info:key = substring(hash('sha256', '' + rand() + rand() + rand()), 1, 20);
+
+	    -- Mark our group and refresh contact data from current prefs.
+	    --
+	    -- Criteria:
+	    --
+	    --   1.  Status New or Updated
+	    --   2.  Notification pref is enabled / not paused
+	    --   3.  Notification pref freq=Immediate or else freq=daily and 24 hr since last notify, or freq=weekly and 168hr since last notify
+	    update
+		identity /apps/kardia/data/Kardia_DB/p_notification/rows n,
+		/apps/kardia/data/Kardia_DB/p_notification_pref/rows np,
+		/apps/kardia/data/Kardia_DB/p_contact_info/rows ci
+	    set
+		:n:p_status = 'P',
+		:n:p_sending_group_key = :sending_info:key,
+		:n:p_sent_date = null,
+		:n:p_ack_date = null,
+		:n:p_response = null,
+		:n:p_recip_contact_data = isnull(isnull(:ci:p_phone_country + ' ', '') + isnull(:ci:p_phone_area_city + ' ', '') + :ci:p_contact_data, :n:p_recip_contact_data),
+		:n:p_recip_contact_id = isnull(:np:p_recip_contact_id, :n:p_recip_contact_id),
+		:n:s_date_modified = getdate(),
+		:n:s_modified_by = user_name()
+	    where
+		(:n:p_notify_method = :parameters:method or :parameters:method is null) and
+		(:n:p_notify_type = :parameters:type or :parameters:type is null) and
+		(:n:p_status = 'N' or :n:p_status = 'U') and
+		:np:p_notify_type =* :n:p_notify_type and
+		:np:p_notify_method =* :n:p_notify_method and
+		:np:p_notify_method_item =* :n:p_notify_method_item and
+		:np:p_recip_partner_key =* :n:p_recip_partner_key and
+		:ci:p_partner_key = :np:p_recip_partner_key and
+		:ci:p_contact_id = :np:p_recip_contact_id
+	    ;
+
+	    -- Return the sending key.
+	    select
+		:sending_info:key,
+		notification_cnt = isnull(sum(count(1)), 0),
+		recipient_cnt = isnull(count(count(1)), 0)
+	    from
+		identity /apps/kardia/data/Kardia_DB/p_notification/rows n
+	    where
+		:p_sending_group_key = :sending_info:key
+	    group by
+		:p_recip_partner_key
+	    ;	
+	    ";
+    }

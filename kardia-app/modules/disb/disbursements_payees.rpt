@@ -14,23 +14,9 @@ disbursements_payees "system/report"
 
     ledger "report/parameter" { type=string; default=null; }
 
-    year_period "report/parameter"
-	{
-	default = runserver((select :a_period from /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = :this:ledger and datepart(year,getdate()) == datepart(year, :a_start_date) and :a_parent_period is null));
-	type = string;
-	}
-
-    startperiod "report/parameter"
-	{
-	default = runserver((select min(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = :this:ledger and :a_parent_period = :this:year_period));
-	type=string;
-	}
-
-    endperiod "report/parameter"
-	{
-	default = runserver((select max(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = :this:ledger and :a_parent_period = :this:year_period));
-	type=string;
-	}
+    year_period "report/parameter" { type=string; default=runserver( (select :a_period from /apps/kardia/data/Kardia_DB/a_period/rows pp where :pp:a_summary_only = 1 and :pp:a_ledger_number = :this:ledger and getdate() <= :pp:a_end_date and getdate() >= :pp:a_start_date limit 1) ); }
+    startperiod "report/parameter" { type=string; default=runserver( (select :a_period from /apps/kardia/data/Kardia_DB/a_period/rows p where :p:a_summary_only = 0 and :p:a_parent_period = :this:year_period and :p:a_ledger_number = :this:ledger order by :p:a_start_date asc limit 1) ); }
+    endperiod "report/parameter" { type=string; default=runserver( (select :a_period from /apps/kardia/data/Kardia_DB/a_period/rows p where :p:a_summary_only = 0 and :p:a_parent_period = :this:year_period and :p:a_ledger_number = :this:ledger order by :p:a_start_date desc limit 1) ); }
 
     fund "report/parameter" { type=string; default=null; }
     showacct "report/parameter" { default=0; type=integer; }

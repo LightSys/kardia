@@ -234,6 +234,10 @@ alter table p_notification
 	drop index p_notify_type_idx;
 
 
+alter table p_notification
+	drop index p_notify_send_idx;
+
+
 alter table p_notification_type
 	drop primary key;
 

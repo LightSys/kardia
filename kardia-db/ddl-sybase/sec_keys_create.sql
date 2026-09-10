@@ -23,7 +23,7 @@ alter table p_partner
 go
 
 alter table p_partner
-	add constraint p_cost_ctr_idx unique nonclustered (p_cost_center, p_partner_key)
+	add constraint p_fund_idx unique nonclustered (a_fund, p_partner_key)
 go
 
 alter table p_partner
@@ -74,6 +74,22 @@ alter table p_gazetteer
 	add constraint p_gaz_state_idx unique nonclustered (p_state_province, p_country_code, p_feature_type, p_feature_id)
 go
 
+alter table p_notification
+	add constraint p_notify_recip_idx unique nonclustered (p_recip_partner_key, p_notify_id)
+go
+
+alter table p_notification
+	add constraint p_notify_source_idx unique nonclustered (p_source_partner_key, p_notify_id)
+go
+
+alter table p_notification
+	add constraint p_notify_type_idx unique nonclustered (p_notify_type, p_object_id, p_recip_partner_key, p_notify_method, p_notify_method_item, p_notify_id)
+go
+
+alter table p_notification
+	add constraint p_notify_send_idx unique nonclustered (p_sending_group_key, p_notify_id)
+go
+
 alter table e_contact_history
 	add constraint e_cnt_hist_type_idx unique nonclustered (e_contact_history_type, p_partner_key, e_contact_history_id)
 go
@@ -88,18 +104,6 @@ go
 
 alter table e_contact_history
 	add constraint e_cnt_hist_whom_idx unique nonclustered (e_whom, p_partner_key, e_contact_history_type, e_contact_history_id)
-go
-
-alter table e_activity
-	add constraint e_act_type_idx unique nonclustered (e_activity_type, e_activity_group_id, e_activity_id)
-go
-
-alter table e_activity
-	add constraint e_act_par_idx unique nonclustered (p_partner_key, e_activity_group_id, e_activity_id)
-go
-
-alter table e_activity
-	add constraint e_act_sort_idx unique nonclustered (e_sort_key, e_activity_group_id, e_activity_id)
 go
 
 alter table e_engagement_track
@@ -226,6 +230,18 @@ alter table e_highlights
 	add constraint e_h_nt_idx unique nonclustered (e_highlight_type, e_highlight_name, e_highlight_user, e_highlight_partner, e_highlight_id)
 go
 
+alter table e_activity
+	add constraint e_act_type_idx unique nonclustered (e_activity_type, e_activity_group_id, e_activity_id)
+go
+
+alter table e_activity
+	add constraint e_act_par_idx unique nonclustered (p_partner_key, e_activity_group_id, e_activity_id)
+go
+
+alter table e_activity
+	add constraint e_act_sort_idx unique nonclustered (e_sort_key, e_activity_group_id, e_activity_id)
+go
+
 alter table e_ack
 	add constraint e_ack_obj_idx unique nonclustered (e_object_type,e_object_id,e_ack_type,e_whom,e_ack_id)
 go
@@ -270,16 +286,16 @@ alter table r_saved_paramset
 	add constraint r_ps_modfile_idx unique nonclustered (r_module, r_file, r_paramset_id)
 go
 
-alter table a_cost_center
-	add constraint a_cc_parent_idx unique nonclustered (a_parent_cost_center, a_cost_center, a_ledger_number)
+alter table a_fund
+	add constraint a_fund_parent_idx unique nonclustered (a_parent_fund, a_fund, a_ledger_number)
 go
 
-alter table a_cost_center
-	add constraint a_cc_legacy_idx unique nonclustered (a_legacy_code, a_cost_center, a_ledger_number)
+alter table a_fund
+	add constraint a_fund_legacy_idx unique nonclustered (a_legacy_code, a_fund, a_ledger_number)
 go
 
-alter table a_cost_center
-	add constraint a_cc_bal_idx unique nonclustered (a_bal_cost_center, a_cost_center, a_ledger_number)
+alter table a_fund
+	add constraint a_fund_bal_idx unique nonclustered (a_bal_fund, a_fund, a_ledger_number)
 go
 
 alter table a_account
@@ -306,6 +322,30 @@ alter table a_transaction_tmp
 	add constraint a_trxt_recip_id_idx unique nonclustered (p_int_partner_id, a_ledger_number, a_batch_number, a_journal_number, a_transaction_number)
 go
 
+alter table a_dimension
+	add constraint a_dim_legacy_idx unique nonclustered (a_legacy_code, a_dimension, a_ledger_number)
+go
+
+alter table a_dimension
+	add constraint a_dim_fund_idx unique nonclustered (a_dim_fund, a_dimension, a_ledger_number)
+go
+
+alter table a_dimension
+	add constraint a_dim_fund_class_idx unique nonclustered (a_dim_fund_class, a_dim_fund, a_dimension, a_ledger_number)
+go
+
+alter table a_dimension_item
+	add constraint a_dim_item_legacy_idx unique nonclustered (a_legacy_code, a_dimension, a_ledger_number, a_dimension_item)
+go
+
+alter table a_dimension_item
+	add constraint a_dim_item_fund_idx unique nonclustered (a_dim_item_fund, a_dimension, a_ledger_number, a_dimension_item)
+go
+
+alter table a_dimension_item
+	add constraint a_dim_item_fund_class_idx unique nonclustered (a_dim_fund_class, a_dim_fund, a_dimension, a_ledger_number, a_dimension_item)
+go
+
 alter table a_payroll_period
 	add constraint a_payperiod_idx unique nonclustered (a_period, a_ledger_number, a_payroll_group_id, a_payroll_period)
 go
@@ -315,7 +355,7 @@ alter table a_payroll_import
 go
 
 alter table a_payroll_import
-	add constraint a_payrolli_cc_idx unique nonclustered (a_ledger_number, a_cost_center, a_payroll_id)
+	add constraint a_payrolli_fund_idx unique nonclustered (a_ledger_number, a_fund, a_payroll_id)
 go
 
 alter table a_subtrx_gift
@@ -370,28 +410,32 @@ alter table a_subtrx_gift_item
 	add constraint a_gifttrxi_datetype_idx unique nonclustered (a_dn_gift_received_date, a_dn_gift_postmark_date, a_dn_gift_type, a_ledger_number, a_batch_number, a_gift_number, a_split_number)
 go
 
+alter table a_subtrx_gift_item
+	add constraint a_gifttrxi_hash_idx unique nonclustered (a_account_hash, a_check_front_image, a_check_back_image, a_ledger_number, a_batch_number, a_gift_number, a_split_number)
+go
+
 alter table a_motivational_code
 	add constraint a_motiv_code_list unique nonclustered (m_list_code, a_ledger_number, a_motivational_code)
 go
 
 alter table a_giving_pattern
-	add constraint a_givingp_review_idx unique nonclustered (a_review, a_ledger_number, p_donor_partner_key, a_cost_center, a_pattern_id, a_history_id)
+	add constraint a_givingp_review_idx unique nonclustered (a_review, a_ledger_number, p_donor_partner_key, a_fund, a_pattern_id, a_history_id)
 go
 
 alter table a_giving_pattern
-	add constraint a_givingp_actual_idx unique nonclustered (a_actual_cost_center, a_ledger_number, p_donor_partner_key, a_cost_center, a_pattern_id, a_history_id)
+	add constraint a_givingp_actual_idx unique nonclustered (a_actual_fund, a_ledger_number, p_donor_partner_key, a_fund, a_pattern_id, a_history_id)
 go
 
 alter table a_giving_pattern_allocation
-	add constraint a_givingpa_review_idx unique nonclustered (a_review, a_ledger_number, p_donor_partner_key, a_cost_center, a_pattern_id, a_history_id)
+	add constraint a_givingpa_review_idx unique nonclustered (a_review, a_ledger_number, p_donor_partner_key, a_fund, a_pattern_id, a_history_id)
 go
 
 alter table a_giving_pattern_allocation
-	add constraint a_givingpa_actual_idx unique nonclustered (a_actual_cost_center, a_ledger_number, p_donor_partner_key, a_cost_center, a_pattern_id, a_history_id)
+	add constraint a_givingpa_actual_idx unique nonclustered (a_actual_fund, a_ledger_number, p_donor_partner_key, a_fund, a_pattern_id, a_history_id)
 go
 
 alter table a_giving_pattern_flag
-	add constraint a_givingf_review_idx unique nonclustered (a_review, a_ledger_number, p_donor_partner_key, a_cost_center, a_pattern_id, a_history_id)
+	add constraint a_givingf_review_idx unique nonclustered (a_review, a_ledger_number, p_donor_partner_key, a_fund, a_pattern_id, a_history_id)
 go
 
 alter table a_subtrx_cashdisb
@@ -403,39 +447,43 @@ alter table a_subtrx_deposit
 go
 
 alter table i_eg_gift_import
-	add constraint i_eg_kdonor_idx unique nonclustered (p_donor_partner_key, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid)
+	add constraint i_eg_kdonor_idx unique nonclustered (p_donor_partner_key, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid, i_eg_line_item)
 go
 
 alter table i_eg_gift_import
-	add constraint i_eg_edonor_idx unique nonclustered (i_eg_donor_uuid, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid)
+	add constraint i_eg_edonor_idx unique nonclustered (i_eg_donor_uuid, i_eg_donor_alt_id, i_eg_donormap_future, i_eg_donormap_confidence, p_donor_partner_key, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid, i_eg_line_item)
 go
 
 alter table i_eg_gift_import
-	add constraint i_eg_kfund_idx unique nonclustered (a_cost_center, a_account_code, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid)
+	add constraint i_eg_kfund_idx unique nonclustered (a_fund, a_account_code, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid, i_eg_line_item)
 go
 
 alter table i_eg_gift_import
-	add constraint i_eg_efund_idx unique nonclustered (i_eg_desig_name, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid)
+	add constraint i_eg_egift_idx unique nonclustered (i_eg_gift_uuid, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid, i_eg_line_item)
 go
 
 alter table i_eg_gift_import
-	add constraint i_eg_egift_idx unique nonclustered (i_eg_gift_uuid, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid)
+	add constraint i_eg_edeposit_idx unique nonclustered (i_eg_deposit_uuid, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid, i_eg_line_item)
 go
 
 alter table i_eg_gift_import
-	add constraint i_eg_edeposit_idx unique nonclustered (i_eg_deposit_uuid, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid)
+	add constraint i_eg_kgiftbatch_idx unique nonclustered (a_batch_number, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid, i_eg_line_item)
 go
 
 alter table i_eg_gift_import
-	add constraint i_eg_kgiftbatch_idx unique nonclustered (a_batch_number, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid)
+	add constraint i_eg_kfeebatch_idx unique nonclustered (a_batch_number_fees, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid, i_eg_line_item)
 go
 
 alter table i_eg_gift_import
-	add constraint i_eg_kfeebatch_idx unique nonclustered (a_batch_number_fees, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid)
+	add constraint i_eg_kdepbatch_idx unique nonclustered (a_batch_number_deposit, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid, i_eg_line_item)
 go
 
 alter table i_eg_gift_import
-	add constraint i_eg_kdepbatch_idx unique nonclustered (a_batch_number_deposit, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid)
+	add constraint i_eg_stats_idx unique nonclustered (i_eg_gift_trx_date, i_eg_status, i_eg_donormap_confidence, i_eg_fundmap_confidence, i_eg_acctmap_confidence, a_batch_number, i_eg_gift_amount, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid, i_eg_line_item)
+go
+
+alter table i_eg_gift_import
+	add constraint i_eg_postproc_idx unique nonclustered (i_eg_postprocess, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid, i_eg_line_item)
 go
 
 alter table c_chat

@@ -58,22 +58,10 @@ alter table p_contact_usage
 	add constraint p_contact_usg_pk primary key clustered (p_partner_key, p_contact_usage_type_code, p_contact_or_location, p_contact_location_id)
 go
 
-print "working on table p_contact_usage_type"
-
-alter table p_contact_usage_type
-	add constraint p_contact_ut_pk primary key clustered (p_contact_usage_type_code)
-go
-
 print "working on table p_partner_relationship"
 
 alter table p_partner_relationship
 	add constraint p_partner_relationship_pk primary key clustered (p_partner_key, p_relation_type, p_relation_key)
-go
-
-print "working on table p_partner_relationship_type"
-
-alter table p_partner_relationship_type
-	add constraint p_relat_type_pk primary key clustered (p_relation_type)
 go
 
 print "working on table p_church"
@@ -100,6 +88,24 @@ alter table p_staff
 	add constraint p_staff_pk primary key clustered (p_partner_key)
 go
 
+print "working on table p_banking_details"
+
+alter table p_banking_details
+	add constraint p_banking_details_pk primary key clustered (p_banking_details_key)
+go
+
+print "working on table p_contact_usage_type"
+
+alter table p_contact_usage_type
+	add constraint p_contact_ut_pk primary key clustered (p_contact_usage_type_code)
+go
+
+print "working on table p_partner_relationship_type"
+
+alter table p_partner_relationship_type
+	add constraint p_relat_type_pk primary key clustered (p_relation_type)
+go
+
 print "working on table p_bulk_postal_code"
 
 alter table p_bulk_postal_code
@@ -124,12 +130,6 @@ alter table p_pol_division
 	add constraint p_poldiv_pk primary key clustered (p_country_code, p_pol_division)
 go
 
-print "working on table p_banking_details"
-
-alter table p_banking_details
-	add constraint p_banking_details_pk primary key clustered (p_banking_details_key)
-go
-
 print "working on table p_banking_type"
 
 alter table p_banking_type
@@ -152,22 +152,16 @@ alter table p_gazetteer
 	add constraint p_gaz_name_clustered_idx unique clustered (p_feature_name, p_country_code, p_feature_type, p_feature_id)
 go
 
-print "working on table p_dup_check_tmp"
+print "working on table p_acquisition_code"
 
-alter table p_dup_check_tmp
-	add constraint p_dupcheck_pk primary key clustered (p_partner_key,s_username)
+alter table p_acquisition_code
+	add constraint p_acqcode_pk primary key clustered (p_acquisition_code)
 go
 
 print "working on table p_partner_sort_tmp"
 
 alter table p_partner_sort_tmp
 	add constraint p_sort_pk primary key clustered (p_partner_key,s_username,p_sort_session_id)
-go
-
-print "working on table p_acquisition_code"
-
-alter table p_acquisition_code
-	add constraint p_acqcode_pk primary key clustered (p_acquisition_code)
 go
 
 print "working on table p_partner_search"
@@ -194,6 +188,12 @@ alter table p_search_stage_criteria
 	add constraint p_stage_criteria_pk primary key clustered (p_search_id,p_search_stage_id,p_criteria_name)
 go
 
+print "working on table p_dup_check_tmp"
+
+alter table p_dup_check_tmp
+	add constraint p_dupcheck_pk primary key clustered (p_partner_key,s_username)
+go
+
 print "working on table p_nondup"
 
 alter table p_nondup
@@ -210,6 +210,30 @@ print "working on table p_merge"
 
 alter table p_merge
 	add constraint p_merge_pk primary key clustered (p_partner_key_a, p_partner_key_b, p_data_source, p_data_key)
+go
+
+print "working on table p_notification"
+
+alter table p_notification
+	add constraint p_notify_pk primary key clustered (p_notify_id)
+go
+
+print "working on table p_notification_type"
+
+alter table p_notification_type
+	add constraint p_notify_type_pk primary key clustered (p_notify_type)
+go
+
+print "working on table p_notification_method"
+
+alter table p_notification_method
+	add constraint p_notify_method_pk primary key clustered (p_notify_method)
+go
+
+print "working on table p_notification_pref"
+
+alter table p_notification_pref
+	add constraint p_notify_pref_pk primary key clustered (p_notify_type, p_notify_method, p_notify_method_item, p_recip_partner_key)
 go
 
 print "working on table m_list"
@@ -246,12 +270,6 @@ print "working on table e_contact_history"
 
 alter table e_contact_history
 	add constraint e_cnt_hist_pk primary key clustered (e_contact_history_id)
-go
-
-print "working on table e_activity"
-
-alter table e_activity
-	add constraint e_act_pk primary key clustered (e_activity_group_id, e_activity_id)
 go
 
 print "working on table e_engagement_track"
@@ -350,6 +368,12 @@ alter table e_partner_document
 	add constraint e_pardoc_pk primary key clustered (e_document_id, p_partner_key, e_pardoc_assoc_id)
 go
 
+print "working on table e_text_expansion"
+
+alter table e_text_expansion
+	add constraint e_exp_pk primary key clustered (e_exp_tag)
+go
+
 print "working on table e_workflow_type"
 
 alter table e_workflow_type
@@ -428,6 +452,18 @@ alter table e_data_highlight
 	add constraint e_dh_pk primary key clustered (e_highlight_subject, e_highlight_object_type, e_highlight_object_id)
 go
 
+print "working on table e_activity"
+
+alter table e_activity
+	add constraint e_act_pk primary key clustered (e_activity_group_id, e_activity_id)
+go
+
+print "working on table e_trackactivity"
+
+alter table e_trackactivity
+	add constraint e_trkact_pk primary key clustered (p_partner_key,e_username,e_sort_key)
+go
+
 print "working on table e_ack"
 
 alter table e_ack
@@ -438,18 +474,6 @@ print "working on table e_ack_type"
 
 alter table e_ack_type
 	add constraint e_ackt_pk primary key clustered (e_ack_type)
-go
-
-print "working on table e_trackactivity"
-
-alter table e_trackactivity
-	add constraint e_trkact_pk primary key clustered (p_partner_key,e_username,e_sort_key)
-go
-
-print "working on table e_text_expansion"
-
-alter table e_text_expansion
-	add constraint e_exp_pk primary key clustered (e_exp_tag)
 go
 
 print "working on table e_text_search_word"
@@ -602,22 +626,22 @@ alter table a_analysis_attr_value
 	add constraint a_an_attr_val_pk primary key clustered (a_ledger_number, a_attr_code, a_value)
 go
 
-print "working on table a_cc_analysis_attr"
+print "working on table a_fund_analysis_attr"
 
-alter table a_cc_analysis_attr
-	add constraint a_cc_an_attr_pk primary key clustered (a_ledger_number, a_attr_code, a_cost_center)
+alter table a_fund_analysis_attr
+	add constraint a_fund_an_attr_pk primary key clustered (a_ledger_number, a_attr_code, a_fund, a_hist_id)
 go
 
 print "working on table a_acct_analysis_attr"
 
 alter table a_acct_analysis_attr
-	add constraint a_acct_an_attr_pk primary key clustered (a_ledger_number, a_attr_code, a_account_code)
+	add constraint a_acct_an_attr_pk primary key clustered (a_ledger_number, a_attr_code, a_account_code, a_hist_id)
 go
 
-print "working on table a_cost_center"
+print "working on table a_fund"
 
-alter table a_cost_center
-	add constraint a_cost_center_pk primary key clustered (a_cost_center, a_ledger_number)
+alter table a_fund
+	add constraint a_fund_pk primary key clustered (a_fund, a_ledger_number)
 go
 
 print "working on table a_account"
@@ -644,10 +668,10 @@ alter table a_account_category
 	add constraint a_account_category_pk primary key clustered (a_account_category, a_ledger_number)
 go
 
-print "working on table a_cc_acct"
+print "working on table a_fund_acct"
 
-alter table a_cc_acct
-	add constraint a_cc_acct_pk primary key clustered (a_ledger_number, a_period, a_cost_center, a_account_code)
+alter table a_fund_acct
+	add constraint a_fund_acct_pk primary key clustered (a_ledger_number, a_period, a_fund, a_account_code)
 go
 
 print "working on table a_period"
@@ -687,7 +711,7 @@ alter table a_transaction
 go
 
 alter table a_transaction
-	add constraint a_trx_cc_clustered_idx unique clustered (a_cost_center, a_account_code, a_ledger_number, a_batch_number, a_journal_number, a_transaction_number)
+	add constraint a_trx_fund_clustered_idx unique clustered (a_fund, a_account_code, a_ledger_number, a_batch_number, a_journal_number, a_transaction_number)
 go
 
 print "working on table a_transaction_tmp"
@@ -697,7 +721,7 @@ alter table a_transaction_tmp
 go
 
 alter table a_transaction_tmp
-	add constraint a_trxt_cc_clustered_idx unique clustered (a_cost_center, a_account_code, a_ledger_number, a_batch_number, a_journal_number, a_transaction_number)
+	add constraint a_trxt_fund_clustered_idx unique clustered (a_fund, a_account_code, a_ledger_number, a_batch_number, a_journal_number, a_transaction_number)
 go
 
 print "working on table a_account_class"
@@ -706,10 +730,10 @@ alter table a_account_class
 	add constraint a_account_class_pk primary key clustered (a_account_class, a_ledger_number)
 go
 
-print "working on table a_cost_center_class"
+print "working on table a_fund_class"
 
-alter table a_cost_center_class
-	add constraint a_costctr_class_pk primary key clustered (a_cost_center_class, a_ledger_number)
+alter table a_fund_class
+	add constraint a_fund_class_pk primary key clustered (a_fund_class, a_ledger_number)
 go
 
 print "working on table a_reporting_level"
@@ -718,16 +742,16 @@ alter table a_reporting_level
 	add constraint a_level_pk primary key clustered (a_reporting_level, a_ledger_number)
 go
 
-print "working on table a_cost_center_prefix"
+print "working on table a_fund_prefix"
 
-alter table a_cost_center_prefix
-	add constraint a_cost_center_prefix_pk primary key clustered (a_cost_center_prefix, a_ledger_number)
+alter table a_fund_prefix
+	add constraint a_fund_prefix_pk primary key clustered (a_fund_prefix, a_ledger_number)
 go
 
-print "working on table a_cc_staff"
+print "working on table a_fund_staff"
 
-alter table a_cc_staff
-	add constraint a_cc_staff_pk primary key clustered (a_ledger_number, a_cost_center, p_staff_partner_key)
+alter table a_fund_staff
+	add constraint a_fund_staff_pk primary key clustered (a_ledger_number, a_fund, p_staff_partner_key)
 go
 
 print "working on table a_ledger_office"
@@ -746,6 +770,36 @@ print "working on table a_currency_exch_rate"
 
 alter table a_currency_exch_rate
 	add constraint a_curr_pk primary key clustered (a_ledger_number, a_base_currency_code, a_foreign_currency_code, a_exch_rate_date)
+go
+
+print "working on table a_bank_recon"
+
+alter table a_bank_recon
+	add constraint a_recon_pk primary key clustered (a_ledger_number, a_account_code, a_statement_id)
+go
+
+print "working on table a_bank_recon_item"
+
+alter table a_bank_recon_item
+	add constraint a_recon_item_pk primary key clustered (a_ledger_number, a_account_code, a_line_item)
+go
+
+print "working on table a_bank_recon_accts"
+
+alter table a_bank_recon_accts
+	add constraint a_recon_accts_pk primary key clustered (a_ledger_number, a_account_code)
+go
+
+print "working on table a_dimension"
+
+alter table a_dimension
+	add constraint a_dim_pk primary key clustered (a_dimension, a_ledger_number)
+go
+
+print "working on table a_dimension_item"
+
+alter table a_dimension_item
+	add constraint a_dim_item_pk primary key clustered (a_dimension, a_ledger_number, a_dimension_item)
 go
 
 print "working on table a_payroll"
@@ -838,10 +892,10 @@ alter table a_salary_review
 	add constraint a_salreview_pk primary key clustered (a_ledger_number, a_payroll_id, a_review)
 go
 
-print "working on table a_cc_admin_fee"
+print "working on table a_fund_admin_fee"
 
-alter table a_cc_admin_fee
-	add constraint a_cc_admin_fee_pk primary key clustered (a_cost_center, a_ledger_number)
+alter table a_fund_admin_fee
+	add constraint a_fund_admin_fee_pk primary key clustered (a_fund, a_ledger_number)
 go
 
 print "working on table a_admin_fee_type"
@@ -859,25 +913,25 @@ go
 print "working on table a_admin_fee_type_item"
 
 alter table a_admin_fee_type_item
-	add constraint a_admin_fee_type_item_pk primary key clustered (a_ledger_number, a_admin_fee_type, a_admin_fee_subtype, a_dest_cost_center)
+	add constraint a_admin_fee_type_item_pk primary key clustered (a_ledger_number, a_admin_fee_type, a_admin_fee_subtype, a_dest_fund)
 go
 
 print "working on table a_admin_fee_type_item_tmp"
 
 alter table a_admin_fee_type_item_tmp
-	add constraint a_admin_fee_type_item_tmp_pk primary key clustered (a_ledger_number, a_admin_fee_type, a_admin_fee_subtype, a_dest_cost_center)
+	add constraint a_admin_fee_type_item_tmp_pk primary key clustered (a_ledger_number, a_admin_fee_type, a_admin_fee_subtype, a_dest_fund)
 go
 
-print "working on table a_cc_receipting"
+print "working on table a_fund_receipting"
 
-alter table a_cc_receipting
-	add constraint a_cc_receipting_pk primary key clustered (a_cost_center, a_ledger_number)
+alter table a_fund_receipting
+	add constraint a_fund_receipting_pk primary key clustered (a_fund, a_ledger_number)
 go
 
-print "working on table a_cc_receipting_accts"
+print "working on table a_fund_receipting_accts"
 
-alter table a_cc_receipting_accts
-	add constraint a_cc_rcptacct_pk primary key clustered (a_cost_center, a_ledger_number,a_account_code)
+alter table a_fund_receipting_accts
+	add constraint a_fund_rcptacct_pk primary key clustered (a_fund, a_ledger_number,a_account_code)
 go
 
 print "working on table a_receipt_type"
@@ -905,7 +959,7 @@ alter table a_subtrx_gift
 go
 
 alter table a_subtrx_gift
-	add constraint a_gifttrx_cc_clustered_idx unique clustered (a_cost_center, a_account_code, a_ledger_number, a_batch_number, a_gift_number)
+	add constraint a_gifttrx_fund_clustered_idx unique clustered (a_fund, a_account_code, a_ledger_number, a_batch_number, a_gift_number)
 go
 
 print "working on table a_subtrx_gift_group"
@@ -921,7 +975,7 @@ alter table a_subtrx_gift_item
 go
 
 alter table a_subtrx_gift_item
-	add constraint a_gifttrxi_cc_clustered_idx unique clustered (a_cost_center, a_account_code, a_ledger_number, a_batch_number, a_gift_number, a_split_number)
+	add constraint a_gifttrxi_fund_clustered_idx unique clustered (a_fund, a_account_code, a_ledger_number, a_batch_number, a_gift_number, a_split_number)
 go
 
 print "working on table a_subtrx_gift_intent"
@@ -936,10 +990,10 @@ alter table a_subtrx_gift_rcptcnt
 	add constraint a_rcptno_pk primary key clustered (a_ledger_number)
 go
 
-print "working on table a_cc_auto_subscribe"
+print "working on table a_fund_auto_subscribe"
 
-alter table a_cc_auto_subscribe
-	add constraint a_cc_auto_subscribe_pk primary key clustered (a_cost_center, a_ledger_number, m_list_code)
+alter table a_fund_auto_subscribe
+	add constraint a_fund_auto_subscribe_pk primary key clustered (a_fund, a_ledger_number, m_list_code)
 go
 
 print "working on table a_motivational_code"
@@ -951,25 +1005,25 @@ go
 print "working on table a_giving_pattern"
 
 alter table a_giving_pattern
-	add constraint a_givingp_pk primary key clustered (a_ledger_number, p_donor_partner_key, a_cost_center, a_pattern_id, a_history_id)
+	add constraint a_givingp_pk primary key clustered (a_ledger_number, p_donor_partner_key, a_fund, a_pattern_id, a_history_id)
 go
 
 print "working on table a_giving_pattern_allocation"
 
 alter table a_giving_pattern_allocation
-	add constraint a_givingpa_pk primary key clustered (a_ledger_number, p_donor_partner_key, a_cost_center, a_pattern_id, a_history_id)
+	add constraint a_givingpa_pk primary key clustered (a_ledger_number, p_donor_partner_key, a_fund, a_pattern_id, a_history_id)
 go
 
 print "working on table a_giving_pattern_flag"
 
 alter table a_giving_pattern_flag
-	add constraint a_givingf_pk primary key clustered (a_ledger_number, p_donor_partner_key, a_cost_center, a_pattern_id, a_history_id)
+	add constraint a_givingf_pk primary key clustered (a_ledger_number, p_donor_partner_key, a_fund, a_pattern_id, a_history_id)
 go
 
 print "working on table a_funding_target"
 
 alter table a_funding_target
-	add constraint a_target_pk primary key clustered (a_ledger_number, a_cost_center, a_target_id)
+	add constraint a_target_pk primary key clustered (a_ledger_number, a_fund, a_target_id)
 go
 
 print "working on table a_support_review"
@@ -981,19 +1035,19 @@ go
 print "working on table a_support_review_target"
 
 alter table a_support_review_target
-	add constraint a_supptgt_pk primary key clustered (a_ledger_number, a_cost_center, a_target_id, a_review)
+	add constraint a_supptgt_pk primary key clustered (a_ledger_number, a_fund, a_target_id, a_review)
 go
 
 print "working on table a_descriptives"
 
 alter table a_descriptives
-	add constraint a_descr_pk primary key clustered (a_ledger_number, p_donor_partner_key, a_cost_center)
+	add constraint a_descr_pk primary key clustered (a_ledger_number, p_donor_partner_key, a_fund)
 go
 
 print "working on table a_descriptives_hist"
 
 alter table a_descriptives_hist
-	add constraint a_descrhist_pk primary key clustered (a_ledger_number, p_donor_partner_key, a_cost_center, a_hist_id)
+	add constraint a_descrhist_pk primary key clustered (a_ledger_number, p_donor_partner_key, a_fund, a_hist_id)
 go
 
 print "working on table a_pledge"
@@ -1041,13 +1095,29 @@ go
 print "working on table a_subtrx_cashxfer"
 
 alter table a_subtrx_cashxfer
-	add constraint a_subtrx_cashxfer_pk primary key clustered (a_ledger_number, a_batch_number, a_journal_number)
+	add constraint a_subtrx_cashxfer_pk primary key nonclustered (a_ledger_number, a_batch_number, a_journal_number)
+go
+
+alter table a_subtrx_cashxfer
+	add constraint a_subtrx_cxf_fund_clustered_idx unique clustered (a_fund, a_source_cash_acct, a_ledger_number, a_batch_number, a_journal_number)
+go
+
+print "working on table i_association"
+
+alter table i_association
+	add constraint i_assoc_pk primary key clustered (i_assoc_service, i_assoc_type, i_assoc_external_id, i_assoc_hist_id)
+go
+
+print "working on table i_acct_association"
+
+alter table i_acct_association
+	add constraint i_acct_assoc_pk primary key clustered (a_ledger_number, i_assoc_service, i_assoc_type, i_assoc_external_id, i_assoc_hist_id)
 go
 
 print "working on table i_eg_gift_import"
 
 alter table i_eg_gift_import
-	add constraint i_eg_gift_import_pk primary key clustered (a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid)
+	add constraint i_eg_gift_import_pk primary key clustered (a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid, i_eg_line_item)
 go
 
 print "working on table i_eg_gift_trx_fees"
@@ -1059,7 +1129,7 @@ go
 print "working on table i_eg_giving_url"
 
 alter table i_eg_giving_url
-	add constraint i_eg_giving_url_pk primary key clustered (a_ledger_number, a_cost_center)
+	add constraint i_eg_giving_url_pk primary key clustered (a_ledger_number, a_fund)
 go
 
 print "working on table i_crm_partner_import"

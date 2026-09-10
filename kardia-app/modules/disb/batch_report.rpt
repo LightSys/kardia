@@ -58,6 +58,7 @@ check_report "system/report"
 	ledger "report/parameter" { type=string; default=null; }
 	batch_number "report/parameter" { type=integer; default=null; }
 	start_check_number "report/parameter" { type=integer; default=null; }
+	disbursement_id "report/parameter" { type=integer; default=null; }	// If doing just one check
 	
 	///////////////////////////////////////////
 	
@@ -83,7 +84,8 @@ check_report "system/report"
 				/apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows c
 			WHERE
 				:c:a_ledger_number = :this:ledger and
-				:c:a_batch_number  = :this:batch_number
+				:c:a_batch_number  = :this:batch_number and
+				(:this:disbursement_id is null or :c:a_disbursement_id = :this:disbursement_id)
 			GROUP BY
 				:c:a_check_number
 				
@@ -280,7 +282,8 @@ check_report "system/report"
 				/apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows c
 			WHERE
 				:c:a_ledger_number = :this:ledger and
-				:c:a_batch_number  = :this:batch_number
+				:c:a_batch_number  = :this:batch_number and
+				(:this:disbursement_id is null or :c:a_disbursement_id = :this:disbursement_id)
 			GROUP BY
 				:c:a_disbursement_id
 				

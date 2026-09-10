@@ -207,6 +207,7 @@ create  index p_merge_rev_idx on p_merge (p_partner_key_b, p_partner_key_a, p_da
 /* create  index p_notify_pk on p_notification (p_notify_id)*/ 
 /* go */
 create  index p_notify_recip_idx on p_notification (p_recip_partner_key, p_notify_id);
+create  index p_notify_send_idx on p_notification (p_sending_group_key, p_notify_id);
 create  index p_notify_source_idx on p_notification (p_source_partner_key, p_notify_id);
 create  index p_notify_type_idx on p_notification (p_notify_type, p_object_id, p_recip_partner_key, p_notify_method, p_notify_method_item, p_notify_id);
 

@@ -207,6 +207,7 @@ alter table p_merge drop index p_merge_rev_idx;
 /* drop index p_notification.p_notify_pk */ 
 /* go */
 alter table p_notification drop index p_notify_recip_idx;
+alter table p_notification drop index p_notify_send_idx;
 alter table p_notification drop index p_notify_source_idx;
 alter table p_notification drop index p_notify_type_idx;
 

@@ -6,17 +6,17 @@ a_period_usage "application/filespec"
     header_row = yes;
     header_has_titles = no;
     two_quote_escape = yes;
-    annotation = "Obfuscated Data";
+    annotation = "CSV Data for a_period_usage";
     key_is_rowid = yes;
     new_row_padding = 8;
     
     // Column specifications.
-    s_date_created "filespec/column" { type=datetime; id=1; }
-    s_date_modified "filespec/column" { type=datetime; id=2; }
-    a_period_usage_code "filespec/column" { type=char(4); id=3; }
-    a_period "filespec/column" { type=char(8); id=4; }
-    __cx_osml_control "filespec/column" { type=varchar(255); id=5; }
-    a_ledger_number "filespec/column" { type=char(10); id=6; }
-    s_created_by "filespec/column" { type=varchar(20); id=7; }
-    s_modified_by "filespec/column" { type=varchar(20); id=8; }
+    a_period_usage_code "filespec/column" { type=string; id=1; }
+    a_ledger_number "filespec/column" { type=string; id=2; }
+    a_period "filespec/column" { type=string; id=3; }
+    s_date_created "filespec/column" { type=datetime; id=4; }
+    s_created_by "filespec/column" { type=string; id=5; }
+    s_date_modified "filespec/column" { type=datetime; id=6; }
+    s_modified_by "filespec/column" { type=string; id=7; }
+    __cx_osml_control "filespec/column" { type=string; id=8; }
     }

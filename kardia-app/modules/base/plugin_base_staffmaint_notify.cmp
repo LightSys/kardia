@@ -5,6 +5,11 @@ plugin_base_staffmaint_notify "widget/component-decl"
     height=272;
     width=758;
 
+    table_addon_title = "Notifications";
+    table_addon_field = "notifylist";
+    table_addon_width = 150;
+    sql_addon = "notifylist = (select isnull(sum(first(:np:p_notify_type) + ',') - ',', '') from /apps/kardia/data/Kardia_DB/p_notification_pref/rows np where :np:p_recip_partner_key = :s:p_partner_key and :np:p_enabled = 1 group by :np:p_notify_type)";
+
     sequence = 15;
 
     Modified "widget/component-decl-event" { }
@@ -166,8 +171,8 @@ plugin_base_staffmaint_notify "widget/component-decl"
     popover_notify_detail "widget/childwindow"
 	{
 	widget_class="popover";
-	width=400; height=190;
-	x=415; y=265;
+	width=400; height=220;
+	x=415; y=250;
 	    
 	update_emails_on_open "widget/connector"
 	    {
@@ -180,16 +185,19 @@ plugin_base_staffmaint_notify "widget/component-decl"
 	notify_detail_vbox "widget/vbox"
 	    {
 	    x=10; y=10;
-	    width=378; height=170;
+	    width=378; height=200;
 	    spacing=10;
 
 	    notify_detail_osrc "widget/osrc"
 		{
 		nd_method "widget/parameter" { param_name=p_notify_method; type=integer; default=runclient(:clicked_method:value); }
 		sql = "	select
-			    *
+			    *,
+			    method_name = (select :p_notify_method_desc from /apps/kardia/data/Kardia_DB/p_notification_method/rows nm where :nm:p_notify_method = :np:p_notify_method),
+			    queued = (select count(1) from /apps/kardia/data/Kardia_DB/p_notification/rows n where :n:p_notify_method = :np:p_notify_method and :n:p_recip_partner_key = :np:p_recip_partner_key and :n:p_notify_method_item = :np:p_notify_method_item and :n:p_notify_type = :np:p_notify_type and (:n:p_status = 'N' or :n:p_status = 'U' or :n:p_status = 'P')),
+			    sent = (select count(1) from /apps/kardia/data/Kardia_DB/p_notification/rows n where :n:p_notify_method = :np:p_notify_method and :n:p_recip_partner_key = :np:p_recip_partner_key and :n:p_notify_method_item = :np:p_notify_method_item and :n:p_notify_type = :np:p_notify_type and (:n:p_status = 'S'))
 			from
-			    /apps/kardia/data/Kardia_DB/p_notification_pref/rows
+			    /apps/kardia/data/Kardia_DB/p_notification_pref/rows np
 			where
 			    :p_notify_method = :parameters:p_notify_method
 			";
@@ -217,13 +225,21 @@ plugin_base_staffmaint_notify "widget/component-decl"
 		    on_form_save_2 "widget/connector" { event=DataSaved; target=notify_osrc; action=RefreshObject; }
 		    on_form_discard "widget/connector" { event=Discard; target=popover_notify_detail; action=Close; }
 
-		    notify_detail_title "widget/label" { height=16; font_size=14; style=bold; align=center; text="Notification Options"; }
+		    notify_detail_title "widget/label" { height=16; font_size=16; style=bold; align=center; value=runclient(isnull(:notify_detail_osrc:method_name + " ", "") + "Notifications"); }
 
 		    f_contact "widget/component" { height=20; label_width=150; path="/sys/cmp/smart_field.cmp"; text="Contact:"; ctl_type=dropdown; field=p_recip_contact_id; sql="select 1, 1 where 1 != 1"; fc_hints "widget/hints" { style=notnull; } }
 
 		    f_freq "widget/component" { height=20; label_width=150; path="/sys/cmp/smart_field.cmp"; text="Frequency:"; ctl_type=dropdown; field=p_frequency; sql="select label='Immediate', value=0; select label='Daily', value=1; select label='Weekly', value=7"; ff_hints "widget/hints" { style=notnull; } }
 		    f_pauseuntil "widget/component" { height=20; label_width=150; path="/sys/cmp/smart_field.cmp"; text="Pause Until:"; ctl_type=datetime; field=p_pause_until_date; }
 		    f_discardpause "widget/component" { height=20; label_width=150; path="/sys/cmp/smart_field.cmp"; text="Discard while Paused:"; ctl_type=checkbox; field=p_pause_discard; fd_hints "widget/hints" { style=notnull; } }
+		    stats_hbox "widget/hbox"
+			{
+			height=20;
+			spacing=10;
+
+			f_queued "widget/component" { label_width=150; width=200; path="/sys/cmp/smart_field.cmp"; text="Queued:"; ctl_type=label; field=queued; }
+			f_sent "widget/component" { label_width=50; width=100; path="/sys/cmp/smart_field.cmp"; text="Sent:"; ctl_type=label; field=sent; }
+			}
 
 		    btns_hbox "widget/hbox"
 			{

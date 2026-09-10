@@ -806,14 +806,16 @@ support_review "widget/component-decl"
 						:gpf:a_ledger_number = :parameters:ledger and
 						:a_flag_resolution is null),
 			    target_amt =    :a_target_amount,
-			    percent =	    round(100 * convert(double, (select
-						sum(condition(isnull(:gp:a_interval,0) = 0, :gp:a_amount / 12, :gp:a_amount / :gp:a_interval))
-					    from
-						/apps/kardia/data/Kardia_DB/a_giving_pattern/rows gp
-					    where
-						:gp:a_fund = :parameters:fund and
-						:gp:a_ledger_number = :parameters:ledger))
-					    / convert(double, :a_target_amount), 1),
+			    percent =	    condition(:a_target_amount = $0, 0.0,
+						round(100 * convert(double, (select
+						    sum(condition(isnull(:gp:a_interval,0) = 0, :gp:a_amount / 12, :gp:a_amount / :gp:a_interval))
+						from
+						    /apps/kardia/data/Kardia_DB/a_giving_pattern/rows gp
+						where
+						    :gp:a_fund = :parameters:fund and
+						    :gp:a_ledger_number = :parameters:ledger))
+						/ convert(double, :a_target_amount), 1),
+					    ),
 			    :s_modified_by,
 			    :s_date_modified
 			from 

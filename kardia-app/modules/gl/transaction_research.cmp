@@ -199,10 +199,10 @@ transaction_research "widget/component-decl"
 				    select :info:startdate = convert(datetime, :parameters:startdate);
 				    select :info:enddate = convert(datetime, :parameters:enddate);
 				    select :info:amounttype = substring(:parameters:amount, 1, 1);
-				    select :info:amount = convert(money, condition(charindex(:info:amounttype, '=<>') == 0, :parameters:amount, null));
-				    select :info:amount = convert(money, condition(:info:amounttype = '=', substring(:parameters:amount, 2, 999), :info:amount));
-				    select :info:minamount = convert(money, condition(:info:amounttype = '>', substring(:parameters:amount, 2, 999), :parameters:amount));
-				    select :info:maxamount = convert(money, condition(:info:amounttype = '<', substring(:parameters:amount, 2, 999), :parameters:amount));
+				    select :info:amount = convert(money, condition(charindex(:info:amounttype, '=<>') == 0, :parameters:amount, 
+							    condition(:info:amounttype = '=', substring(:parameters:amount, 2, 999), null)));
+				    select :info:minamount = convert(money, condition(:info:amounttype = '>', substring(:parameters:amount, 2, 999), null));
+				    select :info:maxamount = convert(money, condition(:info:amounttype = '<', substring(:parameters:amount, 2, 999), null));
 
 				    select
 					stat = condition(:t:a_posted = 1, 'Posted', 'New'),
@@ -345,6 +345,7 @@ transaction_research "widget/component-decl"
 				    Group = runclient(:Value);
 				    }
 				}
+
 			    f_period "widget/component"
 				{
 				width=230;
@@ -357,18 +358,6 @@ transaction_research "widget/component-decl"
 				numdisplay=13;
 				sql = runserver("select :a_period + ' - ' + :a_period_desc, :a_period, 0, :a_parent_period from  /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = " + quote(:this:ledger) + " and :a_summary_only = 0 order by :a_period desc");
 				}
-			    //f_period "widget/component" { width=230; path="/apps/kardia/modules/base/editbox_tree.cmp"; field="period"; popup_source=runserver("/apps/kardia/modules/gl/periods.qyt/" + :this:ledger + "/"); popup_text="Period:"; text="Period:"; attach_point=editbox; label_width=70; }
-			    //f_year "widget/component"
-			//	{
-			//	width=230;
-			//	path="/sys/cmp/smart_field.cmp";
-			//	field="year"; 
-			//	text="Year:";
-			//	ctl_type=dropdown;
-			//	label_width=70;
-			//	numdisplay=12;
-			//	sql="select '' + datepart(year,:a_start_date), datepart(year, :a_start_date) from /apps/kardia/data/Kardia_DB/a_period/rows p group by datepart(year, :a_start_date) desc order by :a_start_date desc"; 
-			//	}
 
 			    f_startdate "widget/component"
 				{
