@@ -227,8 +227,7 @@ gift_associations "widget/page"
 		    :eg:i_eg_trx_uuid = :parameters:target_trx_uuid AND
 		    :eg:a_ledger_number = " + quote(:this:ledger) + " AND
 		    :eg:a_fund *= :f:a_fund
-		-- TODO: Uncomment 'DEFAULT' after PR #127 is merged.
-		ORDER BY -- DEFAULT
+		ORDER BY DEFAULT
 		    :eg:i_eg_line_item,
 		    :eg:i_eg_gift_date
 	    ");
@@ -286,7 +285,7 @@ gift_associations "widget/page"
 		demand_scrollbar  = yes;
 		allow_selection   = yes;
 		allow_deselection = yes;
-		allow_sorting     = yes;
+		allow_sorting     = no;
 		
 		// Columns
 		column_service_desig "widget/table-column"
@@ -336,6 +335,25 @@ gift_associations "widget/page"
 			hidden_trx_uuid "widget/variable" { fieldname = i_eg_trx_uuid; }
 			hidden_line_item "widget/variable" { fieldname = i_eg_line_item; }
 			line_item_hidden_field_handler "widget/component" { path = "/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
+			
+			// Real (nonoverride) transactions are view-only.  The readonly hints
+			// lock the fields on data load, but the shared form re-enables them
+			// if it enters Modify mode.  Disabling the whole form on load fixes
+			// this so they remain locked.
+			lock_readonly_line_item "widget/connector"
+			    {
+			    event = DataLoaded;
+			    target = line_item_edit_form;
+			    action = Disable;
+			    event_condition = runclient(not :line_item_osrc:is_override);
+			    }
+			unlock_override_line_item "widget/connector"
+			    {
+			    event = DataLoaded;
+			    target = line_item_edit_form;
+			    action = Enable;
+			    event_condition = runclient(:line_item_osrc:is_override);
+			    }
 			
 			line_item_edit_pane "widget/pane"
 			    {
