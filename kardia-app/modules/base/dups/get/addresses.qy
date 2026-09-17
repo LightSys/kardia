@@ -1,0 +1,35 @@
+$Version=2$
+get_addresses "system/query"
+    {
+    // To get the address, we need to concatenate several fields found in the
+    // p_location table:
+    //   - p_in_care_of: For sending mail to a recipient without an address who
+    //                   will have a different person/organization receive the
+    //                   mail for them.  The address of that entity is provided.
+    //   - p_address_1, p_address_2, & p_address_3: Up to 3 lines of an address.
+    //   - p_city, p_state_province: The city and state (respectively).
+    //   - p_country_code, p_postal_code: The country and postal code (repsectively).
+    //
+    // If the p_address_1 field is null or does not exist, the 'address' is ignored.
+    // This is very common because many systems in Centrallix assume that every
+    // record has an address, so every record has an associated address, even if it
+    // is almost completely blank. 
+    sql = "
+	SELECT
+	    key = :p_partner_key,
+	    address = ''
+		+ isnull(:p_in_care_of, '')
+		+ isnull(:p_address_1, '')
+		+ isnull(:p_address_2, '')
+		+ isnull(:p_address_3, '')
+		+ isnull(:p_city, '')
+		+ isnull(:p_state_province, '')
+		+ isnull(:p_country_code, '')
+		+ isnull(:p_postal_code, '')
+	FROM
+	    identity /apps/kardia/data/Kardia_DB/p_location/rows
+	WHERE
+	    char_length(isnull(:p_address_1, '')) > 1
+	;
+    ";
+    }
