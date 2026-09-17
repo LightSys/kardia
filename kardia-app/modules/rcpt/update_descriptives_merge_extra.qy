@@ -12,6 +12,8 @@ update_descriptives_merge_extra "system/query"
             -- Step One: Identify
 	    --  Identify one-time-extra gifts.  We consider a gift as one-time-extra if it is a single
 	    --  larger gift occurring within a regular giving pattern.
+
+        -- dh is extra and dh2 is regular giving
 	    update
 		identity collection a_descriptives_hist dh,
 		collection a_descriptives d
@@ -53,6 +55,7 @@ update_descriptives_merge_extra "system/query"
 		:dh2:p_donor_partner_key = :dh1:p_donor_partner_key and
                 :dh1:a_is_extra = 2 and
                 :dh1:a_hist_id != 1 and
+                --not most recent 
                 :dh2:a_count > 1 and
                 :dh2:a_first_gift <= :dh1:a_first_gift and
                 :dh2:a_last_gift >= :dh1:a_last_gift
@@ -72,6 +75,7 @@ update_descriptives_merge_extra "system/query"
 		:dh2:p_donor_partner_key = :dh1:p_donor_partner_key and
                 :dh1:a_is_extra = 2 and
                 :dh1:a_hist_id = 1 and
+                --it is the most recent gift
                 :dh2:a_count > 1 and
                 :dh2:a_last_gift = :dh1:a_prev_end
             ;
@@ -89,6 +93,8 @@ update_descriptives_merge_extra "system/query"
                 -- The fuzziness here can be tweaked. If there are no other gifts
                 -- within +/- half an interval of the extra gift, the gift is assumed
                 -- to contain the regular giving amount lumped with the gift amount.
+
+                 --detecting if the extra gift is all on its own
                 includes_regular_giving = ((select count(1) from collection tmp_gift_items where :donor = :dh1:p_donor_partner_key and :ledger = :dh1:a_ledger_number and :fund = :dh1:a_fund and :giftdate > dateadd(day, convert(integer, round(-0.5 * 30.5 * :dh2:a_act_average_interval)), :dh1:a_first_gift) and :giftdate < dateadd(day, convert(integer, round(.5 * 30.5 * :dh2:a_act_average_interval)), :dh1:a_first_gift) and :dh1:a_amount > :dh2:a_amount) = 1)
             from
                 collection a_descriptives_hist dh1,
@@ -108,6 +114,8 @@ update_descriptives_merge_extra "system/query"
 		collection a_descriptives_hist dh1,
                 collection tmp_intermediate_vals t
 	    set
+        --if we subtract it from some place we have to add it into other place
+        --moving money from step 3 to step 4 
 		:dh2:a_total = condition(
                                 :t:includes_regular_giving,
                                 :dh2:a_total + :dh2:a_amount,
@@ -193,6 +201,7 @@ update_descriptives_merge_extra "system/query"
                                 ),
                 :dh1:a_merged_id = null,
                 :dh1:a_is_extra = 1
+                --succeeded in merging
             where
 		(:parameters:fund is null or :parameters:fund = :dh2:a_fund) and
 		(:parameters:donor is null or :parameters:donor = :dh2:p_donor_partner_key) and
@@ -216,5 +225,6 @@ update_descriptives_merge_extra "system/query"
                 (:parameters:fund is null or :parameters:fund = :a_fund) and
 		(:parameters:donor is null or :parameters:donor = :p_donor_partner_key) and
                 :a_is_extra = 2
+                --failed in merging
 	    ";
     }
