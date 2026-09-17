@@ -1,0 +1,40 @@
+// File that manages the API connections with limesurvery
+
+$Version=2$
+
+activity "system/query"
+{
+    
+    //    sql = "select :\"Set-Cookie\" from object /apps/kardia/modules/ex_limesurvey/get_key.http";
+
+    SURVEY_ID "query/parameter" { type=integer; }
+    sql = "declare object KEY;
+
+          select
+                 :KEY:API_KEY=:result
+          from
+                  object /apps/kardia/modules/ex_limesurvey/get_key.http
+          ;
+
+          select
+                 name = 'response.json',
+                 content_type = 'application/json',
+                 inner_type = 'application/json',
+                 objcontent = convert(string,from_base64(:result))
+                 
+                 
+          from
+            IDENTITY
+                 object expression('/apps/kardia/modules/ex_limesurvey/get_survey_responses.http?KEY='+:KEY:API_KEY+'&SURVEY_ID='+:parameters:SURVEY_ID) j
+--                WILDCARD expression('/apps/kardia/modules/ex_limesurvey/connect.qy?SURVEY_ID='+:parameters:SURVEY_ID+'/response.json/responses/*') j
+                ,
+                /apps/kardia/data/Kardia_DB/i_crm_import_type/rows cit
+        WHERE
+            :cit:i_crm_import_type_id = :parameters:SURVEY_ID
+	        AND
+            :j:submitdate IS NOT NULL
+
+
+          ";
+    name_expression = "'response.json'";
+}
