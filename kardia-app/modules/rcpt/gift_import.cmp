@@ -961,10 +961,10 @@ gift_import "widget/component-decl"
 							'/sys/images/green_check.gif',
 							condition(
 							    -- :eg:i_eg_deposit_uuid is not null and :eg:a_batch_number is not null and sum(:i_eg_gift_amount) = first(:i_eg_deposit_gross_amt),
-							    :eg:i_eg_deposit_uuid is not null and sum(:i_eg_gift_amount) = first(:i_eg_deposit_gross_amt),
+							    :eg:i_eg_deposit_uuid is not null and :eg:i_eg_deposit_date <= getdate() and sum(:i_eg_gift_amount) = first(:i_eg_deposit_gross_amt),
 							    '/sys/images/dotted_check.gif',
 							    condition(
-								:eg:i_eg_deposit_uuid is not null and :eg:a_batch_number is null and sum(:i_eg_gift_amount) = first(:i_eg_deposit_gross_amt),
+								:eg:i_eg_deposit_uuid is not null and :eg:i_eg_deposit_date <= getdate() and :eg:a_batch_number is null and sum(:i_eg_gift_amount) = first(:i_eg_deposit_gross_amt),
 								'/sys/images/yellow_exclam.gif',
 								'/sys/images/red_x.gif')
 							    )
@@ -974,10 +974,10 @@ gift_import "widget/component-decl"
 							'/sys/images/green_check.gif',
 							condition(
 							    -- :eg:i_eg_deposit_uuid is not null and :eg:a_batch_number is not null,
-							    :eg:i_eg_deposit_uuid is not null,
+							    :eg:i_eg_deposit_uuid is not null and :eg:i_eg_deposit_date <= getdate(),
 							    '/sys/images/dotted_check.gif',
 							    condition(
-								:eg:i_eg_deposit_uuid is not null and :eg:a_batch_number is null,
+								:eg:i_eg_deposit_uuid is not null and :eg:i_eg_deposit_date <= getdate() and :eg:a_batch_number is null,
 								'/sys/images/yellow_exclam.gif',
 								'/sys/images/red_x.gif')
 							    )
@@ -1000,7 +1000,7 @@ gift_import "widget/component-decl"
 				    fees_period = :fb:a_period,
 				    dep_period = :db:a_period,
 				    is_unimp_gifts = max(:a_batch_number is null),
-				    is_pending = max(:i_eg_deposit_uuid is null)
+				    is_pending = max(:i_eg_deposit_uuid is null or :i_eg_deposit_date > getdate())
 			    FROM
 				    /apps/kardia/data/Kardia_DB/a_period/rows per,
 				    identity /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows eg,
@@ -1373,6 +1373,7 @@ gift_import "widget/component-decl"
 				(:parameters:ptime is null or :parameters:ptime = '0' or substring(:parameters:ptime,7,1) = 'M' or (dateadd(hour, convert(integer, substring(:parameters:ptime,1,6)), :eg:i_eg_gift_trx_date) > getdate())) and
 				(char_length(:parameters:ptime) < 8 or (datepart(year,dateadd(month, convert(integer,substring(:parameters:ptime,8,1)), :eg:i_eg_gift_trx_date)) == datepart(year,getdate()) and datepart(month,dateadd(month, convert(integer,substring(:parameters:ptime,8,1)), :eg:i_eg_gift_trx_date)) == datepart(month,getdate()))) and
 				:eg:i_eg_deposit_uuid is not null and
+				:eg:i_eg_deposit_date <= getdate() and
 				-- :eg:a_batch_number is not null and
 				:eg:a_batch_number_deposit is null
 			group by
@@ -1504,6 +1505,7 @@ gift_import "widget/component-decl"
 					(:parameters:ptime is null or :parameters:ptime = '0' or substring(:parameters:ptime,7,1) = 'M' or (dateadd(hour, convert(integer, substring(:parameters:ptime,1,6)), :i_eg_gift_trx_date) > getdate())) and
 					(char_length(:parameters:ptime) < 8 or (datepart(year,dateadd(month, convert(integer,substring(:parameters:ptime,8,1)), :i_eg_gift_trx_date)) == datepart(year,getdate()) and datepart(month,dateadd(month, convert(integer,substring(:parameters:ptime,8,1)), :i_eg_gift_trx_date)) == datepart(month,getdate()))) and
 					:eg2:i_eg_deposit_uuid is not null and
+					:eg2:i_eg_deposit_date <= getdate() and
 					(:a_batch_number_deposit is null or
 					    (:a_batch_number_deposit >= convert(integer,:parameters:batchno) and :a_batch_number_deposit <= convert(integer,:parameters:endbatchno))) and
 					--:a_batch_number is not null and
@@ -1519,6 +1521,7 @@ gift_import "widget/component-decl"
 			    (:parameters:ptime is null or :parameters:ptime = '0' or substring(:parameters:ptime,7,1) = 'M' or (dateadd(hour, convert(integer, substring(:parameters:ptime,1,6)), :i_eg_gift_trx_date) > getdate())) and
 			    (char_length(:parameters:ptime) < 8 or (datepart(year,dateadd(month, convert(integer,substring(:parameters:ptime,8,1)), :i_eg_gift_trx_date)) == datepart(year,getdate()) and datepart(month,dateadd(month, convert(integer,substring(:parameters:ptime,8,1)), :i_eg_gift_trx_date)) == datepart(month,getdate()))) and
 			    :eg:i_eg_deposit_uuid is not null and
+			    :eg:i_eg_deposit_date <= getdate() and
 			    :a_batch_number_deposit is null -- and
 			    -- :a_batch_number is not null
 		    ;
@@ -1634,6 +1637,7 @@ gift_import "widget/component-decl"
 				(:parameters:ptime is null or :parameters:ptime = '0' or substring(:parameters:ptime,7,1) = 'M' or (dateadd(hour, convert(integer, substring(:parameters:ptime,1,6)), :eg:i_eg_gift_trx_date) > getdate())) and
 				(char_length(:parameters:ptime) < 8 or (datepart(year,dateadd(month, convert(integer,substring(:parameters:ptime,8,1)), :eg:i_eg_gift_trx_date)) == datepart(year,getdate()) and datepart(month,dateadd(month, convert(integer,substring(:parameters:ptime,8,1)), :eg:i_eg_gift_trx_date)) == datepart(month,getdate()))) and
 				:eg:i_eg_deposit_uuid is not null and
+				:eg:i_eg_deposit_date <= getdate() and
 				-- :eg:a_batch_number is not null and
 				:eg:a_batch_number_fees is null
 			group by
@@ -1765,6 +1769,7 @@ gift_import "widget/component-decl"
 					(:parameters:ptime is null or :parameters:ptime = '0' or substring(:parameters:ptime,7,1) = 'M' or (dateadd(hour, convert(integer, substring(:parameters:ptime,1,6)), :i_eg_gift_trx_date) > getdate())) and
 					(char_length(:parameters:ptime) < 8 or (datepart(year,dateadd(month, convert(integer,substring(:parameters:ptime,8,1)), :i_eg_gift_trx_date)) == datepart(year,getdate()) and datepart(month,dateadd(month, convert(integer,substring(:parameters:ptime,8,1)), :i_eg_gift_trx_date)) == datepart(month,getdate()))) and
 					:eg2:i_eg_deposit_uuid is not null and
+					:eg2:i_eg_deposit_date <= getdate() and
 					(:a_batch_number_fees is null or
 					    (:a_batch_number_fees >= convert(integer,:parameters:batchno) and :a_batch_number_fees <= convert(integer,:parameters:endbatchno))) and
 					--:a_batch_number is not null and
@@ -1780,6 +1785,7 @@ gift_import "widget/component-decl"
 			    (:parameters:ptime is null or :parameters:ptime = '0' or substring(:parameters:ptime,7,1) = 'M' or (dateadd(hour, convert(integer, substring(:parameters:ptime,1,6)), :i_eg_gift_trx_date) > getdate())) and
 			    (char_length(:parameters:ptime) < 8 or (datepart(year,dateadd(month, convert(integer,substring(:parameters:ptime,8,1)), :i_eg_gift_trx_date)) == datepart(year,getdate()) and datepart(month,dateadd(month, convert(integer,substring(:parameters:ptime,8,1)), :i_eg_gift_trx_date)) == datepart(month,getdate()))) and
 			    :eg:i_eg_deposit_uuid is not null and
+			    :eg:i_eg_deposit_date <= getdate() and
 			    :a_batch_number_fees is null -- and
 			    -- :a_batch_number is not null
 		    ;
