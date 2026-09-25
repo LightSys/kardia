@@ -550,6 +550,9 @@ grant select on ra to public;
 /* i_eg_gift_import */
 
 
+/* i_eg_deposit_config */
+
+
 /* i_eg_gift_trx_fees */
 
 
