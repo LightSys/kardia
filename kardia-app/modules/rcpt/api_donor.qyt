@@ -21,15 +21,19 @@ api_donors "system/querytree"
 			    gift_fund_desc = isnull(:cr:a_receipt_comment, :c:a_fund_desc),
 			    gift_ledger_desc = :l:a_ledger_desc,
 			    gift_check_num = :i:a_recv_document_id,
-			    gift_type = (select :gt:text from /apps/kardia/data/Kardia_DB/_a_gift_type/rows gt, /apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g where :gt:tag = :g:a_gift_type and :g:a_ledger_number = :i:a_ledger_number and :g:a_batch_number = :i:a_batch_number and :g:a_gift_number = :i:a_gift_number),
+			    gift_type = :gt:a_gift_payment_type_desc,
+			    gift_is_cash = condition(:gt:a_is_cash != 0, 1, 0),
 			    gift_is_acknowledgement = condition(::donor_id == :i:p_dn_ack_partner_id, 1, 0),
 			    gift_receipt_num = :i:a_dn_receipt_number,
-			    gift_non_tax_ded = :i:a_non_tax_deductible
+			    gift_non_tax_ded = :i:a_non_tax_deductible,
+			    gift_comment = :i:a_comment,
+			    donor_id = ::donor_id
 			from
 			    identity /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i,
 			    /apps/kardia/data/Kardia_DB/a_fund/rows c,
 			    /apps/kardia/data/Kardia_DB/a_ledger/rows l,
-			    /apps/kardia/data/Kardia_DB/a_fund_receipting_accts/rows cr
+			    /apps/kardia/data/Kardia_DB/a_fund_receipting_accts/rows cr,
+			    /apps/kardia/data/Kardia_DB/a_gift_payment_type/rows gt
 			where
 			    :i:a_posted = 1 and
 			    (:i:p_dn_donor_partner_id = ::donor_id or :i:p_dn_ack_partner_id = ::donor_id) and
@@ -40,7 +44,9 @@ api_donors "system/querytree"
 	 		    :l:a_ledger_number = :c:a_ledger_number and
 			    :cr:a_ledger_number =* :i:a_ledger_number and
 			    :cr:a_fund =* :i:a_fund and
-			    :cr:a_account_code =* :i:a_account_code
+			    :cr:a_account_code =* :i:a_account_code and
+			    :gt:a_gift_payment_type =* :i:a_dn_gift_type and 
+			    :gt:a_ledger_number =* :i:a_ledger_number
 			";
 
 		Receipt "system/querytree"
@@ -51,15 +57,27 @@ api_donors "system/querytree"
 			    from
 				identity object expression (
 				    condition(::gift_is_acknowledgement == 0,
-					isnull((select
-						    :a_config_value
-						from
-						    /apps/kardia/data/Kardia_DB/a_config/rows
-						where
-						    :a_ledger_number = :allgifts_list:gift_ledger and
-						    :a_config_name = 'RcptReport'
-						),
-						'/apps/kardia/modules/rcpt/gift_receipt.rpt'
+					condition(::gift_is_cash == 1,
+					    isnull((select
+							:a_config_value
+						    from
+							/apps/kardia/data/Kardia_DB/a_config/rows
+						    where
+							:a_ledger_number = :allgifts_list:gift_ledger and
+							:a_config_name = 'RcptReport'
+						    ),
+						    '/apps/kardia/modules/rcpt/gift_receipt.rpt'
+					    ),
+					    isnull((select
+							:a_config_value
+						    from
+							/apps/kardia/data/Kardia_DB/a_config/rows
+						    where
+							:a_ledger_number = :allgifts_list:gift_ledger and
+							:a_config_name = 'RcptNCReport'
+						    ),
+						    '/apps/kardia/modules/rcpt/gift_inkind_receipt.rpt'
+					    )
 					),
 					isnull((select
 						    :a_config_value
