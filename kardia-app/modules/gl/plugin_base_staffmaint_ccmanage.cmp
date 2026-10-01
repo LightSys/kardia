@@ -16,6 +16,45 @@ plugin_base_staffmaint_ccmanage "widget/component-decl"
     staff_osrc "widget/parameter" { type=object; find_container = "widget/osrc"; }
     ledger "widget/parameter" { type=string; deploy_to_client = yes; }
 
+    def_ctls "widget/osrc"
+	{
+	dc_fund "widget/parameter" { param_name = fund; type = string; }
+	dc_partner "widget/parameter" { param_name = partner; type = string; }
+	dc_was_checked "widget/parameter" { param_name = was_checked; type = integer; }
+
+	sql = "	update
+		    /apps/kardia/data/Kardia_DB/p_partner/rows
+		set
+		    :a_fund = condition(:parameters:was_checked == 0, :parameters:fund, null)
+		where
+		    :p_partner_key = :parameters:partner
+		;
+
+		select
+		    :parameters:fund,
+		    :parameters:partner,
+		    checked = condition(:parameters:was_checked, 0, 1)
+		";
+	autoquery=never;
+
+	on_def_ctl_set "widget/connector"
+	    {
+	    event=EndQuery;
+	    target=staff_osrc;
+	    action=RefreshObject;
+	    }
+	}
+
+    on_def_ctl_refresh "widget/connector"
+	{
+	source = staff_osrc;
+	event = DataFocusChanged;
+	//event_confirm = runclient('Staff->Mgr Refresh: ' + :Refresh);
+	event_condition = runclient(:Refresh == 1);
+	target = mgr_table;
+	action = Refresh;
+	}
+
     rpt_ctls "widget/component"
 	{
 	path = "/apps/kardia/modules/base/receives_report.cmp";
@@ -155,7 +194,8 @@ plugin_base_staffmaint_ccmanage "widget/component-decl"
 
 				//t_cc "widget/table-column" { title="Fund"; fieldname="a_fund"; width=70; }
 				//t_name "widget/table-column" { title="Name"; fieldname="a_fund_desc"; width=450; }
-				t_disp "widget/table-column" { title="Fund"; fieldname="disp_name"; width=450; }
+				t_def "widget/table-column" { title="Default?"; value=runclient(condition(:staff_osrc:a_fund == :mgr_osrc:a_fund, 1, 0)); type=checkbox; width=70; align=center; }
+				t_disp "widget/table-column" { title="Fund"; fieldname="disp_name"; width=380; }
 				t_dates "widget/table-column" { title="Dates Managed"; fieldname="date_range"; width=160; }
 
 				t_items_rpt "widget/repeat"
@@ -202,6 +242,25 @@ plugin_base_staffmaint_ccmanage "widget/component-decl"
 				    value=runclient(:a_fund);
 				    report_group=runclient(substring(:Column, 6));
 				    partner=runclient(:staff_osrc:p_partner_key);
+				    }
+
+				default_on_click "widget/connector"
+				    {
+				    event=Check;
+				    target = def_ctls;
+				    action = QueryParam;
+				    fund = runclient(:mgr_osrc:a_fund);
+				    partner = runclient(:staff_osrc:p_partner_key);
+				    was_checked = 0;
+				    }
+				default_on_unclick "widget/connector"
+				    {
+				    event=Uncheck;
+				    target = def_ctls;
+				    action = QueryParam;
+				    fund = runclient(:mgr_osrc:a_fund);
+				    partner = runclient(:staff_osrc:p_partner_key);
+				    was_checked = 1;
 				    }
 				}
 			    }

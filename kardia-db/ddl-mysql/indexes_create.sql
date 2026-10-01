@@ -1151,6 +1151,11 @@ create  index i_eg_postproc_idx on i_eg_gift_import (i_eg_postprocess, a_ledger_
 create  index i_eg_stats_idx on i_eg_gift_import (i_eg_gift_trx_date, i_eg_status, i_eg_donormap_confidence, i_eg_fundmap_confidence, i_eg_acctmap_confidence, a_batch_number, i_eg_gift_amount, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid, i_eg_line_item);
 
 
+/* i_eg_deposit_config */
+/* create  index i_eg_deposit_config_pk on i_eg_deposit_config (a_ledger_number, i_eg_depfee_id)*/ 
+/* go */
+
+
 /* i_eg_gift_trx_fees */
 /* create  index i_eg_gift_trx_fees_pk on i_eg_gift_trx_fees (a_ledger_number, i_eg_fees_id)*/ 
 /* go */

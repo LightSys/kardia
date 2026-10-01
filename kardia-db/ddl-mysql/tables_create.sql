@@ -3930,7 +3930,7 @@ create table i_eg_gift_import (
         i_eg_gift_uuid                        char(36)  not null,      /* UUID for the gift record --  */
         i_eg_desig_uuid                       varchar(36)  not null,   /* ID of designation that the donor chose --  */
         i_eg_line_item                        integer  not null,       /* unique ID for the gift item (in case there is more than one line item to the same designation) --  */
-        i_eg_trx_uuid                         char(36)  not null,      /* UUID for the transaction record --  */
+        i_eg_trx_uuid                         char(36)  not null,      /* UUID for the transaction record. A transaction can contain one or more designations / line items. --  */
         i_eg_donor_uuid                       char(36)  not null,      /* UUID for the donor --  */
         i_eg_donor_alt_id                     char(36)  null,          /* alternate ID for the donor --  */
         i_eg_account_uuid                     varchar(36)  null,       /* ID of donation account that the donor used --  */
@@ -3980,11 +3980,11 @@ create table i_eg_gift_import (
         i_eg_desig_notes                      varchar(255)  null,      /* Notes provided by donor --  */
         i_eg_net_amount                       decimal(14,4)  null,     /* Net gift (less fees for this transaction) --  */
         i_eg_deposit_date                     datetime  null,          /* Date that this gift was deposited into the ministry's account --  */
-        i_eg_deposit_uuid                     char(36)  null,          /* ID of the deposit. --  */
+        i_eg_deposit_uuid                     char(36)  null,          /* ID of the deposit. See wiki definition of what "the deposit" means. A deposit contains one or more transactions. --  */
         i_eg_contra_deposit_uuid              char(36)  null,          /* ID of a contra-deposit, if applicable --  */
         i_eg_deposit_status                   char(16)  null,          /* status of the deposit --  */
-        i_eg_deposit_gross_amt                decimal(14,4)  null,     /* gross amount of the deposit before fees --  */
-        i_eg_deposit_amt                      decimal(14,4)  null,     /* net amount of the deposit --  */
+        i_eg_deposit_gross_amt                decimal(14,4)  null,     /* gross amount of the deposit before fees. See wiki definition of what "the deposit" means. --  */
+        i_eg_deposit_amt                      decimal(14,4)  null,     /* net amount of the deposit. See wiki definition of what "the deposit" means. --  */
         i_eg_is_modified                      integer  null,           /* Set to 1 to indicate that this line item was derived or modified and does not exactly match upstream giving service data. --  */
         i_eg_is_donorfee                      integer  null,           /* Set to 1 to indicate that this line item is a donor-paid admin fee and thus may need special treatment later. --  */
         i_eg_postprocess                      varchar(255)  null,      /* Postprocessing module control flags --  */
@@ -4000,6 +4000,32 @@ create table i_eg_gift_import (
         a_batch_number                        integer  null,           /* Kardia GL batch used to process this gift record --  */
         a_batch_number_fees                   integer  null,           /* Kardia GL batch used to process the fees for this gift record --  */
         a_batch_number_deposit                integer  null,           /* Kardia GL batch used to process the deposit for this gift record --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* i_eg_deposit_config */
+
+create table i_eg_deposit_config (
+        a_ledger_number                       char(10)  not null,      /* ledger number for this data --  */
+        i_eg_depfee_id                        integer  not null,       /* A unique ID for the deposits/fees configuration. --  */
+        i_eg_service                          varchar(16)  null,       /* Service ID (e.g. EG, EGS, SS) from Kardia online giving service plugin, or null to apply to all service plugins --  */
+        i_eg_processor                        varchar(80)  null,       /* Name of payment processor, or null to apply to all payment processors --  */
+        i_eg_gift_currency                    varchar(16)  null,       /* currency of gift (e.g. USD, CAD, etc), or null to apply to all currencies --  */
+        i_eg_gift_pmt_type                    varchar(16)  null,       /* Payment type, or null to apply to all payment types. --  */
+        i_eg_deposit_method                   char(1)  not null,       /* Deposit method: (G)ross Deposits, (N)et Deposits, or (X) for no automatic deposits import. --  */
+        i_eg_fees_method                      char(1)  not null,       /* Fees method: (N) for net fees subtracted from the deposit and posted as a GL batch, (D) for daily disbursements fees batches, (P) for using a payable GL account, or (X) for no automatic fees import. --  */
+        i_eg_fees_fund                        char(20)  null,          /* Fund for the transaction fees payable --  */
+        i_eg_fees_account_code                char(16)  null,          /* GL Account for the transaction fees payable --  */
+        i_eg_calc_method                      char(1)  not null,       /* Fee calculation method: (I) for fees data provided by online giving import module, or (M) for manually calculated fees using data in this record. --  */
+        i_eg_calc_rounding                    char(1)  not null,       /* Rounding method for manually calculated fees that aren't whole cent amounts: (R) round normally, (D) always round down to the cent, or (U) always round up to the cent --  */
+        i_eg_fee_flat_amt                     decimal(14,4)  null,     /* Flat part of fee, if using manual calculation. --  */
+        i_eg_fee_pct_amt                      float  null,             /* Percentage part of fee, if using manual calculation. --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */

@@ -1553,6 +1553,11 @@ alter table i_eg_gift_import
 go
 
 
+alter table i_eg_deposit_config
+	drop constraint i_eg_deposit_config_pk
+go
+
+
 alter table i_eg_gift_trx_fees
 	drop constraint i_eg_gift_trx_fees_pk
 go
