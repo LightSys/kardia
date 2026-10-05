@@ -50,10 +50,18 @@ myquery "system/query"
 			substring(:__cx_path, 35)
 		)),
 		cx_path=:__cx_path, -- include for debug
-		:TransactionRef, :CustomerID, :CustomerRef, :PaymentMethodRef, :ProcessDate, :SettlementDate,
-		:DepositDate, :CCAuthDesc, :CCStatus, :Amount, :TransactionFee, :FundID, :FundName, :FundAmount, 
-		:FundTransactionFee, :FundNote, :Credit, :AccountType, :ReturnDate, :ReturnCode, 
-		:ReturnReason
+		-- fix encoding on any values that may contain non-ascii characters
+		CCAuthDesc = convert('string', convert(:CCAuthDesc, 'latin1', 'utf8')),
+		FundName = convert('string', convert(:FundName, 'latin1', 'vanco')),
+		FundNote = convert('string', convert(:FundNote, 'latin1', 'vanco')),
+		ReturnDate = condition(char_length(:ReturnDate) > 1, :ReturnDate, NULL), 
+		DepositDate =  condition(char_length(:DepositDate) > 1, :DepositDate, NULL),
+		ProcessDate =  condition(char_length(:ProcessDate) > 1, :ProcessDate, NULL),
+		SettlementDate =  condition(char_length(:SettlementDate) > 1, :SettlementDate, NULL),
+		:TransactionRef, :CustomerID, :CustomerRef, :PaymentMethodRef,
+		:CCStatus, :TransactionFee, :FundID, :FundAmount, :Amount,
+		:FundTransactionFee, :Credit, :AccountType,
+		:ReturnCode, :ReturnReason
 	    FROM 
 		IDENTITY SUBTREE PAGED EXPRESSION(
 		    '/apps/kardia/modules/eg_vanco/egvapi_transFundHist.http?VancoWS.Auth.SessionID='
@@ -63,11 +71,12 @@ myquery "system/query"
 		    +condition(:dq:cx__page <= :vancoKey:lookback + 1, 
 			dateformat(dateadd('day', -1*(:dq:cx__page - 1), :vancoKey:toDate), 'yyyy-MM-dd'),
 			'not-a-date')) dq
-		
 	    where
 		:dq:TransactionRef IS NOT NULL OR :dq:FundID IS NOT NULL OR :dq:TransactionCount = 0
 	    ;
 
+
+-- FIXME: potential problem with NULLs here
 	    -- run a join to combine transactions and funds into one line per fund gift. Joins based on transaction group 
 	    DECLARE COLLECTION transactions;
 	    INSERT 
@@ -75,9 +84,23 @@ myquery "system/query"
 	    SELECT
 		transPath = :t:cx_path, fundPath = :f:cx_path, :t:transGroup,
 		:t:TransactionRef, :t:CustomerID, :t:CustomerRef, :t:PaymentMethodRef, :t:ProcessDate, :t:SettlementDate,
-		:t:DepositDate, :t:CCAuthDesc, :t:CCStatus, :t:Amount, :t:TransactionFee, :f:FundID, :f:FundName, :f:FundAmount, 
-		:f:FundTransactionFee, :f:FundNote, :t:Credit, :t:AccountType, :t:ReturnDate, :t:ReturnCode, 
-		:t:ReturnReason
+		:t:DepositDate, :t:CCAuthDesc, :t:CCStatus, :t:TransactionFee, :f:FundID, :f:FundName,
+		 :f:FundNote, :t:Credit, :t:AccountType, :t:ReturnDate, :t:ReturnCode, :t:ReturnReason,
+		Amount = condition(:t:Amount == '', $0, convert('money', :t:Amount)), 
+		FundAmount = condition(:f:FundAmount == '', $0, convert('money', :f:FundAmount)),
+		FundTransactionFee = condition(:f:FundTransactionFee == '', $0, convert('money', :f:FundTransactionFee)),
+		-- Get strings with the proper date format
+		ReturnDateStr = dateformat(convert(datetime, :ReturnDate), 'yyyy-MM-dd'),
+		ProcessDateStr = dateformat(convert(datetime, :ProcessDate), 'yyyy-MM-dd'),
+		DepositDateStr = dateformat(convert(datetime, :DepositDate), 'yyyy-MM-dd'),
+		-- leave space for values to calculate once we know the payment method
+		gift_sign = convert('integer', NULL),
+		gift_amount = convert('money', NULL),
+		net_fee = convert('money', NULL),
+		net_amount = convert('money', NULL),
+		deposit_gross_amt = convert('money', NULL),
+		deposit_amt = convert('money', NULL),
+		deposit_uuid = convert('string', NULL)
 	    FROM
 		IDENTITY COLLECTION dataQuery t,
 		COLLECTION dataQuery f
@@ -91,6 +114,8 @@ myquery "system/query"
 	    ;
 
 	    DECLARE COLLECTION custRefList SCOPE APPLICATION;
+	    -- make sure if the script had an error before it won't mess up this run
+	    DELETE FROM COLLECTION custRefList ;
 	    INSERT
 		collection custRefList
 	    SELECT 
@@ -102,17 +127,8 @@ myquery "system/query"
 	    ;
 	    
 	    -- report the number of custoners and transactions. Helps with debug and expectations for runtime
-	    SELECT 
-		:vancoKey:numCustomers = count(1)
-	    FROM 
-		COLLECTION custRefList
-	    ;
-
-	    SELECT 
-		:vancoKey:numTransactions = count(1)
-	    FROM 
-		COLLECTION transactions
-	    ;
+	    SELECT :vancoKey:numCustomers = count(1) FROM COLLECTION custRefList; 
+	    SELECT :vancoKey:numTransactions = count(1) FROM COLLECTION transactions;
 
 	    print 'number of customers: '+:vancoKey:numCustomers
 	    print 'number of transactions: '+:vancoKey:numTransactions
@@ -137,14 +153,16 @@ myquery "system/query"
 	    WHERE
 		:FundID IS NOT NULL OR :TransactionRef IS NOT NULL OR :TransactionCount IS NOT NULL
 	    ;
+
 	    -- combine the funds and transactions into one row
 	    DECLARE COLLECTION ongoingTransactions;
 	    INSERT 
 		COLLECTION ongoingTransactions
 	    SELECT 
-		transPath=:t:__cx_path, fundPath=:f:__cx_path, :t:transGroup, :t:TransactionRef, :t:CustomerRef, :t:PaymentMethodRef, :t:StartDate, 
+		transPath=:t:cx_path, fundPath=:f:cx_path, :t:transGroup, :t:TransactionRef, :t:CustomerRef, :t:PaymentMethodRef, :t:StartDate, 
 		:t:EndDate, :t:Frequency, :t:FrequencyType, :t:NextProcess, :t:NextSettlement, :t:Credit,
-		:f:Amount, :t:amount, :f:FundID, :f:FundName
+		Amount = convert('money', condition(char_length(:f:Amount) > 0, :f:Amount, :t:Amount)), 
+		:f:FundID, :f:FundName
 	    FROM 
 		IDENTITY COLLECTION currentTransactionsRaw t,
 		COLLECTION currentTransactionsRaw f
@@ -162,7 +180,13 @@ myquery "system/query"
 	    INSERT 
 	        COLLECTION customers
 	    SELECT 
-	        *
+		-- fix vanco encoding on any feilds likely to contain diacritics 
+		CustomerName = convert('string', convert(:CustomerName, 'latin1', 'vanco')),
+		CustomerAddress1 = convert('string', convert(:CustomerAddress1, 'latin1', 'vanco')),
+		CustomerAddress2 = convert('string', convert(:CustomerAddress2, 'latin1', 'vanco')),
+		CustomerCity = convert('string', convert(:CustomerCity, 'latin1', 'vanco')),
+		CustomerState = convert('string', convert(:CustomerState, 'latin1', 'vanco')),
+		*
 	    FROM 
 	        SUBTREE PAGED EXPRESSION('/apps/kardia/modules/eg_vanco/egvapi_custInfo.http?VancoWS.Auth.SessionID='
 		+:vancoKey:value+'&VancoWS.Request.RequestVars.CustomerRef='+
@@ -171,6 +195,7 @@ myquery "system/query"
 		:CustomerRef IS NOT NULL
 	    ;
 
+	    -- Get the payment methods
 	    DECLARE COLLECTION payMethods;
 	    INSERT 
 	        COLLECTION payMethods
@@ -181,12 +206,61 @@ myquery "system/query"
 		+:vancoKey:value+'&VancoWS.Request.RequestVars.CustomerRef='+
 		(select nth(:crl:CustomerRef, :pm:cx__page) from collection custRefList crl)) pm
 	    WHERE 
-		:CustomerRef IS NOT NULL OR :ErrorCode == '167' -- allow for 'payment method not found'
+		:pm:PaymentMethodRef IS NOT NULL OR :pm:ErrorCode == '167' -- allow for 'payment method not found'
 	     ;
 
 	    -- clear out global collections; no longer needed
-	    DELETE FROM
-		COLLECTION custRefList
+	    DELETE FROM COLLECTION custRefList ;
+
+	    -- Now that we have the payment info, calculate the net amounts 
+
+	    -- start by getting the sign, fees, and dpeosit grouping figured out
+	    UPDATE
+		IDENTITY COLLECTION transactions t,
+		COLLECTION payMethods p
+	    SET
+		:t:gift_sign = condition(:t:Credit == 'D' 
+			OR ((:t:AccountType == 'C' OR :t:AccountType == 'S') AND char_length(:t:ReturnDate) > 0)
+			OR (:t:AccountType == 'CC' AND :t:ReturnReason == 'Refunded'), 
+			-1, 1),
+		:t:net_fee = condition(:t:AccountType == 'CC' AND :t:ReturnReason == 'Refunded',
+			:config_values:flat_fee + :t:FundAmount * condition(upper(:p:CardType) == 'AMERICAN EXPRESS', :config_values:amex_fee, :config_values:default_fee),
+			:t:FundTransactionFee),
+		:t:deposit_uuid = condition(char_length(:t:DepositDate) < 1, NULL,
+		    condition(:t:Credit == 'D' OR ((:t:AccountType == 'C' OR :t:AccountType == 'S') AND char_length(:t:ReturnDate) > 0),
+			replace(:t:DepositDateStr, '-', NULL) + '-' + replace(:t:ProcessDateStr, '-', NULL) + '-ACH-Return',
+			condition(:t:AccountType == 'C' OR :t:AccountType == 'S',
+			    replace(:t:DepositDateStr, '-', NULL) + '-' + replace(:t:ProcessDateStr, '-', NULL) + '-ACH',
+			    replace(:t:DepositDateStr, '-', NULL) + '-CC')))
+	    WHERE
+		:t:CustomerRef *= :p:CustomerRef 
+		AND :t:PaymentMethodRef *= :p:PaymentMethodRef
+	    ;
+ 
+	    -- calculate the deposit amounts
+	    DECLARE COLLECTION deposit_amts;
+	    INSERT into
+		COLLECTION deposit_amts
+	    SELECT
+		:t:deposit_uuid,
+		deposit_gross_amt= sum(:t:gift_sign * :t:FundAmount),
+		deposit_amt = sum(:t:gift_sign *(:t:FundAmount - :t:net_fee))
+	    FROM
+		COLLECTION transactions t
+	    GROUP BY
+		:t:deposit_uuid
+	    ; 
+	    -- Now update transactions with the deposit amounts
+	    UPDATE
+		IDENTITY COLLECTION transactions t, 
+		COLLECTION deposit_amts d
+	    SET
+		:t:gift_amount = :t:gift_sign * :t:FundAmount,
+		:t:net_amount = :t:gift_sign * (:t:FundAmount - :t:net_fee), 
+		:t:deposit_gross_amt = :d:deposit_gross_amt,
+		:t:deposit_amt = :d:deposit_amt
+	    WHERE
+		:t:deposit_uuid *= :d:deposit_uuid
 	    ;
 
 	    -- finally, join all of the data together 
@@ -202,7 +276,8 @@ myquery "system/query"
 		-- actual values
 		i_eg_gift_uuid = condition(:o:Frequency IS NOT NULL, :o:TransactionRef, :t:TransactionRef), -- TODO: currently, :t:TransactionRef = :o:TransactionRef. Simplify if this doesn't change
 		i_eg_desig_uuid = :t:FundID,
-		i_eg_trx_uuid = :t:TransactionRef+'-'+dateformat(convert('datetime', :t:ProcessDate), 'yyyy-MM-dd'),
+		i_eg_trx_uuid = :t:TransactionRef+'-'+dateformat(convert('datetime', :t:ProcessDate), 'yyyy-MM-dd') + 
+			condition(:t:Credit == 'D' OR ((:t:AccountType == 'C' OR :t:AccountType == 'S') AND char_length(:t:ReturnDate) > 0), '-ACH-Return', ''),
 		i_eg_donor_uuid = :t:CustomerID,  
 		i_eg_donor_alt_id = :t:CustomerRef,
 		i_eg_account_uuid = :t:PaymentMethodRef,
@@ -236,59 +311,33 @@ myquery "system/query"
 		i_eg_donor_middle_name = condition(charindex(',', :c:CustomerName) == 0, NULL,
 			condition(charindex(' ', reverse(:c:CustomerName)) == 2, 
 				substring(reverse(:c:CustomerName), 1, 1), NULL)),
-		i_eg_donor_address = :c:CustomerAddr1+condition(char_length(:c:CustomerAddr2) < 1, '', ' '+:c:CustomerAddr2)+' '+:c:CustomerCity+' '
-			+:c:CustomerState+' '+:c:CustomerZip+' '+:c:CustomerCountry,
-		i_eg_donor_addr1 = :c:CustomerAddr1,
-		i_eg_donor_addr2 = condition(char_length(:c:CustomerAddr2) < 1, NULL, :c:CustomerAddr2),
+		i_eg_donor_address = :c:CustomerAddress1
+			+condition(char_length(isnull(:c:CustomerAddress2, '')) < 1, '', ' '+:c:CustomerAddress2)
+			+condition(char_length(isnull(:c:CustomerCity, ''))     < 1, '', ' '+:c:CustomerCity)
+			+condition(char_length(isnull(:c:CustomerState, ''))    < 1, '', ' '+:c:CustomerState)
+			+condition(char_length(isnull(:c:CustomerZip, ''))      < 1, '', ' '+:c:CustomerZip)
+			+condition(char_length(isnull(:c:CustomerCountry, ''))  < 1, '', ' '+:c:CustomerCountry),
+		i_eg_donor_addr1 = :c:CustomerAddress1,
+		i_eg_donor_addr2 = condition(char_length(:c:CustomerAddress2) < 1, NULL, :c:CustomerAddress2),
 		i_eg_donor_city = :c:CustomerCity,
 		i_eg_donor_state = :c:CustomerState,
 		i_eg_donor_postal = :c:CustomerZip,
 		i_eg_donor_country = :c:CustomerCountry,
 		i_eg_donor_phone = condition(char_length(:c:CustomerPhone) < 1, NULL, :c:CustomerPhone),
 		i_eg_donor_email = condition(char_length(:c:CustomerEmail) < 1, NULL, :c:CustomerEmail),
-		i_eg_gift_amount = condition(:t:Credit == 'D' OR ((:t:AccountType == 'C' OR :t:AccountType == 'S') AND (char_length(:t:ReturnDate) > 0)), 
-			convert('money', :t:FundAmount) * -1, 
-			convert('money', :t:FundAmount)),
-		i_eg_net_amount = condition(:t:AccountType == 'CC' AND :t:ReturnReason == 'Refunded',
-		    condition(:p:CardType == 'AMERICAN EXPRESS',
-			convert('money', :t:FundAmount) - (convert('money', :t:FundAmount) * :config_values:amex_fee) - convert('money', :config_values:flat_fee) * -1,
-			convert('money', :t:FundAmount) - (convert('money', :t:FundAmount) * :config_values:default_fee) - convert('money', :config_values:flat_fee) * -1),
-		    condition(:t:Credit == 'D' OR ((:t:AccountType == 'C' OR :t:AccountType == 'S') AND (char_length(:t:ReturnDate) > 0)),
-			condition(char_length(:t:FundTransactionFee) > 1, 
-			    (convert('money', :t:FundAmount) - convert('money', :t:FundTransactionFee)) * -1,
-			    convert('money', :t:FundAmount) * -1),
-			condition(char_length(:t:FundTransactionFee) > 1, 
-			    convert('money', :t:FundAmount) - convert('money', :t:FundTransactionFee),
-			    convert('money', :t:FundAmount)))),
-		i_eg_deposit_gross_amt = condition(:t:Credit == 'D' OR ((:t:AccountType == 'C' OR :t:AccountType == 'S') AND (char_length(:t:ReturnDate) > 0)), 
-		    convert('money', :t:Amount) * -1, 
-		    convert('money', :t:Amount)),
-		i_eg_deposit_amt = condition(:t:AccountType == 'CC' AND :t:ReturnReason == 'Refunded',
-		    condition(:p:CardType == 'AMERICAN EXPRESS',
-			convert('money', :t:Amount) - (convert('money', :t:Amount) * :config_values:amex_fee) - convert('money', :config_values:flat_fee) * -1,
-			convert('money', :t:Amount) - (convert('money', :t:Amount) * :config_values:default_fee) - convert('money', :config_values:flat_fee) * -1),
-		    condition(:t:Credit == 'D' OR ((:t:AccountType == 'C' OR :t:AccountType == 'S') AND (char_length(:t:ReturnDate) > 0)),
-			condition(char_length(:t:TransactionFee) > 1, 
-			    (convert('money', :t:Amount) - convert('money', :t:TransactionFee)) * -1,
-			    convert('money', :t:Amount) * -1),
-			condition(char_length(:t:TransactionFee) > 1, 
-			    convert('money', :t:Amount) - convert('money', :t:TransactionFee),
-			    convert('money', :t:Amount)))),
+		i_eg_gift_amount = :t:gift_amount,
+		i_eg_net_amount = :t:net_amount,
+		i_eg_deposit_gross_amt = :t:deposit_gross_amt,
+		i_eg_deposit_amt = :t:deposit_amt,
 		i_eg_deposit_date = condition(char_length(:t:DepositDate)<1, convert('datetime', NULL), convert('datetime', :t:DepositDate)),
 		i_eg_deposit_status = NULL, -- TODO: what is this the status of
-		i_eg_deposit_uuid = condition(char_length(:t:DepositDate) < 1, 
-		    NULL,
-		    condition(:t:Credit == 'D' OR ((:t:AccountType == 'C' OR :t:AccountType == 'S') AND (char_length(:t:ReturnDate) > 0)),
-			replace(:t:DepositDate, '-', NULL) + '-' + replace(:t:ProcessDate, '-', NULL) + '-ACH-Return',
-			condition(:t:AccountType == 'C' OR :t:AccountType == 'S',
-			    replace(:t:DepositDate, '-', NULL) + '-' + replace(:t:ProcessDate, '-', NULL) + '-ACH',
-			    replace(:t:DepositDate, '-', NULL) + '-CC'))),
+		i_eg_deposit_uuid = :t:deposit_uuid,
 		i_eg_gift_pmt_type = condition(:t:AccountType == 'C' OR :t:AccountType == 'S', 'ACH', 
 					condition(upper(:p:CardType) == 'VISA', 'Visa',
 					condition(upper(:p:CardType) == 'MASTERCARD', 'MasterCard',
 					condition(upper(:p:CardType) == 'AMERICAN EXPRESS', 'Amex',
 					condition(upper(:p:CardType) == 'DISCOVER', 'Discover',
-					mixed(:p:CardType, '')))))),
+					condition(char_length(:p:CardType) < 1 OR :p:CardType IS NULL, 'Unknown CC', mixed(:p:CardType, '') )))))),
 		i_eg_gift_interval = isnull(upper(:o:FrequencyType), ''), -- Monthly, quaterly, and annual all line up.
 		i_eg_gift_start_date = condition(char_length(:o:StartDate) > 1, convert('datetime', :o:StartDate), convert('datetime', NULL)),
 		i_eg_gift_end_date = condition(char_length(:o:EndDate) > 1, convert('datetime', :o:EndDate), convert('datetime', NULL)),
