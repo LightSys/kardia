@@ -1,0 +1,120 @@
+$Version=2$
+cd_batch_post_to_gl "system/query"
+    {
+    a_batch_number "query/parameter" { type=integer; }
+    a_ledger_number "query/parameter" { type=string; }
+    a_period "query/parameter" { type=string; }
+
+    sql = "	DECLARE OBJECT batch;
+
+		SELECT
+			:batch:passed = condition(count(1) > 0 and isnull(min(:d:a_posted), 0) = 1 and isnull(max(:d:a_posted_to_gl), 1) = 0, 1, 0)
+		FROM
+			/apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows d
+		WHERE
+			:d:a_batch_number = :parameters:a_batch_number and
+			:d:a_ledger_number = :parameters:a_ledger_number and
+			:d:a_period = :parameters:a_period
+		;
+    
+		INSERT INTO
+			/apps/kardia/data/Kardia_DB/a_transaction/rows
+		SELECT 
+			:c:a_ledger_number,
+			a_batch_number = :parameters:a_batch_number,
+			a_journal_number=1,
+			:c:a_period,
+			:c:a_effective_date,
+			a_transaction_type='T',
+			:c:a_fund,
+			a_account_category=isnull((select :a:a_default_category from /apps/kardia/data/Kardia_DB/a_account/rows a where :a:a_ledger_number = :c:a_ledger_number and :a:a_account_code = :c:a_account_code), condition(:c:a_account_code >= '5000', '50', condition(:c:a_account_code >= '4000', '40', condition(:c:a_account_code <= '1999', '10', '20')))),
+			:c:a_account_code,
+			:c:a_amount,
+			a_posted = 1,
+			a_modified = 0,
+			a_corrected = 0,
+			a_correcting = 0,
+			a_reconciled = 0,
+			a_postprocessed = 0,
+			a_postprocess_type = 'XX',
+			a_origin = 'CD',
+			a_receipt_sent = 0,
+			a_receipt_desired = 0,
+			a_first_gift = 0,
+			a_sent_document_id = convert(string, :c:a_check_number),
+			p_ext_partner_id = :c:a_payee_partner_key,
+			a_goods_provided = $0.00,
+			s_date_created = getdate(),
+			s_date_modified = getdate(),
+			s_created_by = user_name(),
+			s_modified_by = user_name(),
+			:c:a_comment
+		FROM
+			/apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows c
+		WHERE
+			:c:a_batch_number = :parameters:a_batch_number and
+			:c:a_ledger_number = :parameters:a_ledger_number and
+			:c:a_period = :parameters:a_period and
+			:c:a_voided = 0 and
+			:batch:passed = 1
+		;
+
+		INSERT INTO
+			/apps/kardia/data/Kardia_DB/a_transaction/rows
+		SELECT
+			:c:a_ledger_number,
+			a_batch_number = :parameters:a_batch_number,
+			a_journal_number=1,
+			:c:a_period,
+			:c:a_effective_date,
+			a_transaction_type='T',
+			a_fund = isnull( (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows ac where :ac:a_ledger_number = :c:a_ledger_number and :ac:a_config_name = 'DisbCashFund'), 'GEN'),
+			a_account_category=isnull((select :a:a_default_category from /apps/kardia/data/Kardia_DB/a_account/rows a where :a:a_ledger_number = :c:a_ledger_number and :a:a_account_code = :c:a_cash_account_code), '11'),
+			a_account_code = :c:a_cash_account_code,
+			a_amount = $0 - sum(:c:a_amount),
+			a_posted = 1,
+			a_modified = 0,
+			a_corrected = 0,
+			a_correcting = 0,
+			a_reconciled = 0,
+			a_postprocessed = 0,
+			a_postprocess_type = 'XX',
+			a_origin = 'CD',
+			a_receipt_sent = 0,
+			a_receipt_desired = 0,
+			a_first_gift = 0,
+			a_goods_provided = $0.00,
+			s_date_created = getdate(),
+			s_date_modified = getdate(),
+			s_created_by = user_name(),
+			s_modified_by = user_name(),
+			a_comment = '' + count(:c:a_amount) + ' Disbursements'
+		FROM
+			/apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows c
+		WHERE
+			:c:a_batch_number = :parameters:a_batch_number and
+			:c:a_ledger_number = :parameters:a_ledger_number and
+			:c:a_period = :parameters:a_period and
+			:c:a_voided = 0 and
+			:batch:passed = 1
+		GROUP BY
+			:c:a_cash_account_code
+		;
+
+		EXEC
+			/apps/kardia/modules/gl/gl_batch_create_ixa.qy a_ledger_number = :parameters:a_ledger_number, a_batch_number = :parameters:a_batch_number, a_period = :parameters:a_period
+		;
+		
+		UPDATE
+			/apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows c
+		SET
+			:c:a_posted_to_gl = 1
+		WHERE
+			:c:a_batch_number = :parameters:a_batch_number and
+			:c:a_ledger_number = :parameters:a_ledger_number and
+			:c:a_period = :parameters:a_period and
+			:c:a_voided = 0 and
+			:batch:passed = 1
+		";
+    }
+
