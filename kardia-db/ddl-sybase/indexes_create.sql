@@ -1379,6 +1379,11 @@ create  index i_eg_stats_idx on i_eg_gift_import (i_eg_gift_trx_date, i_eg_statu
 go
 
 
+/* i_eg_deposit_config */
+/* create  clustered index i_eg_deposit_config_pk on i_eg_deposit_config (a_ledger_number, i_eg_depfee_id)*/ 
+/* go */
+
+
 /* i_eg_gift_trx_fees */
 /* create  clustered index i_eg_gift_trx_fees_pk on i_eg_gift_trx_fees (a_ledger_number, i_eg_fees_id)*/ 
 /* go */

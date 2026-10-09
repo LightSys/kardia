@@ -58,11 +58,10 @@ staffmaint "widget/component-decl"
 			:p:p_given_name,
 			:p:p_org_name,
 			:p:p_preferred_name,
+			:p:a_fund,
 			email = isnull(:ci2:p_contact_data, :ci1:p_contact_data),
 			disp_name = condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name + ' ' + condition(char_length(:p:p_given_name + :p:p_surname) > 0, '- ', ''), '') + isnull(:p:p_given_name + ' ','') + isnull(:p:p_surname + ' ',''),
 			" + (select sum(:sql_addon + ',\n') - ',\n' from object wildcard '/apps/kardia/modules/*/plugin_base_staffmaint_*.cmp') + 
-			//+"fundlist = (select isnull(sum(:a_fund + ',') - ',', '') from /apps/kardia/data/Kardia_DB/a_fund_staff/rows cs where :cs:p_staff_partner_key = :s:p_partner_key and :cs:a_ledger_number = " + quote(:this:ledger) + ")
-			//+"fundlist = (select isnull(sum(:a_fund + ',') - ',', '') from /apps/kardia/data/Kardia_DB/a_fund_staff/rows cs where :cs:p_staff_partner_key = :s:p_partner_key and :cs:a_ledger_number = :parameters:a_ledger_number)
 			"
 		    FROM
 			IDENTITY /apps/kardia/data/Kardia_DB/p_staff/rows s,

@@ -835,7 +835,7 @@ gl_import "widget/component-decl"
 				    expression('/apps/kardia/modules/gl/gl_import_preview.qy?filename=' + :parameters:filename + '&ledger=' + :parameters:ledger + '&period=' + :parameters:period)
 				;
 
-				exec /apps/kardia/modules/gl/verify_batch.qy ledger=:parameters:ledger, batch=:parameters:batch
+				exec /apps/kardia/modules/gl/gl_batch_verify.qy ledger=:parameters:ledger, batch=:parameters:batch
 				";
 
 			autoquery = oneachreveal;

@@ -1242,6 +1242,10 @@ alter table i_eg_gift_import
 	drop index i_eg_postproc_idx;
 
 
+alter table i_eg_deposit_config
+	drop primary key;
+
+
 alter table i_eg_gift_trx_fees
 	drop primary key;
 

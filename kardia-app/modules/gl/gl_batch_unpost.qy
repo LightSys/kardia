@@ -1,0 +1,19 @@
+$Version=2$
+gl_batch_unpost "system/query"
+    {
+    // Parameters
+    a_batch_number "query/parameter"   	{ type=integer; }
+    a_ledger_number "query/parameter"	{ type=string; }
+    a_period "query/parameter"		{ type=string; }
+
+    sql = "	UPDATE
+			/apps/kardia/data/Kardia_DB/a_transaction/rows t
+		SET
+			:a_posted = 0
+		WHERE
+			:t:a_batch_number = :parameters:a_batch_number and
+			:t:a_ledger_number = :parameters:a_ledger_number and
+			:t:a_period = :parameters:a_period
+		";
+    }
+

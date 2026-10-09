@@ -1120,6 +1120,12 @@ alter table i_eg_gift_import
 	add constraint i_eg_gift_import_pk primary key clustered (a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid, i_eg_line_item)
 go
 
+print "working on table i_eg_deposit_config"
+
+alter table i_eg_deposit_config
+	add constraint i_eg_deposit_config_pk primary key clustered (a_ledger_number, i_eg_depfee_id)
+go
+
 print "working on table i_eg_gift_trx_fees"
 
 alter table i_eg_gift_trx_fees

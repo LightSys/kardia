@@ -727,6 +727,10 @@ drop table i_acct_association;
 drop table i_eg_gift_import;
 
 
+/* i_eg_deposit_config */
+drop table i_eg_deposit_config;
+
+
 /* i_eg_gift_trx_fees */
 drop table i_eg_gift_trx_fees;
 

@@ -1,10 +1,12 @@
 $Version=2$
-verify_batch "system/query"
+gl_batch_verify "system/query"
     {
     ledger "query/parameter" { type=string; style=notnull; }
     batch "query/parameter" { type=integer; style=notnull; }
 
-    sql = " SELECT
+    sql = " declare collection transactions scope application;
+    
+	    SELECT
 		    a_journal_number = 'Jnl ' + :t:a_journal_number,
 		    a_transaction_number = 'Trx ' + :t:a_transaction_number,
 		    msg =

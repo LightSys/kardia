@@ -55,7 +55,7 @@ cd_batches "widget/component-decl"
 			--dpost = isnull((select 1 from /apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows cd where :cd:a_batch_number = :b:a_batch_number and :cd:a_ledger_number = :b:a_ledger_number and :cd:a_posted = 1 limit 1),0),
 			glrec = isnull(sum(:d:a_posted_to_gl),0),
 			--glrec = isnull((select 1 from /apps/kardia/data/Kardia_DB/a_transaction/rows t where :t:a_batch_number = :b:a_batch_number and :t:a_ledger_number = :b:a_ledger_number limit 1),0)
-			status = condition(count(:d:a_batch_number) = 0, 'empty', condition(sum(:d:a_voided) = count(:d:a_batch_number), 'VOID', condition(sum(:d:a_reconciled) = count(:d:a_batch_number), 'Recon', condition(count(:d:a_paid_date) = count(:d:a_batch_number), 'Paid/Posted', condition(count(:d:a_approved_date) = count(:d:a_batch_number), 'Approved', 'New'))))),
+			status = condition(count(:d:a_batch_number) = 0, 'empty', condition(sum(:d:a_voided) = count(:d:a_batch_number), 'VOID', condition(sum(:d:a_reconciled) = count(:d:a_batch_number), 'Recon', condition(count(:d:a_paid_date) = count(:d:a_batch_number), 'Paid' + condition(sum(:d:a_posted) = count(:d:a_batch_number), '/Posted', ''), condition(count(:d:a_approved_date) = count(:d:a_batch_number), 'Approved', 'New'))))),
 			amount = sum(condition(:d:a_voided, $0, :d:a_amount))
 		FROM 
 			identity /apps/kardia/data/Kardia_DB/a_batch/rows b,
