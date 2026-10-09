@@ -44,15 +44,25 @@ plugin_base_dataqa_duplicates "widget/component-decl"
 	width=958;
 	height=633;
 	spacing=10;
-
-	dupslbl "widget/component"
+	
+	dups_label "widget/pane"
 	    {
-	    path="/apps/kardia/modules/base/section_label.cmp";
-	    height=26;
-	    fl_height=0;
-	    text = runclient("Potential Duplicate Partners...");
+	    height = 32; width = 958;
+	    fl_height = 0;
+	    border_radius = 8;
+	    widget_class = "label";
+	    
+	    lbl "widget/label"
+		{
+		x = 6; y = 6;
+		width = 190; height = 18;
+		font_size = 13;
+		
+		widget_class = "label";
+		text = "Potential Duplicate Partners...";
+		}
 	    }
-
+	
 	dupsosrc "widget/osrc"
 	    {
 	    showobs "widget/parameter" { type=integer; default=runclient(:show_obs:value); }
@@ -112,31 +122,53 @@ plugin_base_dataqa_duplicates "widget/component-decl"
 			:d:p_partner_key,
 			:d:p_dup_partner_key,
 			:d:p_match_quality,
-			--match = convert(integer, round(:d:p_match_quality * 100)),
-			match = round(:d:p_match_quality, 3),
-			disp_name_1 = condition(char_length(rtrim(:p1:p_org_name)) > 0, :p1:p_org_name + ' ' + condition(char_length(:p1:p_given_name + :p1:p_surname) > 0, '- ', ''), '') + isnull(:p1:p_given_name + ' ','') + isnull(:p1:p_surname + ' ',''),
-			disp_name_2 = condition(char_length(rtrim(:p2:p_org_name)) > 0, :p2:p_org_name + ' ' + condition(char_length(:p2:p_given_name + :p2:p_surname) > 0, '- ', ''), '') + isnull(:p2:p_given_name + ' ','') + isnull(:p2:p_surname + ' ',''),
+			match = round(:d:p_match_quality, 4),
+			disp_name_1 = '' 
+			    + condition(char_length(rtrim(:p1:p_org_name)) > 0,
+				:p1:p_org_name + ' ' + condition(char_length(:p1:p_given_name + :p1:p_surname) > 0, '- ', ''),
+				'')
+			    + isnull(:p1:p_given_name + ' ', '')
+			    + isnull(:p1:p_surname + ' ', ''),
+			disp_name_2 = ''
+			    + condition(char_length(rtrim(:p2:p_org_name)) > 0,
+				:p2:p_org_name + ' ' + condition(char_length(:p2:p_given_name + :p2:p_surname) > 0, '- ', ''),
+				'')
+			    + isnull(:p2:p_given_name + ' ', '')
+			    + isnull(:p2:p_surname + ' ', ''),
 			stat_1 = :p1:p_status_code,
 			stat_2 = :p2:p_status_code,
-			--loc_1 = :l1:p_city + ', ' + :l1:p_state_province,
-			--loc_2 = :l2:p_city + ', ' + :l2:p_state_province,
-			--contact_1 = isnull(:c1:p_phone_country + ' ','') + isnull(:c1:p_phone_area_city + ' ','') + isnull(:c1:p_contact_data,''),
-			--contact_2 = isnull(:c2:p_phone_country + ' ','') + isnull(:c2:p_phone_area_city + ' ','') + isnull(:c2:p_contact_data,''),
 			ploc_1 = substitute(isnull(:af1:p_format, '[:p_in_care_of]\n[:p_address_1]\n[:p_address_2]\n[:p_address_3]\n[:p_city], [:p_state_province] [:p_postal_code]\n[:p_country_name]'), 'l=pl1,p=p1,ctry1'),
 			ploc_2 = substitute(isnull(:af2:p_format, '[:p_in_care_of]\n[:p_address_1]\n[:p_address_2]\n[:p_address_3]\n[:p_city], [:p_state_province] [:p_postal_code]\n[:p_country_name]'), 'l=pl2,p=p2,ctry2'),
-			type = condition(:d:p_partner_key != :d:p_dup_partner_key, 'Duplicate Partner', condition(:d:p_contact_id is not null, 'Duplicate Contact',  condition(:d:p_location_id is not null, 'Duplicate Address', ''))),
-			nondup = condition(:nd:p_partner_key is not null, 1, 0),
-			associated = condition(:p1:p_parent_key = :p2:p_partner_key or :p1:p_partner_key = :p2:p_parent_key or :p1:p_parent_key = :p2:p_parent_key, 1, 0),
-			merged = condition(:p1:p_merged_with = :p2:p_partner_key or :p1:p_partner_key = :p2:p_merged_with, 1, 0),
-			relation = (select condition(:r:p_partner_key = :d:p_partner_key, :rt:p_relation_type_label + '/' + :rt:p_relation_type_rev_label, :rt:p_relation_type_rev_label + '/' + :rt:p_relation_type_label) from collection rels r, collection reltype rt where ((:r:p_partner_key = :d:p_partner_key and :r:p_relation_key = :d:p_dup_partner_key) or (:r:p_partner_key = :d:p_dup_partner_key and :r:p_relation_key = :d:p_partner_key)) and :rt:p_relation_type = :r:p_relation_type )
+			
+			-- Dupe type info.
+			reason = :d:p_reason,
+			nondup = condition(char_length(isnull(:nd:p_partner_key, '')) > 1 and char_length(isnull(:nd:p_nondup_partner_key, '')) > 1, 1, 0),
+			associated = condition(
+			    :p1:p_parent_key = :p2:p_partner_key
+			    or :p1:p_partner_key = :p2:p_parent_key
+			    or :p1:p_parent_key = :p2:p_parent_key,
+			1, 0),
+			merged = condition(
+			    :p1:p_merged_with = :p2:p_partner_key
+			    or :p1:p_partner_key = :p2:p_merged_with,
+			1, 0),
+			relation = (
+			    select
+			        condition(:r:p_partner_key = :d:p_partner_key,
+				    :rt:p_relation_type_label + '/' + :rt:p_relation_type_rev_label,
+				    :rt:p_relation_type_rev_label + '/' + :rt:p_relation_type_label
+				)
+			    from
+			        collection rels r,
+				collection reltype rt
+			    where :rt:p_relation_type = :r:p_relation_type
+			    and ((:r:p_partner_key = :d:p_partner_key     and :r:p_relation_key = :d:p_dup_partner_key) or
+			         (:r:p_partner_key = :d:p_dup_partner_key and :r:p_relation_key = :d:p_partner_key    ))
+		        )
 		    from
 			identity /apps/kardia/data/Kardia_DB/p_dup/rows d,
 			/apps/kardia/data/Kardia_DB/p_partner/rows p1,
 			/apps/kardia/data/Kardia_DB/p_partner/rows p2,
-			--/apps/kardia/data/Kardia_DB/p_location/rows l1,
-			--/apps/kardia/data/Kardia_DB/p_location/rows l2,
-			--/apps/kardia/data/Kardia_DB/p_contact_info/rows c1,
-			--/apps/kardia/data/Kardia_DB/p_contact_info/rows c2,
 			/apps/kardia/data/Kardia_DB/p_location/rows pl1,
 			/apps/kardia/data/Kardia_DB/p_location/rows pl2,
 			/apps/kardia/data/Kardia_DB/p_country/rows ctry1,
@@ -146,30 +178,19 @@ plugin_base_dataqa_duplicates "widget/component-decl"
 			/apps/kardia/data/Kardia_DB/p_nondup/rows nd
 		    where
 			(:info:partnerlist is null or charindex(',' + rtrim(:d:p_partner_key) + ',', ',' + :info:partnerlist + ',') > 0 or charindex(',' + rtrim(:d:p_dup_partner_key) + ',', ',' + :info:partnerlist + ',') > 0) and
-			:p1:p_partner_key = :d:p_partner_key and
-			:p2:p_partner_key = :d:p_dup_partner_key and
-			--:l1:p_partner_key =* :d:p_partner_key and
-			--:l1:p_location_id =* :d:p_location_id and
-			--:l1:p_revision_id =* :d:p_revision_id and
-			--:l2:p_partner_key =* :d:p_dup_partner_key and
-			--:l2:p_location_id =* :d:p_dup_location_id and
-			--:l2:p_revision_id =* :d:p_dup_revision_id and
-			--:c1:p_partner_key =* :d:p_partner_key and
-			--:c1:p_contact_id =* :d:p_contact_id and
-			--:c2:p_partner_key =* :d:p_dup_partner_key and
-			--:c2:p_contact_id =* :d:p_dup_contact_id and
-			:pl1:p_partner_key =* :d:p_partner_key and
-			:pl2:p_partner_key =* :d:p_dup_partner_key and
-			:pl1:p_country_code *= :ctry1:p_country_code and
-			:af1:p_country_code =* :ctry1:p_country_code and
-			:af1:p_address_set = 'STANDARD' and
-			:pl2:p_country_code *= :ctry2:p_country_code and
-			:af2:p_country_code =* :ctry2:p_country_code and
-			:af2:p_address_set = 'STANDARD' and
-			:nd:p_partner_key =* :d:p_partner_key and
-			:nd:p_nondup_partner_key =* :p_dup_partner_key
+			:d:p_partner_key      = :p1:p_partner_key and
+			:d:p_dup_partner_key  = :p2:p_partner_key and
+			:d:p_partner_key     *= :pl1:p_partner_key and
+			:d:p_dup_partner_key *= :pl2:p_partner_key and
+			:d:p_partner_key     *= :nd:p_partner_key and
+			:d:p_dup_partner_key *= :nd:p_nondup_partner_key and
+			:pl1:p_country_code  *= :ctry1:p_country_code and
+			:pl2:p_country_code  *= :ctry2:p_country_code and
+			:af1:p_country_code  =* :ctry1:p_country_code and
+			:af2:p_country_code  =* :ctry2:p_country_code and
+			:af1:p_address_set   = 'STANDARD' and
+			:af2:p_address_set   = 'STANDARD'
 		    group by
-			:d:p_match_quality desc,
 			:d:p_partner_key,
 			:d:p_dup_partner_key
 		    order by
@@ -207,13 +228,112 @@ plugin_base_dataqa_duplicates "widget/component-decl"
 		row_shadow_offset=1;
 		row_shadow_color="#a0a0a0";
 		row_shadow_angle=135;
-		nodata_message="(no duplicates to show)";
+		nodata_message="(no duplicates to show, congrats!)";
 
-		//t_match "widget/table-column" { title="%"; value=runclient(:dupsosrc:match + '%'); width=60; style=bold; }
-		t_match "widget/table-column" { width=80; title = "%"; type=progress; padding=4; style=bold; fieldname=match; bar_color=runclient(condition(:dupsosrc:match >= 0.90, '#59b550', condition(:dupsosrc:match < 0.80, '#d96066', '#DDB261'))); bar_padding=3; bar_textcolor=black; }
-		t_type "widget/table-column" { title="%"; value=runclient(:dupsosrc:type + condition(:dupsosrc:merged, '\nAlready Merged', '') + condition(:dupsosrc:associated, '\nAssociated', '') + condition(:dupsosrc:relation is not null, '\nRelated: ' + :dupsosrc:relation, '')); width=180; style=bold; align=center; wrap=yes; }
-		t_par2 "widget/table-column" { title="Partner"; value=runclient(:dupsosrc:p_dup_partner_key + ' ' + :dupsosrc:disp_name_2); width=250; style=bold; caption_value=runclient(isnull(:dupsosrc:ploc_2 + '\n', '') + condition(:dupsosrc:stat_2 = 'O', '(obsolete)', '') - '\n'); wrap=yes; }
-		t_par1 "widget/table-column" { title="Partner"; value=runclient(condition(:dupsosrc:p_partner_key = :dupsosrc:p_dup_partner_key, '', :dupsosrc:p_partner_key + ' ' + :dupsosrc:disp_name_1)); width=250; style=bold; caption_value=runclient(condition(:dupsosrc:p_partner_key = :dupsosrc:p_dup_partner_key, '', isnull(:dupsosrc:ploc_1 + '\n', '') + condition(:dupsosrc:stat_1 = 'O', '(obsolete)', '') - '\n')); wrap=yes; }
+		// Similarity progress bar.
+		t_match "widget/table-column"
+		    {
+		    width = 80;
+		    style = bold;
+		    padding = 4;
+		    title = "%";
+		    
+		    type = progress;
+		    fieldname = match;
+		    
+		    bar_color = runclient(
+			condition(:dupsosrc:match >= 1.00, '#63c85b',
+			condition(:dupsosrc:match >= 0.95, '#86c65c',
+			condition(:dupsosrc:match >= 0.90, '#aac45d',
+			condition(:dupsosrc:match >= 0.85, '#cdc15e',
+			condition(:dupsosrc:match >= 0.80, '#f0bf5f',
+			condition(:dupsosrc:match >= 0.75, '#edaa63',
+			condition(:dupsosrc:match >= 0.70, '#ea9467',
+			condition(:dupsosrc:match >= 0.65, '#e77f6b', '#e46a6f'
+                    )))))))));
+		    bar_padding = 3;
+		    bar_textcolor = black;
+		    
+		    // The above bar_color values were generated using this script in JS.
+		    // The hex function was generated by GPT5-mini using t3.chat with direct
+		    // oversight from Israel, who wrote the rest of the code there after.
+		    // 
+		    // function hex(v) {
+		    //   const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+		    //   const lerp = (a, b, t) => a + (b - a) * t;
+		    //   const toHex2 = (n) => Math.round(n).toString(16).padStart(2, "0");
+		    //   
+		    //   const t = clamp(v);
+		    //   
+		    //   const R = { r: 0xe4, g: 0x6a, b: 0x6f }; // #e46a6f
+		    //   const Y = { r: 0xf0, g: 0xbf, b: 0x5f }; // #f0bf5f
+		    //   const G = { r: 0x63, g: 0xc8, b: 0x5b }; // #63c85b
+		    //
+		    //   if (t <= 0.6) return `#${toHex2(R.r)}${toHex2(R.g)}${toHex2(R.b)}`;
+		    //   if (t <= 0.8) {
+		    //     const u = (t - 0.6) / 0.2;
+		    //     const r = lerp(R.r, Y.r, u);
+		    //     const g = lerp(R.g, Y.g, u);
+		    //     const b = lerp(R.b, Y.b, u);
+		    //     return `#${toHex2(r)}${toHex2(g)}${toHex2(b)}`;
+		    //   }
+		    //   const u = (t - 0.8) / 0.2;
+		    //   const r = lerp(Y.r, G.r, u);
+		    //   const g = lerp(Y.g, G.g, u);
+		    //   const b = lerp(Y.b, G.b, u);
+		    //   return `#${toHex2(r)}${toHex2(g)}${toHex2(b)}`;
+		    // }
+		    // 
+		    // const hex_r = (sim, step) => (sim < 0.6)
+		    //   ? ` '${hex(sim)}'\n\t\t    `
+		    //   : `\n\t\t\tcondition(:dupsosrc:match >= ${Math.round(sim * 1000) / 1000}, '${hex(sim)}',${hex_r(sim - step, step)})`;
+		    // console.log(`runclient(${hex_r(1.0, 0.05)});`);
+		    }
+		
+		// Dulicate reason, and other information about the type of duplicate.
+		t_type "widget/table-column"
+		    {
+		    width = 180;
+		    style = bold;
+		    align = center;
+		    wrap = yes;
+		    title = "%";
+		    
+		    value = runclient(
+			isnull(:dupsosrc:reason, "Reason missing")
+			+ condition(:dupsosrc:merged, '\nAlready Merged', '')
+			+ condition(:dupsosrc:associated, '\nAssociated', '')
+			+ condition(:dupsosrc:relation is not null, '\nRelated: ' + :dupsosrc:relation, '')
+		    );
+		    }
+		
+		// Duplicate record 1.
+		t_dup1 "widget/table-column"
+		    {
+		    width = 250;
+		    style = bold;
+		    wrap = yes;
+		    title = "Partner";
+		    
+		    value = runclient(:dupsosrc:p_dup_partner_key + ' ' + :dupsosrc:disp_name_2);
+		    caption_value = runclient(isnull(:dupsosrc:ploc_2 + '\n', '') + condition(:dupsosrc:stat_2 = 'O', '(obsolete)', '') - '\n');
+		    }
+		
+		// Duplicate record 2.
+		t_dup2 "widget/table-column"
+		    {
+		    width = 250;
+		    style = bold;
+		    wrap = yes;
+		    title = "Partner";
+		    
+		    value = runclient(:dupsosrc:p_partner_key + ' ' + :dupsosrc:disp_name_1);
+		    caption_value = runclient(
+			isnull(:dupsosrc:ploc_1 + '\n', '')
+			+ condition(:dupsosrc:stat_1 = 'O', '(obsolete)', '')
+			- '\n'
+		    );
+		    }
 
 		ops_detail "widget/table-row-detail"
 		    {
@@ -358,6 +478,32 @@ plugin_base_dataqa_duplicates "widget/component-decl"
 			on_merge_change "widget/connector" { event=DataChange; target=dupsosrc; action=Refresh; }
 			}
 		    }
+		}
+	    }
+	}
+    
+    last_computed_osrc "widget/osrc"
+	{
+	sql = "
+	    SELECT
+		display = 'Last updated:\n' + max(:s_date_modified),
+		dif_days = datediff(day, max(:s_date_modified), getdate())
+	    FROM
+		/apps/kardia/data/Kardia_DB/p_dup/rows
+	    ;
+	";
+	
+	last_computed_form "widget/form"
+	    {
+	    dups_last_updated_label "widget/label"
+		{
+		x = 840; y = 0;
+		height = 32; width = 110;
+		font_size = 11;
+		align = left; valign = middle;
+		fgcolor = runclient(condition(:last_computed_osrc:dif_days > 7, "#FF1133", "#CCCCCC"));
+		style = runclient(condition(:last_computed_osrc:dif_days > 7, bold, none));
+		fieldname = display;
 		}
 	    }
 	}

@@ -1,0 +1,667 @@
+$Version=2$
+update_duplicates "system/query"
+    {
+    // This script updates the p_dup table (/apps/kardia/data/Kardia_DB/p_dup/rows)
+    // by detecting duplicates using two strategies (aggregation and concatenation)
+    // and then upserting the results into the table.
+    // 
+    // The aggregation strategy first searches for dups on several groups of fields
+    // which it fetches using name_str.qy, name_metas.qy, emails.qy, phones.qy, and
+    // addresses.qy.  We invoke the dups.cluster file to get a list of dups for each
+    // of these field groups (name_str_dups, email_dups, etc.).  Then, add each dup
+    // found by the other strategies to name_str_dups by computing its name similarity.
+    // Next, we add each dup in name_str_dups to each other collection by computing the
+    // similarity of the respective fields.  Thus, every dup exists in all five
+    // collections.  Finally, we aggregate these collections using this equation:
+    // `average(max(name_str_sim, name_meta_sim * 0.9), email_sim, phone_sim, address_sim)`
+    // If a field is missing (e.g. either possible dup record doesn't have an email),
+    // we use a value of -1, and all values less than 0 are ignored by the average.
+    // (This avoids overlooking records that are missing a lot of data.)
+    // 
+    // The concatenation strategy is simpler.  We simply concatenate all relevant
+    // fields (collection concats), then search for dups (collection concat_dups)
+    // on the concatinated data.
+    // 
+    // Each strategy has pros and cons.
+    //   - Aggregation avoids overlooking records when one is missing information.
+    //   - Aggregation provides clearer reasoning to the database administrator.
+    //   - Aggregation can use Levenstein for some fields (name_meta and phone),
+    //     and cosine for others.  Contamination uses the same measure for everything.
+    //   - Concatenation finds dups where someone's email is similar to another
+    //     person's name, which can tip us off to relationships we'd otherwise miss.
+    //   - Concatenation is slightly faster, so it can be run with a lower threshold,
+    //     making it more sensitive to near dups in some cases. 
+    //   - Concatenation is prone to cryptic false positives.
+    // 
+    // In short, aggregation gives us more control, allowing us to find far more dups,
+    // but it comes at a cost of greater complexity, slower compute times, and missing
+    // certain specific cases of duplicates.
+    // 
+    // Note: If concat_dups detects a dup, we also run run the other field checks on it
+    //       even though concatenation similarity is not used in the aggregation equation.
+    //       This is because it helps to enhance the reason field with additional info
+    //       that the database administrator can see at a glace.
+    
+    sql = "
+	DECLARE object value;
+	
+	-- The number of places to show after the decimal point for reason
+	-- similarity percentages.
+	SELECT :value:reason_decimals = 1;
+	
+	-- The minimum aggregated similarity threshold that must be reached
+	-- for a duplicate to be added to the table and displayed to the user.
+	-- Duplicates which aggregate to a lower similarity than this do are
+	-- dropped before being added even if one attribute happens to have a
+	-- has high similarity.
+	-- For other similarity thresholds, see `dups.cluster`.
+	SELECT :value:min_total_sim = 0.60;
+	
+	print 'Getting data...'
+	-- Get collections for each set of possible dups.
+	DECLARE collection name_strs;
+	DECLARE collection name_metas;
+	DECLARE collection emails;
+	DECLARE collection phones;
+	DECLARE collection addresses;
+	DECLARE collection concats;
+	INSERT INTO collection name_strs  SELECT :key, :name_str  FROM /apps/kardia/modules/base/dups/get/name_strs.qy ;
+	INSERT INTO collection name_metas SELECT :key, :name_meta FROM /apps/kardia/modules/base/dups/get/name_metas.qy ;
+	INSERT INTO collection emails     SELECT :key, :email     FROM /apps/kardia/modules/base/dups/get/emails.qy ;
+	INSERT INTO collection phones     SELECT :key, :phone     FROM /apps/kardia/modules/base/dups/get/phones.qy ;
+	INSERT INTO collection addresses  SELECT :key, :address   FROM /apps/kardia/modules/base/dups/get/addresses.qy ;
+	INSERT INTO collection concats    SELECT :key, :data      FROM /apps/kardia/modules/base/dups/get/concats.qy ;
+	
+	print 'Counting data...'
+	-- Count data.
+	SELECT :value:name_strs_count  = count(1) FROM collection name_strs;
+	SELECT :value:name_metas_count = count(1) FROM collection name_metas;
+	SELECT :value:emails_count     = count(1) FROM collection emails;
+	SELECT :value:phones_count     = count(1) FROM collection phones;
+	SELECT :value:addresses_count  = count(1) FROM collection addresses;
+	SELECT :value:concats_count    = count(1) FROM collection concats;
+	
+	print 'Computing parameters...'
+	-- Compute searching parameters.
+	SELECT
+	    :value:name_strs_algorithm = :name_strs:algorithm,
+	    :value:name_metas_algorithm = :name_metas:algorithm,
+	    :value:emails_algorithm = :emails:algorithm,
+	    :value:phones_algorithm = :phones:algorithm,
+	    :value:addresses_algorithm = :addresses:algorithm,
+	    :value:concats_algorithm = :concats:algorithm,
+	    :value:name_strs_k = :name_strs:k,
+	    :value:name_metas_k = :name_metas:k,
+	    :value:emails_k = :emails:k,
+	    :value:phones_k = :phones:k,
+	    :value:addresses_k = :addresses:k,
+	    :value:concats_k = :concats:k
+	FROM
+	    expression ('/apps/kardia/modules/base/dups/cluster_params.qy?num_data=' + :value:name_strs_count) name_strs,
+	    expression ('/apps/kardia/modules/base/dups/cluster_params.qy?num_data=' + :value:name_metas_count) name_metas,
+	    expression ('/apps/kardia/modules/base/dups/cluster_params.qy?num_data=' + :value:emails_count) emails,
+	    expression ('/apps/kardia/modules/base/dups/cluster_params.qy?num_data=' + :value:phones_count) phones,
+	    expression ('/apps/kardia/modules/base/dups/cluster_params.qy?num_data=' + :value:addresses_count) addresses,
+	    expression ('/apps/kardia/modules/base/dups/cluster_params.qy?num_data=' + :value:concats_count) concats
+	;
+	
+	
+	print 'Searching for name_str_dups...'
+	-- Get name_str_dups using the dups.cluster file.
+	DECLARE collection name_str_dups;
+	INSERT INTO
+	    collection name_str_dups
+	SELECT
+	    :key1,
+	    :key2,
+	    :sim
+	FROM
+	    identity expression (
+		'/apps/kardia/modules/base/dups/dups.cluster'
+		    + '?algorithm=' + :value:name_strs_algorithm
+		    + '&k=' + :value:name_strs_k
+		    + '&field=name_strs'
+		    + '&data=name_str'
+		+ '/dups'
+	    )
+	;
+	
+	print 'Searching for name_meta dups...'
+	-- Get name_meta_dups using the dups.cluster file.
+	DECLARE collection name_meta_dups;
+	INSERT INTO
+	    collection name_meta_dups
+	SELECT
+	    key1 = :key1,
+	    key2 = :key2,
+	    sim = :sim
+	FROM
+	    identity expression (
+		'/apps/kardia/modules/base/dups/dups.cluster'
+		    + '?algorithm=' + :value:name_metas_algorithm
+		    + '&k=' + :value:name_metas_k
+		    + '&field=name_metas'
+		    + '&data=name_meta'
+		+ '/meta_dups'
+	    )
+	;
+	
+	print 'Searching for email dups...'
+	-- Get email_dups using the dups.cluster file.
+	DECLARE collection email_dups;
+	INSERT INTO
+	    collection email_dups
+	SELECT
+	    key1 = :d:key1,
+	    key2 = :d:key2,
+	    sim = max(:d:sim)
+	FROM
+	    identity expression (
+		'/apps/kardia/modules/base/dups/dups.cluster'
+		    + '?algorithm=' + :value:emails_algorithm
+		    + '&k=' + :value:emails_k
+		    + '&field=emails'
+		    + '&data=email'
+		+ '/dups'
+	    ) d
+	GROUP BY
+	    :d:key1,
+	    :d:key2
+	;
+	
+	print 'Searching for phone dups...'
+	-- Get email_dups using the dups.cluster file.
+	DECLARE collection phone_dups;
+	INSERT INTO
+	    collection phone_dups
+	SELECT
+	    key1 = :d:key1,
+	    key2 = :d:key2,
+	    sim = max(:d:sim)
+	FROM
+	    expression (
+		'/apps/kardia/modules/base/dups/dups.cluster'
+		    + '?algorithm=' + :value:phones_algorithm
+		    + '&k=' + :value:phones_k
+		    + '&field=phones'
+		    + '&data=phone'
+		+ '/phone_dups'
+	    ) d
+	GROUP BY
+	    :d:key1,
+	    :d:key2
+	;
+	
+	print 'Searching for address dups...'
+	-- Get address_dups using the dups.cluster file.
+	DECLARE collection address_dups;
+	INSERT INTO
+	    collection address_dups
+	SELECT
+	    key1 = :d:key1,
+	    key2 = :d:key2,
+	    sim = max(:d:sim)
+	FROM
+	    identity expression (
+		'/apps/kardia/modules/base/dups/dups.cluster'
+		    + '?algorithm=' + :value:addresses_algorithm
+		    + '&k=' + :value:addresses_k
+		    + '&field=addresses'
+		    + '&data=address'
+		+ '/dups'
+	    ) d
+	GROUP BY
+	    :d:key1,
+	    :d:key2
+	;
+	
+	print 'Searching for concat dups...'
+	-- Get concat_dups using the dups.cluster file.
+	DECLARE COLLECTION concat_dups;
+	INSERT INTO
+	    collection concat_dups
+	SELECT
+	    key1 = :d:key1,
+	    key2 = :d:key2,
+	    sim = max(:d:sim)
+	FROM
+	    identity expression (
+		'/apps/kardia/modules/base/dups/dups.cluster'
+		    + '?algorithm=' + :value:concats_algorithm
+		    + '&k=' + :value:concats_k
+		    + '&field=concats'
+		    + '&data=data'
+		+ '/concat_dups'
+	    ) d
+	GROUP BY
+	    :d:key1,
+	    :d:key2
+	;
+	
+	
+	print 'Adding other collections dups to name_str_dups...'
+	print '[name_str_dups <- name_meta_dups]'
+	-- [name_str_dups <- name_meta_dups] Add an entry to name_str_dups for each entry in name_meta_dups.
+	INSERT INTO
+	    collection name_str_dups
+	SELECT
+	    key1 = :name_meta_dup:key1,
+	    key2 = :name_meta_dup:key2,
+	    sim = condition(:name_str_dup:sim >= 0.0,
+		:name_str_dup:sim,
+		isnull(cos_compare(:name_str1:name_str, :name_str2:name_str), -1.0)
+	    )
+	FROM
+	    identity collection name_meta_dups name_meta_dup,
+	    collection name_str_dups name_str_dup,
+	    collection name_strs name_str1,
+	    collection name_strs name_str2
+	WHERE
+	    :name_meta_dup:key1 *= :name_str_dup:key1
+	AND :name_meta_dup:key2 *= :name_str_dup:key2
+	AND :name_meta_dup:key1 *= :name_str1:key
+	AND :name_meta_dup:key2 *= :name_str2:key
+	ON duplicate -- Update entries that already exist (in case we have a cross-cluster match).
+	    :key1,
+	    :key2
+	UPDATE SET
+	    :sim = condition(:name_str_dup:sim >= 0.0,
+		:name_str_dup:sim,
+		isnull(cos_compare(:name_str1:name_str, :name_str2:name_str), -1.0)
+	    )
+	;
+	
+	print '[name_str_dups <- email_dups]'
+	-- [name_str_dups <- email_dups] Add an entry to name_str_dups for each entry in email_dups.
+	INSERT INTO
+	    collection name_str_dups
+	SELECT
+	    key1 = :email_dup:key1,
+	    key2 = :email_dup:key2,
+	    sim = condition(:name_str_dup:sim >= 0.0,
+		:name_str_dup:sim,
+		isnull(cos_compare(:name_str1:name_str, :name_str2:name_str), -1.0)
+	    )
+	FROM
+	    identity collection email_dups email_dup,
+	    collection name_str_dups name_str_dup,
+	    collection name_strs name_str1,
+	    collection name_strs name_str2
+	WHERE
+	    :email_dup:key1 *= :name_str_dup:key1
+	AND :email_dup:key2 *= :name_str_dup:key2
+	AND :email_dup:key1 *= :name_str1:key
+	AND :email_dup:key2 *= :name_str2:key
+	ON duplicate -- Update entries that already exist (in case we have a cross-cluster match).
+	    :key1,
+	    :key2
+	UPDATE SET
+	    :sim = condition(:name_str_dup:sim >= 0.0,
+		:name_str_dup:sim,
+		isnull(cos_compare(:name_str1:name_str, :name_str2:name_str), -1.0)
+	    )
+	;
+	
+	print '[name_str_dups <- phone_dups]'
+	-- [name_str_dups <- phone_dups] Add an entry to name_str_dups for each entry in phone_dups.
+	INSERT INTO
+	    collection name_str_dups
+	SELECT
+	    key1 = :phone_dup:key1,
+	    key2 = :phone_dup:key2,
+	    sim = condition(:name_str_dup:sim >= 0.0,
+		:name_str_dup:sim,
+		max(isnull(cos_compare(:name_str1:name_str, :name_str2:name_str), -1.0))
+	    )
+	FROM
+	    identity collection phone_dups phone_dup,
+	    collection name_str_dups name_str_dup,
+	    collection name_strs name_str1,
+	    collection name_strs name_str2
+	WHERE
+	    :phone_dup:key1 *= :name_str_dup:key1
+	AND :phone_dup:key2 *= :name_str_dup:key2
+	AND :phone_dup:key1 *= :name_str1:key
+	AND :phone_dup:key2 *= :name_str2:key
+	GROUP BY
+	    :name_str_dup:key1,
+	    :name_str_dup:key2
+	ON duplicate -- Update entries that already exist (in case we have a cross-cluster match).
+	    :key1,
+	    :key2
+	UPDATE SET
+	    :sim = condition(:name_str_dup:sim >= 0.0,
+		:name_str_dup:sim,
+		max(isnull(cos_compare(:name_str1:name_str, :name_str2:name_str), -1.0))
+	    )
+	;
+	
+	print '[name_str_dups <- address_dups]'
+	-- [name_str_dups <- address_dups] Add an entry to name_str_dups for each entry in address_dups.
+	INSERT INTO
+	    collection name_str_dups
+	SELECT
+	    key1 = :address_dup:key1,
+	    key2 = :address_dup:key2,
+	    sim = condition(:name_str_dup:sim >= 0.0,
+		:name_str_dup:sim,
+		max(isnull(cos_compare(:name_str1:name_str, :name_str2:name_str), -1.0))
+	    )
+	FROM
+	    identity collection address_dups address_dup,
+	    collection name_str_dups name_str_dup,
+	    collection name_strs name_str1,
+	    collection name_strs name_str2
+	WHERE
+	    :address_dup:key1 *= :name_str_dup:key1
+	AND :address_dup:key2 *= :name_str_dup:key2
+	AND :address_dup:key1 *= :name_str1:key
+	AND :address_dup:key2 *= :name_str2:key
+	GROUP BY
+	    :name_str_dup:key1,
+	    :name_str_dup:key2
+	ON duplicate -- Update entries that already exist (in case we have a cross-cluster match).
+	    :key1,
+	    :key2
+	UPDATE SET
+	    :sim = condition(:name_str_dup:sim >= 0.0,
+		:name_str_dup:sim,
+		max(isnull(cos_compare(:name_str1:name_str, :name_str2:name_str), -1.0))
+	    )
+	;
+	
+	print '[name_str_dups <- concat_dups]'
+	-- [name_str_dups <- concat_dups] Add an entry to name_str_dups for each entry in concat_dups.
+	-- This isn't strictly necessary because concat_dups isn't used in the final aggregation.
+	-- However, it can sometimes provide additional information in the 'reason' column of the
+	-- UI, so this feels like it's worth the small cost in extra computation. 
+	INSERT INTO
+	    collection name_str_dups
+	SELECT
+	    key1 = :concat_dup:key1,
+	    key2 = :concat_dup:key2,
+	    sim = condition(:name_str_dup:sim >= 0.0,
+		:name_str_dup:sim,
+		isnull(cos_compare(:name_str1:name_str, :name_str2:name_str), -1.0)
+	    )
+	FROM
+	    identity collection concat_dups concat_dup,
+	    collection name_str_dups name_str_dup,
+	    collection name_strs name_str1,
+	    collection name_strs name_str2
+	WHERE
+	    :concat_dup:key1 *= :name_str_dup:key1
+	AND :concat_dup:key2 *= :name_str_dup:key2
+	AND :concat_dup:key1 *= :name_str1:key
+	AND :concat_dup:key2 *= :name_str2:key
+	ON duplicate -- Update entries that already exist (in case we have a cross-cluster match).
+	    :key1,
+	    :key2
+	UPDATE SET
+	    :sim = condition(:name_str_dup:sim >= 0.0,
+		:name_str_dup:sim,
+		isnull(cos_compare(:name_str1:name_str, :name_str2:name_str), -1.0)
+	    )
+	;
+	
+	
+	print 'Adding name_str_dups to other collections...'
+	print '[name_meta_dups <- name_str_dups]'
+	-- [name_meta_dups <- name_str_dups] Add an entry to name_meta_dups for each entry in name_str_dups.
+	INSERT INTO
+	    collection name_meta_dups
+	SELECT
+	    key1 = :name_str_dup:key1,
+	    key2 = :name_str_dup:key2,
+	    sim = condition(:name_meta_dup:sim >= 0.0,
+		:name_meta_dup:sim,
+		isnull(lev_compare(:name_meta1:name_meta, :name_meta2:name_meta), -1.0)
+	    )
+	FROM
+	    identity collection name_str_dups name_str_dup,
+	    collection name_meta_dups name_meta_dup,
+	    collection name_metas name_meta1,
+	    collection name_metas name_meta2
+	WHERE
+	    :name_str_dup:key1 *= :name_meta_dup:key1
+	AND :name_str_dup:key2 *= :name_meta_dup:key2
+	AND :name_str_dup:key1 *= :name_meta1:key
+	AND :name_str_dup:key2 *= :name_meta2:key
+	GROUP BY
+	    :name_str_dup:key1,
+	    :name_str_dup:key2
+	ON duplicate -- Skip duplicate entries.
+	    :key1,
+	    :key2
+	UPDATE SET
+	    :sim = condition(:name_meta_dup:sim >= 0.0,
+		:name_meta_dup:sim,
+		isnull(lev_compare(:name_meta1:name_meta, :name_meta2:name_meta), -1.0)
+	    )
+	;
+	
+	print '[email_dups <- name_str_dups]'
+	-- [email_dups <- name_str_dups] Add an entry to email_dups for each entry in name_str_dups.
+	INSERT INTO
+	    collection email_dups
+	SELECT
+	    key1 = :name_str_dup:key1,
+	    key2 = :name_str_dup:key2,
+	    sim = condition(:email_dup:sim >= 0.0,
+		:email_dup:sim,
+		max(isnull(cos_compare(:email1:email, :email2:email), -1.0))
+	    )
+	FROM
+	    identity collection name_str_dups name_str_dup,
+	    collection email_dups email_dup,
+	    collection emails email1,
+	    collection emails email2
+	WHERE
+	    :name_str_dup:key1 *= :email_dup:key1
+	AND :name_str_dup:key2 *= :email_dup:key2
+	AND :name_str_dup:key1 *= :email1:key
+	AND :name_str_dup:key2 *= :email2:key
+	GROUP BY
+	    :name_str_dup:key1,
+	    :name_str_dup:key2
+	ON duplicate -- Skip duplicate entries.
+	    :key1,
+	    :key2
+	UPDATE SET
+	    :sim = condition(:email_dup:sim >= 0.0,
+		:email_dup:sim,
+		max(isnull(cos_compare(:email1:email, :email2:email), -1.0))
+	    )
+	;
+	
+	print '[phone_dups <- name_str_dups]'
+	-- [phone_dups <- name_str_dups] Add an entry to phone_dups for each entry in name_str_dups.
+	INSERT INTO
+	    collection phone_dups
+	SELECT
+	    key1 = :name_str_dup:key1,
+	    key2 = :name_str_dup:key2,
+	    sim = condition(:phone_dup:sim >= 0.0,
+		:phone_dup:sim,
+		max(isnull(lev_compare(:phone1:phone, :phone2:phone), -1.0))
+	    )
+	FROM
+	    identity collection name_str_dups name_str_dup,
+	    collection phone_dups phone_dup,
+	    collection phones phone1,
+	    collection phones phone2
+	WHERE
+	    :name_str_dup:key1 *= :phone_dup:key1
+	AND :name_str_dup:key2 *= :phone_dup:key2
+	AND :name_str_dup:key1 *= :phone1:key
+	AND :name_str_dup:key2 *= :phone2:key
+	GROUP BY
+	    :name_str_dup:key1,
+	    :name_str_dup:key2
+	ON duplicate -- Skip duplicate entries.
+	    :key1,
+	    :key2
+	UPDATE SET
+	    :sim = condition(:phone_dup:sim >= 0.0,
+		:phone_dup:sim,
+		max(isnull(lev_compare(:phone1:phone, :phone2:phone), -1.0))
+	    )
+	;
+	
+	print '[address_dups <- name_str_dups]'
+	-- [address_dups <- name_str_dups] Add an entry to address_dups for each entry in name_str_dups.
+	INSERT INTO
+	    collection address_dups
+	SELECT
+	    key1 = :name_str_dup:key1,
+	    key2 = :name_str_dup:key2,
+	    sim = condition(:address_dup:sim >= 0.0,
+		:address_dup:sim,
+		max(isnull(cos_compare(:address1:address, :address2:address), -1.0))
+	    )
+	FROM
+	    identity collection name_str_dups name_str_dup,
+	    collection address_dups address_dup,
+	    collection addresses address1,
+	    collection addresses address2
+	WHERE
+	    :name_str_dup:key1 *= :address_dup:key1
+	AND :name_str_dup:key2 *= :address_dup:key2
+	AND :name_str_dup:key1 *= :address1:key
+	AND :name_str_dup:key2 *= :address2:key
+	GROUP BY
+	    :name_str_dup:key1,
+	    :name_str_dup:key2
+	ON duplicate -- Skip duplicate entries.
+	    :key1,
+	    :key2
+	UPDATE SET
+	    :sim = condition(:address_dup:sim >= 0.0,
+		:address_dup:sim,
+		max(isnull(cos_compare(:address1:address, :address2:address), -1.0))
+	    )
+	;
+	
+	-- Free application-scoped collections.
+	DELETE FROM collection name_strs;
+	DELETE FROM collection name_metas;
+	DELETE FROM collection emails;
+	DELETE FROM collection phones;
+	DELETE FROM collection addresses;
+	
+	-- Declare a collection to hold all dups found by both strategies (aggregation and concatenation).
+	DECLARE collection all_dups;
+	
+	print 'Aggregating dups...'
+	-- Aggregate dups.
+	INSERT INTO
+	    collection all_dups
+	SELECT
+	    key1 = :name_str_dup:key1,
+	    key2 = :name_str_dup:key2,
+	    sim = (0.0
+		+ condition(constrain(:name_str_dup:sim, :name_meta_dup:sim * 0.9, 1.0) >= 0.0, constrain(:name_str_dup:sim, :name_meta_dup:sim * 0.9, 1.0), 0.0)
+		+ condition(:email_dup:sim >= 0.0, :email_dup:sim, 0.0)
+		+ condition(:phone_dup:sim >= 0.0, :phone_dup:sim, 0.0)
+		+ condition(:address_dup:sim >= 0.0, :address_dup:sim, 0.0)
+	    ) / (constrain(0.0 -- Constrain to prevent divide by 0 when NANs wander into the data from alternate dimensions.
+		+ condition(:name_str_dup:sim >= 0.0 OR :name_meta_dup:sim >= 0.0, 1.0, 0.0)
+		+ condition(:email_dup:sim >= 0.0, 1.0, 0.0)
+		+ condition(:phone_dup:sim >= 0.0, 1.0, 0.0)
+		+ condition(:address_dup:sim >= 0.0, 1.0, 0.0)
+		, 0.0000001, convert(double, NULL)) -- Necessary because centrallix devision does not handle NAN properly.
+	    ),
+	    reason = ''
+		+ condition(:name_str_dup:sim > 0.0, 'Name (' + round(:name_str_dup:sim * 100, :value:reason_decimals) + '%)\\n', '')
+		+ condition(:name_meta_dup:sim > 0.0 AND (:name_meta_dup:sim - 0.00001) > :name_str_dup:sim, 'Phonetic Name (' + round(:name_meta_dup:sim * 100, :value:reason_decimals) + '%)\\n', '')
+		+ condition(:email_dup:sim > 0.0, 'Email (' + round(:email_dup:sim * 100, :value:reason_decimals) + '%)\\n', '')
+		+ condition(:phone_dup:sim > 0.0, 'Phone (' + round(:phone_dup:sim * 100, :value:reason_decimals) + '%)\\n', '')
+		+ condition(:address_dup:sim > 0.0, 'Address (' + round(:address_dup:sim * 100, :value:reason_decimals) + '%)\\n', '')
+		- '\\n'
+	FROM
+	    identity collection name_str_dups name_str_dup,
+	    collection name_meta_dups name_meta_dup,
+	    collection email_dups email_dup,
+	    collection phone_dups phone_dup,
+	    collection address_dups address_dup
+	WHERE
+	    :name_str_dup:key1 = :name_meta_dup:key1
+	AND :name_str_dup:key2 = :name_meta_dup:key2
+	AND :name_str_dup:key1 = :email_dup:key1
+	AND :name_str_dup:key2 = :email_dup:key2
+	AND :name_str_dup:key1 = :phone_dup:key1
+	AND :name_str_dup:key2 = :phone_dup:key2
+	AND :name_str_dup:key1 = :address_dup:key1
+	AND :name_str_dup:key2 = :address_dup:key2
+	;
+	
+	
+	print 'Adding concatenation dups...'
+	-- Full Concat Dups
+	INSERT INTO
+	    collection all_dups
+	SELECT
+	    key1 = :concat_dup:key1,
+	    key2 = :concat_dup:key2,
+	    sim = :concat_dup:sim,
+	    reason = 'All (' + round(:concat_dup:sim * 100, :value:reason_decimals) + '%)'
+	FROM
+	    identity collection concat_dups concat_dup
+	ON duplicate
+	    :key1,
+	    :key2
+	UPDATE SET
+	    :sim = condition(:sim > :concat_dup:sim, :sim, :concat_dup:sim),
+	    :reason = 'All (' + round(:concat_dup:sim * 100, :value:reason_decimals) + '%)\\n' + :reason
+	;
+	
+	
+	-- Remove all data from the dups table (for debugging).
+	delete from /apps/kardia/data/Kardia_DB/p_dup/rows ;
+	
+	print 'Storing dups...'
+	-- TODO: Greg - We should fix this upsert.
+	-- Insert dups into p_dup table.
+	INSERT INTO
+	    /apps/kardia/data/Kardia_DB/p_dup/rows
+	SELECT
+	    p_partner_key = :key1,
+	    p_dup_partner_key = :key2,
+	    p_match_quality = :sim,
+	    p_reason = :reason,
+	    
+	    -- Required fields.
+	    s_date_created = getdate(),
+	    s_created_by = user_name(),
+	    s_date_modified = getdate(),
+	    s_modified_by = user_name()
+	FROM
+	    collection all_dups
+	WHERE -- We should never get identical dups, but somehow we do. This fixes that issue.
+	    :all_dups:key1 != :all_dups:key2
+	AND :sim > :value:min_total_sim
+	ON duplicate
+	    :p_partner_key,
+	    :p_dup_partner_key
+	UPDATE SET
+	    :p_match_quality = :sim,
+	    :p_reason = :reason,
+	    :s_date_modified = getdate(),
+	    :s_modified_by = user_name()
+	;
+	
+	-- Remove stale data from the dups table.
+--	DELETE
+--	FROM
+--	    identity /apps/kardia/data/Kardia_DB/p_dup/rows d,
+--	    /apps/kardia/data/Kardia_DB/p_partner/rows p1,
+--	    /apps/kardia/data/Kardia_DB/p_partner/rows p2
+--	WHERE
+--	    :d:p_partner_key *= :p1:p_partner_key
+--	AND :d:p_dup_partner_key *= :p2:p_partner_key
+--	AND(:d:s_date_modified < isnull(:p1:s_date_modified, getdate())
+--	    OR :d:s_date_modified < isnull(:p2:s_date_modified, getdate()))
+--	;
+	print 'Update complete'
+    ";
+    }
