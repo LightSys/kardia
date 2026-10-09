@@ -51,9 +51,9 @@ myquery "system/query"
 		)),
 		cx_path=:__cx_path, -- include for debug
 		-- fix encoding on any values that may contain non-ascii characters
-		CCAuthDesc = convert('string', convert(:CCAuthDesc, 'latin1', 'utf8')),
-		FundName = convert('string', convert(:FundName, 'latin1', 'vanco')),
-		FundNote = convert('string', convert(:FundNote, 'latin1', 'vanco')),
+		CCAuthDesc = convert('string', convert(:CCAuthDesc, 'utf8', 'vanco')),
+		FundName = convert('string', convert(:FundName, 'utf8', 'vanco')),
+		FundNote = convert('string', convert(:FundNote, 'utf8', 'vanco')),
 		ReturnDate = condition(char_length(:ReturnDate) > 1, :ReturnDate, NULL), 
 		DepositDate =  condition(char_length(:DepositDate) > 1, :DepositDate, NULL),
 		ProcessDate =  condition(char_length(:ProcessDate) > 1, :ProcessDate, NULL),
@@ -181,11 +181,11 @@ myquery "system/query"
 	        COLLECTION customers
 	    SELECT 
 		-- fix vanco encoding on any feilds likely to contain diacritics 
-		CustomerName = convert('string', convert(:CustomerName, 'latin1', 'vanco')),
-		CustomerAddress1 = convert('string', convert(:CustomerAddress1, 'latin1', 'vanco')),
-		CustomerAddress2 = convert('string', convert(:CustomerAddress2, 'latin1', 'vanco')),
-		CustomerCity = convert('string', convert(:CustomerCity, 'latin1', 'vanco')),
-		CustomerState = convert('string', convert(:CustomerState, 'latin1', 'vanco')),
+		CustomerName = convert('string', convert(:CustomerName, 'utf8', 'vanco')),
+		CustomerAddress1 = convert('string', convert(:CustomerAddress1, 'utf8', 'vanco')),
+		CustomerAddress2 = convert('string', convert(:CustomerAddress2, 'utf8', 'vanco')),
+		CustomerCity = convert('string', convert(:CustomerCity, 'utf8', 'vanco')),
+		CustomerState = convert('string', convert(:CustomerState, 'utf8', 'vanco')),
 		*
 	    FROM 
 	        SUBTREE PAGED EXPRESSION('/apps/kardia/modules/eg_vanco/egvapi_custInfo.http?VancoWS.Auth.SessionID='
