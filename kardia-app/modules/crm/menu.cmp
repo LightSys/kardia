@@ -7,15 +7,14 @@ menu "widget/component-decl"
     // Triggered when a menu item is selected
     ItemSelected "widget/component-decl-event" { }
 
-    // Opens / displays the menu
+    // Opens / displays the menu.  Pass the widget it should pop up against.
     Open "widget/component-decl-action" { }
     onOpen "widget/connector"
 	{
 	event=Open;
 	target=menu_window;
 	action=Popup;
-	X=runclient(:open_x);
-	Y=runclient(:open_y);
+	PopTo=runclient(:origin);
 	}
 
     // Closes / hides the menu
