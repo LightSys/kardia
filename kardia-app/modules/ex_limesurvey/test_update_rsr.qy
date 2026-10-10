@@ -1,0 +1,14 @@
+$Version=2$
+myquery "system/query"
+	{
+	id "query/parameter" { type=integer; }
+	
+	sql = " UPDATE
+				/apps/kardia/data/Kardia_DB/i_crm_import_type/rows
+			SET
+				:i_crm_field_email = "lararose@letu.edu"
+			WHERE
+				:i_crm_import_type_id = 1
+			;
+	";
+}
