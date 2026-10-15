@@ -12,11 +12,13 @@ staffmaint "widget/page"
     endorsement_context=runserver("kardia");
 
     ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
+    id "widget/parameter" { type=string; default=null; }
 
     staffmaint_cmp "widget/component"
 	{
 	x=10; y=10; width=980; height=680;
 	path = "/apps/kardia/modules/base/staffmaint.cmp";
 	ledger = runserver(:this:ledger);
+	id = runserver(:this:id);
 	}
     }
