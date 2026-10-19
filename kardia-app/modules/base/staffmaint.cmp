@@ -4,6 +4,9 @@ staffmaint "widget/component-decl"
     width=980;
     height=680;
 
+    // If needing to pre-load a particular staff record, use this parameter.
+    id "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
+
     ledger "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
 
     vbox "widget/vbox"
@@ -81,9 +84,16 @@ staffmaint "widget/component-decl"
 			convert(integer,:s:p_partner_key)
 		    ");
 	    baseobj="/apps/kardia/data/Kardia_DB/p_staff/rows";
-	    replicasize=200;
-	    readahead=200;
+	    replicasize=300;
+	    readahead=300;
 	    use_having_clause=yes;
+
+	    select_staff_on_load "widget/connector"
+		{
+		event=Results;
+		action=FindObject;
+		p_partner_key=runclient(:staffmaint:id);
+		}
 
 	    manual_email_sync "widget/connector"
 		{
