@@ -30,21 +30,21 @@ plugin_rcpt_giftimport_EGS "widget/component-decl"
 			:c:i_eg_returned_status,
 
 			:c:i_eg_donor_name,
-			:c:i_eg_donor_given_name,
-			:c:i_eg_donor_surname,
-			:c:i_eg_donor_middle_name,
+			i_eg_donor_given_name = condition(char_length(:c:i_eg_donor_given_name) < 1, NULL, :c:i_eg_donor_given_name),
+			i_eg_donor_surname= condition(char_length(:c:i_eg_donor_surname) < 1, NULL, :c:i_eg_donor_surname),
+			i_eg_donor_middle_name = condition(char_length(:c:i_eg_donor_middle_name) < 1, NULL, :c:i_eg_donor_middle_name),
 			i_eg_donor_prefix = NULL,
 			i_eg_donor_suffix = NULL,
-			:c:i_eg_donor_address,
-			:c:i_eg_donor_addr1,
-			:c:i_eg_donor_addr2,
+			i_eg_donor_address = condition(char_length(:c:i_eg_donor_address) < 1, NULL, :c:i_eg_donor_address),
+			i_eg_donor_addr1 = condition(char_length(:c:i_eg_donor_addr1) < 1, NULL, :c:i_eg_donor_addr1),
+			i_eg_donor_addr2 = condition(char_length(:c:i_eg_donor_addr2) < 1, NULL, :c:i_eg_donor_addr2),
 			i_eg_donor_addr3 = NULL,
-			:c:i_eg_donor_city,
-			:c:i_eg_donor_state,
-			:c:i_eg_donor_postal,
-			:c:i_eg_donor_country,
-			:c:i_eg_donor_phone,
-			:c:i_eg_donor_email,
+			i_eg_donor_city = condition(char_length(:c:i_eg_donor_city) < 1, NULL, :c:i_eg_donor_city),
+			i_eg_donor_state = condition(char_length(:c:i_eg_donor_state) < 1, NULL, :c:i_eg_donor_state),
+			i_eg_donor_postal = condition(char_length(:c:i_eg_donor_postal) < 1, NULL, :c:i_eg_donor_postal),
+			i_eg_donor_country = condition(char_length(:c:i_eg_donor_country) < 1, NULL, :c:i_eg_donor_country),
+			i_eg_donor_phone = condition(char_length(:c:i_eg_donor_phone) < 1, NULL, :c:i_eg_donor_phone),
+			i_eg_donor_email = condition(char_length(:c:i_eg_donor_email) < 1, NULL, :c:i_eg_donor_email),
 
 			:c:i_eg_gift_amount,
 			:c:i_eg_net_amount,
@@ -64,13 +64,13 @@ plugin_rcpt_giftimport_EGS "widget/component-decl"
 			:c:i_eg_desig_name,
 			:c:i_eg_desig_notes
 			
-		from
+		FROM
 			/apps/kardia/modules/eg_vanco/combined.qy c
 		";
 
-    upsert_sql="on duplicate
+    upsert_sql="ON DUPLICATE
 			:a_ledger_number, :i_eg_trx_uuid, :i_eg_desig_uuid, :i_eg_service
-		update set
+		UPDATE SET
 			:i_eg_deposit_date = :c:i_eg_deposit_date,
 			:i_eg_deposit_uuid = :c:i_eg_deposit_uuid,
 			:i_eg_deposit_gross_amt = :c:i_eg_deposit_gross_amt,

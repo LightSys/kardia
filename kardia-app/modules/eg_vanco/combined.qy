@@ -44,16 +44,16 @@ myquery "system/query"
 	    INSERT 
 		COLLECTION dataQuery
 	    SELECT 
-		-- use the path to set the dense_rank. Use all for transactions, and everthing before /Funds/Fund in funds
+		-- use the path to set the dense_rank. Use all for transactions, and everything before /Funds/Fund in funds
 		transGroup = dense_rank(condition(charindex('/Funds/Fund', :__cx_path) > 0, 
 			substring(:__cx_path, 35, charindex('/Funds/Fund', :__cx_path) - 35), 
 			substring(:__cx_path, 35)
 		)),
 		cx_path=:__cx_path, -- include for debug
 		-- fix encoding on any values that may contain non-ascii characters
-		CCAuthDesc = convert('string', convert(:CCAuthDesc, 'utf8', 'vanco')),
-		FundName = convert('string', convert(:FundName, 'utf8', 'vanco')),
-		FundNote = convert('string', convert(:FundNote, 'utf8', 'vanco')),
+		CCAuthDesc = convert('string', convert(:CCAuthDesc, 'latin1', 'vanco')),
+		FundName = convert('string', convert(:FundName, 'latin1', 'vanco')),
+		FundNote = convert('string', convert(:FundNote, 'latin1', 'vanco')),
 		ReturnDate = condition(char_length(:ReturnDate) > 1, :ReturnDate, NULL), 
 		DepositDate =  condition(char_length(:DepositDate) > 1, :DepositDate, NULL),
 		ProcessDate =  condition(char_length(:ProcessDate) > 1, :ProcessDate, NULL),
@@ -180,12 +180,13 @@ myquery "system/query"
 	    INSERT 
 	        COLLECTION customers
 	    SELECT 
-		-- fix vanco encoding on any feilds likely to contain diacritics 
-		CustomerName = convert('string', convert(:CustomerName, 'utf8', 'vanco')),
-		CustomerAddress1 = convert('string', convert(:CustomerAddress1, 'utf8', 'vanco')),
-		CustomerAddress2 = convert('string', convert(:CustomerAddress2, 'utf8', 'vanco')),
-		CustomerCity = convert('string', convert(:CustomerCity, 'utf8', 'vanco')),
-		CustomerState = convert('string', convert(:CustomerState, 'utf8', 'vanco')),
+-- FIXME: make sure converting to UTF-8 doesn't just break everything (may need to be Latin1 or CP-1252, but we'll see)
+		-- fix vanco encoding on any fields likely to contain diacritics 
+		CustomerName = convert('string', convert(:CustomerName, 'latin1', 'vanco')),
+		CustomerAddress1 = convert('string', convert(:CustomerAddress1, 'latin1', 'vanco')),
+		CustomerAddress2 = convert('string', convert(:CustomerAddress2, 'latin1', 'vanco')),
+		CustomerCity = convert('string', convert(:CustomerCity, 'latin1', 'vanco')),
+		CustomerState = convert('string', convert(:CustomerState, 'latin1', 'vanco')),
 		*
 	    FROM 
 	        SUBTREE PAGED EXPRESSION('/apps/kardia/modules/eg_vanco/egvapi_custInfo.http?VancoWS.Auth.SessionID='
@@ -212,22 +213,42 @@ myquery "system/query"
 	    -- clear out global collections; no longer needed
 	    DELETE FROM COLLECTION custRefList ;
 
+	    -- If we got any ACH returns, now is the time to split it so we have both what the original gift
+	    -- used to look like, and what the current return actually looks like.
+	    -- This needs to work if we already had the original gift, so all keys will match for original, 
+	    -- while the return will have it's i_eg_trx_uuid modified
+	    -- Note that ACH refunds are handled differently and do NOT need a new row here
+	    INSERT INTO 
+		COLLECTION transactions
+	    SELECT
+		Credit = 'C',
+		ReturnReason = NULL,
+		ReturnDate = NULL,
+		*
+	    FROM 
+		COLLECTION transactions t
+	    WHERE
+		(:t:Credit == 'D' OR :t:ReturnDate IS NOT NULL)
+		AND :t:ReturnReason != 'Refunded'
+		AND :t:AccountType == 'C' OR :t:AccountType == 'S'
+	    ;
+
 	    -- Now that we have the payment info, calculate the net amounts 
 
-	    -- start by getting the sign, fees, and dpeosit grouping figured out
+	    -- start by getting the sign, fees, and deposit grouping figured out
 	    UPDATE
 		IDENTITY COLLECTION transactions t,
 		COLLECTION payMethods p
 	    SET
 		:t:gift_sign = condition(:t:Credit == 'D' 
-			OR ((:t:AccountType == 'C' OR :t:AccountType == 'S') AND char_length(:t:ReturnDate) > 0)
-			OR (:t:AccountType == 'CC' AND :t:ReturnReason == 'Refunded'), 
+			OR ((:t:AccountType == 'C' OR :t:AccountType == 'S') AND :t:ReturnDate IS NOT NULL)
+			OR (:t:AccountType == 'CC' AND :t:ReturnDate IS NOT NULL), 
 			-1, 1),
 		:t:net_fee = condition(:t:AccountType == 'CC' AND :t:ReturnReason == 'Refunded',
 			:config_values:flat_fee + :t:FundAmount * condition(upper(:p:CardType) == 'AMERICAN EXPRESS', :config_values:amex_fee, :config_values:default_fee),
 			:t:FundTransactionFee),
 		:t:deposit_uuid = condition(char_length(:t:DepositDate) < 1, NULL,
-		    condition(:t:Credit == 'D' OR ((:t:AccountType == 'C' OR :t:AccountType == 'S') AND char_length(:t:ReturnDate) > 0),
+		    condition(:t:Credit == 'D' OR ((:t:AccountType == 'C' OR :t:AccountType == 'S') AND :t:ReturnDate IS NOT NULL),
 			replace(:t:DepositDateStr, '-', NULL) + '-' + replace(:t:ProcessDateStr, '-', NULL) + '-ACH-Return',
 			condition(:t:AccountType == 'C' OR :t:AccountType == 'S',
 			    replace(:t:DepositDateStr, '-', NULL) + '-' + replace(:t:ProcessDateStr, '-', NULL) + '-ACH',
@@ -277,7 +298,7 @@ myquery "system/query"
 		i_eg_gift_uuid = condition(:o:Frequency IS NOT NULL, :o:TransactionRef, :t:TransactionRef), -- TODO: currently, :t:TransactionRef = :o:TransactionRef. Simplify if this doesn't change
 		i_eg_desig_uuid = :t:FundID,
 		i_eg_trx_uuid = :t:TransactionRef+'-'+dateformat(convert('datetime', :t:ProcessDate), 'yyyy-MM-dd') + 
-			condition(:t:Credit == 'D' OR ((:t:AccountType == 'C' OR :t:AccountType == 'S') AND char_length(:t:ReturnDate) > 0), '-ACH-Return', ''),
+			condition((:t:AccountType == 'C' OR :t:AccountType == 'S') AND (:t:Credit == 'D' OR :t:ReturnDate IS NOT NULL), '-ACH-Return', ''),
 		i_eg_donor_uuid = :t:CustomerID,  
 		i_eg_donor_alt_id = :t:CustomerRef,
 		i_eg_account_uuid = :t:PaymentMethodRef,
@@ -293,7 +314,7 @@ myquery "system/query"
 		    condition(:t:CCStatus == 'F', 
 			'Failed', 
 			condition(:t:ReturnReason == 'Refunded',
-			:t:ReturnReason,
+			'REFUND',
 			condition(char_length(:t:ReturnCode) > 0,
 			    :t:ReturnCode, 
 			    NULL)))),
@@ -342,7 +363,7 @@ myquery "system/query"
 		i_eg_gift_start_date = condition(char_length(:o:StartDate) > 1, convert('datetime', :o:StartDate), convert('datetime', NULL)),
 		i_eg_gift_end_date = condition(char_length(:o:EndDate) > 1, convert('datetime', :o:EndDate), convert('datetime', NULL)),
 		i_eg_gift_count = NULL,
-		i_eg_gift_date = convert('datetime', :t:ProcessDate),
+		i_eg_gift_date = convert('datetime', condition(:t:ReturnDate IS NOT NULL, :t:ReturnDate, :t:ProcessDate)),
 		i_eg_gift_trx_date = convert('datetime', :t:ProcessDate),
 		i_eg_gift_settlement_date = convert('datetime', :t:SettlementDate), 
 		i_eg_gift_lastfour = substring(:p:AccountNumber, char_length(:p:AccountNumber) - 3),
