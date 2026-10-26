@@ -7,4 +7,5 @@ app_info "system/structure"
     app_version="1568";
     app_release="Thu Jul 28, 2022";
     app_info="Ministry management software featuring G/L, Payroll, Donations, Disbursements, and Mailing Management.";
+    app_default="isnull((select condition(:s_config_value = '1', 1, 0) from /apps/kardia/data/Kardia_DB/s_config/rows where :s_config_name = 'SiteDefault'), 0)";
     }
