@@ -4,18 +4,21 @@ trx_popup_menu "widget/component-decl"
     width=640;
     height=480;
 
-    X "widget/parameter" { type=integer; default=0; }
-    Y "widget/parameter" { type=integer; default=0; }
-    period "widget/parameter" { type=string; default=null; }
-    batch "widget/parameter" { type=integer; default=null; }
-    acct "widget/parameter" { type=string; default=null; }
-    cc "widget/parameter" { type=string; default=null; }
-    jnl "widget/parameter" { type=integer; default=null; }
-    editor "widget/parameter" { type=object; }
-    acctbal "widget/parameter" { type=object; }
-    viewer "widget/parameter" { type=object; }
-    title "widget/parameter" { type=string; default="Menu"; }
-    legacy "widget/parameter" { type=string; default=null; }
+    X "widget/parameter" { type=integer; default=0; deploy_to_client=yes; }
+    Y "widget/parameter" { type=integer; default=0; deploy_to_client=yes; }
+    ledger "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
+    period "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
+    batch "widget/parameter" { type=integer; default=null; deploy_to_client=yes; }
+    acct "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
+    cc "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
+    jnl "widget/parameter" { type=integer; default=null; deploy_to_client=yes; }
+    editor "widget/parameter" { type=object; deploy_to_client=yes; }
+    acctbal "widget/parameter" { type=object; deploy_to_client=yes; }
+    viewer "widget/parameter" { type=object; deploy_to_client=yes; }
+    title "widget/parameter" { type=string; default="Menu"; deploy_to_client=yes; }
+    legacy "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
+    origin "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
+    year "widget/parameter" { type=string; default=null; style=strnull; deploy_to_client=yes; }
 
     LoadComplete_cn "widget/connector"
 	{
@@ -37,43 +40,43 @@ trx_popup_menu "widget/component-decl"
 	    {
 	    condition = runserver(not (:this:period is null));
 	    label = runserver('Browse Period ' + :this:period);
-	    per_cn "widget/connector" { event=Select; target=viewer; action=Browse; a_period=runclient(:trx_popup_menu:period); }
+	    per_cn "widget/connector" { event=Select; target=viewer; action=Browse; a_period=runclient(:trx_popup_menu:period); year=runclient(:year:value); }
 	    }
 	batch_item "widget/menuitem"
 	    {
 	    condition = runserver(not (:this:batch is null));
 	    label = runserver('Browse Batch ' + :this:batch); 
-	    batch_cn "widget/connector" { event=Select; target=viewer; action=Browse; a_batch_number=runclient(:trx_popup_menu:batch); }
+	    batch_cn "widget/connector" { event=Select; target=viewer; action=Browse; a_batch_number=runclient(:trx_popup_menu:batch); year=runclient(:year:value); }
 	    }
-	jnl_item "widget/menuitem"
-	    {
-	    condition = runserver(not (:this:jnl is null));
-	    label = runserver('Browse Batch ' + :this:batch + ', Journal ' + :this:jnl);
-	    jnl_batch_cn "widget/connector" { event=Select; target=viewer; action=Browse; a_batch_number=runclient(:trx_popup_menu:batch); a_journal_number=runclient(:trx_popup_menu:jnl);}
-	    }
+//	jnl_item "widget/menuitem"
+//	    {
+//	    condition = runserver(not (:this:jnl is null));
+//	    label = runserver('Browse Batch ' + :this:batch + ', Journal ' + :this:jnl);
+//	    jnl_batch_cn "widget/connector" { event=Select; target=viewer; action=Browse; a_batch_number=runclient(:trx_popup_menu:batch); a_journal_number=runclient(:trx_popup_menu:jnl);}
+//	    }
 	bcc_item "widget/menuitem"
 	    {
 	    condition = runserver((not (:this:cc is null)) and (not (:this:batch is null)));
 	    label = runserver('Browse Batch ' + :this:batch + ', Fund ' + :this:cc);
-	    bcc_cn "widget/connector" { event=Select; target=viewer; action=Browse; a_fund=runclient(:trx_popup_menu:cc); a_batch_number=runclient(:trx_popup_menu:batch); }
+	    bcc_cn "widget/connector" { event=Select; target=viewer; action=Browse; a_fund=runclient(:trx_popup_menu:cc); a_batch_number=runclient(:trx_popup_menu:batch); year=runclient(:year:value); }
 	    }
 	acct_item "widget/menuitem"
 	    {
 	    condition = runserver(not (:this:acct is null));
 	    label = runserver('Browse Account ' + :this:acct);
-	    acct_cn "widget/connector" { event=Select; target=viewer; action=Browse; a_account_code=runclient(:trx_popup_menu:acct); }
+	    acct_cn "widget/connector" { event=Select; target=viewer; action=Browse; a_account_code=runclient(:trx_popup_menu:acct); year=runclient(:year:value); }
 	    }
 	cc_item "widget/menuitem"
 	    {
 	    condition = runserver(not (:this:cc is null));
 	    label = runserver('Browse Fund ' + :this:cc); 
-	    cc_cn "widget/connector" { event=Select; target=viewer; action=Browse; a_fund=runclient(:trx_popup_menu:cc); }
+	    cc_cn "widget/connector" { event=Select; target=viewer; action=Browse; a_fund=runclient(:trx_popup_menu:cc); year=runclient(:year:value); }
 	    }
 	acc_item "widget/menuitem"
 	    {
 	    condition = runserver((not (:this:cc is null)) and (not (:this:acct is null)));
 	    label = runserver('Browse Fund ' + :this:cc + ', Account ' + :this:acct);
-	    acc_cn "widget/connector" { event=Select; target=viewer; action=Browse; a_fund=runclient(:trx_popup_menu:cc); a_account_code=runclient(:trx_popup_menu:acct); }
+	    acc_cn "widget/connector" { event=Select; target=viewer; action=Browse; a_fund=runclient(:trx_popup_menu:cc); a_account_code=runclient(:trx_popup_menu:acct); year=runclient(:year:value); }
 	    }
 
 	sep1 "widget/menusep" { }
@@ -87,25 +90,53 @@ trx_popup_menu "widget/component-decl"
 	editbatch_item "widget/menuitem"
 	    { 
 	    condition = runserver(not (:this:batch is null));
-	    label = runserver('Open Batch ' + :this:batch + ' in Editor'); 
-	    edit_cn "widget/connector" { event=Select; target=editor; action=GotoBatch; Batch=runclient(:trx_popup_menu:batch); }
+	    label = runserver('Open Batch ' + :this:batch + ' in Journal Entry'); 
+	    edit_cn "widget/connector" { event=Select; target=viewer; action=EditBatch; Batch=runclient(:trx_popup_menu:batch); }
 	    }
-	summbatch_item "widget/menuitem"
+	editcr_item "widget/menuitem"
+	    {
+	    condition = runserver(:this:batch is not null and :this:origin = 'CR');
+	    label = runserver('Open Batch ' + :this:batch + ' in Gift Entry'); 
+	    editcr_cn "widget/connector" { event=Select; target=viewer; action=EditCRBatch; Batch=runclient(:trx_popup_menu:batch); }
+	    }
+	editcd_item "widget/menuitem"
+	    {
+	    condition = runserver(:this:batch is not null and :this:origin = 'CD');
+	    label = runserver('Open Batch ' + :this:batch + ' in Disbursements'); 
+	    editcd_cn "widget/connector" { event=Select; target=viewer; action=EditCDBatch; Batch=runclient(:trx_popup_menu:batch); }
+	    }
+
+	sep2 "widget/menusep" { }
+
+	printbatch_item "widget/menuitem"
 	    {
 	    condition = runserver(not (:this:batch is null));
-	    label = runserver('Show Summary for Batch ' + :this:batch); 
+	    label = runserver('Transaction Report for Batch ' + :this:batch); 
+	    printbatch_cn "widget/connector" { event=Select; target=viewer; action=PrintTrx; a_batch_number=runclient(:trx_popup_menu:batch); year=runclient(:year:value); }
 	    }
-	balcc_item "widget/menuitem"
-	    { 
-	    condition = runserver(not (:this:cc is null));
-	    label = runserver('Show Balances for ' + :this:cc); 
-	    balcc_cn "widget/connector" { event=Select; target=acctbal; action=ShowBalances; Fund=runclient(:trx_popup_menu:cc); Account=runclient(null); }
+	printfund_item "widget/menuitem"
+	    {
+	    condition = runserver(:this:cc is not null);
+	    label = runserver('Transaction Report for Fund ' + :this:cc); 
+	    printfund_cn "widget/connector" { event=Select; target=viewer; action=PrintTrx; a_fund=runclient(:trx_popup_menu:cc); year=runclient(:year:value); }
 	    }
-	balccacct_item "widget/menuitem"
-	    { 
-	    condition = runserver((not (:this:cc is null)) and (not (:this:acct is null)));
-	    label = runserver('Show Balance for ' + :this:cc + ':' + :this:acct); 
-	    balccacct_cn "widget/connector" { event=Select; target=acctbal; action=ShowBalances; Fund=runclient(:trx_popup_menu:cc); Account=runclient(:trx_popup_menu:acct); }
+	printacct_item "widget/menuitem"
+	    {
+	    condition = runserver(:this:cc is not null);
+	    label = runserver('Transaction Report for Account ' + :this:acct); 
+	    printacct_cn "widget/connector" { event=Select; target=viewer; action=PrintTrx; a_account_code=runclient(:trx_popup_menu:acct); year=runclient(:year:value); }
 	    }
+//	balcc_item "widget/menuitem"
+//	    { 
+//	    condition = runserver(not (:this:cc is null));
+//	    label = runserver('Show Balances for ' + :this:cc); 
+//	    balcc_cn "widget/connector" { event=Select; target=acctbal; action=ShowBalances; Fund=runclient(:trx_popup_menu:cc); Account=runclient(null); }
+//	    }
+//	balccacct_item "widget/menuitem"
+//	    { 
+//	    condition = runserver((not (:this:cc is null)) and (not (:this:acct is null)));
+//	    label = runserver('Show Balance for ' + :this:cc + ':' + :this:acct); 
+//	    balccacct_cn "widget/connector" { event=Select; target=acctbal; action=ShowBalances; Fund=runclient(:trx_popup_menu:cc); Account=runclient(:trx_popup_menu:acct); }
+//	    }
 	}
     }
