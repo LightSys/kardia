@@ -18,6 +18,7 @@ trx_popup_menu "widget/component-decl"
     title "widget/parameter" { type=string; default="Menu"; deploy_to_client=yes; }
     legacy "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
     origin "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
+    amount "widget/parameter" { type=money; default=null; deploy_to_client=yes; }
     year "widget/parameter" { type=string; default=null; style=strnull; deploy_to_client=yes; }
 
     LoadComplete_cn "widget/connector"
@@ -78,6 +79,18 @@ trx_popup_menu "widget/component-decl"
 	    label = runserver('Browse Fund ' + :this:cc + ', Account ' + :this:acct);
 	    acc_cn "widget/connector" { event=Select; target=viewer; action=Browse; a_fund=runclient(:trx_popup_menu:cc); a_account_code=runclient(:trx_popup_menu:acct); year=runclient(:year:value); }
 	    }
+	amt_cr_item "widget/menuitem"
+	    {
+	    condition = runserver(:this:amount is not null);
+	    label = runserver('Browse Credits of ' + condition(:this:amount > 0, :this:amount, $0 - :this:amount));
+	    amt_cr_cn "widget/connector" { event=Select; target=viewer; action=Browse; amount=runclient(runserver(convert(integer, condition(:this:amount > $0, $0 - :this:amount, :this:amount) * 100))); year=runclient(:year:value); }
+	    }
+	amt_dr_item "widget/menuitem"
+	    {
+	    condition = runserver(:this:amount is not null);
+	    label = runserver('Browse Debits of ' + condition(:this:amount > 0, :this:amount, $0 - :this:amount));
+	    amt_dr_cn "widget/connector" { event=Select; target=viewer; action=Browse; amount=runclient(runserver(convert(integer, condition(:this:amount < $0, $0 - :this:amount, :this:amount) * 100))); year=runclient(:year:value); }
+	    }
 
 	sep1 "widget/menusep" { }
 
@@ -126,6 +139,7 @@ trx_popup_menu "widget/component-decl"
 	    label = runserver('Transaction Report for Account ' + :this:acct); 
 	    printacct_cn "widget/connector" { event=Select; target=viewer; action=PrintTrx; a_account_code=runclient(:trx_popup_menu:acct); year=runclient(:year:value); }
 	    }
+
 //	balcc_item "widget/menuitem"
 //	    { 
 //	    condition = runserver(not (:this:cc is null));

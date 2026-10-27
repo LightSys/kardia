@@ -20,6 +20,7 @@ transaction_research "widget/component-decl"
 	on_browse_do_fund "widget/connector" { event_condition=runclient(:a_fund is not null); target=f_fund; action=SetValue; Value=runclient(:a_fund); }
 	on_browse_do_acct "widget/connector" { event_condition=runclient(:a_account_code is not null); target=f_acct; action=SetValue; Value=runclient(:a_account_code); }
 	on_browse_do_year "widget/connector" { event_condition=runclient(:year is not null); target=f_year; action=SetValue; Value=runclient(:year); }
+	on_browse_do_amt "widget/connector" { event_condition=runclient(:amount is not null); target=f_amount; action=SetValue; Value=runclient(:amount / 100); }
 
 	on_browse_do_query "widget/connector"
 	    {
@@ -394,6 +395,7 @@ transaction_research "widget/component-decl"
 				    cc=runclient(:tr_list_osrc:cc);
 				    jnl=runclient(:tr_list_osrc:a_journal_number);
 				    origin=runclient(:tr_list_osrc:a_origin);
+				    amount=runclient(:tr_list_osrc:a_amount);
 				    year=runclient(:f_year:value);
 				    }
 
@@ -428,6 +430,7 @@ transaction_research "widget/component-decl"
 		    cc=runclient(condition(:tr_osrc:mincc == :tr_osrc:maxcc, :tr_osrc:a_fund, null));
 		    jnl=runclient(condition(:tr_osrc:minj == :tr_osrc:maxj, :tr_osrc:a_journal_number, null));
 		    origin=runclient(condition(:tr_osrc:mino == :tr_osrc:maxo, :tr_osrc:a_origin, null));
+		    amount=runclient(:tr_osrc:a_amount);
 		    year=runclient(:f_year:value);
 		    }
 		}
