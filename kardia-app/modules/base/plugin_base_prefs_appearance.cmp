@@ -67,15 +67,34 @@ plugin_base_prefs_appearance "widget/component-decl"
 		    
 		    dpi_hints "widget/hints" { style = notnull; }
 		    }
-		f_zoomstrength "widget/component"
+		zoomstrength_vbox "widget/vbox"
 		    {
-		    x = 30; width = 350; label_width = 140;
-		    text = "Zoom Strength:";
-		    tooltip = "When a page loads at a larger resolution than it was designed in, how much should it enlarge/zoom instead of showing more content? (100 = only enlarge/zoom, 0 = only show more content). Resizing after loading only zooms.";
-		    path = "/sys/cmp/smart_field.cmp";
-		    ctl_type = dropdown;
-		    field = zoom_strength;
-		    sql = "select :descrip, :strength from /apps/kardia/data/ZoomStrengths.csv/rows";
+		    x = 30; width = 350; height = 80; // y = prefs_vbox
+		    spacing = 10;
+
+		    f_zoomstrength "widget/component"
+			{
+			x = 0; width = 350; height = 20; fl_height = 0; label_width = 140; // y = zoomstrength_vbox
+			text = "Zoom Strength:";
+			path = "/sys/cmp/smart_field.cmp";
+			ctl_type = dropdown;
+			field = zoom_strength;
+			sql = "select :descrip, :strength from /apps/kardia/data/ZoomStrengths.csv/rows";
+
+			zoom_hints "widget/hints" { style = notnull; }
+			}
+		    zoomstrength_desc_hbox "widget/hbox"
+			{
+			x = 0; width = 350; height = 50; // y = zoomstrength_vbox
+
+			zoomstrength_indent "widget/autolayoutspacer" { width = 50; fl_width = 0; fl_height = 0; }
+			f_zoomstrength_desc "widget/label"
+			    {
+			    width = 300; height = 50; fl_width = 100; fl_height = 0;
+			    style = italic;
+			    text = "When a page loads at a larger resolution than it was designed in, how much should it enlarge/zoom instead of showing more content? Resizing after loading only zooms.";
+			    }
+			}
 		    }
 		}
 	    }
