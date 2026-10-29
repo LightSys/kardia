@@ -628,7 +628,7 @@ update_duplicates "system/query"
 	    p_partner_key = :key1,
 	    p_dup_partner_key = :key2,
 	    p_match_quality = :sim,
-	    p_reason = :reason,
+	    p_comment = :reason,
 	    
 	    -- Required fields.
 	    s_date_created = getdate(),
@@ -645,7 +645,7 @@ update_duplicates "system/query"
 	    :p_dup_partner_key
 	UPDATE SET
 	    :p_match_quality = :sim,
-	    :p_reason = :reason,
+	    :p_comment = :reason,
 	    :s_date_modified = getdate(),
 	    :s_modified_by = user_name()
 	;

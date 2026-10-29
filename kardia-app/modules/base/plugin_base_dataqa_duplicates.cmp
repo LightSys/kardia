@@ -141,7 +141,7 @@ plugin_base_dataqa_duplicates "widget/component-decl"
 			ploc_2 = substitute(isnull(:af2:p_format, '[:p_in_care_of]\n[:p_address_1]\n[:p_address_2]\n[:p_address_3]\n[:p_city], [:p_state_province] [:p_postal_code]\n[:p_country_name]'), 'l=pl2,p=p2,ctry2'),
 			
 			-- Dupe type info.
-			reason = :d:p_reason,
+			reason = :d:p_comment,
 			nondup = condition(char_length(isnull(:nd:p_partner_key, '')) > 1 and char_length(isnull(:nd:p_nondup_partner_key, '')) > 1, 1, 0),
 			associated = condition(
 			    :p1:p_parent_key = :p2:p_partner_key
