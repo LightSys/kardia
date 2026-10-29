@@ -58,7 +58,7 @@ plugin_rcpt_importprocess_050splitTrx "system/query"
 		    :split:i_eg_trx_uuid -- if multiple match at the same time, don't want to mix
 		HAVING
 		    sum(:match:i_eg_gift_amount) = :split:gift_sum
-		    --  FIXME: what if we split before the deposit, and then the net is different next time we see it...?
+		    -- We assume that the net amounts never change, but we can proceed if the net amount never exists
 		    AND sum(:match:i_eg_net_amount) = isnull(:split:net_sum, sum(:match:i_eg_net_amount))
 		    AND count(1) > 1
 		-- Just keep the most recent transaction for each
@@ -183,22 +183,7 @@ plugin_rcpt_importprocess_050splitTrx "system/query"
 		    :match:hist_trx = :hist:i_eg_trx_uuid
 		    AND :match:split_trx = :split:i_eg_trx_uuid
 		    AND :hist:i_eg_service = :split:i_eg_service
-		--    AND :m:i_eg_service = :i:i_eg_service
-		--    AND :s:a_ledger_number = :parameters:ledger
-		--    AND :i:a_ledger_number = :parameters:ledger
-		--    AND substring(:s:i_eg_postprocess, 1, 1) = 'S'
-		--    AND isnull(:s:i_eg_desig_notes, '') = isnull(:i:i_eg_desig_notes,'') -- make sure what donor sent was the same
-		--    AND :s:i_eg_donor_uuid = :i:i_eg_donor_uuid -- make sure was the same donor
-		--    AND isnull(:s:i_eg_deposit_amt, :i:i_eg_deposit_amt) = :i:i_eg_deposit_amt -- need to let null net values pass for now
-		--    AND :s:i_eg_deposit_gross_amt = :i:i_eg_deposit_gross_amt
-		--    AND isnull(:s:i_eg_deposit_amt, 0) = isnull(:s:i_eg_net_amount, 0) -- make sure only one item in transaction to be split
-		--    AND :s:i_eg_deposit_gross_amt = :s:i_eg_gift_amount
-		--    AND :s:i_eg_service = :i:i_eg_service
-		--    AND :s:i_eg_status != 'template'
 		;
-
-		-- TODO: we can no longer easily check that the sums line up, but we may want to mark something with a desig ID that indicates a split was needed, but none was found here...?
-
 
 		-- list all of the rows to delete later
 		DECLARE COLLECTION trx_uuids;

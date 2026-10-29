@@ -11,14 +11,16 @@ plugin_rcpt_importprocess_075feeCombo "system/query"
 	-- when have a donation to cover transaction fees, just split it across all of the fees that happened with it
 	-- code: F for fee
 	-- TOOD: add randomness but repeatable (maybe sort by a hashed desig id instead of the actual desig?)
+
 	-- get the designation that indicates the transaction is a fee
 	DECLARE OBJECT feeDesig;
 		SELECT
-		    :feeDesig:value = 
+		    :feeDesig:value =
 			(
 			select first(:a_config_value)
 			from /apps/kardia/data/Kardia_DB/a_config/rows
 			where :a_config_name = 'EgFeesDesig'
+			    and :a_ledger_number = :parameters:ledger
 			)
 		;
 
@@ -26,9 +28,11 @@ plugin_rcpt_importprocess_075feeCombo "system/query"
 	INSERT INTO
 	    COLLECTION marked 
 	SELECT
-	    :i_eg_trx_uuid, :i_eg_desig_uuid, :i_eg_gift_amount, 
-	    :i_eg_net_amount, :i_eg_deposit_gross_amt, :i_eg_deposit_amt,
-	    :a_ledger_number, :i_eg_line_item, :i_eg_postprocess, :i_eg_service
+	    :i_eg_trx_uuid,    :i_eg_desig_uuid, :i_eg_gift_amount, 
+	    :i_eg_net_amount,  :a_ledger_number, :i_eg_line_item, 
+	    :i_eg_postprocess, :i_eg_service,
+	    gift_sum = NULL, 
+	    net_sum = NULL
 	FROM 
 	    /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows
 	WHERE 
@@ -42,32 +46,41 @@ plugin_rcpt_importprocess_075feeCombo "system/query"
 	INSERT INTO
 	    COLLECTION feeSets
 	SELECT 
-	    :t:i_eg_trx_uuid, :t:i_eg_desig_uuid, :t:i_eg_gift_amount, 
-	    :t:i_eg_net_amount, :t:i_eg_deposit_gross_amt, :t:i_eg_deposit_amt,
-	    :t:a_ledger_number, :t:i_eg_line_item, :t:i_eg_service,
+	    :t:i_eg_trx_uuid,   :t:i_eg_desig_uuid, :t:i_eg_gift_amount, 
+	    :t:i_eg_net_amount, :t:a_ledger_number, :t:i_eg_line_item, 
+	    :t:i_eg_service, :t:i_eg_donor_uuid,
 	    fee_trx = :f:i_eg_trx_uuid, 
 	    fee_desig = :f:i_eg_desig_uuid, 
 	    fee_grs = :f:i_eg_gift_amount, 
 	    fee_net = :f:i_eg_net_amount,
 	    -- get the share values for fees
-	    fee_share_grs = convert('double', :f:i_eg_gift_amount) * :t:i_eg_gift_amount / (:t:i_eg_deposit_gross_amt - :f:i_eg_gift_amount),
-	    fee_share_net = convert('double', :f:i_eg_net_amount) * :t:i_eg_net_amount / (:t:i_eg_deposit_amt - :f:i_eg_net_amount),
+	    fee_share_grs = convert('double', :f:i_eg_gift_amount) * :t:i_eg_gift_amount / (sum(:sums:i_eg_gift_amount) - :f:i_eg_gift_amount),
+	    fee_share_net = convert('double', :f:i_eg_net_amount) * :t:i_eg_net_amount / (sum(:sums:i_eg_net_amount) - :f:i_eg_net_amount),
 	    cents_grs = 0,
 	    cents_net = 0,
 	    ind_net = -1,
-	    ind_grs = -1
+	    ind_grs = -1,
+	    gift_sum = sum(:sums:i_eg_gift_amount), 
+	    net_sum = sum(:sums:i_eg_net_amount)
 	FROM 
 	    IDENTITY COLLECTION marked f,
-	    COLLECTION marked t
+	    COLLECTION marked t, 
+	    COLLECTION marked sums
 	WHERE 
 	    :f:i_eg_desig_uuid = :feeDesig:value
 	    AND :t:i_eg_trx_uuid = :f:i_eg_trx_uuid
 	    AND :t:i_eg_service = :f:i_eg_service
 	    AND :t:i_eg_desig_uuid != :feeDesig:value
-	    AND :f:i_eg_deposit_amt IS NOT NULL
-	    AND :f:i_eg_net_amount IS NOT NULL
+	    AND :sums:i_eg_trx_uuid = :t:i_eg_trx_uuid
+	GROUP BY 
+	    :sums:i_eg_trx_uuid, -- only need sums
+	    :t:i_eg_desig_uuid, -- Separate each row in t
+	    :t:i_eg_line_item,
+	    :t:i_eg_trx_uuid,
+            :t:i_eg_service
 	;
 
+	-- TODO: Could I skip the collection and just do an update?
 	-- calculate the number of cents that will be leftover
 	DECLARE COLLECTION leftoverCents;
 	INSERT INTO 
@@ -96,6 +109,8 @@ plugin_rcpt_importprocess_075feeCombo "system/query"
 	-- no longer needed so clear
 	DELETE FROM COLLECTION leftoverCents;
 
+	-- TODO: could I just run this as an update and use a condition to skip collections and calc both at once?
+
 	-- set an index for every gross share that has a fractional amount missing
 	DECLARE COLLECTION grossIndex;
 	INSERT INTO 
@@ -110,6 +125,11 @@ plugin_rcpt_importprocess_075feeCombo "system/query"
 	    COLLECTION feeSets
 	WHERE 
 	    :fee_share_grs - truncate(:fee_share_grs, 2) > 0
+	ORDER BY 
+	    :i_eg_trx_uuid, :i_eg_service, -- keep groups together
+	     -- this will be the same order in every instance of the recurring gift, 
+	     -- but does not disadvantage any desig name overall
+	    hash(sha1, :i_eg_desig_uuid + i_eg_donor_uuid) asc	
 	;
 
 	-- now handle net
@@ -126,6 +146,11 @@ plugin_rcpt_importprocess_075feeCombo "system/query"
 	    COLLECTION feeSets
 	WHERE 
 	    :fee_share_net - truncate(:fee_share_net, 2) > 0
+	ORDER BY 
+	    :i_eg_trx_uuid, :i_eg_service, -- keep groups together
+	     -- this will be the same order in every instance of the recurring gift, 
+	     -- but does not disadvantage any desig name overall
+	    hash(sha1, :i_eg_desig_uuid + i_eg_donor_uuid) asc	
 	;
 
 	-- update with the new information
@@ -147,7 +172,7 @@ plugin_rcpt_importprocess_075feeCombo "system/query"
 	    AND :f:i_eg_service *= :n:i_eg_service
 	;
 
-	-- clear out uneeded collections
+	-- clear out unneeded collections
 	DELETE FROM COLLECTION grossIndex;
 	DELETE FROM COLLECTION netIndex;
 
@@ -176,10 +201,10 @@ plugin_rcpt_importprocess_075feeCombo "system/query"
 	INSERT INTO 
 	    COLLECTION checksum
 	SELECT
-	   grs_sum = sum(:i_eg_gift_amount),
-	   net_sum = sum(:i_eg_net_amount),
-	   :i_eg_deposit_gross_amt,
-	   :i_eg_deposit_amt,
+	   check_gift_sum = sum(:i_eg_gift_amount),
+	   check_net_sum = sum(:i_eg_net_amount),
+	   :gift_sum,
+	   :net_sum,
 	   :i_eg_trx_uuid,
 	   :i_eg_service
 	FROM 
@@ -196,11 +221,12 @@ plugin_rcpt_importprocess_075feeCombo "system/query"
 	WHERE
 	    :f:i_eg_trx_uuid = :c:i_eg_trx_uuid
 	    AND :f:i_eg_service = :c:i_eg_service
-	    AND (:c:i_eg_deposit_gross_amt != :c:grs_sum 
-		OR :c:i_eg_deposit_amt != :c:net_sum)
+	    AND (:c:gift_sum != :c:check_gift_sum 
+		OR :c:net_sum != :c:check_net_sum)
 	;
 
 	-- update the values in the actual tables (must update even if no F; upsert reverts changes otherwise)
+	-- TODO: this is a major slowdown. Need to get it to query the i_eg_gift_import_table with more in the WHERE clause
 	UPDATE
 	    IDENTITY /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows i,
 	    COLLECTION feeSets f
@@ -209,13 +235,21 @@ plugin_rcpt_importprocess_075feeCombo "system/query"
 	    :i:i_eg_net_amount = :f:i_eg_net_amount
 	WHERE 
 	    :i:i_eg_trx_uuid = :f:i_eg_trx_uuid 
-	    AND :i:a_ledger_number = :f:a_ledger_number
+	    AND :i:a_ledger_number = :parameters:ledger
 	    AND :i:i_eg_desig_uuid = :f:i_eg_desig_uuid
 	    AND :i:i_eg_line_item = :f:i_eg_line_item
 	    AND :i:i_eg_service = :f:i_eg_service
+	    AND :f:i_eg_trx_uuid IS NOT NULL
+	    AND :f:i_eg_trx_uuid IS NOT NULL
+	    AND :f:i_eg_trx_uuid IS NOT NULL
+	    AND :f:i_eg_trx_uuid IS NOT NULL
+	    AND :f:i_eg_trx_uuid IS NOT NULL
+	    AND :f:i_eg_trx_uuid IS NOT NULL
+	    AND :f:i_eg_trx_uuid IS NOT NULL
+	    AND :f:i_eg_trx_uuid IS NOT NULL
 	;
 	
-
+	-- TODO: could we simplify this by taking a list of transactions; know the desig and ledger already
 	-- delete the 'cover fees' entries that are in the list of updated transactions
 	DELETE FROM
 	    IDENTITY /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows i,
@@ -231,14 +265,11 @@ plugin_rcpt_importprocess_075feeCombo "system/query"
 	    :i:i_eg_trx_uuid, :i:i_eg_service
 	;
 
-	 -- remove the F if could have run, and move to back if waiting on net amounts
+	 -- remove the F if could have run
 	update
 	    /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows
 	set
-	    :i_eg_postprocess = condition((:i_eg_deposit_amt IS NOT NULL AND :i_eg_net_amount IS NOT NULL),
-		substring(:i_eg_postprocess, 2),
-		substring(:i_eg_postprocess, 2) + 'F'
-		)
+	    :i_eg_postprocess = substring(:i_eg_postprocess, 2)
 	where
 	    substring(:i_eg_postprocess, 1, 1) = 'F'
 	    AND :a_ledger_number = :parameters:ledger
