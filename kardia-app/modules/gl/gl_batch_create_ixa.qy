@@ -1,0 +1,104 @@
+$Version=2$
+gl_batch_create_ixa "system/query"
+    {
+    // Parameters
+    a_batch_number "query/parameter"	{ type=integer; }
+    a_ledger_number "query/parameter"	{ type=string; }
+    a_period "query/parameter"		{ type=string; }
+
+    sql = "	DECLARE object ixa;
+
+		-- Configured or default IXA account code
+		SELECT
+			:ixa:acct = isnull(nullif(:a_config_value, ''), '1900')
+		FROM 
+			/apps/kardia/data/Kardia_DB/a_config/rows 
+		WHERE
+			:a_config_name = 'GLIfaAcct' and
+			:a_ledger_number = :parameters:a_ledger_number
+		;
+
+		-- Category/control code for IXA account
+		SELECT
+			:ixa:category = isnull(nullif(:a_default_category, ''), '19')
+		FROM
+			/apps/kardia/data/Kardia_DB/a_account/rows
+		WHERE
+			:a_account_code = :ixa:acct and
+			:a_ledger_number = :parameters:a_ledger_number
+		;
+
+		-- Remove existing journal, if any
+		DELETE
+			/apps/kardia/data/Kardia_DB/a_transaction/rows t
+		WHERE
+			:t:a_batch_number = :parameters:a_batch_number and
+			:t:a_ledger_number = :parameters:a_ledger_number and
+			:t:a_period = :parameters:a_period and
+			:t:a_account_code = :ixa:acct
+		;
+
+		-- Find the next unused journal # for this batch
+		SELECT
+			:ixa:journal = isnull(max(:a_journal_number), 0) + 1
+		FROM
+			/apps/kardia/data/Kardia_DB/a_transaction/rows t
+		WHERE
+			:t:a_batch_number = :parameters:a_batch_number and
+			:t:a_ledger_number = :parameters:a_ledger_number and
+			:t:a_period = :parameters:a_period
+		;
+   
+		-- Create the records. Transaction number here will be auto-numbered.
+		INSERT INTO
+			/apps/kardia/data/Kardia_DB/a_transaction/rows
+		SELECT
+			a_amount = $0 - sum(:t:a_amount),
+			a_comment = '' + count(1) + ' transactions for ' + :c:a_bal_fund,
+			a_account_code = :ixa:acct,
+			a_fund=:c:a_bal_fund,
+			a_journal_number = :ixa:journal,
+			:t:a_batch_number,
+			:t:a_ledger_number,
+			:t:a_period,
+			:t:a_effective_date,
+			:t:a_transaction_type,
+			a_account_category = :ixa:category,
+			a_posted = min(:t:a_posted),
+			a_modified = 0,
+			a_corrected = 0,
+			:t:a_correcting,
+			:t:a_corrected_batch,
+			:t:a_corrected_journal,
+			:t:a_corrected_transaction,
+			:t:a_reconciled,
+			:t:a_postprocessed,
+			:t:a_postprocess_type,
+			:t:a_origin,
+			a_receipt_sent = 0,
+			a_receipt_desired = 0,
+			a_first_gift = 0,
+			a_goods_provided = $0,
+			s_date_created = getdate(),
+			s_created_by = user_name(),
+			s_date_modified = getdate(),
+			s_modified_by = user_name()
+		FROM
+			/apps/kardia/data/Kardia_DB/a_transaction/rows t,
+			/apps/kardia/data/Kardia_DB/a_fund/rows c
+		WHERE
+			:t:a_ledger_number = :parameters:a_ledger_number and 
+			:t:a_batch_number = :parameters:a_batch_number and
+			:t:a_period = :parameters:a_period and
+			:t:a_ledger_number = :c:a_ledger_number and
+			:t:a_fund = :c:a_fund
+		GROUP BY
+			:t:a_ledger_number,
+			:t:a_batch_number,
+			:t:a_journal_number,
+			:c:a_bal_fund
+		HAVING
+			:a_amount != $0
+		";
+    }
+

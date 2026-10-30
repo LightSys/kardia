@@ -234,6 +234,10 @@ alter table p_notification
 	drop index p_notify_type_idx;
 
 
+alter table p_notification
+	drop index p_notify_send_idx;
+
+
 alter table p_notification_type
 	drop primary key;
 
@@ -1236,6 +1240,10 @@ alter table i_eg_gift_import
 
 alter table i_eg_gift_import
 	drop index i_eg_postproc_idx;
+
+
+alter table i_eg_deposit_config
+	drop primary key;
 
 
 alter table i_eg_gift_trx_fees

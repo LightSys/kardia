@@ -225,37 +225,6 @@ payroll_reg "system/report"
 		";
 	}
 
-    // Reference period (beginning of year) for a given pay stub
-    refperiod_qy "report/query"
-	{
-	sql = "	SELECT
-			:pp2:a_payroll_period
-		FROM
-			/apps/kardia/data/Kardia_DB/a_payroll_period/rows pp1,
-			/apps/kardia/data/Kardia_DB/a_payroll_period/rows pp2
-		WHERE
-			:pp1:a_payroll_period = :pay_list_qy:a_period and
-			:pp1:a_ledger_number = :pay_list_qy:a_ledger_number and
-			datepart(year, :pp1:a_pay_date) = datepart(year, :pp2:a_pay_date) and
-			:pp2:a_ledger_number = :pp1:a_ledger_number
-		ORDER BY
-			:pp1:a_pay_date asc,
-			:pp2:a_pay_date asc
-		LIMIT
-			1
-		";
-	}
-
-    // This switches us between one period and YTD.
-    ytd_qy "report/query"
-	{
-	sql = "	SELECT
-			txt = 'Payroll On:\n' + :pay_list_qy:paydate,
-			start = :pay_list_qy:a_period,
-			end = :pay_list_qy:a_period
-		";
-	}
-
     ledger_form "report/form"
 	{
 	source = ledger_qy, startperiod_qy, endperiod_qy, group_qy, info_qy, payee_qy, payee_cnt_qy;
@@ -291,7 +260,7 @@ payroll_reg "system/report"
 	    columns=14;
 	    widths=9.5,6.5,15.8,6.7,9.3,9.3,9.3,9.3,9.3,9.3,9.3,9.3,9.3,8.5;
 	    colsep=0.1;
-	    source=payee_list_qy, pay_list_qy, refperiod_qy, ytd_qy, ckno_qy;
+	    source=payee_list_qy, pay_list_qy, ckno_qy;
 	    moneyformat = "-###,###,##0.00";
 	    font=helvetica;
 	    fontsize=8;

@@ -5,6 +5,9 @@ menu "widget/component-decl"
     height=98;
     widget_template = "/apps/kardia/modules/task/tasks.tpl";
 
+    // The widget the menu pops up against, passed in by whoever uses the menu.
+    attach_to "widget/parameter" { type=object; default=null; }
+
     // Triggered when a menu item is selected
     ItemSelected "widget/component-decl-event" { }
 
@@ -15,8 +18,7 @@ menu "widget/component-decl"
 	event=Open;
 	target=menu_window;
 	action=Popup;
-	X=runclient(:open_x);
-	Y=runclient(:open_y);
+	PopTo=attach_to;
 	}
 
     // Closes / hides the menu

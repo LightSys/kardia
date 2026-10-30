@@ -207,6 +207,7 @@ alter table p_merge drop index p_merge_rev_idx;
 /* drop index p_notification.p_notify_pk */ 
 /* go */
 alter table p_notification drop index p_notify_recip_idx;
+alter table p_notification drop index p_notify_send_idx;
 alter table p_notification drop index p_notify_source_idx;
 alter table p_notification drop index p_notify_type_idx;
 
@@ -1148,6 +1149,11 @@ alter table i_eg_gift_import drop index i_eg_kfund_idx;
 alter table i_eg_gift_import drop index i_eg_kgiftbatch_idx;
 alter table i_eg_gift_import drop index i_eg_postproc_idx;
 alter table i_eg_gift_import drop index i_eg_stats_idx;
+
+
+/* i_eg_deposit_config */
+/* drop index i_eg_deposit_config.i_eg_deposit_config_pk */ 
+/* go */
 
 
 /* i_eg_gift_trx_fees */

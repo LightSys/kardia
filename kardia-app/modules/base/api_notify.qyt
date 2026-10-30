@@ -1,11 +1,11 @@
 $Version=2$
 api_notify "system/querytree"
     {
-    Pending "system/querytree"
+    Queue "system/querytree"
 	{
-	text = "Pending";
+	text = "Queue";
 
-	Pending_list "system/querytree"
+	Queue_list "system/querytree"
 	    {
 	    sql = " select
 			:n:p_notify_id,
@@ -17,12 +17,13 @@ api_notify "system/querytree"
 			:n:p_recip_partner_key,
 			:n:p_notify_method,
 			:n:p_notify_method_item,
-			:n:p_contact_id,
-			:n:p_contact_data,
+			:n:p_recip_contact_id,
+			:n:p_recip_contact_data,
 			:n:p_status,
 			:n:p_sent_date,
 			:n:p_ack_date,
 			:n:p_response,
+			:n:p_sending_group_key,
 			:n:s_date_created,
 			:n:s_created_by,
 			:n:s_date_modified,
@@ -47,30 +48,16 @@ api_notify "system/querytree"
 			:np:p_notify_method_item = :n:p_notify_method_item and
 			:np:p_notify_type = :n:p_notify_type and
 			(::p_notify_type is null or ::p_notify_type == :n:p_notify_type) and
-			(:n:p_status = 'N' or :n:p_status = 'U') and
+			(::p_notify_method is null or ::p_notify_method == :n:p_notify_method) and
+			(::p_sending_group_key is null or ::p_sending_group_key == :n:p_sending_group_key) and
+			((:n:p_status = 'N') or (:n:p_status = 'U') or (::p_sending_group_key is not null)) and
 			:p:p_partner_key = :n:p_recip_partner_key and
 			:c:p_partner_key = :n:p_recip_partner_key and
-			:c:p_contact_id = :n:p_contact_id
+			:c:p_contact_id = :n:p_recip_contact_id
 		    having
 			:np:p_enabled = 1 and
 			(:np:p_pause_until_date is null or :np:p_pause_until_date <= getdate())
 		    ";
-
-	    MarkSent "system/querytree"
-		{
-		require_endorsements = "system:from_application";
-		text = "MarkSent";
-		sql = "	update
-			    identity /apps/kardia/data/Kardia_DB/p_notification/rows n
-			set
-			    :p_sent_date = getdate(),
-			    :p_status = 'S',
-			    :s_date_modified = getdate(),
-			    :s_modified_by = user_name()
-			where
-			    :n:p_notify_id = ::p_notify_id
-			";
-		}
 
 	    Delete "system/querytree"
 		{
@@ -104,15 +91,141 @@ api_notify "system/querytree"
 			:nt:s_date_created,
 			:nt:s_created_by,
 			:nt:s_date_modified,
-			:nt:s_modified_by
+			:nt:s_modified_by,
+			p_sending_group_key = null,
+			p_notify_method = null
 		    from
 			identity /apps/kardia/data/Kardia_DB/p_notification_type/rows nt
 		    ";
 
-	    TypesPending "system/querytree"
+	    TypesQueue "system/querytree"
 		{
-		text = "Pending";
-		same_children_as = Pending;
+		text = "Queue";
+		same_children_as = Queue;
+		}
+	    }
+	}
+
+    Methods "system/querytree"
+	{
+	text = "Methods";
+
+	Methods_List "system/querytree"
+	    {
+	    sql = " select
+			:nm:p_notify_method,
+			:nm:p_notify_method_label,
+			:nm:p_notify_method_desc,
+			:nm:p_allowed_contact_types,
+			:nm:p_expects_ack,
+			:nm:s_date_created,
+			:nm:s_created_by,
+			:nm:s_date_modified,
+			:nm:s_modified_by,
+			p_sending_group_key = null,
+			p_notify_type = null
+		    from
+			identity /apps/kardia/data/Kardia_DB/p_notification_method/rows nm
+		    ";
+
+	    MethodsQueue "system/querytree"
+		{
+		text = "Queue";
+		same_children_as = Queue;
+		}
+
+	    MethodsTypes "system/querytree"
+		{
+		text = "Types";
+
+		MethodsTypes_list "system/querytree"
+		    {
+		    sql = " select
+				:nt:p_notify_type,
+				:nt:p_notify_type_label,
+				:nt:p_notify_type_desc,
+				:nt:p_message,
+				:nt:p_object_label,
+				:nt:s_date_created,
+				:nt:s_created_by,
+				:nt:s_date_modified,
+				:nt:s_modified_by,
+				p_sending_group_key = null,
+				p_notify_method = :Methods_List:p_notify_method
+			    from
+				identity /apps/kardia/data/Kardia_DB/p_notification_type/rows nt
+			    ";
+
+		    MethodsTypesQueue "system/querytree"
+			{
+			text = "Queue";
+			same_children_as = Queue;
+			}
+
+		    Initiate "system/querytree"
+			{
+			require_endorsements = "system:from_application";
+			text = "Initiate";
+			sql = "	select
+				    *
+				from
+				    identity expression ('/apps/kardia/modules/base/sending_group_create.qy?method=' + ::p_notify_method + '&type=' + ::p_notify_type )
+				";
+			}
+		    }
+		}
+
+	    }
+	}
+
+    SendingGroups "system/querytree"
+	{
+	text = "SendingGroups";
+
+	SG_List "system/querytree"
+	    {
+	    sql = " select
+			name = :n:p_sending_group_key,
+			:n:p_sending_group_key,
+			p_notify_method = null,
+			p_notify_type = null,
+			num_processing = count(1)
+		    from
+			identity /apps/kardia/data/Kardia_DB/p_notification/rows n
+		    where
+			:p_status = 'P' and
+			:p_sending_group_key is not null
+		    group by
+			:n:p_sending_group_key
+		    ";
+	    use_having=yes;
+
+	    SendingGroupQueue "system/querytree"
+		{
+		text = "Queue";
+		same_children_as = Queue;
+		}
+
+	    CancelGroup "system/querytree"
+		{
+		require_endorsements = "system:from_application";
+		text = "Cancel";
+		sql = "	select
+			    *
+			from
+			    identity expression ('/apps/kardia/modules/base/sending_group_cancel.qy?key=' + ::p_sending_group_key )
+			";
+		}
+
+	    MarkGroupSent "system/querytree"
+		{
+		require_endorsements = "system:from_application";
+		text = "MarkSent";
+		sql = "	select
+			    *
+			from
+			    identity expression ('/apps/kardia/modules/base/sending_group_marksent.qy?key=' + ::p_sending_group_key )
+			";
 		}
 	    }
 	}

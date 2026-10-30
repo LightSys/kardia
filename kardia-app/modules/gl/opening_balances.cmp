@@ -15,22 +15,43 @@ opening_balances "widget/component-decl"
     generate_osrc "widget/osrc"
 	{
 	ledger "widget/parameter" { type=string; }
-	year "widget/parameter" { type=integer; }
+	yearperiod "widget/parameter" { type=string; }
 	replicasize=2;
 	readahead=2;
 	autoquery=never;
 
 	sql = "	declare object init_info;
 
+		-- Start an error message list:
+		select
+		    :init_info:errors = ''
+		;
+
+		-- Determine prior year
+		select
+		    :init_info:prioryear = first(:a_period)
+		from
+		    /apps/kardia/data/Kardia_DB/a_period/rows p
+		where
+		    :p:a_ledger_number = :parameters:ledger and
+		    :p:a_summary_only = 1 and
+		    :p:a_parent_period is null and
+		    :p:a_period < :parameters:yearperiod
+		order by
+		    :p:a_start_date desc
+		limit
+		    1
+		;
+
 		-- determine opening period for prior year
 		select
-		    :init_info:startperiod = first(:a_period)
+		    :init_info:startperiod = :a_period
 		from
 		    /apps/kardia/data/Kardia_DB/a_period/rows p
 		where
 		    :p:a_ledger_number = :parameters:ledger and
 		    :p:a_summary_only = 0 and
-		    datepart(year, :p:a_start_date) = :parameters:year - 1
+		    :p:a_parent_period = :init_info:prioryear
 		order by
 		    :p:a_start_date asc
 		limit
@@ -39,15 +60,15 @@ opening_balances "widget/component-decl"
 
 		-- determine ending period for prior year
 		select
-		    :init_info:endperiod = last(:a_period)
+		    :init_info:endperiod = :a_period
 		from
 		    /apps/kardia/data/Kardia_DB/a_period/rows p
 		where
 		    :p:a_ledger_number = :parameters:ledger and
 		    :p:a_summary_only = 0 and
-		    datepart(year, :p:a_start_date) = :parameters:year - 1
+		    :p:a_parent_period = :init_info:prioryear
 		order by
-		    :p:a_start_date asc
+		    :p:a_start_date desc
 		limit
 		    1
 		;
@@ -55,13 +76,14 @@ opening_balances "widget/component-decl"
 		-- determine starting period for this year
 		select
 		    :init_info:obperiod = :a_period,
-		    :init_info:obdate = :a_start_date
+		    :init_info:obdate = :a_start_date,
+		    :init_info:yeartxt = '' + datepart(year, :a_start_date) + condition(datepart(year, :a_start_date) = datepart(year, :a_end_date), '',  '-' + datepart(year, :a_end_date))
 		from
 		    /apps/kardia/data/Kardia_DB/a_period/rows p
 		where
 		    :p:a_ledger_number = :parameters:ledger and
 		    :p:a_summary_only = 0 and
-		    datepart(year, :p:a_start_date) = :parameters:year
+		    :p:a_parent_period = :parameters:yearperiod
 		order by
 		    :p:a_start_date asc
 		limit
@@ -115,7 +137,7 @@ opening_balances "widget/component-decl"
 		    a_batch_number = :init_info:newbatch,
 		    a_ledger_number = :parameters:ledger,
 		    a_period = :init_info:obperiod,
-		    a_batch_desc = 'Opening Balances ' + :parameters:year,
+		    a_batch_desc = 'Opening Balances ' + :init_info:yeartxt,
 		    a_next_journal_number = 1,
 		    a_next_transaction_number = 1,
 		    a_default_effective_date = :init_info:obdate,
@@ -134,6 +156,7 @@ opening_balances "widget/component-decl"
 		where
 		    :a_ledger_number = :parameters:ledger and
 		    :a_batch_number = :init_info:batch and
+		    :a_period = :init_info:obperiod and
 		    :a_transaction_type = 'B'
 		;
 		delete
@@ -141,6 +164,7 @@ opening_balances "widget/component-decl"
 		where
 		    :a_ledger_number = :parameters:ledger and
 		    :a_batch_number = :init_info:batch and
+		    :a_period = :init_info:obperiod and
 		    :a_transaction_type = 'B'
 		;
 
@@ -191,6 +215,7 @@ opening_balances "widget/component-decl"
 		    :a_account_code,
 		    :a_account_category
 		;
+
 		insert
 		    /apps/kardia/data/Kardia_DB/a_transaction_tmp/rows
 		select
@@ -249,14 +274,9 @@ opening_balances "widget/component-decl"
 		    :a_transaction_type = 'B'
 		;
 
-		-- Start an error message list:
-		select
-		    :init_info:errors = ''
-		;
-
 		-- Look for an imbalanced batch
 		select
-		    :init_info:errors = :init_info:errors + isnull('Batch does not Balance: ' + sum(:a_amount) + '\n', ''),
+		    :init_info:errors = :init_info:errors + isnull('Opening Balances Batch does not Balance, off by ' + sum(:a_amount) + '\n', ''),
 		    :init_info:amt = sum(:a_amount)
 		from
 		    /apps/kardia/data/Kardia_DB/a_transaction/rows t

@@ -151,6 +151,7 @@ gl "system/querytree"
 				:info:batch_number
 			";
 		use_having=yes;
+		require_endorsements = "system:from_application";
 		}
 	    }
 
@@ -217,6 +218,37 @@ gl "system/querytree"
 						:t:a_batch_number = :batches:a_batch_number
 					    ";
 				    }
+				}
+
+			    // Post a GL batch
+			    post_txt "system/querytree"
+				{
+				require_endorsements = "system:from_application";
+				text = "Post";
+				sql = "	declare object post;
+					declare collection transactions scope application;
+				
+					-- Create IXA
+					exec /apps/kardia/modules/gl/gl_batch_create_ixa.qy a_ledger_number = :batches:a_ledger_number, a_batch_number = :batches:a_batch_number, a_period = :batches:a_period
+					;
+
+					-- Verify Batch
+					delete from collection transactions;
+					insert into collection transactions select * from /apps/kardia/data/Kardia_DB/a_transaction/rows t where :t:a_batch_number = :batches:a_batch_number and :t:a_ledger_number = :batches:a_ledger_number and :t:a_period = :batches:a_period;
+					select :post:errors = sum(:msg + ', ') - ', ' from expression('/apps/kardia/modules/gl/gl_batch_verify.qy?ledger=' + :batches:a_ledger_number + '&batch=' + :batches:a_batch_number)
+					;
+
+					-- Post Batch
+					exec /apps/kardia/modules/gl/gl_batch_post.qy a_ledger_number = :batches:a_ledger_number, a_batch_number = :batches:a_batch_number, a_period = :batches:a_period where :post:errors is null
+					;
+
+					-- Get Posted Status
+					select :post:posted = isnull(min(:t:a_posted), 0) from /apps/kardia/data/Kardia_DB/a_transaction/rows t where :t:a_batch_number = :batches:a_batch_number and :t:a_ledger_number = :batches:a_ledger_number and :t:a_period = :batches:a_period
+					;
+
+					-- Return Posted Status
+					select :post:posted, :post:errors, a_ledger_number = :batches:a_ledger_number, a_batch_number = :batches:a_batch_number, a_period = :batches:a_period
+					";
 				}
 			    }
 			}

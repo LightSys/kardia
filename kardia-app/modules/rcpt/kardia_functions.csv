@@ -7,7 +7,8 @@ Donation Detail,RPT,donation_detail.app,Donation Detail by Batch or Period,
 Gift History Search,APP,gift_history.app,Lookup a donor's gift history,""                               
 Fund Gift/Donor List,RPT,fund_gift_list.app,Print reports of donor and gift lists for a period for a given fund,""                
 Mailings for Gifts,RPT,monthly_gift_list.app,Lists a month's donors and what mailings they are subscribed to,""                                         
-Periodic Giving Statement,RPT,annual_statement.app,Print an Periodic Giving Statement for a Donor,                                 
+Periodic Giving Statement,RPT,annual_statement.app,Print Periodic Giving Statements for Donor(s),                                 
+Giving Statement,RPT,donor_statement.app,Generate a Giving Statement for one Donor for an arbitrary time period,                                 
 Donor Report,RPT,donor_report_test.app,"List Donors by gift totals, Funds, Accounts, and Locations",""                                      
 Receipt/Statement Types,APP,receipt_types.app,Add and Update Receipt Types,""                     
 Gift Import,APP,gift_import.app,"Import gift data from external services",                             

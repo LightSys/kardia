@@ -207,6 +207,7 @@ create  index p_merge_rev_idx on p_merge (p_partner_key_b, p_partner_key_a, p_da
 /* create  index p_notify_pk on p_notification (p_notify_id)*/ 
 /* go */
 create  index p_notify_recip_idx on p_notification (p_recip_partner_key, p_notify_id);
+create  index p_notify_send_idx on p_notification (p_sending_group_key, p_notify_id);
 create  index p_notify_source_idx on p_notification (p_source_partner_key, p_notify_id);
 create  index p_notify_type_idx on p_notification (p_notify_type, p_object_id, p_recip_partner_key, p_notify_method, p_notify_method_item, p_notify_id);
 
@@ -1148,6 +1149,11 @@ create  index i_eg_kfund_idx on i_eg_gift_import (a_fund, a_account_code, a_ledg
 create  index i_eg_kgiftbatch_idx on i_eg_gift_import (a_batch_number, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid, i_eg_line_item);
 create  index i_eg_postproc_idx on i_eg_gift_import (i_eg_postprocess, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid, i_eg_line_item);
 create  index i_eg_stats_idx on i_eg_gift_import (i_eg_gift_trx_date, i_eg_status, i_eg_donormap_confidence, i_eg_fundmap_confidence, i_eg_acctmap_confidence, a_batch_number, i_eg_gift_amount, a_ledger_number, i_eg_trx_uuid, i_eg_desig_uuid, i_eg_line_item);
+
+
+/* i_eg_deposit_config */
+/* create  index i_eg_deposit_config_pk on i_eg_deposit_config (a_ledger_number, i_eg_depfee_id)*/ 
+/* go */
 
 
 /* i_eg_gift_trx_fees */
