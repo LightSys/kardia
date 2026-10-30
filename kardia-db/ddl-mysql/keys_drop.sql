@@ -234,6 +234,10 @@ alter table p_notification
 	drop index p_notify_type_idx;
 
 
+alter table p_notification
+	drop index p_notify_send_idx;
+
+
 alter table p_notification_type
 	drop primary key;
 
@@ -846,6 +850,10 @@ alter table a_bank_recon_item
 	drop primary key;
 
 
+alter table a_bank_recon_accts
+	drop primary key;
+
+
 alter table a_dimension
 	drop primary key;
 
@@ -1182,6 +1190,14 @@ alter table a_subtrx_cashxfer
 	drop index a_subtrx_cxf_fund_clustered_idx;
 
 
+alter table i_association
+	drop primary key;
+
+
+alter table i_acct_association
+	drop primary key;
+
+
 alter table i_eg_gift_import
 	drop primary key;
 
@@ -1224,6 +1240,10 @@ alter table i_eg_gift_import
 
 alter table i_eg_gift_import
 	drop index i_eg_postproc_idx;
+
+
+alter table i_eg_deposit_config
+	drop primary key;
 
 
 alter table i_eg_gift_trx_fees

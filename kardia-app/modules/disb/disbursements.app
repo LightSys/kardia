@@ -8,10 +8,11 @@ disbursements "widget/page"
     background="/apps/kardia/images/bg/light_bgnd.jpg";
     require_one_endorsement = "kardia:disb_manage","kardia:disb_entry";
     endorsement_context=runserver("kardia:ledger:" + :this:ledger + ":");
-    max_requests = 3;
+    max_requests = 5;
 	
     ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; }
     batch "widget/parameter" { type=integer; default=null; }
+    send_refresh "widget/parameter" { type=object; default=null; deploy_to_client=yes; }
 
     on_open "widget/connector"
 	{
@@ -31,5 +32,6 @@ disbursements "widget/page"
 	x=10; y=10; width=880;height=580;
 	ledger = runserver(:this:ledger);
 	external_itself=disbursements;
+	send_refresh = send_refresh;
 	}
     }

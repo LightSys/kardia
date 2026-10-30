@@ -24,7 +24,8 @@ plugin_rcpt_importprocess_100match "system/query"
 				    (:e1:i_eg_donor_uuid = :e2:i_eg_donor_uuid or isnull(:e1:i_eg_donor_alt_id, 'NOTEXIST1') = isnull(:e2:i_eg_donor_alt_id, 'NOTEXIST2')) and
 				    :e2:i_eg_donormap_future = 1 and
 				    :e2:i_eg_donormap_confidence = 2 and
-				    :e2:p_donor_partner_key is not null
+				    :e2:p_donor_partner_key is not null and
+				    :e1:i_eg_service = :e2:i_eg_service
 				order by
 				    :e2:i_eg_gift_trx_date desc
 			),
@@ -37,7 +38,8 @@ plugin_rcpt_importprocess_100match "system/query"
 					(:e1:i_eg_donor_uuid = :e2:i_eg_donor_uuid or isnull(:e1:i_eg_donor_alt_id, 'NOTEXIST1') = isnull(:e2:i_eg_donor_alt_id, 'NOTEXIST2')) and
 					:e2:i_eg_donormap_future = 1 and
 					:e2:i_eg_donormap_confidence = 2 and
-					:e2:p_donor_partner_key is not null
+					:e2:p_donor_partner_key is not null and
+					:e1:i_eg_service = :e2:i_eg_service
 				    order by
 					:e2:i_eg_gift_trx_date desc
 				) is null,
@@ -67,7 +69,8 @@ plugin_rcpt_importprocess_100match "system/query"
 				    :e1:a_ledger_number = :e2:a_ledger_number and
 				    :e2:i_eg_fundmap_future = 1 and
 				    :e2:i_eg_fundmap_confidence = 2 and
-				    :e2:a_fund is not null
+				    :e2:a_fund is not null and
+				    :e1:i_eg_service = :e2:i_eg_service
 				order by
 				    :e2:i_eg_gift_trx_date desc
 			),
@@ -81,7 +84,8 @@ plugin_rcpt_importprocess_100match "system/query"
 					:e1:a_ledger_number = :e2:a_ledger_number and
 					:e2:i_eg_fundmap_future = 1 and
 					:e2:i_eg_fundmap_confidence = 2 and
-					:e2:a_fund is not null
+					:e2:a_fund is not null and
+					:e1:i_eg_service = :e2:i_eg_service
 				    order by
 					:e2:i_eg_gift_trx_date desc
 				) is null,
@@ -114,7 +118,8 @@ plugin_rcpt_importprocess_100match "system/query"
 				    :e2:i_eg_acctmap_future = 1 and 
 				    :e2:i_eg_acctmap_confidence = 2 and 
 				    (:e1:i_eg_donor_uuid = :e2:i_eg_donor_uuid or isnull(:e1:i_eg_donor_alt_id, 'NOTEXIST1') = isnull(:e2:i_eg_donor_alt_id, 'NOTEXIST2')) and
-				    :e2:a_account_code is not null
+				    :e2:a_account_code is not null and
+				    :e1:i_eg_service = :e2:i_eg_service
 				order by
 				    :e2:i_eg_gift_trx_date desc
 			),
@@ -131,7 +136,8 @@ plugin_rcpt_importprocess_100match "system/query"
 					:e2:i_eg_acctmap_future = 1 and
 					:e2:i_eg_acctmap_confidence = 2 and
 					(:e1:i_eg_donor_uuid = :e2:i_eg_donor_uuid or isnull(:e1:i_eg_donor_alt_id, 'NOTEXIST1') = isnull(:e2:i_eg_donor_alt_id, 'NOTEXIST2')) and
-					:e2:a_account_code is not null
+					:e2:a_account_code is not null and
+					:e1:i_eg_service = :e2:i_eg_service
 				    order by
 					:e2:i_eg_gift_trx_date desc
 				) is null,
@@ -161,7 +167,8 @@ plugin_rcpt_importprocess_100match "system/query"
 				    :e1:a_fund = :e2:a_fund and
 				    :e2:i_eg_acctmap_future = 1 and
 				    :e2:i_eg_acctmap_confidence = 2 and
-				    :e2:a_account_code is not null
+				    :e2:a_account_code is not null and
+				    :e1:i_eg_service = :e2:i_eg_service
 				order by
 				    :e2:i_eg_gift_trx_date desc
 			),
@@ -177,7 +184,8 @@ plugin_rcpt_importprocess_100match "system/query"
 					:e1:a_fund = :e2:a_fund and
 					:e2:i_eg_acctmap_future = 1 and
 					:e2:i_eg_acctmap_confidence = 2 and
-					:e2:a_account_code is not null
+					:e2:a_account_code is not null and
+					:e1:i_eg_service = :e2:i_eg_service
 				    order by
 					:e2:i_eg_gift_trx_date desc
 				) is null,

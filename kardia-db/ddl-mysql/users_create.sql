@@ -388,6 +388,9 @@ grant select on ra to public;
 /* a_bank_recon_item */
 
 
+/* a_bank_recon_accts */
+
+
 /* a_dimension */
 
 
@@ -538,7 +541,16 @@ grant select on ra to public;
 /* a_subtrx_cashxfer */
 
 
+/* i_association */
+
+
+/* i_acct_association */
+
+
 /* i_eg_gift_import */
+
+
+/* i_eg_deposit_config */
 
 
 /* i_eg_gift_trx_fees */

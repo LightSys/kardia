@@ -211,10 +211,10 @@ advanced_search "widget/component-decl"
 			    text = "Action:";
 			    height=24;
 			    field=p_stage_op;
-			    sql = " select label='Start with these matching results', value='A', default=1, grp='A';
-				    select label='Add people to the results', value='A', default=0, grp='B';
-				    select label='Require the results match', value='R', default=1, grp='B';
-				    select label='Exclude from results', value='E', default=0, grp='B'
+			    sql = " select label='Start with these matching results', value='A', 'default'=1, grp='A';
+				    select label='Add people to the results', value='A', 'default'=0, grp='B';
+				    select label='Require the results match', value='R', 'default'=1, grp='B';
+				    select label='Exclude from results', value='E', 'default'=0, grp='B'
 				    ";
 			    op_dd_hints "widget/hints" { style=notnull; }
 

@@ -207,6 +207,7 @@ alter table p_merge drop index p_merge_rev_idx;
 /* drop index p_notification.p_notify_pk */ 
 /* go */
 alter table p_notification drop index p_notify_recip_idx;
+alter table p_notification drop index p_notify_send_idx;
 alter table p_notification drop index p_notify_source_idx;
 alter table p_notification drop index p_notify_type_idx;
 
@@ -780,7 +781,13 @@ alter table a_fund_staff drop index a_fund_staff_partner_idx;
 
 
 /* a_bank_recon_item */
+alter table a_bank_recon_item drop index a_recon_foreign_idx;
 /* drop index a_bank_recon_item.a_recon_item_pk */ 
+/* go */
+
+
+/* a_bank_recon_accts */
+/* drop index a_bank_recon_accts.a_recon_accts_pk */ 
 /* go */
 
 
@@ -1115,6 +1122,18 @@ alter table a_subtrx_cashxfer drop index a_subtrx_cxf_fund_rev2_idx;
 alter table a_subtrx_cashxfer drop index a_subtrx_cxf_journal_idx;
 
 
+/* i_association */
+alter table i_association drop index i_assoc_int_idx;
+/* drop index i_association.i_assoc_pk */ 
+/* go */
+
+
+/* i_acct_association */
+alter table i_acct_association drop index i_acct_assoc_int_idx;
+/* drop index i_acct_association.i_acct_assoc_pk */ 
+/* go */
+
+
 /* i_eg_gift_import */
 alter table i_eg_gift_import drop index i_eg_edeposit_idx;
 alter table i_eg_gift_import drop index i_eg_edonor_idx;
@@ -1130,6 +1149,11 @@ alter table i_eg_gift_import drop index i_eg_kfund_idx;
 alter table i_eg_gift_import drop index i_eg_kgiftbatch_idx;
 alter table i_eg_gift_import drop index i_eg_postproc_idx;
 alter table i_eg_gift_import drop index i_eg_stats_idx;
+
+
+/* i_eg_deposit_config */
+/* drop index i_eg_deposit_config.i_eg_deposit_config_pk */ 
+/* go */
 
 
 /* i_eg_gift_trx_fees */

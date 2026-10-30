@@ -741,12 +741,16 @@ create table p_notification (
         p_recip_partner_key                   varchar(10)  not null,   /* partner key of the person to receive the notification --  */
         p_notify_method                       integer  not null,       /* notification method (p_notification_method) --  */
         p_notify_method_item                  integer  not null,       /* notification method line item. --  */
-        p_contact_id                          integer  null,           /* the p_contact_info ID from the notification method preference at the time the notification was SENT. Denormalization for historical recordkeeping. --  */
-        p_contact_data                        varchar(255)  null,      /* the p_contact_info data, including phone country/area, for the notification method at the time the notification was SENT. Denormalization for historical recordkeeping. --  */
-        p_status                              char(1)  not null,       /* status of this notification: (N)ew, (U)pdated, (S)ent, (D)eleted/discarded --  */
+        p_recip_contact_id                    integer  null,           /* the p_contact_info ID from the notification method preference at the time the notification was SENT. Denormalization for historical recordkeeping. --  */
+        p_recip_contact_data                  varchar(255)  null,      /* the p_contact_info data, including phone country/area, for the notification method at the time the notification was SENT. Denormalization for historical recordkeeping. --  */
+        p_status                              char(1)  not null,       /* status of this notification: (N)ew, (U)pdated, (P)rocessing, (S)ent, (D)eleted/discarded, (F)ailed --  */
+        p_sending_group_key                   varchar(80)  null,       /* a unique code used to group notifications together in a batch for sending --  */
         p_sent_date                           datetime  null,          /* date the notification was actually sent --  */
         p_ack_date                            datetime  null,          /* date the notification was read or acknowledged by the recipient (this may not be available for all notification types) --  */
         p_response                            varchar(900)  null,      /* response, if any, from the notification recipient --  */
+        p_data_1                              varchar(255)  null,      /* Misc data field 1, notification source dependent. --  */
+        p_data_2                              varchar(255)  null,      /* Misc data field 2, notification source dependent. --  */
+        p_data_3                              varchar(255)  null,      /* Misc data field 3, notification source dependent. --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -764,6 +768,9 @@ create table p_notification_type (
         p_notify_type_desc                    varchar(255)  not null,  /* longer description for the notification type --  */
         p_message                             varchar(900)  null,      /* Text to include in the notification message --  */
         p_object_label                        varchar(255)  not null,  /* Short label for the object being referenced by the object ID in p_notification --  */
+        p_data_1_label                        varchar(48)  null,       /* Misc data field 1 label --  */
+        p_data_2_label                        varchar(48)  null,       /* Misc data field 2 label --  */
+        p_data_3_label                        varchar(48)  null,       /* Misc data field 3 label --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -2553,9 +2560,13 @@ create table a_currency_exch_rate (
 
 create table a_bank_recon (
         a_ledger_number                       char(10)  not null,      /* ledger number for this reconciliation --  */
-        a_period                              char(8)  not null,       /* accounting period for this reconciliation --  */
         a_account_code                        char(16)  not null,      /* GL account that we're reconciling --  */
-        a_bank_balance                        decimal(14,4)  null,     /* Ending balance from the bank statement --  */
+        a_statement_id                        int(11)  not null,       /* ID used to differentiate reconciliations for the same account. --  */
+        a_period                              char(8)  not null,       /* accounting period for this reconciliation, typically calculated based on end date --  */
+        a_end_date                            datetime  not null,      /* Ending date from the bank statement --  */
+        a_bank_start_balance                  decimal(14,4)  null,     /* Starting balance from the bank statement --  */
+        a_bank_end_balance                    decimal(14,4)  not null,
+                                                                      /* Ending balance from the bank statement --  */
         a_comment                             varchar(900)  null,      /* Comments on this account's reconciliation. --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
@@ -2570,16 +2581,35 @@ create table a_bank_recon (
 
 create table a_bank_recon_item (
         a_ledger_number                       char(10)  not null,      /* ledger number for this reconciliation --  */
-        a_period                              char(8)  not null,       /* accounting period for this reconciliation --  */
-        a_account_code                        char(16)  not null,      /* GL account that we're reconciling --  */
         a_line_item                           integer  not null,       /* An autoincrement integer line item ID --  */
-        a_origin                              char(2)  not null,       /* The type of line item - GL, CD, CR, DE. --  */
-        a_source_key                          varchar(80)  not null,   /* The primary key of the source of the line item, such as from a_subtrx_cashdisb. --  */
-        a_amount                              decimal(14,4)  not null,
-                                                                      /* The amount of the reconciliation line item --  */
-        a_posted_date                         datetime  null,          /* The date the item posted on the bank account. --  */
+        a_account_code                        char(16)  not null,      /* GL account that we're reconciling --  */
+        a_statement_id                        int(11)  null,           /* the reconciliation statement to associate this line item with once it is marked reconciled --  */
+        a_origin                              char(2)  null,           /* The type of line item - GL, CD, CR, DE. NULL indicates it exists only in the bank reconciliation. --  */
+        a_batch_key                           int(11)  null,           /* The batch part of the primary key of the source of the line item, such as from a_subtrx_cashdisb. --  */
+        a_group_key                           int(11)  null,           /* The group part of the primary key of the source of the line item, such as from a_subtrx_cashdisb. --  */
+        a_item_key                            int(11)  null,           /* The item part of the primary key of the source of the line item, such as from a_subtrx_cashdisb. --  */
+        a_amount                              decimal(14,4)  null,     /* The amount of the reconciliation line item --  */
         a_is_reconciled                       bit  default 0,          /* Whether the line item is reconciled or not. --  */
         a_comment                             varchar(255)  null,      /* Comments on the line item. --  */
+        a_item_date                           datetime  not null,      /* The primary date associated with the transaction, such as the effective date from the GL. --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* a_bank_recon_accts */
+
+create table a_bank_recon_accts (
+        a_ledger_number                       char(10)  not null,      /* ledger number for the account --  */
+        a_account_code                        char(16)  not null,      /* GL account to allow/disallow --  */
+        a_is_reconcilable                     bit(1)  default 0  null,
+                                                                      /* Whether or not the account can be reconciled --  */
+        a_is_customizable                     bit(1)  default 0  null,
+                                                                      /* Whether or not to allow the account to have line items that exist only in the reconciliation app. --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -3852,6 +3882,47 @@ create table a_subtrx_cashxfer (
 );
 
 
+/* i_association */
+
+create table i_association (
+        i_assoc_service                       varchar(16)  not null,   /* Code for the external service --  */
+        i_assoc_type                          varchar(16)  not null,   /* Code for the association type (currently supported: 'partner' for partner/donor) --  */
+        i_assoc_external_id                   varchar(80)  not null,   /* External identifier (e.g., giving service donor ID) --  */
+        i_assoc_hist_id                       integer  not null,       /* Sequential id of this association - so we can record how associations change over time and refer back to them --  */
+        i_assoc_start_date                    datetime  null,          /* Starting date this association applies to. Null if no starting date. --  */
+        i_assoc_end_date                      datetime  null,          /* Ending date this association applies to. Null if no ending date. --  */
+        i_assoc_id                            varchar(80)  not null,   /* Internal identifier (e.g., Kardia partner ID) --  */
+        i_assoc_future                        integer  null,           /* Future applicability of this mapping: 0=low, 1=medium, 2=high --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* i_acct_association */
+
+create table i_acct_association (
+        a_ledger_number                       char(10)  not null,      /* Accounting ledger (legal entity) --  */
+        i_assoc_service                       varchar(16)  not null,   /* Code for the external service --  */
+        i_assoc_type                          varchar(16)  not null,   /* Code for the association type (currently supported: 'fund', 'account', 'donoraccount') --  */
+        i_assoc_external_id                   varchar(80)  not null,   /* External identifier (e.g., giving service donor ID) --  */
+        i_assoc_hist_id                       integer  not null,       /* Sequential id of this association - so we can record how associations change over time and refer back to them --  */
+        i_assoc_start_date                    datetime  null,          /* Starting date this association applies to. Null if no starting date. --  */
+        i_assoc_end_date                      datetime  null,          /* Ending date this association applies to. Null if no ending date. --  */
+        i_assoc_id                            varchar(80)  not null,   /* Internal identifier (e.g., Kardia partner ID) --  */
+        i_assoc_future                        integer  null,           /* Future applicability of this mapping: 0=low, 1=medium, 2=high --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
 /* i_eg_gift_import */
 
 create table i_eg_gift_import (
@@ -3859,7 +3930,7 @@ create table i_eg_gift_import (
         i_eg_gift_uuid                        char(36)  not null,      /* UUID for the gift record --  */
         i_eg_desig_uuid                       varchar(36)  not null,   /* ID of designation that the donor chose --  */
         i_eg_line_item                        integer  not null,       /* unique ID for the gift item (in case there is more than one line item to the same designation) --  */
-        i_eg_trx_uuid                         char(36)  not null,      /* UUID for the transaction record --  */
+        i_eg_trx_uuid                         char(36)  not null,      /* UUID for the transaction record. A transaction can contain one or more designations / line items. --  */
         i_eg_donor_uuid                       char(36)  not null,      /* UUID for the donor --  */
         i_eg_donor_alt_id                     char(36)  null,          /* alternate ID for the donor --  */
         i_eg_account_uuid                     varchar(36)  null,       /* ID of donation account that the donor used --  */
@@ -3909,11 +3980,11 @@ create table i_eg_gift_import (
         i_eg_desig_notes                      varchar(255)  null,      /* Notes provided by donor --  */
         i_eg_net_amount                       decimal(14,4)  null,     /* Net gift (less fees for this transaction) --  */
         i_eg_deposit_date                     datetime  null,          /* Date that this gift was deposited into the ministry's account --  */
-        i_eg_deposit_uuid                     char(36)  null,          /* ID of the deposit. --  */
+        i_eg_deposit_uuid                     char(36)  null,          /* ID of the deposit. See wiki definition of what "the deposit" means. A deposit contains one or more transactions. --  */
         i_eg_contra_deposit_uuid              char(36)  null,          /* ID of a contra-deposit, if applicable --  */
         i_eg_deposit_status                   char(16)  null,          /* status of the deposit --  */
-        i_eg_deposit_gross_amt                decimal(14,4)  null,     /* gross amount of the deposit before fees --  */
-        i_eg_deposit_amt                      decimal(14,4)  null,     /* net amount of the deposit --  */
+        i_eg_deposit_gross_amt                decimal(14,4)  null,     /* gross amount of the deposit before fees. See wiki definition of what "the deposit" means. --  */
+        i_eg_deposit_amt                      decimal(14,4)  null,     /* net amount of the deposit. See wiki definition of what "the deposit" means. --  */
         i_eg_is_modified                      integer  null,           /* Set to 1 to indicate that this line item was derived or modified and does not exactly match upstream giving service data. --  */
         i_eg_is_donorfee                      integer  null,           /* Set to 1 to indicate that this line item is a donor-paid admin fee and thus may need special treatment later. --  */
         i_eg_postprocess                      varchar(255)  null,      /* Postprocessing module control flags --  */
@@ -3929,6 +4000,32 @@ create table i_eg_gift_import (
         a_batch_number                        integer  null,           /* Kardia GL batch used to process this gift record --  */
         a_batch_number_fees                   integer  null,           /* Kardia GL batch used to process the fees for this gift record --  */
         a_batch_number_deposit                integer  null,           /* Kardia GL batch used to process the deposit for this gift record --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* i_eg_deposit_config */
+
+create table i_eg_deposit_config (
+        a_ledger_number                       char(10)  not null,      /* ledger number for this data --  */
+        i_eg_depfee_id                        integer  not null,       /* A unique ID for the deposits/fees configuration. --  */
+        i_eg_service                          varchar(16)  null,       /* Service ID (e.g. EG, EGS, SS) from Kardia online giving service plugin, or null to apply to all service plugins --  */
+        i_eg_processor                        varchar(80)  null,       /* Name of payment processor, or null to apply to all payment processors --  */
+        i_eg_gift_currency                    varchar(16)  null,       /* currency of gift (e.g. USD, CAD, etc), or null to apply to all currencies --  */
+        i_eg_gift_pmt_type                    varchar(16)  null,       /* Payment type, or null to apply to all payment types. --  */
+        i_eg_deposit_method                   char(1)  not null,       /* Deposit method: (G)ross Deposits, (N)et Deposits, or (X) for no automatic deposits import. --  */
+        i_eg_fees_method                      char(1)  not null,       /* Fees method: (N) for net fees subtracted from the deposit and posted as a GL batch, (D) for daily disbursements fees batches, (P) for using a payable GL account, or (X) for no automatic fees import. --  */
+        i_eg_fees_fund                        char(20)  null,          /* Fund for the transaction fees payable --  */
+        i_eg_fees_account_code                char(16)  null,          /* GL Account for the transaction fees payable --  */
+        i_eg_calc_method                      char(1)  not null,       /* Fee calculation method: (I) for fees data provided by online giving import module, or (M) for manually calculated fees using data in this record. --  */
+        i_eg_calc_rounding                    char(1)  not null,       /* Rounding method for manually calculated fees that aren't whole cent amounts: (R) round normally, (D) always round down to the cent, or (U) always round up to the cent --  */
+        i_eg_fee_flat_amt                     decimal(14,4)  null,     /* Flat part of fee, if using manual calculation. --  */
+        i_eg_fee_pct_amt                      float  null,             /* Percentage part of fee, if using manual calculation. --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */

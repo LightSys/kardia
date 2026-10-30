@@ -1,0 +1,479 @@
+$Version=2$
+gift_associations_edit "widget/component-decl"
+    {
+    width = 590; height = 140;
+    
+    form "widget/parameter" { type = object; find_container = "widget/form"; }
+    ledger "widget/parameter" { type = string; }
+    
+    visible_fields "widget/parameter"
+	{
+	// Specify the set of fields to render.
+	// - all:         Every field rendered.
+	// - shared_only: Fields whose values are shared across all line items
+	//                in a transaction are rendered. Varying fields are
+	//                replaced with "See Details".
+	type = string;
+	default = "all";
+	enumlist = all,shared_only;
+	}
+    
+    edit_mode "widget/parameter"
+	{
+	// Whether visible fields accept user input.
+	// - editable: Visible fields are editable.
+	// - readonly: Visible fields are shown but not editable.
+	// Note: gross/net amount are visible always, but only editable when
+	// visible_fields = "all" AND edit_mode = "editable" -- when merged
+	// line items are involved the per-line amounts can differ, so an
+	// aggregate is shown but not edited in place.
+	type = string;
+	default = "readonly";
+	enumlist = editable,readonly;
+	}
+    
+    // Per-line gift/net amount fields of the parent form, for propagating
+    // updates on i_eg_deposit_gross_amt and i_eg_deposit_amt.
+    gift_amount "widget/variable" { fieldname = i_eg_gift_amount; form = form; }
+    net_amount  "widget/variable" { fieldname = i_eg_net_amount;  form = form; }
+    
+    column_layout "widget/hbox"
+	{
+	x = 0; y = 0; width = 590; height = 140; spacing = 5;
+	
+	service_donor_col "widget/vbox"
+	    {
+	    y = 0; width = 200; height = 140; spacing = 10; // x = column_layout
+	    
+	    service_field "widget/component"
+		{
+		x = 0; width = 200; height = 15; label_width = 100; // y = service_donor_col
+		path = "/sys/cmp/smart_field.cmp";
+		text = "Service:";
+		
+		// Dropdown data.
+		ctl_type = dropdown;
+		field = i_eg_service;
+		sql="
+		    SELECT
+			label = substring(:a_config_name, 12),
+			value = substring(:a_config_name, 12),
+			selected = 0
+		    FROM
+			/apps/kardia/data/Kardia_DB/a_config/rows
+		    WHERE
+			substring(:a_config_name, 1, 11) = 'GiftImport_' AND
+			:a_config_value = '1'
+		    GROUP BY
+			:a_config_name
+		";
+		form = form;
+		
+		required_service_hints "widget/hints"
+		    {
+		    condition = runserver(:this:edit_mode = "editable");
+		    style = notnull,strnull;
+		    }
+		immutable_service_hints "widget/hints"
+		    {
+		    condition = runserver(:this:edit_mode = "readonly");
+		    style = readonly;
+		    }
+		}
+	    
+	    donor_name_field "widget/component"
+		{
+		x = 0; width = 200; height = 15; label_width = 100; // y = service_donor_col
+		path = "/sys/cmp/smart_field.cmp";
+		text = "Donor Name:";
+		ctl_type = editbox;
+		field = i_eg_donor_name;
+		form = form;
+		
+		required_donor_name_hints "widget/hints"
+		    {
+		    condition = runserver(:this:edit_mode = "editable");
+		    style = notnull,strnull;
+		    }
+		immutable_donor_name_hints "widget/hints"
+		    {
+		    condition = runserver(:this:edit_mode = "readonly");
+		    style = readonly;
+		    }
+		}
+	    
+	    donor_address_field "widget/component"
+		{
+		x = 0; width = 200; height = 15; label_width = 100; // y = service_donor_col
+		path = "/sys/cmp/smart_field.cmp";
+		text = "Donor Address:";
+		ctl_type = editbox;
+		field = i_eg_donor_address;
+		form = form;
+		
+		immutable_donor_address_hints "widget/hints"
+		    {
+		    condition = runserver(:this:edit_mode = "readonly");
+		    style = readonly;
+		    }
+		}
+	    
+	    donor_kardia_spacer "widget/autolayoutspacer" { height = 5; }
+	    
+	    kardia_donor_field "widget/component"
+		{
+		x = 0; width = 200; height = 15; label_width = 100; // y = service_donor_col
+		path = "/apps/kardia/modules/base/editbox_table.cmp";
+		text = "Donor:";
+		field = p_donor_partner_key;
+		form = form;
+		
+		// Popup
+		popup_text = "Select a Donor:";
+		popup_width = 335;
+		popup_sql = "
+		    SELECT
+			value = :p:p_partner_key + '', -- Stop failed auto-writes to DB.
+			label = isnull(condition(
+			    char_length(rtrim(:p:p_org_name)) > 0,
+			    :p:p_org_name,
+			    :p:p_given_name + ' ' + :p:p_surname,
+			) + ' ', '')
+			+ isnull(' ['
+			    + :pl:p_city + ', '
+			    + :pl:p_state_province + ' '
+			    + :pl:p_postal_code
+			+ '] ', '')
+			+ '(' + :p:p_partner_key + ')'
+		    FROM
+			/apps/kardia/data/Kardia_DB/p_partner/rows p,
+			/apps/kardia/data/Kardia_DB/p_location/rows pl
+		    WHERE
+			:p:p_partner_key *= :pl:p_partner_key
+		    GROUP BY
+			:p:p_partner_key
+		";
+		search_field_list = ""
+		    + "p_partner_key,"
+		    + "*p_given_name*,"
+		    + "*p_preferred_name*,"
+		    + "*p_surname*,"
+		    + "*p_localized_name*,"
+		    + "*p_org_name*,"
+		    + "*p_comments*,"
+		    + "p_legacy_key_1,"
+		    + "*p_legacy_key_2*";
+		search_objname = p;
+		key_name = p_partner_key;
+		
+		required_kardia_donor_hints "widget/hints"
+		    {
+		    condition = runserver(:this:edit_mode = "editable");
+		    style = notnull,strnull;
+		    }
+		immutable_kardia_donor_hints "widget/hints"
+		    {
+		    condition = runserver(:this:edit_mode = "readonly");
+		    style = readonly;
+		    }
+		}
+	    }
+	
+	// designation_fields_col and amount_fields_col combined so that
+	// Desig. Notes can span the full width of both columns.
+	designation_col "widget/vbox"
+	    {
+	    y = 0; width = 375; height = 140; spacing = 10; // x = column_layout
+	    
+	    designation_amount_row "widget/hbox"
+		{
+		x = 0; width = 375; height = 40; spacing = 5; // y = designation_col
+		
+		designation_fields_col "widget/vbox"
+		    {
+		    y = 0; width = 200; height = 40; spacing = 10; // x = designation_amount_row
+		    
+		    desig_id_field "widget/component"
+			{
+			condition = runserver(:this:visible_fields = "all");
+			x = 0; width = 200; height = 15; label_width = 100; // y = designation_fields_col
+			path = "/sys/cmp/smart_field.cmp";
+			text = "Desig. ID:";
+			ctl_type = editbox;
+			field = i_eg_desig_uuid;
+			form = form;
+			
+			required_desig_id_hints "widget/hints"
+			    {
+			    condition = runserver(:this:edit_mode = "editable");
+			    style = notnull,strnull;
+			    }
+			immutable_desig_id_hints "widget/hints"
+			    {
+			    condition = runserver(:this:edit_mode = "readonly");
+			    style = readonly;
+			    }
+			}
+		    desig_id_placeholder "widget/component"
+			{
+			condition = runserver(:this:visible_fields = "shared_only");
+			x = 0; width = 200; height = 15; label_width = 100; // y = designation_fields_col
+			path = "/sys/cmp/smart_field.cmp";
+			text = "Desig. ID:";
+			ctl_type = label;
+			value = "See Details";
+			}
+		    
+		    desig_name_field "widget/component"
+			{
+			condition = runserver(:this:visible_fields = "all");
+			x = 0; width = 200; height = 15; label_width = 100; // y = designation_fields_col
+			path = "/sys/cmp/smart_field.cmp";
+			text = "Desig. Name:";
+			ctl_type = editbox;
+			field = i_eg_desig_name;
+			form = form;
+			
+			required_desig_name_hints "widget/hints"
+			    {
+			    condition = runserver(:this:edit_mode = "editable");
+			    style = notnull,strnull;
+			    }
+			immutable_desig_name_hints "widget/hints"
+			    {
+			    condition = runserver(:this:edit_mode = "readonly");
+			    style = readonly;
+			    }
+			}
+		    desig_name_placeholder "widget/component"
+			{
+			condition = runserver(:this:visible_fields = "shared_only");
+			x = 0; width = 200; height = 15; label_width = 100; // y = designation_fields_col
+			path = "/sys/cmp/smart_field.cmp";
+			text = "Desig. Name:";
+			ctl_type = label;
+			value = "See Details";
+			}
+		    }
+		
+		amount_fields_col "widget/vbox"
+		    {
+		    y = 0; width = 170; height = 40; spacing = 10; // x = designation_amount_row
+		    
+		    gross_amount_field "widget/component"
+			{
+			x = 0; width = 170; height = 15; label_width = 100; // y = amount_fields_col
+			path = "/sys/cmp/smart_field.cmp";
+			text = "Gross Amount:";
+			ctl_type = editbox;
+			field = i_eg_deposit_gross_amt;
+			form = form;
+			
+			required_gross_amount_hints "widget/hints"
+			    {
+			    condition = runserver(:this:edit_mode = "editable" AND :this:visible_fields = "all");
+			    style = notnull,strnull;
+			    default = runclient(0);
+			    }
+			immutable_gross_amount_hints "widget/hints"
+			    {
+			    condition = runserver(:this:edit_mode = "readonly" OR :this:visible_fields = "shared_only");
+			    style = readonly;
+			    }
+			
+			// Mirror edit to the hidden gift_amount field.
+			sync_gift_amount "widget/connector"
+			    {
+			    condition = runserver(:this:edit_mode = "editable" AND :this:visible_fields = "all");
+			    event = DataChange;
+			    event_condition = runclient(not :FromOSRC);
+			    target = gift_amount;
+			    action = SetValue;
+			    Value = runclient(:Value);
+			    }
+			}
+		    
+		    net_amount_field "widget/component"
+			{
+			x = 0; width = 170; height = 15; label_width = 100; // y = amount_fields_col
+			path = "/sys/cmp/smart_field.cmp";
+			text = "Net Amount:";
+			ctl_type = editbox;
+			field = i_eg_deposit_amt;
+			form = form;
+			
+			required_net_amount_hints "widget/hints"
+			    {
+			    condition = runserver(:this:edit_mode = "editable" AND :this:visible_fields = "all");
+			    style = notnull,strnull;
+			    default = runclient(0);
+			    }
+			immutable_net_amount_hints "widget/hints"
+			    {
+			    condition = runserver(:this:edit_mode = "readonly" OR :this:visible_fields = "shared_only");
+			    style = readonly;
+			    }
+			
+			// Mirror edit to the hidden net_amount field.
+			sync_net_amount "widget/connector"
+			    {
+			    condition = runserver(:this:edit_mode = "editable" AND :this:visible_fields = "all");
+			    event = DataChange;
+			    event_condition = runclient(not :FromOSRC);
+			    target = net_amount;
+			    action = SetValue;
+			    Value = runclient(:Value);
+			    }
+			}
+		    }
+		}
+	    
+	    desig_notes_field "widget/component"
+		{
+		condition = runserver(:this:visible_fields = "all");
+		x = 0; width = 375; height = 15; label_width = 100; // y = designation_col
+		path = "/sys/cmp/smart_field.cmp";
+		text = "Desig. Notes:";
+		ctl_type = editbox;
+		field = i_eg_desig_notes;
+		form = form;
+		
+		immutable_desig_notes_hints "widget/hints"
+		    {
+		    condition = runserver(:this:edit_mode = "readonly");
+		    style = readonly;
+		    }
+		}
+	    desig_notes_placeholder "widget/component"
+		{
+		condition = runserver(:this:visible_fields = "shared_only");
+		x = 0; width = 375; height = 15; label_width = 100; // y = designation_col
+		path = "/sys/cmp/smart_field.cmp";
+		text = "Desig. Notes:";
+		ctl_type = label;
+		value = "See Details";
+		}
+	    
+	    notes_kardia_spacer "widget/autolayoutspacer" { height = 5; }
+	    
+	    kardia_fields_row "widget/hbox"
+		{
+		width = 375; height = 15; spacing = 5; // y = designation_col
+		
+		kardia_designation_field "widget/component"
+		    {
+		    condition = runserver(:this:visible_fields = "all");
+		    y = 0; width = 200; height = 15; label_width = 100; // x = kardia_fields_row
+		    path = "/apps/kardia/modules/base/editbox_table.cmp";
+		    text = "Desig.:";
+		    field = a_fund;
+		    form = form;
+		    
+		    // Popup
+		    popup_text = "Select a Designation:";
+		    popup_width = 335;
+		    popup_sql = runserver("
+			SELECT
+			    value = :c:a_fund + '', -- Stop failed auto-writes to DB.
+			    label = condition(
+				isnull(:cr:a_receiptable, 0) = 1,
+				''  + isnull(:c:a_fund_desc + ' ', '')
+				    + '(' + :c:a_fund + ')'
+				    + isnull(' - legacy #' + :c:a_legacy_code, ''),
+				'** CLOSED **'
+			    )
+			FROM
+			    /apps/kardia/data/Kardia_DB/a_fund/rows c,
+			    /apps/kardia/data/Kardia_DB/a_fund_receipting/rows cr
+			WHERE
+			    :c:a_ledger_number = " + quote(:this:ledger) + " AND
+			    :c:a_ledger_number *= :cr:a_ledger_number AND
+			    :c:a_fund *= :cr:a_fund AND
+			    :c:a_is_posting = 1
+		    ");
+		    search_field_list = ""
+			+ "*a_fund*,"
+			+ "*a_fund_desc*,"
+			+ "*a_fund_comments*,"
+			+ "*a_legacy_code*";
+		    search_objname = c;
+		    key_name = a_fund;
+		    
+		    required_kardia_designation_hints "widget/hints"
+			{
+			condition = runserver(:this:edit_mode = "editable");
+			style = notnull,strnull;
+			}
+		    immutable_kardia_designation_hints "widget/hints"
+			{
+			condition = runserver(:this:edit_mode = "readonly");
+			style = readonly;
+			}
+		    }
+		kardia_designation_placeholder "widget/component"
+		    {
+		    condition = runserver(:this:visible_fields = "shared_only");
+		    y = 0; width = 200; height = 15; label_width = 100; // x = kardia_fields_row
+		    path = "/sys/cmp/smart_field.cmp";
+		    text = "Desig.:";
+		    ctl_type = label;
+		    value = "See Details";
+		    }
+		
+		kardia_gl_account_field "widget/component"
+		    {
+		    condition = runserver(:this:visible_fields = "all");
+		    y = 0; width = 170; height = 15; label_width = 100; // x = kardia_fields_row
+		    path = "/apps/kardia/modules/base/editbox_table.cmp";
+		    text = "GL Account:";
+		    field = a_account_code;
+		    form = form;
+		    
+		    // Popup
+		    popup_text = "Select a GL Account:";
+		    popup_width = 335;
+		    popup_sql = runserver("
+			SELECT
+			    value = :a_account_code + '', -- Stop failed auto-writes to DB.
+			    label = ''
+				+ isnull(nullif(:a_acct_desc, '') + ' ', '')
+				+ isnull('(' + :a_account_code + ')', '')
+			FROM
+			    /apps/kardia/data/Kardia_DB/a_account/rows
+			WHERE
+			    :a_ledger_number = " + quote(:this:ledger) + " AND
+			    :a_is_posting = 1
+			ORDER BY
+			    :a_account_code
+		    ");
+		    search_field_list = ""
+			+ "*a_account_code*,"
+			+ "*a_acct_desc*,"
+			+ "*a_acct_comment*,"
+			+ "*a_legacy_code*";
+		    key_name = a_account_code;
+		    
+		    required_gl_account_hints "widget/hints"
+			{
+			condition = runserver(:this:edit_mode = "editable");
+			style = notnull,strnull;
+			}
+		    immutable_gl_account_hints "widget/hints"
+			{
+			condition = runserver(:this:edit_mode = "readonly");
+			style = readonly;
+			}
+		    }
+		kardia_gl_account_placeholder "widget/component"
+		    {
+		    condition = runserver(:this:visible_fields = "shared_only");
+		    y = 0; width = 170; height = 15; label_width = 100; // x = kardia_fields_row
+		    path = "/sys/cmp/smart_field.cmp";
+		    text = "GL Account:";
+		    ctl_type = label;
+		    value = "See Details";
+		    }
+		}
+	    }
+	}
+    }
