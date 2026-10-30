@@ -321,6 +321,7 @@ new_subs "widget/component-decl"
 			    x=0;y=0;
 			    width=248; height=247;
 			    mode = dynamicrow;
+			    overlap_scrollbar = no;
 
 			    t_date "widget/table-column" { title="Date"; fieldname="date"; width=90; }
 			    t_to "widget/table-column" { title="Desig."; fieldname="cc_txt"; width=85; align=left; }
