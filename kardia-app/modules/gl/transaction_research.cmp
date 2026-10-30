@@ -6,6 +6,100 @@ transaction_research "widget/component-decl"
 
     ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; deploy_to_client=yes; }
 
+    Browse "widget/component-decl-action"
+	{
+	on_browse_clear_critiera "widget/connector"
+	    {
+	    target=tr_form;
+	    action=Clear;
+	    }
+
+	on_browse_do_batchno "widget/connector" { event_condition=runclient(:a_batch_number is not null); target=f_batch; action=SetValue; Value=runclient(:a_batch_number); }
+	on_browse_do_period "widget/connector" { event_condition=runclient(:a_period is not null); target=f_period; action=SetValue; Value=runclient(:a_period); }
+	//on_browse_do_journal "widget/connector" { event_condition=runclient(:a_journal_number is not null); target=f_jnl; action=SetValue; Value=runclient(:a_journal_number); }
+	on_browse_do_fund "widget/connector" { event_condition=runclient(:a_fund is not null); target=f_fund; action=SetValue; Value=runclient(:a_fund); }
+	on_browse_do_acct "widget/connector" { event_condition=runclient(:a_account_code is not null); target=f_acct; action=SetValue; Value=runclient(:a_account_code); }
+	on_browse_do_year "widget/connector" { event_condition=runclient(:year is not null); target=f_year; action=SetValue; Value=runclient(:year); }
+	on_browse_do_amt "widget/connector" { event_condition=runclient(:amount is not null); target=f_amount; action=SetValue; Value=runclient(:amount / 100); }
+
+	on_browse_do_query "widget/connector"
+	    {
+	    target=tr_form;
+	    action=QueryExec;
+	    }
+	}
+
+    EditBatch "widget/component-decl-action"
+	{
+	on_edit_batch "widget/connector"
+	    {
+	    target=transaction_research;
+	    action=Launch;
+	    Source="/apps/kardia/modules/gl/journal_entry.app";
+	    Multi = 1;
+	    Width=800;
+	    Height=600;
+	    ledger=runclient(:ledger:value);
+	    batch=runclient(:Batch);
+	    }
+	}
+
+    EditCRBatch "widget/component-decl-action"
+	{
+	on_edit_crbatch "widget/connector"
+	    {
+	    target=transaction_research;
+	    action=Launch;
+	    Source="/apps/kardia/modules/rcpt/gift_entry.app";
+	    Multi = 1;
+	    Width=1000;
+	    Height=700;
+	    ledger=runclient(:ledger:value);
+	    batch=runclient(:Batch);
+	    }
+	}
+
+    EditCDBatch "widget/component-decl-action"
+	{
+	on_edit_cdbatch "widget/connector"
+	    {
+	    target=transaction_research;
+	    action=Launch;
+	    Source = runclient("/apps/kardia/modules/disb/disbursements.app");
+	    Multi = 1;
+	    Width=900;
+	    Height=600;
+	    ledger=runclient(:ledger:value);
+	    batch=runclient(:Batch);
+	    }
+	}
+
+    PrintTrx "widget/component-decl-action"
+	{
+	on_print_trx "widget/connector"
+	    {
+	    target = transaction_research;
+	    action = Launch;
+	    Source = runclient("/apps/kardia/modules/gl/transaction_report.rpt");
+	    Multi = 1;
+	    Width = 1000;
+	    Height = 700;
+	    ledger = runclient(:ledger:value);
+	    batch = runclient(:a_batch_number);
+	    fund = runclient(:a_fund);
+	    account = runclient(:a_account_code);
+	    year_period = runclient(:year);
+	    onlyequity = runclient(condition(:a_fund is not null, 1, 0));
+	    hide1900 = runclient(condition(:a_fund is not null, 1, 0));
+	    }
+	}
+
+    popup_cmp "widget/component"
+	{
+	mode=dynamic;
+	path="/apps/kardia/modules/gl/trx_popup_menu.cmp";
+	}
+
     tr_vbox "widget/vbox"
 	{
 	x=0; y=0;
@@ -76,7 +170,13 @@ transaction_research "widget/component-decl"
 				    minj = min(:t:a_journal_number),
 				    maxj = max(:t:a_journal_number),
 				    mino = min(:t:a_origin),
-				    maxo = max(:t:a_origin)
+				    maxo = max(:t:a_origin),
+				    a_batch_number = min(:t:a_batch_number),
+				    a_period = min(:t:a_period),
+				    a_fund = min(:t:a_fund),
+				    a_account_code = min(:t:a_account_code),
+				    a_journal_number = min(:t:a_journal_number),
+				    a_origin = min(:t:a_origin)
 				from
 				    identity /apps/kardia/data/Kardia_DB/a_transaction/rows t,
 				    /apps/kardia/data/Kardia_DB/a_fund/rows c,
@@ -278,6 +378,27 @@ transaction_research "widget/component-decl"
 				row2_bgcolor=null;
 				nodata_message = "No matching transactions";
 
+				tbl2_rclick "widget/connector"
+				    {
+				    event=RightClick;
+				    target=popup_cmp;
+				    action=Instantiate;
+				    X=runclient(:X);
+				    Y=runclient(:Y);
+
+				    title = runclient("GL Transaction" + condition(char_length(:f_year:value) > 1, ' - ' + :f_year:value, ' - All Years'));
+				    viewer = transaction_research;
+				    ledger=runclient(:ledger:value);
+				    period=runclient(:tr_list_osrc:per);
+				    batch=runclient(:tr_list_osrc:a_batch_number);
+				    acct=runclient(:tr_list_osrc:ac);
+				    cc=runclient(:tr_list_osrc:cc);
+				    jnl=runclient(:tr_list_osrc:a_journal_number);
+				    origin=runclient(:tr_list_osrc:a_origin);
+				    amount=runclient(:tr_list_osrc:a_amount);
+				    year=runclient(:f_year:value);
+				    }
+
 				tlt_date "widget/table-column" { title = "Date"; fieldname=dtxt; width=50; }
 				tlt_per "widget/table-column" { title = "Period"; fieldname=per; width=90; }
 				tlt_stat "widget/table-column" { title = "Status"; value=runclient(:tr_list_osrc:a_origin + ' ' + :tr_list_osrc:stat); width=80; }
@@ -290,6 +411,27 @@ transaction_research "widget/component-decl"
 				}
 			    }
 			}
+		    }
+
+		tbl_rclick "widget/connector"
+		    {
+		    event=RightClick;
+		    target=popup_cmp;
+		    action=Instantiate;
+		    X=runclient(:X);
+		    Y=runclient(:Y);
+
+		    title = runclient("GL Transaction" + condition(char_length(:f_year:value) > 1, ' - ' + :f_year:value, ' - All Years'));
+		    viewer = transaction_research;
+		    ledger=runclient(:ledger:value);
+		    period=runclient(condition(:tr_osrc:minp == :tr_osrc:maxp, :tr_osrc:a_period, null));
+		    batch=runclient(condition(:tr_osrc:minb == :tr_osrc:maxb, :tr_osrc:a_batch_number, null));
+		    acct=runclient(condition(:tr_osrc:minac == :tr_osrc:maxac, :tr_osrc:a_account_code, null));
+		    cc=runclient(condition(:tr_osrc:mincc == :tr_osrc:maxcc, :tr_osrc:a_fund, null));
+		    jnl=runclient(condition(:tr_osrc:minj == :tr_osrc:maxj, :tr_osrc:a_journal_number, null));
+		    origin=runclient(condition(:tr_osrc:mino == :tr_osrc:maxo, :tr_osrc:a_origin, null));
+		    amount=runclient(:tr_osrc:a_amount);
+		    year=runclient(:f_year:value);
 		    }
 		}
 

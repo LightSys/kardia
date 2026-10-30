@@ -19,7 +19,7 @@ transaction_report "system/report"
     balfund "report/parameter" { type=string; default=null; }
     account "report/parameter" { type=string; default=null; }
     ctlaccount "report/parameter" { type=string; default=null; }
-    batch "report/parameter" { type=integer; default=null; }
+    batch "report/parameter" { type=integer; default=null; style=strnull; }
     year_period "report/parameter" { type=string; default=null; }
     startperiod "report/parameter" { type=string; default=null; }
     endperiod "report/parameter" { type=string; default=null; }
@@ -157,8 +157,8 @@ transaction_report "system/report"
 			-- Period and date range specification
 			:t:a_period >= :period_qy:obperiod and
 			(:t:a_transaction_type = 'T' or :t:a_period = :period_qy:obperiod) and
-			(:this:startperiod is null or :t:a_period < :this:startperiod or :t:a_period = :period_qy:obperiod) and
-			(:this:startperiod is null or :t:a_period < :this:startperiod or :t:a_transaction_type = 'B') and
+			(:period_qy:startperiod is null or :t:a_period < :period_qy:startperiod or :t:a_period = :period_qy:obperiod) and
+			(:period_qy:startperiod is null or :t:a_period < :period_qy:startperiod or :t:a_transaction_type = 'B') and
 			(:this:endperiod is null or :t:a_period <= :this:endperiod) and
 			(:period_qy:startdate is null or :t:a_effective_date < :period_qy:startdate or :t:a_transaction_type = 'B') and
 			(:period_qy:enddate is null or :t:a_effective_date <= :period_qy:enddate)
@@ -219,7 +219,7 @@ transaction_report "system/report"
 			-- Period and date range specification
 			:t:a_period >= :period_qy:obperiod and
 			(:t:a_transaction_type = 'T' or :t:a_period = :period_qy:obperiod) and
-			(:this:startperiod is null or :t:a_period >= :this:startperiod) and
+			(:period_qy:startperiod is null or :t:a_period >= :period_qy:startperiod) and
 			(:this:endperiod is null or :t:a_period <= :this:endperiod) and
 			(:period_qy:startdate is null or :t:a_effective_date >= :period_qy:startdate) and
 			(:period_qy:enddate is null or :t:a_effective_date <= :period_qy:enddate)
