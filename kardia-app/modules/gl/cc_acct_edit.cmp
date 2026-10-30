@@ -83,6 +83,7 @@ cc_acct_edit "widget/component-decl"
 	    list_table "widget/table"
 		{
 		x=0;y=0;width=748 - 270 - 10 - 2; height=352;
+		overlap_scrollbar=no;
 
 		t_period "widget/table-column" { fieldname="a_period"; title="Period"; }
 		t_fund "widget/table-column" { fieldname="a_fund"; title="Fund"; }

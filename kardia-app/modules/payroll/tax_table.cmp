@@ -109,6 +109,7 @@ tax_table_cmp "widget/component-decl"
 			x=0;y=0;width=742;height=260;
 			rowheight = 18;
 			mode=dynamicrow;
+			overlap_scrollbar=no;
 
 			t_daterange "widget/table-column" { title="Valid From"; fieldname="txtdate"; width=70; }
 			t_interval "widget/table-column" { title="Period"; fieldname="ivtxt"; width=80; }
@@ -225,6 +226,7 @@ tax_table_cmp "widget/component-decl"
 			x=0;y=0;width=742;height=260;
 			rowheight = 18;
 			mode=dynamicrow;
+			overlap_scrollbar=no;
 
 			t_daterange2 "widget/table-column" { title="Valid From"; fieldname="txtdate"; width=70; }
 			t_interval2 "widget/table-column" { title="Period"; fieldname="ivtxt"; width=80; }
