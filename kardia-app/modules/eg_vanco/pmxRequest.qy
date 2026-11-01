@@ -46,15 +46,45 @@ myquery "system/query"
 	    INSERT 
 		COLLECTION dataQuery
 	    SELECT 
-		-- use the path to set the dense_rank. Use all for transactions, and everthing before /Funds/Fund in funds
-		:TransactionRef,
-		cx_path=:__cx_path,  :dq:TransactionCount, -- include for debug
-		:TransactionRef, :ReceivedAccount, :AssignedAccount, :PayerFirstName, 
-		:CustomerID, :CustomerRef, :PaymentMethodRef, :ProcessDate, :SettlementDate, :PayerMidName, :PayerLastName, 
-		:PayerAddress1, :PayerAddress2, :PayerCity, :PayerState, :PayerZip, :GrossAmount, :GroupID, :AlwaysAssign,
-		:MatchName, :BillerID, :ReturnCode, :ReturnReason, :ReturnDate, :Status
+		-- debug
+		cx_path=:__cx_path,
+		date_pulled = dateformat(dateadd('day', -1*(:dq:cx__page - 1), :vancoKey:toDate), 'yyyy-MM-dd'),
+		:ErrorCode, :ErrorDescription,
+		-- Collect all of the data for the query
+		:dq:TransactionCount, -- include for debug
+		:dq:TransactionRef,   :dq:ReceivedAccount, :dq:AssignedAccount, 
+		:dq:PayerFirstName,   :dq:CustomerID,      :dq:CustomerRef, 
+		:dq:PaymentMethodRef, :dq:ProcessDate,     :dq:SettlementDate, 
+		:dq:GrossAmount,      :dq:BillerID, 
+		-- These fields may be empty, make sure not to treat as an ''
+		PayerMidName = condition(char_length(:dq:PayerMidName) == 0, NULL, :dq:PayerMidName), 
+		PayerLastName = condition(char_length(:dq:PayerLastName) == 0, NULL, :dq:PayerLastName),
+		PayerAddress1 = condition(char_length(:dq:PayerAddress1) == 0, NULL, :dq:PayerAddress1), 
+		PayerAddress2 = condition(char_length(:dq:PayerAddress2) == 0, NULL, :dq:PayerAddress2), 
+		PayerCity = condition(char_length(:dq:PayerCity) == 0, NULL, :dq:PayerCity), 
+		PayerState = condition(char_length(:dq:PayerState) == 0, NULL, :dq:PayerState), 
+		PayerZip = condition(char_length(:dq:PayerZip) == 0, NULL, :dq:PayerZip),
+		GroupID = condition(char_length(:dq:GroupID) == 0, NULL, :dq:GroupID),
+		AlwaysAssign = condition(char_length(:dq:AlwaysAssign) == 0, NULL, :dq:AlwaysAssign),
+		MatchName = condition(char_length(:dq:MatchName) == 0, NULL, :dq:MatchName),
+		ReturnCode = condition(char_length(:dq:ReturnCode) == 0, NULL, :dq:ReturnCode), 
+		ReturnReason = condition(char_length(:dq:ReturnReason) == 0, NULL, :dq:ReturnReason), 
+		ReturnDate = condition(char_length(:dq:ReturnDate) == 0, NULL, :dq:ReturnDate), 
+		Status = condition(char_length(:dq:Status) == 0, NULL, :dq:Status),
+		ReceivedAccount = condition(char_length(:dq:ReceivedAccount) == 0, NULL, :dq:ReceivedAccount),
+		-- Prep for deposit amount calculations 
+		gross_gift = convert('money', :GrossAmount),
+		net_gift = convert('money', :GrossAmount),
+		gross_deposit = convert(money, NULL),
+		net_deposit = convert(money, NULL),
+		-- Only set deposit ID for gifts that are not pending
+		deposit_id = condition( ( (:dq:Status == 'A' OR char_length(:dq:Status) < 1) AND getdate() < convert('datetime', :dq:SettlementDate))
+				OR (char_length(:SettlementDate) < 1) 
+				OR (:dq:Status == 'P'),
+			NULL, 
+			dateformat(:SettlementDate, 'yyyyMMdd') )
 	    FROM 
-		SUBTREE PAGED EXPRESSION(
+		IDENTITY SUBTREE PAGED EXPRESSION(
 		    '/apps/kardia/modules/eg_vanco/egvapi_pmx.http?'
 		    +'VancoWS.Auth.RequestType=PMXTransactionHistory'
 		    +'&VancoWS.Auth.SessionID='+:vancoKey:value
@@ -64,65 +94,84 @@ myquery "system/query"
 		    +'&VancoWS.Request.RequestVars.FromDate='
 		    +dateformat(dateadd('day', -1*(:dq:cx__page - 1), :vancoKey:toDate), 'yyyy-MM-dd')
 		    +'&VancoWS.Request.RequestVars.ToDate='
-		    +condition(:dq:cx__page <= :vancoKey:lookback + 1, 
-			dateformat(dateadd('day', -1*(:dq:cx__page - 1), :vancoKey:toDate), 'yyyy-MM-dd'),
-			'not-a-date')) dq
-	    where
-		:dq:TransactionRef IS NOT NULL OR :dq:TransactionCount = 0
+		    +dateformat(dateadd('day', -1*(:dq:cx__page - 1), :vancoKey:toDate), 'yyyy-MM-dd')
+		    ) dq
+	    WHERE
+		(:dq:TransactionRef IS NOT NULL OR :dq:TransactionCount == 0 OR :ErrorCode IS NOT NULL)
+		AND :dq:cx__page <= :vancoKey:lookback + 1
+	    ;
+
+	    -- Calculate deposit amounts
+	    DECLARE COLLECTION depositAmounts;
+	    INSERT INTO
+		COLLECTION depositAmounts
+	    SELECT
+		gross_deposit = sum(:sums:gross_gift),
+		net_deposit = sum(:sums:net_gift), 
+		deposit_id = :sums:deposit_id
+	    FROM
+		IDENTITY COLLECTION dataQuery sums 
+	    WHERE
+		:sums:TransactionRef IS NOT NULL
+		AND :sums:deposit_id IS NOT NULL
+	    GROUP BY
+		:sums:deposit_id
 	    ;
 
 	    -- format into final table
 	    SELECT
-		i_eg_gift_uuid = :TransactionRef,
-		i_eg_desig_uuid = :GroupID,
-		i_eg_trx_uuid = :TransactionRef+'-'+dateformat(convert('datetime', :ProcessDate), 'yyyy-MM-dd'),
+		i_eg_gift_uuid = :data:TransactionRef,
+		i_eg_desig_uuid = :data:GroupID,
+		i_eg_trx_uuid = :data:TransactionRef+'-'+dateformat(convert('datetime', :data:ProcessDate), 'yyyy-MM-dd'),
 		-- use a hash to provide a (hopefully) consistent ID reflective of the donor's info
-		i_eg_donor_uuid = hash('md5', convert('string', :GrossAmount)
-			+ isnull(:PayerFirstName,'') + isnull(:PayerMidName,'') + isnull(:PayerLastName, '')
-			+ isnull(:PayerAddress1,'') + isnull(:PayerAddress2,'') + isnull(:PayerCity,'')
-			+ isnull(:PayerState,'') + isnull(:PayerZip,'') + 'US'),  
-		i_eg_donor_alt_id = :AssignedAccount,   -- NOTE: if do vanco auto, this likely wouldn't be set
+		i_eg_donor_uuid = hash('md5',
+			  isnull(:data:PayerFirstName,'') + isnull(:data:PayerMidName,'') + isnull(:data:PayerLastName, '')
+			+ isnull(:data:PayerAddress1,'') + isnull(:data:PayerAddress2,'') + isnull(:data:PayerCity,'')
+			+ isnull(:data:PayerState,'') + isnull(:data:PayerZip,'') + 'US'),  
+		i_eg_donor_alt_id = :data:AssignedAccount,   -- NOTE:data: if do vanco auto, this likely wouldn't be set
 		i_eg_account_uuid = NULL,
-		i_eg_status = condition(:Status == 'A' OR :Status IS NULL, 
-			condition(datediff('day', getdate(), convert('datetime', :SettlementDate)) <= 0, 'paid', 'pending'),
-			condition(:Status == 'P', 'pending', 'returned')),
-		i_eg_returned_status = condition(:Status == 'R', 'Rejected', condition(:Status == 'T', 'Returned', NULL)),
-		i_eg_donor_name = isnull(:PayerFirstName,'')+isnull(' '+:PayerMidName,'')+isnull(' '+:PayerLastName, ''),
-		i_eg_donor_given_name = condition(char_length(:PayerFirstName) < 1, NULL, :PayerFirstName),
-		i_eg_donor_surname = condition(char_length(:PayerLastName) < 1, NULL, :PayerLastName),
-		i_eg_donor_middle_name = condition(char_length(:PayerMidName) < 1, NULL, :PayerMidName),
-		i_eg_donor_address = :PayerAddress1+condition(char_length(:PayerAddress2) < 1, '', ' '+:PayerAddress2)+' '+:PayerCity+' '
-			+:PayerState+' '+:PayerZip+' US',
-		i_eg_donor_addr1 = :PayerAddress1,
-		i_eg_donor_addr2 = condition(char_length(:PayerAddress2) < 1, NULL, :PayerAddress2),
-		i_eg_donor_city = :PayerCity,
-		i_eg_donor_state = :PayerState,
-		i_eg_donor_postal = :PayerZip,
+		i_eg_status = condition(:data:Status == 'A' OR :data:Status IS NULL OR :data:SettlementDate IS NULL, 
+			condition((getdate() >= convert('datetime', :data:SettlementDate)), 'paid', 'pending'),
+			condition(:data:Status == 'P', 'pending', 'returned')),
+		i_eg_returned_status = condition(:data:Status == 'R', 'Rejected', condition(:data:Status == 'T', 'Returned', NULL)),
+		i_eg_donor_name = isnull(:data:PayerFirstName,'')+isnull(' '+:data:PayerMidName,'')+isnull(' '+:data:PayerLastName, ''),
+		i_eg_donor_given_name = :data:PayerFirstName,
+		i_eg_donor_surname = :data:PayerLastName,
+		i_eg_donor_middle_name = :data:PayerMidName,
+		i_eg_donor_address = isnull(:data:PayerAddress1, '') + isnull(' ' + :data:PayerAddress2, '') +  isnull(' '+:data:PayerCity, '') 
+			+ isnull(' '+:data:PayerState, '') + isnull(' '+:data:PayerZip, '') +' US',
+		i_eg_donor_addr1 = :data:PayerAddress1,
+		i_eg_donor_addr2 = :data:PayerAddress2,
+		i_eg_donor_city = :data:PayerCity,
+		i_eg_donor_state = :data:PayerState,
+		i_eg_donor_postal = :data:PayerZip,
 		i_eg_donor_country = 'US',
 		i_eg_donor_phone = NULL,
 		i_eg_donor_email = NULL,
-		i_eg_gift_amount = convert('money', :GrossAmount),
-		i_eg_net_amount = convert('money', :GrossAmount),
-		i_eg_deposit_gross_amt = convert('money', :GrossAmount),
-		i_eg_deposit_amt = convert('money', :GrossAmount),
-		i_eg_deposit_date = condition(char_length(:SettlementDate)<1, NULL, convert('datetime', :SettlementDate)),
-		i_eg_deposit_status = NULL, -- TODO: what is this the status of
-		i_eg_deposit_uuid = condition(char_length(:SettlementDate) < 1, NULL, replace(:SettlementDate, '-', NULL)),
+		i_eg_gift_amount = :data:gross_gift,
+		i_eg_net_amount = :data:net_gift,
+		i_eg_deposit_gross_amt = :sums:gross_deposit,
+		i_eg_deposit_amt = :sums:net_deposit,
+		i_eg_deposit_date = convert('datetime', :data:SettlementDate),
+		i_eg_deposit_status = NULL, -- TODO:data: what is this the status of
+		i_eg_deposit_uuid = :data:deposit_id,
 		i_eg_gift_pmt_type = 'ACH',
 		i_eg_gift_interval = '',
 		i_eg_gift_start_date = convert('datetime', NULL),
 		i_eg_gift_end_date = convert('datetime', NULL),
 		i_eg_gift_count = NULL,
-		i_eg_gift_date = convert('datetime', :ProcessDate),
-		i_eg_gift_trx_date = convert('datetime', :ProcessDate),
-		i_eg_gift_settlement_date = convert('datetime', :SettlementDate), 
+		i_eg_gift_date = convert('datetime', :data:ProcessDate),
+		i_eg_gift_trx_date = convert('datetime', :data:ProcessDate),
+		i_eg_gift_settlement_date = convert('datetime', :data:SettlementDate), 
 		i_eg_gift_lastfour = NULL,
-		i_eg_desig_name = :GroupID, -- NOTE: if enable auto from vanco, this will always be an unhelpful value
-		i_eg_desig_notes = :ReceivedAccount
+		i_eg_desig_name = :data:GroupID, -- NOTE: if enable auto from vanco, this will always be an unhelpful value
+		i_eg_desig_notes = :data:ReceivedAccount
 	    FROM
-		IDENTITY COLLECTION dataQuery
+		IDENTITY COLLECTION dataQuery data, 
+		COLLECTION depositAmounts sums
 	    WHERE
 		:TransactionRef IS NOT NULL -- weed out any entries from empty days
+		AND :data:deposit_id *= :sums:deposit_id
 	    ;
             ";
 	
