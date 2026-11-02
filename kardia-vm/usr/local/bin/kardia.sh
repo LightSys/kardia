@@ -4421,7 +4421,7 @@ function doStartAutossh
 	    LSSH=$(($AUTOSSH_BASE + 22))
 	    LWEB=$(($AUTOSSH_BASE + 80))
 	    LSSL=$(($AUTOSSH_BASE + 43))
-	    cmd="$autossh -f -M 0 -p $AUTOSSH_PORT $AUTOSSH_USER@$AUTOSSH_HOST -N -R $LSSH:localhost:22 -R $LWEB:localhost:843 -R $LSSL:localhost:800"
+	    cmd="env AUTOSSH_PORT= $autossh -f -M 0 -p $AUTOSSH_PORT $AUTOSSH_USER@$AUTOSSH_HOST -N -R $LSSH:localhost:22 -R $LWEB:localhost:843 -R $LSSL:localhost:800"
 	    if [ "$AUTOSSH_RUNNING" = "yes" ]; then
 		echo "Autossh already running.  Please stop it first"
 	    else
