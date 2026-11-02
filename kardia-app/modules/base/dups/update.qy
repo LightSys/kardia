@@ -606,7 +606,8 @@ update_duplicates "system/query"
 	    :key2
 	UPDATE SET
 	    :sim = condition(:sim > :concat_dup:sim, :sim, :concat_dup:sim),
-	    :reason = :reason + '\\nAll (' + round(:concat_dup:sim * 100, :value:reason_decimals) + '%)'
+	    :reason = :reason + condition(char_length(:reason) > 0, '\\n', '')
+		+ 'All (' + round(:concat_dup:sim * 100, :value:reason_decimals) + '%)'
 	;
 	
 	
