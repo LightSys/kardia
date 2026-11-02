@@ -30,7 +30,7 @@ update_duplicates "system/query"
     //   - Concatenation finds dups where someone's email is similar to another
     //     person's name, which can tip us off to relationships we'd otherwise miss.
     //   - Concatenation is slightly faster, so it can be run with a lower threshold,
-    //     making it more sensitive to near dups in some cases. 
+    //     making it more sensitive to near dups in some cases.
     //   - Concatenation is prone to cryptic false positives.
     // 
     // In short, aggregation gives us more control, allowing us to find far more dups,
@@ -368,7 +368,7 @@ update_duplicates "system/query"
 	-- [name_str_dups <- concat_dups] Add an entry to name_str_dups for each entry in concat_dups.
 	-- This isn't strictly necessary because concat_dups isn't used in the final aggregation.
 	-- However, it can sometimes provide additional information in the 'reason' column of the
-	-- UI, so this feels like it's worth the small cost in extra computation. 
+	-- UI, so this feels like it's worth the small cost in extra computation.
 	INSERT INTO
 	    collection name_str_dups
 	SELECT

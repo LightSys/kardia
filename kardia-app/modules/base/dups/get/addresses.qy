@@ -13,7 +13,7 @@ get_addresses "system/query"
     // If the p_address_1 field is null or does not exist, the 'address' is ignored.
     // This is very common because many systems in Centrallix assume that every
     // record has an address, so every record has an associated address, even if it
-    // is almost completely blank. 
+    // is almost completely blank.
     sql = "
 	SELECT
 	    key = :p_partner_key,

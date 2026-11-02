@@ -123,7 +123,7 @@ plugin_base_dataqa_duplicates "widget/component-decl"
 			:d:p_dup_partner_key,
 			:d:p_match_quality,
 			match = round(:d:p_match_quality, 4),
-			disp_name_1 = '' 
+			disp_name_1 = ''
 			    + condition(char_length(rtrim(:p1:p_org_name)) > 0,
 				:p1:p_org_name + ' ' + condition(char_length(:p1:p_given_name + :p1:p_surname) > 0, '- ', ''),
 				'')
@@ -250,7 +250,7 @@ plugin_base_dataqa_duplicates "widget/component-decl"
 			condition(:dupsosrc:match >= 0.75, '#edaa63',
 			condition(:dupsosrc:match >= 0.70, '#ea9467',
 			condition(:dupsosrc:match >= 0.65, '#e77f6b', '#e46a6f'
-                    )))))))));
+		    )))))))));
 		    bar_padding = 3;
 		    bar_textcolor = black;
 		    

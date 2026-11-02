@@ -44,7 +44,7 @@ get_concats "system/query"
 		+ isnull(metaphone(:p_surname), ''),
 	    email = isnull(:e:p_contact_data, ''),
 	    phone = ''
-	        + isnull(:ph:p_phone_country, '')
+		+ isnull(:ph:p_phone_country, '')
 		+ isnull(:ph:p_phone_area_city, '')
 		+ isnull(:ph:p_contact_data, ''),
 	    address = ''
