@@ -1,7 +1,7 @@
 $Version=2$
 get_concats "system/query"
     {
-    // All data found in the files names.qy, name_metas.qy, emails.qy,
+    // All data found in the files name_strs.qy, name_metas.qy, emails.qy,
     // phones.qy, and addresses.qy is concatenated together here (although
     // those files aren't read here for performance reasons), producing a
     // single concatenated string with all the information for a person.
