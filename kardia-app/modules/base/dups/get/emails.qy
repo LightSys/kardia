@@ -14,6 +14,8 @@ get_emails "system/query"
 	WHERE
 	    :p_contact_type = 'E'
 	AND char_length(isnull(:p_contact_data, '')) > 1
+	ORDER BY
+	    :p_partner_key
 	;
     ";
     }

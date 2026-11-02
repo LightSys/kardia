@@ -30,6 +30,8 @@ get_addresses "system/query"
 	    identity /apps/kardia/data/Kardia_DB/p_location/rows
 	WHERE
 	    char_length(isnull(:p_address_1, '')) > 1
+	ORDER BY
+	    :p_partner_key
 	;
     ";
     }

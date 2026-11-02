@@ -20,6 +20,8 @@ get_phones "system/query"
 	WHERE
 	    ((:p_contact_type = 'P') + (:p_contact_type = 'C'))
 	AND char_length(isnull(:p_contact_data, '')) > 1
+	ORDER BY
+	    :p_partner_key
 	;
     ";
     }

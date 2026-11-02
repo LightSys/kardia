@@ -32,6 +32,8 @@ get_names "system/query"
 	    /apps/kardia/data/Kardia_DB/p_partner/rows
 	HAVING
 	    char_length(:name_str) > 1
+	ORDER BY
+	    :p_partner_key
 	;
     ";
     }

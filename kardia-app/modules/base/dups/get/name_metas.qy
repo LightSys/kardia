@@ -30,6 +30,8 @@ get_name_metas "system/query"
 	AND char_length(isnull(:p_surname, '')) > 1
 	HAVING
 	    char_length(replace(:name_meta, '`', '')) > 0
+	ORDER BY
+	    :p_partner_key
 	;
     ";
     }

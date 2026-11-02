@@ -86,5 +86,7 @@ get_concats "system/query"
 	    collection temp
 	HAVING
 	    char_length(:temp:name_str + :temp:email + :temp:phone + :temp:address) > 1
+	ORDER BY
+	    :temp:key
     ";
     }
