@@ -616,11 +616,7 @@ update_duplicates "system/query"
 	;
 	
 	
-	-- Remove all data from the dups table (for debugging).
-	delete from /apps/kardia/data/Kardia_DB/p_dup/rows ;
-	
 	print 'Storing dups...'
-	-- TODO: Greg - We should fix this upsert.
 	-- Insert dups into p_dup table.
 	INSERT INTO
 	    /apps/kardia/data/Kardia_DB/p_dup/rows
@@ -644,8 +640,8 @@ update_duplicates "system/query"
 	    :p_partner_key,
 	    :p_dup_partner_key
 	UPDATE SET
-	    :p_match_quality = :sim,
-	    :p_comment = :reason,
+	    :p_match_quality = :all_dups:sim,
+	    :p_comment = :all_dups:reason,
 	    :s_date_modified = getdate(),
 	    :s_modified_by = user_name()
 	;
