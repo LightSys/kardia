@@ -311,7 +311,7 @@ update_duplicates "system/query"
 	    key2 = :phone_dup:key2,
 	    sim = condition(:name_str_dup:sim >= 0.0,
 		:name_str_dup:sim,
-		max(isnull(cos_compare(:name_str1:name_str, :name_str2:name_str), -1.0))
+		isnull(cos_compare(:name_str1:name_str, :name_str2:name_str), -1.0)
 	    )
 	FROM
 	    identity collection phone_dups phone_dup,
@@ -323,16 +323,13 @@ update_duplicates "system/query"
 	AND :phone_dup:key2 *= :name_str_dup:key2
 	AND :phone_dup:key1 *= :name_str1:key
 	AND :phone_dup:key2 *= :name_str2:key
-	GROUP BY
-	    :name_str_dup:key1,
-	    :name_str_dup:key2
 	ON duplicate -- Update entries that already exist (in case we have a cross-cluster match).
 	    :key1,
 	    :key2
 	UPDATE SET
 	    :sim = condition(:name_str_dup:sim >= 0.0,
 		:name_str_dup:sim,
-		max(isnull(cos_compare(:name_str1:name_str, :name_str2:name_str), -1.0))
+		isnull(cos_compare(:name_str1:name_str, :name_str2:name_str), -1.0)
 	    )
 	;
 	
