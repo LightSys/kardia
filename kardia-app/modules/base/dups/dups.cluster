@@ -53,7 +53,7 @@ cluster_dups "system/cluster"
 	{
 	source = runserver(:parameters:algorithm);
 	similarity_measure = "levenshtein";
-	threshold = 0.7;
+	threshold = 0.8;
 	}
     
     // Concat search.
