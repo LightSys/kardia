@@ -501,8 +501,8 @@ plugin_base_dataqa_duplicates "widget/component-decl"
 		height = 32; width = 110;
 		font_size = 11;
 		align = left; valign = middle;
-		fgcolor = runclient(condition(:last_computed_osrc:dif_days > 7, "#FF1133", "#CCCCCC"));
-		style = runclient(condition(:last_computed_osrc:dif_days > 7, bold, none));
+		fgcolor = runclient(condition(:last_computed_osrc:dif_days > 3, "#FF1133", "#CCCCCC"));
+		style = runclient(condition(:last_computed_osrc:dif_days > 3, bold, none));
 		fieldname = display;
 		}
 	    }
