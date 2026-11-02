@@ -20,13 +20,13 @@ update_duplicates "system/query"
     // 
     // The concatenation strategy is simpler.  We simply concatenate all relevant
     // fields (collection concats), then search for dups (collection concat_dups)
-    // on the concatinated data.
+    // on the concatenated data.
     // 
     // Each strategy has pros and cons.
     //   - Aggregation avoids overlooking records when one is missing information.
     //   - Aggregation provides clearer reasoning to the database administrator.
     //   - Aggregation can use Levenstein for some fields (name_meta and phone),
-    //     and cosine for others.  Contamination uses the same measure for everything.
+    //     and cosine for others.  Concatenation uses the same measure for everything.
     //   - Concatenation finds dups where someone's email is similar to another
     //     person's name, which can tip us off to relationships we'd otherwise miss.
     //   - Concatenation is slightly faster, so it can be run with a lower threshold,
@@ -37,10 +37,10 @@ update_duplicates "system/query"
     // but it comes at a cost of greater complexity, slower compute times, and missing
     // certain specific cases of duplicates.
     // 
-    // Note: If concat_dups detects a dup, we also run run the other field checks on it
+    // Note: If concat_dups detects a dup, we also run the other field checks on it
     //       even though concatenation similarity is not used in the aggregation equation.
     //       This is because it helps to enhance the reason field with additional info
-    //       that the database administrator can see at a glace.
+    //       that the database administrator can see at a glance.
     
     sql = "
 	DECLARE object value;
@@ -170,7 +170,7 @@ update_duplicates "system/query"
 	;
 	
 	print 'Searching for phone dups...'
-	-- Get email_dups using the dups.cluster file.
+	-- Get phone_dups using the dups.cluster file.
 	DECLARE collection phone_dups;
 	INSERT INTO
 	    collection phone_dups
@@ -424,7 +424,7 @@ update_duplicates "system/query"
 	GROUP BY
 	    :name_str_dup:key1,
 	    :name_str_dup:key2
-	ON duplicate -- Skip duplicate entries.
+	ON duplicate -- Entries already found keep their sim.
 	    :key1,
 	    :key2
 	UPDATE SET
@@ -458,7 +458,7 @@ update_duplicates "system/query"
 	GROUP BY
 	    :name_str_dup:key1,
 	    :name_str_dup:key2
-	ON duplicate -- Skip duplicate entries.
+	ON duplicate -- Entries already found keep their sim.
 	    :key1,
 	    :key2
 	UPDATE SET
@@ -492,7 +492,7 @@ update_duplicates "system/query"
 	GROUP BY
 	    :name_str_dup:key1,
 	    :name_str_dup:key2
-	ON duplicate -- Skip duplicate entries.
+	ON duplicate -- Entries already found keep their sim.
 	    :key1,
 	    :key2
 	UPDATE SET
@@ -526,7 +526,7 @@ update_duplicates "system/query"
 	GROUP BY
 	    :name_str_dup:key1,
 	    :name_str_dup:key2
-	ON duplicate -- Skip duplicate entries.
+	ON duplicate -- Entries already found keep their sim.
 	    :key1,
 	    :key2
 	UPDATE SET
@@ -563,7 +563,7 @@ update_duplicates "system/query"
 		+ condition(:email_dup:sim >= 0.0, 1.0, 0.0)
 		+ condition(:phone_dup:sim >= 0.0, 1.0, 0.0)
 		+ condition(:address_dup:sim >= 0.0, 1.0, 0.0)
-		, 0.0000001, convert(double, NULL)) -- Necessary because centrallix devision does not handle NAN properly.
+		, 0.0000001, convert(double, NULL)) -- Necessary because centrallix division does not handle NAN properly.
 	    ),
 	    reason = ''
 		+ condition(:name_str_dup:sim > 0.0, 'Name (' + round(:name_str_dup:sim * 100, :value:reason_decimals) + '%)\\n', '')
