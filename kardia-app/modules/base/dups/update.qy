@@ -633,7 +633,7 @@ update_duplicates "system/query"
 	    s_modified_by = user_name()
 	FROM
 	    collection all_dups
-	WHERE -- We should never get identical dups, but somehow we do. This fixes that issue.
+	WHERE -- Skip self-pairs (from partners with multiple similar emails/phones/addresses)
 	    :all_dups:key1 != :all_dups:key2
 	AND :sim > :value:min_total_sim
 	ON duplicate
