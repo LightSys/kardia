@@ -8,7 +8,7 @@ get_name_metas "system/query"
     // returns as only backticks) are skipped.
     //
     // Note: p_org_name is not considered because we determined that it was
-    //       unlikely for someone would have to guess the spelling of an
+    //       unlikely that someone would have to guess the spelling of an
     //       organization's name from how it sounded.  Also, such names tend
     //       to be long and ill suited for the double metaphone algorithm.
     sql = "

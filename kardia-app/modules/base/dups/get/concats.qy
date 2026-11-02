@@ -8,7 +8,7 @@ get_concats "system/query"
     // This string is produced for every record in p_partner record in the
     // database.  Each record can have up to one email, phone number, and
     // address, so multiple records are produced for a given p_partner record
-    // if various combonations of this contact information are possible.
+    // if various combinations of this contact information are possible.
     // Partners with no name or contact information are skipped.
     // 
     // Note: Don't make the mistake of calling an attribute "name" or it might

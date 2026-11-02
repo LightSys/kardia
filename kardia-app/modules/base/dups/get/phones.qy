@@ -5,8 +5,8 @@ get_phones "system/query"
     // with a p_contact_type of P (for phone) or C (for cellphone), both of
     // which we treat the same for the purposes of this algorithm.  Then, we
     // read the country code / area code from the p_phone_country field, the
-    // second 3digit code from the p_phone_area_city field, and finally the
-    // last four digits form the p_contact_data field.  If this field is null
+    // second 3-digit code from the p_phone_area_city field, and finally the
+    // last four digits from the p_contact_data field.  If this field is null
     // or does not exist, the 'phone number' is ignored.
     sql = "
 	SELECT

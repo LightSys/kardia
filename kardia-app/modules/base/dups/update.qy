@@ -6,7 +6,7 @@ update_duplicates "system/query"
     // and then upserting the results into the table.
     // 
     // The aggregation strategy first searches for dups on several groups of fields
-    // which it fetches using name_str.qy, name_metas.qy, emails.qy, phones.qy, and
+    // which it fetches using name_strs.qy, name_metas.qy, emails.qy, phones.qy, and
     // addresses.qy.  We invoke the dups.cluster file to get a list of dups for each
     // of these field groups (name_str_dups, email_dups, etc.).  Then, add each dup
     // found by the other strategies to name_str_dups by computing its name similarity.
@@ -25,7 +25,7 @@ update_duplicates "system/query"
     // Each strategy has pros and cons.
     //   - Aggregation avoids overlooking records when one is missing information.
     //   - Aggregation provides clearer reasoning to the database administrator.
-    //   - Aggregation can use Levenstein for some fields (name_meta and phone),
+    //   - Aggregation can use Levenshtein for some fields (name_meta and phone),
     //     and cosine for others.  Concatenation uses the same measure for everything.
     //   - Concatenation finds dups where someone's email is similar to another
     //     person's name, which can tip us off to relationships we'd otherwise miss.
@@ -51,9 +51,9 @@ update_duplicates "system/query"
 	
 	-- The minimum aggregated similarity threshold that must be reached
 	-- for a duplicate to be added to the table and displayed to the user.
-	-- Duplicates which aggregate to a lower similarity than this do are
+	-- Duplicates which aggregate to a lower similarity than this are
 	-- dropped before being added even if one attribute happens to have a
-	-- has high similarity.
+	-- high similarity.
 	-- For other similarity thresholds, see `dups.cluster`.
 	SELECT :value:min_total_sim = 0.60;
 	
@@ -536,7 +536,7 @@ update_duplicates "system/query"
 	    )
 	;
 	
-	-- Free application-scoped collections.
+	-- Free query-scoped collections.
 	DELETE FROM collection name_strs;
 	DELETE FROM collection name_metas;
 	DELETE FROM collection emails;
