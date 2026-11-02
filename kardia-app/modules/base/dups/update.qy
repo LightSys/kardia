@@ -179,7 +179,7 @@ update_duplicates "system/query"
 	    key2 = :d:key2,
 	    sim = max(:d:sim)
 	FROM
-	    expression (
+	    identity expression (
 		'/apps/kardia/modules/base/dups/dups.cluster'
 		    + '?algorithm=' + :value:phones_algorithm
 		    + '&k=' + :value:phones_k
