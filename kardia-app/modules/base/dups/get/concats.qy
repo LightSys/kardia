@@ -9,6 +9,7 @@ get_concats "system/query"
     // database.  Each record can have up to one email, phone number, and
     // address, so multiple records are produced for a given p_partner record
     // if various combonations of this contact information are possible.
+    // Partners with no name or contact information are skipped.
     // 
     // Note: Don't make the mistake of calling an attribute "name" or it might
     // accidentally become the canonical name of that object in the object
@@ -83,5 +84,7 @@ get_concats "system/query"
 		+ :address
 	FROM
 	    collection temp
+	HAVING
+	    char_length(:temp:name_str + :temp:email + :temp:phone + :temp:address) > 1
     ";
     }

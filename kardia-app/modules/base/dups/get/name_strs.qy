@@ -8,8 +8,8 @@ get_names "system/query"
     // detect organizations because they do not have a p_given_name or a
     // p_surname value and only the p_org_name field is considered for them
     // (it's long enough on it's own, anyway).  However, p_org_name is still
-    // considered for people, too.
-    // 
+    // considered for people, too.  Partners without a name are skipped.
+    //
     // Note: Don't make the mistake of calling an attribute "name" or it might
     // accidentally become the canonical name of that object in the object
     // system, causing a ton of stuff to break in subtle and confusing ways.
@@ -30,6 +30,8 @@ get_names "system/query"
 		+ isnull(:p_org_name, '')
 	FROM
 	    /apps/kardia/data/Kardia_DB/p_partner/rows
+	HAVING
+	    char_length(:name_str) > 1
 	;
     ";
     }
