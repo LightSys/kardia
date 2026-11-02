@@ -307,8 +307,8 @@ plugin_base_dataqa_duplicates "widget/component-decl"
 		    );
 		    }
 		
-		// Duplicate record 1.
-		t_dup1 "widget/table-column"
+		// Duplicate record 2.
+		t_dup2 "widget/table-column"
 		    {
 		    width = 250;
 		    style = bold;
@@ -319,8 +319,8 @@ plugin_base_dataqa_duplicates "widget/component-decl"
 		    caption_value = runclient(isnull(:dupsosrc:ploc_2 + '\n', '') + condition(:dupsosrc:stat_2 = 'O', '(obsolete)', '') - '\n');
 		    }
 		
-		// Duplicate record 2.
-		t_dup2 "widget/table-column"
+		// Duplicate record 1.
+		t_dup1 "widget/table-column"
 		    {
 		    width = 250;
 		    style = bold;
