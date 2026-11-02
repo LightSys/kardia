@@ -646,18 +646,36 @@ update_duplicates "system/query"
 	    :s_modified_by = user_name()
 	;
 	
-	-- Remove stale data from the dups table.
+	-- Remove dups if their partner no longer exists or if their partner,
+	-- location, or contact data changed since they were last detected.
 	DELETE
 	FROM
-	    identity /apps/kardia/data/Kardia_DB/p_dup/rows d,
-	    /apps/kardia/data/Kardia_DB/p_partner/rows p1,
-	    /apps/kardia/data/Kardia_DB/p_partner/rows p2
+	    identity /apps/kardia/data/Kardia_DB/p_dup/rows d
 	WHERE
-	    :d:p_partner_key *= :p1:p_partner_key
-	AND :d:p_dup_partner_key *= :p2:p_partner_key
-	AND(:d:s_date_modified < isnull(:p1:s_date_modified, getdate())
-	    OR :d:s_date_modified < isnull(:p2:s_date_modified, getdate()))
+	    :d:s_date_modified < isnull((
+		SELECT max(:p:s_date_modified)
+		FROM /apps/kardia/data/Kardia_DB/p_partner/rows p
+		WHERE :p:p_partner_key = :d:p_partner_key
+	    ), getdate())
+	OR  :d:s_date_modified < isnull((
+		SELECT max(:p:s_date_modified)
+		FROM /apps/kardia/data/Kardia_DB/p_partner/rows p
+		WHERE :p:p_partner_key = :d:p_dup_partner_key
+	    ), getdate())
+	OR  :d:s_date_modified < (
+		SELECT max(:l:s_date_modified)
+		FROM /apps/kardia/data/Kardia_DB/p_location/rows l
+		WHERE :l:p_partner_key = :d:p_partner_key
+		   OR :l:p_partner_key = :d:p_dup_partner_key
+	    )
+	OR  :d:s_date_modified < (
+		SELECT max(:c:s_date_modified)
+		FROM /apps/kardia/data/Kardia_DB/p_contact_info/rows c
+		WHERE :c:p_partner_key = :d:p_partner_key
+		   OR :c:p_partner_key = :d:p_dup_partner_key
+	    )
 	;
+	
 	print 'Update complete'
     ";
     }
