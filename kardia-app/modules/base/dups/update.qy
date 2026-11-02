@@ -8,7 +8,7 @@ update_duplicates "system/query"
     // The aggregation strategy first searches for dups on several groups of fields
     // which it fetches using name_strs.qy, name_metas.qy, emails.qy, phones.qy, and
     // addresses.qy.  We invoke the dups.cluster file to get a list of dups for each
-    // of these field groups (name_str_dups, email_dups, etc.).  Then, add each dup
+    // of these field groups (name_str_dups, email_dups, etc.).  Then, we add each dup
     // found by the other strategies to name_str_dups by computing its name similarity.
     // Next, we add each dup in name_str_dups to each other collection by computing the
     // similarity of the respective fields.  Thus, every dup exists in all five
@@ -239,7 +239,7 @@ update_duplicates "system/query"
 	;
 	
 	
-	print 'Adding other collections dups to name_str_dups...'
+	print 'Adding dups from other collections to name_str_dups...'
 	print '[name_str_dups <- name_meta_dups]'
 	-- [name_str_dups <- name_meta_dups] Add an entry to name_str_dups for each entry in name_meta_dups.
 	INSERT INTO

@@ -5,7 +5,7 @@ get_concats "system/query"
     // phones.qy, and addresses.qy is concatenated together here (although
     // those files aren't read here for performance reasons), producing a
     // single concatenated string with all the information for a person.
-    // This string is produced for every record in p_partner record in the
+    // This string is produced for every p_partner record in the
     // database.  Each record can have up to one email, phone number, and
     // address, so multiple records are produced for a given p_partner record
     // if various combinations of this contact information are possible.
