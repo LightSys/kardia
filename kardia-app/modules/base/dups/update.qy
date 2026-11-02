@@ -647,17 +647,17 @@ update_duplicates "system/query"
 	;
 	
 	-- Remove stale data from the dups table.
---	DELETE
---	FROM
---	    identity /apps/kardia/data/Kardia_DB/p_dup/rows d,
---	    /apps/kardia/data/Kardia_DB/p_partner/rows p1,
---	    /apps/kardia/data/Kardia_DB/p_partner/rows p2
---	WHERE
---	    :d:p_partner_key *= :p1:p_partner_key
---	AND :d:p_dup_partner_key *= :p2:p_partner_key
---	AND(:d:s_date_modified < isnull(:p1:s_date_modified, getdate())
---	    OR :d:s_date_modified < isnull(:p2:s_date_modified, getdate()))
---	;
+	DELETE
+	FROM
+	    identity /apps/kardia/data/Kardia_DB/p_dup/rows d,
+	    /apps/kardia/data/Kardia_DB/p_partner/rows p1,
+	    /apps/kardia/data/Kardia_DB/p_partner/rows p2
+	WHERE
+	    :d:p_partner_key *= :p1:p_partner_key
+	AND :d:p_dup_partner_key *= :p2:p_partner_key
+	AND(:d:s_date_modified < isnull(:p1:s_date_modified, getdate())
+	    OR :d:s_date_modified < isnull(:p2:s_date_modified, getdate()))
+	;
 	print 'Update complete'
     ";
     }
