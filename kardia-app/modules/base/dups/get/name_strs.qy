@@ -1,5 +1,5 @@
 $Version=2$
-get_names "system/query"
+get_name_strs "system/query"
     {
     // We concatenate four fields to produce the name: p_given_name,
     // p_preferred_name, p_surname, and p_org_name.  p_preferred_name is

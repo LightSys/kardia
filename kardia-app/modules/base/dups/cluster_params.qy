@@ -1,5 +1,5 @@
 $Version=2$
-duplicate_checking_globals "system/query"
+cluster_params "system/query"
     {
     // Computes parameters for clustering and searching, based on the provided
     // size of the data.
