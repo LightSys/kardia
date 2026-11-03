@@ -10,7 +10,6 @@ plugin_rcpt_importprocess_075feeCombo "system/query"
     sql = "
 	-- when have a donation to cover transaction fees, just split it across all of the fees that happened with it
 	-- code: F for fee
-	-- TOOD: add randomness but repeatable (maybe sort by a hashed desig id instead of the actual desig?)
 
 	-- get the designation that indicates the transaction is a fee
 	DECLARE OBJECT feeDesig;
@@ -54,8 +53,9 @@ plugin_rcpt_importprocess_075feeCombo "system/query"
 	    fee_grs = :f:i_eg_gift_amount, 
 	    fee_net = :f:i_eg_net_amount,
 	    -- get the share values for fees
-	    fee_share_grs = convert('double', :f:i_eg_gift_amount) * :t:i_eg_gift_amount / (sum(:sums:i_eg_gift_amount) - :f:i_eg_gift_amount),
-	    fee_share_net = convert('double', :f:i_eg_net_amount) * :t:i_eg_net_amount / (sum(:sums:i_eg_net_amount) - :f:i_eg_net_amount),
+	    -- Work around sum bug for now - check is not 0 before divide
+	    fee_share_grs = condition(sum(:sums:i_eg_gift_amount) == :f:i_eg_gift_amount, 0, (convert('double', :f:i_eg_gift_amount) * :t:i_eg_gift_amount) / (sum(:sums:i_eg_gift_amount) - :f:i_eg_gift_amount)),
+	    fee_share_net = condition(sum(:sums:i_eg_net_amount) == :f:i_eg_net_amount, 0, (convert('double', :f:i_eg_net_amount) * :t:i_eg_net_amount) / (sum(:sums:i_eg_net_amount) - :f:i_eg_net_amount)),
 	    cents_grs = 0,
 	    cents_net = 0,
 	    ind_net = -1,
@@ -80,7 +80,6 @@ plugin_rcpt_importprocess_075feeCombo "system/query"
             :t:i_eg_service
 	;
 
-	-- TODO: Could I skip the collection and just do an update?
 	-- calculate the number of cents that will be leftover
 	DECLARE COLLECTION leftoverCents;
 	INSERT INTO 
@@ -108,8 +107,6 @@ plugin_rcpt_importprocess_075feeCombo "system/query"
 	
 	-- no longer needed so clear
 	DELETE FROM COLLECTION leftoverCents;
-
-	-- TODO: could I just run this as an update and use a condition to skip collections and calc both at once?
 
 	-- set an index for every gross share that has a fractional amount missing
 	DECLARE COLLECTION grossIndex;
@@ -226,7 +223,6 @@ plugin_rcpt_importprocess_075feeCombo "system/query"
 	;
 
 	-- update the values in the actual tables (must update even if no F; upsert reverts changes otherwise)
-	-- TODO: this is a major slowdown. Need to get it to query the i_eg_gift_import_table with more in the WHERE clause
 	UPDATE
 	    IDENTITY /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows i,
 	    COLLECTION feeSets f
@@ -248,8 +244,7 @@ plugin_rcpt_importprocess_075feeCombo "system/query"
 	    AND :f:i_eg_trx_uuid IS NOT NULL
 	    AND :f:i_eg_trx_uuid IS NOT NULL
 	;
-	
-	-- TODO: could we simplify this by taking a list of transactions; know the desig and ledger already
+
 	-- delete the 'cover fees' entries that are in the list of updated transactions
 	DELETE FROM
 	    IDENTITY /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows i,
@@ -273,6 +268,6 @@ plugin_rcpt_importprocess_075feeCombo "system/query"
 	where
 	    substring(:i_eg_postprocess, 1, 1) = 'F'
 	    AND :a_ledger_number = :parameters:ledger
-	
+	;
     ";
     }
