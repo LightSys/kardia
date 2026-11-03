@@ -28,6 +28,11 @@ CKR_GITREPO="https://bitbucket.org/disciplemakers/check-reader.git"
 
 CKR_FROMPIP="pyftpdlib"
 
+# Number of bits to use in RSA key generation, for autossh and backup
+# key pairs.
+#
+RSABITS=4096
+
 # We need to set the umask to 002, so that we give write permission to
 # the kardia_src group for the shared repository.  This could be made
 # specific to just operations that touch the shared repository, but that
@@ -4421,7 +4426,7 @@ function doStartAutossh
 	    LSSH=$(($AUTOSSH_BASE + 22))
 	    LWEB=$(($AUTOSSH_BASE + 80))
 	    LSSL=$(($AUTOSSH_BASE + 43))
-	    cmd="$autossh -f -M 0 -p $AUTOSSH_PORT $AUTOSSH_USER@$AUTOSSH_HOST -N -R $LSSH:localhost:22 -R $LWEB:localhost:843 -R $LSSL:localhost:800"
+	    cmd="env AUTOSSH_PORT= $autossh -f -M 0 -p $AUTOSSH_PORT $AUTOSSH_USER@$AUTOSSH_HOST -N -R $LSSH:localhost:22 -R $LWEB:localhost:800 -R $LSSL:localhost:843"
 	    if [ "$AUTOSSH_RUNNING" = "yes" ]; then
 		echo "Autossh already running.  Please stop it first"
 	    else
@@ -4546,7 +4551,7 @@ function menuConfigureAutossh
 		    #create an RSA key if we need one
 		    if [ ! -e ~/.ssh/id_rsa ]; then
 			# generate a ssh key for this user
-			ssh-keygen -q -t rsa -N "" -f ~/.ssh/id_rsa
+			ssh-keygen -q -t rsa -b "$RSABITS" -N "" -f ~/.ssh/id_rsa
 		    fi
 		    #we believe we can fix it by doing ssh-copy-id
 		    ssh-copy-id -p $N_PORT $target
@@ -4805,7 +4810,7 @@ function menuBackup
     #check to see if we have an ssh key, and if not, create it
     if [ ! -e ~/.ssh/id_rsa ]; then
 	# generate a ssh key for this user
-	ssh-keygen -q -t rsa -N "" -f ~/.ssh/id_rsa
+	ssh-keygen -q -t rsa -b "$RSABITS" -N "" -f ~/.ssh/id_rsa
     fi
     while true; do
 	if [ "$DUPLICITY_ENABLED" = "yes" ]; then
