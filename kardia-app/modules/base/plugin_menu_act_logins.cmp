@@ -202,7 +202,7 @@ plugin_menu_act_logins "widget/component-decl"
 	    nodata_message_textcolor="#f0f0f0";
 	    rowcache_size=40;
 
-	    t_chat_img "widget/table-column" { type=image; width=30; fieldname=img; image_maxheight=22; image_maxwidth=22; align=center; }
+	    t_chat_img "widget/table-column" { type=image; width=30; fieldname=img; image_maxheight=22; image_maxwidth=22; image_border_radius=11; align=center; }
 	    t_chat_text "widget/table-column" { width=166; fieldname=message_txt; wrap=yes; font_size=10; style=runclient(condition(:t_chat_osrc:is_hdr, 'bold', 'plain')); caption_value=runclient(:t_chat_osrc:date_txt + condition(:t_chat_osrc:is_not_seen, ' (not seen)', '')); caption_font_size=10; caption_style=italic; caption_textcolor="#e0e0e0"; }
 
 	    // Open a partner if we see the partner ID and '#' in the chat message.
@@ -238,7 +238,8 @@ plugin_menu_act_logins "widget/component-decl"
 			    insert collection c_member select * from /apps/kardia/data/Kardia_DB/c_member/rows ;
 
 			    select
-				:c:c_chat_id
+				:c:c_chat_id,
+				whom = :parameters:new_chatid_whom
 			    from
 				collection c_member m1,
 				collection c_member m2,
@@ -263,11 +264,40 @@ plugin_menu_act_logins "widget/component-decl"
 
 		on_new_get_the_id "widget/connector" { event=New; event_delay=0.1; target=new_chatid_osrc; action=QueryParam; new_chatid_whom=runclient(:menu_osrc:e_reference_info); }
 
-		t_chat_editbox "widget/editbox"
+		// Block the save operation if we haven't gotten the chat ID yet or if there is no message to send.
+		block_save_if_no_valid_chatid "widget/connector"
 		    {
-		    x=0; y=118; width=216; height=24;
-		    fieldname=c_message;
-		    empty_description="type a new message here";
+		    event=BeforeSave;
+		    event_condition=runclient(isnull(:new_chatid_osrc:whom, '') != :menu_osrc:e_reference_info or char_length(isnull(:t_chat_editbox:content,'')) = 0);
+		    event_cancel=runclient(isnull(:new_chatid_osrc:whom, '') != :menu_osrc:e_reference_info or char_length(isnull(:t_chat_editbox:content,'')) = 0);
+		    event_delay = 0.25;
+		    target = t_chat_editbox;
+		    action = SetFocus;
+		    }
+
+		t_chat_editbox_hbox "widget/hbox"
+		    {
+		    x=0; y=118; width=216; height=24; spacing=2;
+
+		    t_chat_editbox "widget/editbox"
+			{
+			width=184;
+			fieldname=c_message;
+			empty_description="type a new message here";
+			}
+
+		    t_chat_post "widget/textbutton"
+			{
+			width=30; height=24;
+			text=">>";
+			background="/apps/kardia/images/bg/lsblue_btngradient.png";
+			fgcolor1=white;
+			fgcolor2=black;
+			disable_color="#334466";
+			enabled=runclient(isnull(:new_chatid_osrc:whom, '') = :menu_osrc:e_reference_info and :t_chat_form:is_savable and char_length(:t_chat_editbox:content) > 0);
+
+			on_post "widget/connector" { event=Click; target=t_chat_form; action=Save; }
+			}
 		    }
 		chat_id "widget/variable" { fieldname=c_chat_id; chat_id_hints "widget/hints" { default=runclient(:t_chat_osrc:c_chat_id); } }
 		chat_new_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }

@@ -29,7 +29,7 @@ generic_byperiod "widget/component-decl"
 
 	auto_select_current "widget/connector"
 	    {
-	    event=EndQuery;
+	    event=Results;
 	    event_condition=runclient(:periods_osrc:a_period != :generic_byperiod:period and not (:generic_byperiod:period is null));
 	    target = periods_osrc;
 	    action = FindObject;

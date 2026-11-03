@@ -1,0 +1,15 @@
+$Version=2$
+app_info "system/query"
+    {
+    sql = " select
+		    name = 'kardia',
+		    app_id = null,
+		    app_revision_id = null,
+		    app_name = null,
+		    app_version = null,
+		    app_release = null,
+		    app_info = null,
+		    app_default = (select condition(:s_config_value = '1', 1, 0) from /apps/kardia/data/Kardia_DB/s_config/rows where :s_config_name = 'SiteDefault'),
+		    app_enable = (select condition(:s_config_value = '1', 1, 0) from /apps/kardia/data/Kardia_DB/s_config/rows where :s_config_name = 'SiteEnabled')
+	    ";
+    }
