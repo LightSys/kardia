@@ -1,7 +1,7 @@
 $Version=2$
 index "widget/page"
     {
-    width=1200;
+    width=1300;
     height=700;
     title = "Kardia";
     max_requests = 7;
@@ -26,10 +26,28 @@ index "widget/page"
 
 	}
 
+    // Menu
+    menu_overlay "widget/component"
+	{
+	x=800; y=0; width=200; height=98;
+	path="/apps/kardia/menu.cmp";
+	attach_to=menu_btn;
+
+	on_logout_select_1 "widget/connector" { event=ItemSelected; target=menu_overlay; action=Close; }
+	on_logout_select_2 "widget/connector"
+	    {
+	    event=ItemSelected;
+	    event_condition=runclient(:Item == 'Logout');
+	    target=index;
+	    action=LoadPage;
+	    Source="/apps/kardia/modules/system/logout.app";
+	    }
+	}
+
     hbox "widget/hbox"
 	{
 	x=0; y=0;
-	width=1200;
+	width=1300;
 	height=700;
 	spacing=0;
 
@@ -265,7 +283,7 @@ index "widget/page"
 
 	main_vbox "widget/vbox"
 	    {
-	    width = 944;
+	    width = 1044;
 
 	    action_bar "widget/pane"
 		{
@@ -282,7 +300,7 @@ index "widget/page"
 		    endorsement_context="kardia";
 		    invert_security_check=yes;
 		    x=10; y=10;
-		    width=150; height=40;
+		    width=164; height=40;
 		    fgcolor=white;
 		    font_size=10;
 		    text=runserver( /apps/kardia/data/Site.struct:site_description );
@@ -292,7 +310,7 @@ index "widget/page"
 		    require_endorsements="kardia:sys_admin";
 		    endorsement_context="kardia";
 		    x=10; y=10;
-		    width=150; height=40;
+		    width=164; height=40;
 		    fgcolor=white;
 		    font_size=10;
 		    text=runserver( /apps/kardia/data/Site.struct:site_description + '\nRev. ' + /apps/kardia/app_info.struct:app_version + ', ' + /apps/kardia/app_info.struct:app_release );
@@ -301,13 +319,31 @@ index "widget/page"
 		action_bar_hbox "widget/hbox"
 		    {
 		    x=10; y=0;
-		    width=924; height=60;
+		    width=1010; height=60;
 		    spacing=10;
 		    align=right;
 
 		    action_bar_buttons "widget/repeat"
 			{
-			sql = "select modname = :cx__pathpart4, :module_name, :module_abbrev, :module_description, :cx__rowid, icon = '/apps/kardia/images/icons/ionicons-gear-w.svg', :module_ui, permission = condition(:mi:module_endorsement is not null, condition(:mi:module_context = 'kardia', has_endorsement(:mi:module_endorsement, 'kardia'), (select max(has_endorsement(:mi:module_endorsement, :mi:module_context + ':' + rtrim(:l:a_ledger_number))) from /apps/kardia/data/Kardia_DB/a_ledger/rows l )), 1) from object wildcard '/apps/kardia/modules/*/kardia_modinfo.struct' mi where :module_sequence is not null and :module_ui is null order by :module_sequence asc having :permission = 1";
+			sql = "	select
+				    modname = :cx__pathpart4, 
+				    :module_name, 
+				    :module_abbrev, 
+				    :module_description, 
+				    :cx__rowid, 
+				    icon = '/apps/kardia/images/icons/ionicons-gear-w.svg', 
+				    :module_ui, 
+				    permission = condition(:mi:module_endorsement is not null, condition(:mi:module_context = 'kardia', has_endorsement(:mi:module_endorsement, 'kardia'), (select max(has_endorsement(:mi:module_endorsement, :mi:module_context + ':' + rtrim(:l:a_ledger_number))) from /apps/kardia/data/Kardia_DB/a_ledger/rows l )), 1)
+				from
+				    object wildcard '/apps/kardia/modules/*/kardia_modinfo.struct' mi
+				where
+				    :module_sequence is not null
+				    and :module_ui is null
+				order by
+				    :module_sequence asc
+				having
+				    :permission = 1
+				";
 
 			one_button "widget/component"
 			    {
@@ -326,6 +362,24 @@ index "widget/page"
 				action=SetTab;
 				TabIndex=runclient(runserver(:action_bar_buttons:cx__rowid + 1));
 				}
+			    }
+			}
+
+		    menu_btn "widget/component"
+			{
+			fl_width=0;
+			fl_height=0;
+			width=76;
+			active=0;
+			path="/apps/kardia/lib/button_tab.cmp";
+			text=runserver("Menu");
+			image = "/apps/kardia/images/icons/ionicons-hamburger-w.svg";
+
+			select_on_menu_click "widget/connector"
+			    {
+			    event=Click; 
+			    target=menu_overlay;
+			    action=Open;
 			    }
 			}
 		    }
@@ -369,7 +423,7 @@ index "widget/page"
 
 			tabpage_vbox "widget/vbox"
 			    {
-			    x=20; y=20; width=904; height=600;
+			    x=20; y=20; width=1004; height=600;
 			    spacing=10;
 
 			    tabpage_hbox "widget/hbox"
@@ -380,7 +434,7 @@ index "widget/page"
 
 				apps_list_vbox "widget/vbox"
 				    {
-				    width=447;
+				    width=497;
 				    spacing=10;
 
 				    apps_list_title "widget/label" { height=18; font_size=15; style=bold; align=center; text=runserver("Applications for " + :tabpages:module_abbrev); fl_width=100; }
@@ -497,7 +551,7 @@ index "widget/page"
 
 				rpts_list_vbox "widget/vbox"
 				    {
-				    width=447;
+				    width=497;
 				    spacing=10;
 
 				    rpts_list_title "widget/label" { height=18; font_size=15; style=bold; align=center; text=runserver("Reports for " + :tabpages:module_abbrev); fl_width=100; }
@@ -625,7 +679,7 @@ index "widget/page"
 				one_tab_cmp "widget/component"
 				    {
 				    path=runserver(:tab_cmps:path);
-				    width=904;
+				    width=1004;
 				    height=runserver(:tab_cmps:height);
 				    }
 				}
@@ -639,7 +693,7 @@ index "widget/page"
 
 		    search_results_vbox "widget/vbox"
 			{
-			x=20; y=20; width=904; height=600;
+			x=20; y=20; width=1004; height=600;
 			spacing=10;
 
 			search_res_title "widget/label" { height=18; font_size=15; style=bold; align=center; text=runserver("Search Results..."); fl_width=100; }
@@ -784,7 +838,7 @@ index "widget/page"
 
 				    one_detail "widget/table-row-detail"
 					{
-					width=924;
+					width=1024;
 					height=runserver(:search_details:height + 20);
 					display_for=runclient(:search_osrc:s_type == runserver(:search_details:type));
 
@@ -833,13 +887,13 @@ index "widget/page"
 				    one_detail_ctl "widget/table-row-detail"
 					{
 					height=runserver(:search_details_ctls:height + 20);
-					width=924;
+					width=1024;
 					display_for=runclient(:search_osrc:s_type == runserver(:search_details_ctls:type));
 
 					one_detail_ctl_cmp "widget/component"
 					    {
 					    x=10; y=15; 
-					    width=904;
+					    width=1004;
 					    height=runserver(:search_details_ctls:height);
 					    path=runserver(:search_details_ctls:path);
 					    }
@@ -855,7 +909,7 @@ index "widget/page"
 
     motd_cmp "widget/component"
 	{
-	x=0; y=0; width=1200; height=700;
+	x=0; y=0; width=1300; height=700;
 	path="/apps/kardia/modules/base/motd.cmp";
 	}
     }
