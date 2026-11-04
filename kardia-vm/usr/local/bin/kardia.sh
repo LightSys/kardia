@@ -637,7 +637,7 @@ function updateUserPerms
 	AsRoot sed -i -e "/$N_USER/d" $BASEDIR/src/.cx_kardia_admins 2> /dev/null
 	AsRoot echo $N_USER >> $BASEDIR/src/.cx_kardia_admins
 	doGiveUserKardiaSysadmin $N_USER
-    else
+    elif [ "$ALLOW_KARDIA_SYSADM" != "no" ]; then
 	#make sure we do not have this username in the file
 	if [ -f "$BASEDIR/src/.cx_kardia_admins" ]; then
 	    AsRoot sed -i -e "/$N_USER/d" $BASEDIR/src/.cx_kardia_admins
@@ -3989,7 +3989,7 @@ function doRemoveUserKardiaSysadmin
 	    echo "You must specify a user to take permissions from"
 	    return
 	fi
-	echo "DELETE FROM s_sec_endorsement WHERE s_subject='u:THEUSER';" | sed "s/THEUSER/$TUSER/g" | mysql -u root Kardia_DB 2> /dev/null
+	echo "DELETE FROM s_sec_endorsement WHERE s_endorsement='kardia:sys_admin' AND s_context='kardia' AND s_subject='u:THEUSER';" | sed "s/THEUSER/$TUSER/g" | mysql -u root Kardia_DB 2> /dev/null
     }
 
 #Create a kardia unix user for use with shell scripts
