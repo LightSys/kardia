@@ -273,7 +273,7 @@ cd_batches "widget/component-decl"
 	    endorsement_context=runserver("kardia:ledger:" + :this:ledger + ":");
 	    width = 172;
 	    height = 40;
-	    text = runclient(isnull(condition(:disb_form:dpost > 0, "View", "Enter") + " Checks for #" + :disb_form:a_batch_number, ""));
+	    text = runclient(isnull(condition(:disb_form:dpost > 0, "View", "Enter") + " Payments for #" + :disb_form:a_batch_number, ""));
 	    //enabled = runclient(:rcpt_form:is_editable and :rcpt_form:rpost != 1 and :rcpt_form:glrec != 1);
 
 	    edit_cn "widget/connector"
