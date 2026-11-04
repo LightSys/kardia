@@ -513,6 +513,21 @@ function updateVimrc
 
 
 #
+# Print the default DB password, which Centrallix replaces with the user's
+# password at their next login:  getDefaultDbPassword
+#
+function getDefaultDbPassword
+    {
+    local NEWPASS="newuserpass"
+    if [ -f /usr/local/src/kardia-git/kardia-app/data/Kardia_DB ]; then
+	# Try to get default password from local configuration
+	NEWPASS=$(sed -n 's/.*default_password = "\([^"]*\)";.*/\1/p' < /usr/local/src/kardia-git/kardia-app/data/Kardia_DB)
+    fi
+    echo "$NEWPASS"
+    }
+
+
+#
 # Add a new user:  addUser username realname [nopass|pass] [uid] [gid]
 #
 function addUser
@@ -522,11 +537,7 @@ function addUser
     local NOPASS="$3"
     local USE_UID="$4"
     local USE_GID="$5"
-    local NEWPASS="newuserpass"
-    if [ -f /usr/local/src/kardia-git/kardia-app/data/Kardia_DB ]; then
-	# Try to get default password from local configuration
-	NEWPASS=$(sed -n 's/.*default_password = "\([^"]*\)";.*/\1/p' < /usr/local/src/kardia-git/kardia-app/data/Kardia_DB)
-    fi
+    local NEWPASS=$(getDefaultDbPassword)
     EXISTS=$(grep "^$N_USER:" /etc/passwd)
     if [ "$EXISTS" != "" ]; then
 	echo "User already exists."
@@ -745,11 +756,13 @@ function manageUser
 	    echo "Resetting password for $N_USER..."
 	    echo ""
 	    /usr/bin/passwd "$N_USER" < /dev/tty
+	    local NEWPASS=$(getDefaultDbPassword)
+	    mysql -e "SET PASSWORD FOR '$N_USER'@'localhost' = PASSWORD('$NEWPASS');"
+	    mysql -e "SET PASSWORD FOR '$N_USER'@'%' = PASSWORD('$NEWPASS');"
 
 	    # Set password in other places...
 	    # GRB - pam_script takes care of this now.
 	    #sed -n "s/^\($N_USER:[^:]*\):.*/\1/p" < /etc/shadow > "/home/$N_USER/cxinst/etc/centrallix/cxpasswd"
-	    #mysql -e "SET PASSWORD FOR '$N_USER'@'localhost' = PASSWORD('newuserpass');"
 	fi
 	sleep 1
 	}
