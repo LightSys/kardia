@@ -75,8 +75,6 @@ myquery "system/query"
 		:dq:TransactionRef IS NOT NULL OR :dq:FundID IS NOT NULL OR :dq:TransactionCount = 0
 	    ;
 
-
--- FIXME: potential problem with NULLs here
 	    -- run a join to combine transactions and funds into one line per fund gift. Joins based on transaction group 
 	    DECLARE COLLECTION transactions;
 	    INSERT 
@@ -126,14 +124,14 @@ myquery "system/query"
 		:CustomerRef
 	    ;
 	    
-	    -- report the number of custoners and transactions. Helps with debug and expectations for runtime
+	    -- report the number of customers and transactions. Helps with debug and expectations for runtime
 	    SELECT :vancoKey:numCustomers = count(1) FROM COLLECTION custRefList; 
 	    SELECT :vancoKey:numTransactions = count(1) FROM COLLECTION transactions;
 
 	    print 'number of customers: '+:vancoKey:numCustomers
 	    print 'number of transactions: '+:vancoKey:numTransactions
 
-	    -- check for reacurring transactions from the customers
+	    -- check for recurring transactions from the customers
 	    DECLARE COLLECTION currentTransactionsRaw;
 	    INSERT 
 	        COLLECTION currentTransactionsRaw
@@ -180,7 +178,7 @@ myquery "system/query"
 	    INSERT 
 	        COLLECTION customers
 	    SELECT 
--- FIXME: make sure converting to UTF-8 doesn't just break everything (may need to be Latin1 or CP-1252, but we'll see)
+-- FIXME: make sure converting to latin1 is the correct choice here
 		-- fix vanco encoding on any fields likely to contain diacritics 
 		CustomerName = convert('string', convert(:CustomerName, 'latin1', 'vanco')),
 		CustomerAddress1 = convert('string', convert(:CustomerAddress1, 'latin1', 'vanco')),
@@ -217,9 +215,10 @@ myquery "system/query"
 	    -- used to look like, and what the current return actually looks like.
 	    -- This needs to work if we already had the original gift, so all keys will match for original, 
 	    -- while the return will have it's i_eg_trx_uuid modified
-	    -- Note that ACH refunds are handled differently and do NOT need a new row here
+	    -- Note that ACH refunds are handled differently and do NOT need a new row here. 
+	    DECLARE COLLECTION originalACH; 
 	    INSERT INTO 
-		COLLECTION transactions
+		COLLECTION originalACH
 	    SELECT
 		Credit = 'C',
 		ReturnReason = NULL,
@@ -230,8 +229,11 @@ myquery "system/query"
 	    WHERE
 		(:t:Credit == 'D' OR :t:ReturnDate IS NOT NULL)
 		AND :t:ReturnReason != 'Refunded'
-		AND :t:AccountType == 'C' OR :t:AccountType == 'S'
+		AND (:t:AccountType == 'C' OR :t:AccountType == 'S')
 	    ;
+	    -- now insert all of the records into transactions 
+	    -- (doing it this way prevents errors from causing collection transactions infinitely inserting into itself)
+	    INSERT INTO COLLECTION transactions SELECT * FROM COLLECTION originalACH;
 
 	    -- Now that we have the payment info, calculate the net amounts 
 
