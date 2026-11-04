@@ -3,6 +3,9 @@
 # kardia.sh - manage the Kardia / Centrallix VM appliance
 # version: 1.7
 # os: rocky_8
+#
+# WARNING: This script relies on bash's dynamic scoping.  Function might read
+# and modify the local variables of their callers.
 
 # Some housekeeping stuff.  We may be running under a user account, but
 # called by the superuser.  Don't give the user account too much control.
