@@ -3,6 +3,9 @@
 # kardia.sh - manage the Kardia / Centrallix VM appliance
 # version: 1.7
 # os: rocky_8
+#
+# WARNING: This script relies on bash's dynamic scoping.  Function might read
+# and modify the local variables of their callers.
 
 # Some housekeeping stuff.  We may be running under a user account, but
 # called by the superuser.  Don't give the user account too much control.
@@ -637,12 +640,12 @@ function updateUserPerms
 	AsRoot sed -i -e "/$N_USER/d" $BASEDIR/src/.cx_kardia_admins 2> /dev/null
 	AsRoot echo $N_USER >> $BASEDIR/src/.cx_kardia_admins
 	doGiveUserKardiaSysadmin $N_USER
-    else
+    elif [ "$ALLOW_KARDIA_SYSADM" != "no" ]; then
 	#make sure we do not have this username in the file
 	if [ -f "$BASEDIR/src/.cx_kardia_admins" ]; then
 	    AsRoot sed -i -e "/$N_USER/d" $BASEDIR/src/.cx_kardia_admins
-	    doRemoveUserKardiaSysadmin $N_USER
 	fi
+	doRemoveUserKardiaSysadmin $N_USER
     fi
     }
 
@@ -652,7 +655,7 @@ function manageUser
     local USER="$2"
     local REALNAME=$(sed -n "s/^$USER:[^:]*:[^:]*:[^:]*:\([^:]*\) - Kardia:.*/\1/p" < /etc/passwd)
     if [ "$1" = "existing" ]; then
-        local ALLOW_KARDIA_SYSADM=$(grep "$USER" $BASEDIR/src/.cx_kardia_admins 2>/dev/null)
+        local ALLOW_KARDIA_SYSADM=$(echo "SELECT 1 FROM s_sec_endorsement WHERE s_endorsement='kardia:sys_admin' AND s_context='kardia' AND s_subject='u:$USER';" | mysql -u root -N Kardia_DB 2>/dev/null)
 	if [ "$ALLOW_KARDIA_SYSADM" = "" ]; then
 	    local ALLOW_KARDIA_SYSADM=no
 	else
@@ -3989,7 +3992,7 @@ function doRemoveUserKardiaSysadmin
 	    echo "You must specify a user to take permissions from"
 	    return
 	fi
-	echo "DELETE FROM s_sec_endorsement WHERE s_subject='u:THEUSER';" | sed "s/THEUSER/$TUSER/g" | mysql -u root Kardia_DB 2> /dev/null
+	echo "DELETE FROM s_sec_endorsement WHERE s_endorsement='kardia:sys_admin' AND s_context='kardia' AND s_subject='u:THEUSER';" | sed "s/THEUSER/$TUSER/g" | mysql -u root Kardia_DB 2> /dev/null
     }
 
 #Create a kardia unix user for use with shell scripts
