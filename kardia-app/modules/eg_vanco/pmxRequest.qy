@@ -54,8 +54,10 @@ myquery "system/query"
 		:dq:TransactionCount, -- include for debug
 		:dq:TransactionRef,   :dq:ReceivedAccount, :dq:AssignedAccount, 
 		:dq:PayerFirstName,   :dq:CustomerID,      :dq:CustomerRef, 
-		:dq:PaymentMethodRef, :dq:ProcessDate,     :dq:SettlementDate, 
-		:dq:GrossAmount,      :dq:BillerID, 
+		:dq:PaymentMethodRef, :dq:GrossAmount,      :dq:BillerID, 
+		-- make sure dates are dates
+		ProcessDate = convert(datetime, condition(char_length(:dq:ProcessDate) == 0, NULL, :dq:ProcessDate)),
+		SettlementDate = convert(datetime, condition(char_length(:dq:SettlementDate) == 0, NULL, :dq:SettlementDate)),
 		-- These fields may be empty, make sure not to treat as an ''
 		PayerMidName = condition(char_length(:dq:PayerMidName) == 0, NULL, :dq:PayerMidName), 
 		PayerLastName = condition(char_length(:dq:PayerLastName) == 0, NULL, :dq:PayerLastName),
@@ -78,13 +80,13 @@ myquery "system/query"
 		gross_deposit = convert(money, NULL),
 		net_deposit = convert(money, NULL),
 		-- Only set deposit ID for gifts that are not pending
-		deposit_id = condition( ( (:dq:Status == 'A' OR char_length(:dq:Status) < 1) AND getdate() < convert('datetime', :dq:SettlementDate))
-				OR (char_length(:SettlementDate) < 1) 
+		deposit_id = condition( ( (:dq:Status == 'A' OR char_length(:dq:Status) < 1) AND (getdate() < :dq:SettlementDate) )
+				OR (:SettlementDate IS NULL) 
 				OR (:dq:Status == 'P'),
 			NULL, 
 			dateformat(:SettlementDate, 'yyyyMMdd') )
 	    FROM 
-		IDENTITY SUBTREE PAGED EXPRESSION(
+		IDENTITY SUBTREE PAGED EXPRESSION(condition(:dq:cx__page <= :vancoKey:lookback + 1,
 		    '/apps/kardia/modules/eg_vanco/egvapi_pmx.http?'
 		    +'VancoWS.Auth.RequestType=PMXTransactionHistory'
 		    +'&VancoWS.Auth.SessionID='+:vancoKey:value
@@ -94,11 +96,11 @@ myquery "system/query"
 		    +'&VancoWS.Request.RequestVars.FromDate='
 		    +dateformat(dateadd('day', -1*(:dq:cx__page - 1), :vancoKey:toDate), 'yyyy-MM-dd')
 		    +'&VancoWS.Request.RequestVars.ToDate='
-		    +dateformat(dateadd('day', -1*(:dq:cx__page - 1), :vancoKey:toDate), 'yyyy-MM-dd')
-		    ) dq
+		    +dateformat(dateadd('day', -1*(:dq:cx__page - 1), :vancoKey:toDate), 'yyyy-MM-dd'),
+		    '/apps/kardia/modules/eg_vanco/empty.csv/rows'
+		    )) dq
 	    WHERE
 		(:dq:TransactionRef IS NOT NULL OR :dq:TransactionCount == 0 OR :ErrorCode IS NOT NULL)
-		AND :dq:cx__page <= :vancoKey:lookback + 1
 	    ;
 
 	    -- Calculate deposit amounts
@@ -122,7 +124,7 @@ myquery "system/query"
 	    SELECT
 		i_eg_gift_uuid = :data:TransactionRef,
 		i_eg_desig_uuid = :data:GroupID,
-		i_eg_trx_uuid = :data:TransactionRef+'-'+dateformat(convert('datetime', :data:ProcessDate), 'yyyy-MM-dd'),
+		i_eg_trx_uuid = :data:TransactionRef+'-'+dateformat(:data:ProcessDate, 'yyyy-MM-dd'),
 		-- use a hash to provide a (hopefully) consistent ID reflective of the donor's info
 		i_eg_donor_uuid = hash('md5',
 			  isnull(:data:PayerFirstName,'') + isnull(:data:PayerMidName,'') + isnull(:data:PayerLastName, '')
@@ -131,15 +133,19 @@ myquery "system/query"
 		i_eg_donor_alt_id = :data:AssignedAccount,   -- NOTE:data: if do vanco auto, this likely wouldn't be set
 		i_eg_account_uuid = NULL,
 		i_eg_status = condition(:data:Status == 'A' OR :data:Status IS NULL OR :data:SettlementDate IS NULL, 
-			condition((getdate() >= convert('datetime', :data:SettlementDate)), 'paid', 'pending'),
+			condition((getdate() >= :data:SettlementDate), 'paid', 'pending'),
 			condition(:data:Status == 'P', 'pending', 'returned')),
 		i_eg_returned_status = condition(:data:Status == 'R', 'Rejected', condition(:data:Status == 'T', 'Returned', NULL)),
 		i_eg_donor_name = isnull(:data:PayerFirstName,'')+isnull(' '+:data:PayerMidName,'')+isnull(' '+:data:PayerLastName, ''),
 		i_eg_donor_given_name = :data:PayerFirstName,
 		i_eg_donor_surname = :data:PayerLastName,
 		i_eg_donor_middle_name = :data:PayerMidName,
-		i_eg_donor_address = isnull(:data:PayerAddress1, '') + isnull(' ' + :data:PayerAddress2, '') +  isnull(' '+:data:PayerCity, '') 
-			+ isnull(' '+:data:PayerState, '') + isnull(' '+:data:PayerZip, '') +' US',
+		i_eg_donor_address = isnull(:data:PayerAddress1, '') 
+			+ isnull(' ' + :data:PayerAddress2, '') 
+			+ isnull(' ' + :data:PayerCity, '') 
+			+ isnull(' ' + :data:PayerState, '') 
+			+ isnull(' ' + :data:PayerZip, '') 
+			+' US',
 		i_eg_donor_addr1 = :data:PayerAddress1,
 		i_eg_donor_addr2 = :data:PayerAddress2,
 		i_eg_donor_city = :data:PayerCity,
@@ -152,7 +158,7 @@ myquery "system/query"
 		i_eg_net_amount = :data:net_gift,
 		i_eg_deposit_gross_amt = :sums:gross_deposit,
 		i_eg_deposit_amt = :sums:net_deposit,
-		i_eg_deposit_date = convert('datetime', :data:SettlementDate),
+		i_eg_deposit_date = :data:SettlementDate,
 		i_eg_deposit_status = NULL, -- TODO:data: what is this the status of
 		i_eg_deposit_uuid = :data:deposit_id,
 		i_eg_gift_pmt_type = 'ACH',
@@ -160,9 +166,9 @@ myquery "system/query"
 		i_eg_gift_start_date = convert('datetime', NULL),
 		i_eg_gift_end_date = convert('datetime', NULL),
 		i_eg_gift_count = NULL,
-		i_eg_gift_date = convert('datetime', :data:ProcessDate),
-		i_eg_gift_trx_date = convert('datetime', :data:ProcessDate),
-		i_eg_gift_settlement_date = convert('datetime', :data:SettlementDate), 
+		i_eg_gift_date = :data:ProcessDate,
+		i_eg_gift_trx_date = :data:ProcessDate,
+		i_eg_gift_settlement_date = :data:SettlementDate, 
 		i_eg_gift_lastfour = NULL,
 		i_eg_desig_name = :data:GroupID, -- NOTE: if enable auto from vanco, this will always be an unhelpful value
 		i_eg_desig_notes = :data:ReceivedAccount
