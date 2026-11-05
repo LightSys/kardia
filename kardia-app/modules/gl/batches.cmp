@@ -80,8 +80,8 @@ batches "widget/component-decl"
 			ORDER BY
 				:b:a_batch_number");
 		baseobj = "/apps/kardia/data/Kardia_DB/a_batch/rows";
-		replicasize=200;
-		readahead=200;
+		replicasize=600;
+		readahead=600;
 		autoquery=never;
 		indicates_activity = no;
 		refresh_interval=120000;
