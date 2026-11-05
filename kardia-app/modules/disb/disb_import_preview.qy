@@ -1,0 +1,178 @@
+$Version=2$
+disb_import_preview "system/query"
+    {
+    filename "query/parameter" { type=string; style=notnull; }
+    ledger "query/parameter" { type=string; style=notnull; }
+    batch "query/parameter" { type=integer; style=notnull; }
+
+    // This query reads the uploaded CSV file and, using the field mappings
+    // configured in the 'fields' collection (see disb_import.cmp), returns
+    // the disbursement line items that would be imported into the batch,
+    // including the disbursement id / line item / check number that each
+    // line will receive.
+    //
+    // The 'Disbursement Group' field determines how CSV lines are grouped
+    // into disbursements (checks):
+    //   (one per payee) - all lines for a given payee become one disbursement
+    //   (one per line)  - each CSV line becomes its own disbursement
+    //   <column>        - lines having the same value in that column become
+    //                     one disbursement (a blank value = its own disbursement)
+    //
+    sql = " declare collection fields scope application;
+	    declare collection preview;
+
+	    -- We obtain this just once to avoid values differing by a second or so
+	    declare object info;
+	    select :info:today = getdate();
+
+	    -- Batch information
+	    select
+		:info:bdate = (select :b:a_default_effective_date from /apps/kardia/data/Kardia_DB/a_batch/rows b where :b:a_ledger_number = :parameters:ledger and :b:a_batch_number = :parameters:batch),
+		:info:bperiod = (select :b:a_period from /apps/kardia/data/Kardia_DB/a_batch/rows b where :b:a_ledger_number = :parameters:ledger and :b:a_batch_number = :parameters:batch)
+	    ;
+
+	    -- Starting disbursement id and check number (same approach as copy_cd_batch.qy)
+	    select
+		:info:startid = (select isnull(max(convert(integer, :cd:a_disbursement_id)), 0) + 1 from /apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows cd where :cd:a_ledger_number = :parameters:ledger and :cd:a_batch_number = :parameters:batch),
+		:info:startck = (select isnull(max(convert(integer, :cd:a_check_number)), 0) + 1 from /apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows cd where :cd:a_ledger_number = :parameters:ledger and :cd:a_batch_number = :parameters:batch)
+	    ;
+
+	    -- Default cash and expense accounts from the disbursements config
+	    select
+		:info:cashacct = (select :c:a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows c where :c:a_ledger_number = :parameters:ledger and :c:a_config_name = 'DisbCashAcct'),
+		:info:expacct = (select :c:a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows c where :c:a_ledger_number = :parameters:ledger and :c:a_config_name = 'DisbExpAcct')
+	    ;
+
+	    -- Grouping and check numbering modes
+	    select
+		:info:grpmode = (select :fl:userfield from collection fields fl where :fl:kardiafield = 'Disbursement Group'),
+		:info:ckmode = (select :fl:userfield from collection fields fl where :fl:kardiafield = 'Check Number')
+	    ;
+
+	    -- Build the basic preview of the import data
+	    insert into
+		collection preview
+	    select
+		line_no = convert(integer, :f:name) + 1,
+		a_effective_date = (select condition(:fl:userfield = '(batch default)',
+						isnull(:info:bdate, :info:today),
+						condition(:fl:userfield = '(today)',
+						    :info:today,
+						    convert(datetime, condition(:fl:userfield = '(manual)',
+							isnull(:fl:value, isnull(:info:bdate, :info:today)),
+							isnull(eval(':' + :fl:userfield, 'C', 'f'), isnull(:info:bdate, :info:today))
+						    ))
+						)
+					    )
+				    from collection fields fl where :fl:kardiafield = 'Date'),
+		a_payee_partner_key = (select convert(string, condition(:fl:userfield = '(manual)',
+						:fl:value,
+						eval(':' + :fl:userfield, 'C', 'f')
+					    ))
+				    from collection fields fl where :fl:kardiafield = 'Payee ID'),
+		grp_col = (select condition(:fl:userfield = '(one per payee)' or :fl:userfield = '(one per line)',
+						convert(string, null),
+						convert(string, eval(':' + :fl:userfield, 'C', 'f'))
+					    )
+				    from collection fields fl where :fl:kardiafield = 'Disbursement Group'),
+		a_amount = (select convert(money, condition(:fl:userfield = '(manual)',
+						:fl:value,
+						eval(':' + :fl:userfield, 'C', 'f')
+					    ))
+				    from collection fields fl where :fl:kardiafield = 'Amount'),
+		a_fund = (select convert(string, condition(:fl:userfield = '(manual)',
+						:fl:value,
+						eval(':' + :fl:userfield, 'C', 'f')
+					    ))
+				    from collection fields fl where :fl:kardiafield = 'Fund Code'),
+		a_account_code = (select convert(string, condition(:fl:userfield = '(default)',
+						:info:expacct,
+						condition(:fl:userfield = '(manual)',
+						    :fl:value,
+						    eval(':' + :fl:userfield, 'C', 'f')
+						)
+					    ))
+				    from collection fields fl where :fl:kardiafield = 'GL Account Code'),
+		a_cash_account_code = (select convert(string, condition(:fl:userfield = '(default)',
+						:info:cashacct,
+						condition(:fl:userfield = '(manual)',
+						    :fl:value,
+						    eval(':' + :fl:userfield, 'C', 'f')
+						)
+					    ))
+				    from collection fields fl where :fl:kardiafield = 'Cash Account'),
+		a_check_number = (select condition(:fl:userfield = '(automatic)' or :fl:userfield = '(none)',
+						convert(string, null),
+						convert(string, eval(':' + :fl:userfield, 'C', 'f'))
+					    )
+				    from collection fields fl where :fl:kardiafield = 'Check Number'),
+		a_memo = (select convert(string, condition(:fl:userfield = '(manual)',
+						:fl:value,
+						eval(':' + :fl:userfield, 'C', 'f')
+					    ))
+				    from collection fields fl where :fl:kardiafield = 'Memo'),
+		a_comment = (select convert(string, condition(:fl:userfield = '(manual)',
+						:fl:value,
+						eval(':' + :fl:userfield, 'C', 'f')
+					    ))
+				    from collection fields fl where :fl:kardiafield = 'Comment'),
+		grp_key = convert(string, null),
+		grp_first = convert(integer, null),
+		payee_name = convert(string, null)
+	    from
+		expression ('/apps/kardia/files/disb/' + :parameters:filename + '/rows') f
+	    ;
+
+	    -- Determine which disbursement each line belongs to.
+	    update
+		collection preview p
+	    set
+		:p:grp_key = condition(:info:grpmode = '(one per payee)',
+				'P:' + isnull(:p:a_payee_partner_key, ''),
+				condition(:info:grpmode = '(one per line)' or :p:grp_col is null or :p:grp_col = '',
+				    'L:' + :p:line_no,
+				    'G:' + :p:grp_col
+				)
+			    )
+	    ;
+
+	    -- Disbursements are numbered in the order they first appear in the file.
+	    update
+		collection preview p
+	    set
+		:p:grp_first = (select min(:p2:line_no) from collection preview p2 where :p2:grp_key = :p:grp_key)
+	    ;
+
+	    -- Payee name, for display purposes
+	    update
+		collection preview p
+	    set
+		:p:payee_name = (select condition(char_length(rtrim(:pp:p_org_name)) > 1, :pp:p_org_name, isnull(:pp:p_given_name + ' ', '') + isnull(:pp:p_surname, '')) from /apps/kardia/data/Kardia_DB/p_partner/rows pp where :pp:p_partner_key = :p:a_payee_partner_key)
+	    ;
+
+	    -- Return the data to the caller, assigning disbursement ids, line
+	    -- item numbers, and (if automatic) check numbers.
+	    select
+		:p:line_no,
+		a_disbursement_id = :info:startid + dense_rank(:p:grp_first) - 1,
+		a_line_item = row_number(:p:grp_first),
+		a_check_number = condition(:info:ckmode = '(automatic)', convert(string, :info:startck + dense_rank(:p:grp_first) - 1), :p:a_check_number),
+		:p:a_effective_date,
+		:p:a_payee_partner_key,
+		:p:a_amount,
+		:p:a_fund,
+		:p:a_account_code,
+		:p:a_cash_account_code,
+		:p:a_memo,
+		:p:a_comment,
+		:p:grp_key,
+		:p:payee_name,
+		payee_txt = isnull(:p:a_payee_partner_key, '??') + isnull(' - ' + :p:payee_name, ''),
+		date_txt = dateformat(:p:a_effective_date, 'yyyy-MM-dd')
+	    from
+		identity collection preview p
+	    order by
+		:p:grp_first,
+		:p:line_no
+	    ";
+    }
