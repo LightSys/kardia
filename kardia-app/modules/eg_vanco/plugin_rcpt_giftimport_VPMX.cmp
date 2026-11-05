@@ -36,7 +36,7 @@ plugin_rcpt_giftimport_EGS "widget/component-decl"
 			:p:i_eg_donor_middle_name,
 			i_eg_donor_prefix = NULL,
 			i_eg_donor_suffix = NULL,
-			:p:i_eg_donor_address,
+			i_eg_donor_address = condition(substring(:p:i_eg_donor_address, 1, 1) == ' ', substring(:p:i_eg_donor_address, 2), condition(char_length(:p:i_eg_donor_address) < 1, NULL, :p:i_eg_donor_address)),
 			:p:i_eg_donor_addr1,
 			:p:i_eg_donor_addr2,
 			i_eg_donor_addr3 = NULL,

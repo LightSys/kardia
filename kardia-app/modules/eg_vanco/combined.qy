@@ -51,6 +51,7 @@ myquery "system/query"
 		)),
 		cx_path=:__cx_path, -- include for debug
 		-- fix encoding on any values that may contain non-ascii characters
+		-- The connection to the database should be CP1252 or equivalent
 		CCAuthDesc = convert('string', convert(:CCAuthDesc, 'CP1252', 'vanco')),
 		FundName = convert('string', convert(:FundName, 'CP1252', 'vanco')),
 		FundNote = convert('string', convert(:FundNote, 'CP1252', 'vanco')),
@@ -179,11 +180,13 @@ myquery "system/query"
 	        COLLECTION customers
 	    SELECT 
 		-- fix vanco encoding on any fields likely to contain diacritics 
-		CustomerName = convert('string', convert(:CustomerName, 'CP1252', 'vanco')),
-		CustomerAddress1 = convert('string', convert(:CustomerAddress1, 'CP1252', 'vanco')),
-		CustomerAddress2 = convert('string', convert(:CustomerAddress2, 'CP1252', 'vanco')),
-		CustomerCity = convert('string', convert(:CustomerCity, 'CP1252', 'vanco')),
-		CustomerState = convert('string', convert(:CustomerState, 'CP1252', 'vanco')),
+		CustomerName = condition(char_length(:CustomerName) == 0, NULL, convert('string', convert(:CustomerName, 'CP1252', 'vanco'))),
+		CustomerAddr1 = condition(char_length(:CustomerAddr1) == 0, NULL, convert('string', convert(:CustomerAddr1, 'CP1252', 'vanco'))),
+		CustomerAddr2 = condition(char_length(:CustomerAddr2) == 0, NULL, convert('string', convert(:CustomerAddr2, 'CP1252', 'vanco'))),
+		CustomerCity = condition(char_length(:CustomerCity) == 0, NULL, convert('string', convert(:CustomerCity, 'CP1252', 'vanco'))),
+		CustomerState = condition(char_length(:CustomerState) == 0, NULL, convert('string', convert(:CustomerState, 'CP1252', 'vanco'))),
+		CustomerZip = condition(char_length(:CustomerZip) == 0, NULL, :CustomerZip),
+		CustomerCountry = condition(char_length(:CustomerCountry) == 0, NULL, :CustomerCountry),
 		*
 	    FROM 
 	        SUBTREE PAGED EXPRESSION('/apps/kardia/modules/eg_vanco/egvapi_custInfo.http?VancoWS.Auth.SessionID='
@@ -333,14 +336,14 @@ myquery "system/query"
 		i_eg_donor_middle_name = condition(charindex(',', :c:CustomerName) == 0, NULL,
 			condition(charindex(' ', reverse(:c:CustomerName)) == 2, 
 				substring(reverse(:c:CustomerName), 1, 1), NULL)),
-		i_eg_donor_address = :c:CustomerAddress1
-			+condition(char_length(isnull(:c:CustomerAddress2, '')) < 1, '', ' '+:c:CustomerAddress2)
-			+condition(char_length(isnull(:c:CustomerCity, ''))     < 1, '', ' '+:c:CustomerCity)
-			+condition(char_length(isnull(:c:CustomerState, ''))    < 1, '', ' '+:c:CustomerState)
-			+condition(char_length(isnull(:c:CustomerZip, ''))      < 1, '', ' '+:c:CustomerZip)
-			+condition(char_length(isnull(:c:CustomerCountry, ''))  < 1, '', ' '+:c:CustomerCountry),
-		i_eg_donor_addr1 = :c:CustomerAddress1,
-		i_eg_donor_addr2 = condition(char_length(:c:CustomerAddress2) < 1, NULL, :c:CustomerAddress2),
+		i_eg_donor_address = (isnull(:c:CustomerAddr1, ''))
+			+(isnull(' ' + :c:CustomerAddr2, ''))
+			+(isnull(' ' + :c:CustomerCity, ''))
+			+(isnull(' ' + :c:CustomerState, ''))
+			+(isnull(' ' + :c:CustomerZip, ''))
+			+(isnull(' ' + :c:CustomerCountry, '')),
+		i_eg_donor_addr1 = :c:CustomerAddr1,
+		i_eg_donor_addr2 = condition(char_length(:c:CustomerAddr2) < 1, NULL, :c:CustomerAddr2),
 		i_eg_donor_city = :c:CustomerCity,
 		i_eg_donor_state = :c:CustomerState,
 		i_eg_donor_postal = :c:CustomerZip,
