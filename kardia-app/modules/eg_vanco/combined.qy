@@ -51,9 +51,9 @@ myquery "system/query"
 		)),
 		cx_path=:__cx_path, -- include for debug
 		-- fix encoding on any values that may contain non-ascii characters
-		CCAuthDesc = convert('string', convert(:CCAuthDesc, 'latin1', 'vanco')),
-		FundName = convert('string', convert(:FundName, 'latin1', 'vanco')),
-		FundNote = convert('string', convert(:FundNote, 'latin1', 'vanco')),
+		CCAuthDesc = convert('string', convert(:CCAuthDesc, 'CP1252', 'vanco')),
+		FundName = convert('string', convert(:FundName, 'CP1252', 'vanco')),
+		FundNote = convert('string', convert(:FundNote, 'CP1252', 'vanco')),
 		ReturnDate = condition(char_length(:ReturnDate) > 1, :ReturnDate, NULL), 
 		DepositDate =  condition(char_length(:DepositDate) > 1, :DepositDate, NULL),
 		ProcessDate =  condition(char_length(:ProcessDate) > 1, :ProcessDate, NULL),
@@ -178,13 +178,12 @@ myquery "system/query"
 	    INSERT 
 	        COLLECTION customers
 	    SELECT 
--- FIXME: make sure converting to latin1 is the correct choice here
 		-- fix vanco encoding on any fields likely to contain diacritics 
-		CustomerName = convert('string', convert(:CustomerName, 'latin1', 'vanco')),
-		CustomerAddress1 = convert('string', convert(:CustomerAddress1, 'latin1', 'vanco')),
-		CustomerAddress2 = convert('string', convert(:CustomerAddress2, 'latin1', 'vanco')),
-		CustomerCity = convert('string', convert(:CustomerCity, 'latin1', 'vanco')),
-		CustomerState = convert('string', convert(:CustomerState, 'latin1', 'vanco')),
+		CustomerName = convert('string', convert(:CustomerName, 'CP1252', 'vanco')),
+		CustomerAddress1 = convert('string', convert(:CustomerAddress1, 'CP1252', 'vanco')),
+		CustomerAddress2 = convert('string', convert(:CustomerAddress2, 'CP1252', 'vanco')),
+		CustomerCity = convert('string', convert(:CustomerCity, 'CP1252', 'vanco')),
+		CustomerState = convert('string', convert(:CustomerState, 'CP1252', 'vanco')),
 		*
 	    FROM 
 	        SUBTREE PAGED EXPRESSION('/apps/kardia/modules/eg_vanco/egvapi_custInfo.http?VancoWS.Auth.SessionID='
