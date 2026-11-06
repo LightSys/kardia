@@ -1,8 +1,8 @@
 $Version=2$
 cd_batches "widget/component-decl"
     {
-    width=780;
-    height=542;
+    width=980;
+    height=642;
 
     ledger "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
     periods_osrc "widget/parameter" { type=object; }
@@ -50,7 +50,7 @@ cd_batches "widget/component-decl"
 			batch_txt = '' + :b:a_batch_number + ' - ' + :b:a_batch_desc,
 			date_txt = substring(convert(string,:a_default_effective_date),1,11),
 			drec = count(:d:a_batch_number),
-			--drec = isnull((select 1 from /apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows cd where :cd:a_batch_number = :b:a_batch_number and :cd:a_ledger_number = :b:a_ledger_number limit 1),0),
+			items = isnull((select count(count(1)) from /apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows cd where :cd:a_batch_number = :b:a_batch_number and :cd:a_ledger_number = :b:a_ledger_number group by :cd:a_disbursement_id), 0),
 			dpost = isnull(sum(:d:a_posted),0),
 			--dpost = isnull((select 1 from /apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows cd where :cd:a_batch_number = :b:a_batch_number and :cd:a_ledger_number = :b:a_ledger_number and :cd:a_posted = 1 limit 1),0),
 			glrec = isnull(sum(:d:a_posted_to_gl),0),
@@ -100,7 +100,7 @@ cd_batches "widget/component-decl"
 	    titlebar=no;
 	    toplevel=yes;
 	    width=480; height=300;
-	    x=150; y=140;
+	    x=250; y=190;
 	    visible=no;
 
 	    on_req_unpost_1 "widget/connector" { event=Open; target=gl_only_var; action=SetValue; Value=:gl_only; }
@@ -160,7 +160,7 @@ cd_batches "widget/component-decl"
 		modal=yes;
 		toplevel=yes;
 		width=480; height=240;
-		x=150; y=150;
+		x=250; y=200;
 		visible=no;
 
 		copy_batch_osrc "widget/osrc"
@@ -196,7 +196,7 @@ cd_batches "widget/component-decl"
 	    modal=yes;
 	    toplevel=yes;
 	    width=480; height=300;
-	    x=150; y=120;
+	    x=250; y=170;
 	    visible=no;
 
 	    new_batch_form "widget/form"
@@ -218,20 +218,20 @@ cd_batches "widget/component-decl"
 
 	batch_tbl_pane "widget/pane"
 	    {
-	    x=0;y=0; width=600;height=542;
+	    x=0;y=0; width=800;height=642;
 	    widget_class = "table_bgnd";
 
 	    batch_tbl "widget/table"
 		{
-		x=0;y=0;width=598;height=540;
+		x=0;y=0;width=798;height=640;
 		mode=dynamicrow;
 
 		t_bat "widget/table-column" { title="Batch"; fieldname="a_batch_number"; width=50; }
 		t_desc "widget/table-column" { title="Description"; fieldname="a_batch_desc"; width=200; }
 		t_amt "widget/table-column" { title="Amount"; fieldname="amount"; width=70; align=right; }
+		t_rcnt "widget/table-column" { title="# Cks"; fieldname="items"; width=50; align=center; }
 		t_dt "widget/table-column" { title="Eff. Date"; fieldname="date_txt"; width=80; }
 		t_user "widget/table-column" { title="User"; fieldname="s_created_by"; width=50; }
-		//t_rcnt "widget/table-column" { title="Rec's"; fieldname="drec"; width=50; type=check; }
 		t_stat "widget/table-column" { title="Status"; fieldname="status"; width=90; }
 		//t_rpost "widget/table-column" { title="Post?"; fieldname="dpost"; width=40; type=check; }
 		t_glcnt "widget/table-column" { title="GL"; fieldname="glrec"; width=30; type=check; }
@@ -241,7 +241,7 @@ cd_batches "widget/component-decl"
 
     btn_vbox "widget/vbox"
 	{
-	x = 608; y=0; width=172; height=542;
+	x = 808; y=0; width=172; height=642;
 	spacing=8;
 	cellsize=40;
 
