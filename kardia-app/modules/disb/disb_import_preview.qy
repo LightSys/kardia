@@ -20,7 +20,7 @@ disb_import_preview "system/query"
     //
     sql = " declare collection fields scope application;
 	    declare collection preview;
-
+	    
 	    -- We obtain this just once to avoid values differing by a second or so
 	    declare object info;
 	    select :info:today = getdate();
@@ -117,7 +117,6 @@ disb_import_preview "system/query"
 					    ))
 				    from collection fields fl where :fl:kardiafield = 'Comment'),
 		grp_key = convert(string, null),
-		grp_first = convert(integer, null),
 		payee_name = convert(string, null)
 	    from
 		expression ('/apps/kardia/files/disb/' + :parameters:filename + '/rows') f
@@ -136,13 +135,6 @@ disb_import_preview "system/query"
 			    )
 	    ;
 
-	    -- Disbursements are numbered in the order they first appear in the file.
-	    update
-		collection preview p
-	    set
-		:p:grp_first = (select min(:p2:line_no) from collection preview p2 where :p2:grp_key = :p:grp_key)
-	    ;
-
 	    -- Payee name, for display purposes
 	    update
 		collection preview p
@@ -154,9 +146,9 @@ disb_import_preview "system/query"
 	    -- item numbers, and (if automatic) check numbers.
 	    select
 		:p:line_no,
-		a_disbursement_id = :info:startid + dense_rank(:p:grp_first) - 1,
-		a_line_item = row_number(:p:grp_first),
-		a_check_number = condition(:info:ckmode = '(automatic)', convert(string, :info:startck + dense_rank(:p:grp_first) - 1), :p:a_check_number),
+		a_disbursement_id = :info:startid + dense_rank(:p:grp_key) - 1,
+		a_line_item = row_number(:p:grp_key),
+		a_check_number = condition(:info:ckmode = '(automatic)', convert(string, :info:startck + dense_rank(:p:grp_key) - 1), :p:a_check_number),
 		:p:a_effective_date,
 		:p:a_payee_partner_key,
 		:p:a_amount,
@@ -172,7 +164,7 @@ disb_import_preview "system/query"
 	    from
 		identity collection preview p
 	    order by
-		:p:grp_first,
+		:p:grp_key,
 		:p:line_no
 	    ";
     }
