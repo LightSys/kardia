@@ -15,7 +15,7 @@ last_bank_rec "system/query"
           WHERE
               :a_config_name = 'ReconCutOff'
               AND :a_ledger_number = :parameters:cur_ledger
- 
+	  ;
 
 	-- match reconciliations with any before it
 	DECLARE COLLECTION rec_pairs;
