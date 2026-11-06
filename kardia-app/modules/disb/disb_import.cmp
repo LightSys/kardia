@@ -170,6 +170,7 @@ disb_import "widget/component-decl"
 			    row_shadow_offset=1;
 			    row_shadow_color="#a0a0a0";
 			    row_shadow_angle=135;
+			    nodata_message = runclient(condition(not :file_osrc:cx__pending, "one moment...", "(no files yet)"));
 
 			    ft_selectbar "widget/table-row-detail"
 				{
@@ -893,7 +894,7 @@ disb_import "widget/component-decl"
 					}
 				    }
 
-				flt_field "widget/table-column" { fieldname=kardiafield; caption_fieldname=descrip; width=150; style=bold; title="Kardia Field"; }
+				flt_field "widget/table-column" { fieldname=kardiafield; caption_fieldname=descrip; wrap=yes; width=150; style=bold; title="Kardia Field"; }
 				flt_yourfield "widget/table-column" { value=runclient(isnull(:i2f_fields_osrc:userfield, '') + condition(:i2f_fields_osrc:userfield == '(manual)' and :i2f_fields_osrc:value is not null, ' - ' + :i2f_fields_osrc:value + isnull(' (' + :i2f_fields_osrc:value_desc + ')', ''), '')); width=150; style=bold; title="From Your Data"; }
 				}
 			    }
@@ -970,7 +971,7 @@ disb_import "widget/component-decl"
 
 			preview_table "widget/table"
 			    {
-			    height=446;
+			    height=462;
 			    titlebar=yes;
 			    overlap_scrollbar=yes;
 			    demand_scrollbar=yes;
@@ -984,17 +985,17 @@ disb_import "widget/component-decl"
 			    row_shadow_color="#a0a0a0";
 			    row_shadow_angle=135;
 
-			    pt_line "widget/table-column" { title="#"; fieldname=line_no; width=30; }
-			    pt_disb "widget/table-column" { title="Disb"; fieldname=a_disbursement_id; width=35; }
-			    pt_item "widget/table-column" { title="Ln"; fieldname=a_line_item; width=25; }
-			    pt_ckno "widget/table-column" { title="Check#"; fieldname=a_check_number; width=50; }
-			    pt_payee "widget/table-column" { title="Payee"; fieldname=payee_txt; caption_fieldname=a_memo; width=150; }
-			    pt_date "widget/table-column" { title="Date"; fieldname=date_txt; width=75; }
-			    pt_fund "widget/table-column" { title="Fund"; fieldname=a_fund; width=60; }
-			    pt_acct "widget/table-column" { title="Account"; fieldname=a_account_code; width=55; }
-			    pt_cash "widget/table-column" { title="Cash"; fieldname=a_cash_account_code; width=50; }
-			    pt_comm "widget/table-column" { title="Comment"; fieldname=a_comment; width=105; }
-			    pt_amt "widget/table-column" { title="Amount"; fieldname=a_amount; width=80; align=right; }
+			    //pt_line "widget/table-column" { title="#"; fieldname=line_no; width=30; }
+			    //pt_disb "widget/table-column" { title="Disb"; fieldname=a_disbursement_id; width=35; }
+			    pt_date "widget/table-column" { title="Date"; fieldname=date_txt; width=75; style=bold; }
+			    pt_ckno "widget/table-column" { title="Ck#"; fieldname=a_check_number; width=55; style=bold; }
+			    //pt_item "widget/table-column" { title="Line"; fieldname=a_line_item; width=30; style=bold; }
+			    pt_payee "widget/table-column" { title="Payee"; fieldname=payee_txt; caption_fieldname=payee_id; width=120; style=bold; }
+			    pt_fund "widget/table-column" { title="Fund"; fieldname=a_fund; caption_fieldname=fund_txt; width=70; style=bold; }
+			    pt_acct "widget/table-column" { title="Acct"; fieldname=a_account_code; caption_fieldname=acct_txt; width=60; style=bold; }
+			    pt_cash "widget/table-column" { title="CashAcct"; fieldname=a_cash_account_code; caption_fieldname=cashacct_txt; width=60; style=bold; }
+			    pt_amt "widget/table-column" { title="Amount"; fieldname=a_amount; width=80; align=right; style=bold; }
+			    pt_comm "widget/table-column" { title="Comment/Memo"; fieldname=a_comment; caption_fieldname=a_memo; width=120; style=bold; }
 			    }
 			}
 
@@ -1147,6 +1148,32 @@ disb_import "widget/component-decl"
 			    do_import "widget/connector" { event=Click; target=i4f_do_import; action=QueryParam; }
 			    }
 			}
+		    ia_hbox "widget/hbox"
+			{
+			height=24;
+			align=center;
+
+			i4f_approval "widget/component"
+			    {
+			    path = "/sys/cmp/smart_field.cmp";
+			    height = 24;
+			    width = 150;
+			    label_width = 125;
+			    ctl_type = checkbox;
+			    text = "Mark all as approved:";
+
+			    approval_hints_1 "widget/hints"
+				{
+				condition=runserver( (select isnull(first(:a_config_value), 'N') from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :this:ledger and :a_config_name = 'DisbApprovals') = 'Y');
+				style=notnull;
+				}
+			    approval_hints_2 "widget/hints"
+				{
+				condition=runserver( (select isnull(first(:a_config_value), 'N') from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :this:ledger and :a_config_name = 'DisbApprovals') != 'Y');
+				style=notnull,readonly;
+				}
+			    }
+			}
 
 		    i4f_status "widget/label"
 			{
@@ -1160,10 +1187,10 @@ disb_import "widget/component-decl"
 			height=24;
 			align=center;
 			style=italic;
-			value=runclient("Imported disbursements are not approved; review, edit, and approve them in the Disbursements application.");
+			value=runclient(condition(runserver((select isnull(first(:a_config_value), 'N') from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :this:ledger and :a_config_name = 'DisbApprovals') = 'Y'), condition(:i4f_approval:value, "Imported disbursements are all marked as approved", "Imported disbursements are not approved; review, edit, and approve them in the Disbursements application."), "Review imported disbursements afterward in the Disbursements application."));
 			}
 
-		    i4f_sep "widget/autolayoutspacer" { height=498; }
+		    i4f_sep "widget/autolayoutspacer" { height=464; }
 
 		    i4f_ctls_hbox "widget/hbox"
 			{
@@ -1210,6 +1237,7 @@ disb_import "widget/component-decl"
 		    i4f_f_batch "widget/parameter" { param_name=batch; type=integer; default=runclient(:batch:value); }
 		    i4f_f_period "widget/parameter" { param_name=period; type=string; default=runclient(:info_osrc:a_period); }
 		    i4f_f_maxid "widget/parameter" { param_name=maxid; type=integer; default=runclient(:info_osrc:maxid); }
+		    i4f_f_approve "widget/parameter" { param_name=approval; type=integer; default=runclient(condition(:i4f_approval:value, 1, 0)); }
 
 		    sql = " insert
 				/apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows cd
@@ -1230,6 +1258,8 @@ disb_import "widget/component-decl"
 				a_posted_to_gl = 0,
 				a_voided = 0,
 				a_reconciled = 0,
+				a_approved_by=condition(:parameters:approval = 1, user_name(), null),
+				a_approved_date=condition(:parameters:approval = 1, getdate(), null),
 				:p:a_memo,
 				:p:a_comment,
 				s_date_created = getdate(),

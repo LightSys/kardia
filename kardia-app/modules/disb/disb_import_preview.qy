@@ -135,6 +135,27 @@ disb_import_preview "system/query"
 			    )
 	    ;
 
+	    -- Cash acct name, for display purposes
+	    update
+		collection preview p
+	    set
+		:p:cashacct_name = (select :a:a_acct_desc from /apps/kardia/data/Kardia_DB/a_account/rows a where :a:a_account_code = :p:a_cash_account_code and :a:a_ledger_number = :parameters:ledger)
+	    ;
+
+	    -- Acct name, for display purposes
+	    update
+		collection preview p
+	    set
+		:p:acct_name = (select :a:a_acct_desc from /apps/kardia/data/Kardia_DB/a_account/rows a where :a:a_account_code = :p:a_account_code and :a:a_ledger_number = :parameters:ledger)
+	    ;
+
+	    -- Fund name, for display purposes
+	    update
+		collection preview p
+	    set
+		:p:fund_name = (select :f:a_fund_desc from /apps/kardia/data/Kardia_DB/a_fund/rows f where :f:a_fund = :p:a_fund and :f:a_ledger_number = :parameters:ledger)
+	    ;
+
 	    -- Payee name, for display purposes
 	    update
 		collection preview p
@@ -159,7 +180,11 @@ disb_import_preview "system/query"
 		:p:a_comment,
 		:p:grp_key,
 		:p:payee_name,
-		payee_txt = isnull(:p:a_payee_partner_key, '??') + isnull(' - ' + :p:payee_name, ''),
+		acct_txt = isnull(:p:acct_name, ''),
+		cashacct_txt = isnull(:p:cashacct_name, ''),
+		fund_txt = isnull(:p:fund_name, ''),
+		payee_txt = isnull(:p:payee_name, ''),
+		payee_id = isnull(:p:a_payee_partner_key, '??'),
 		date_txt = dateformat(:p:a_effective_date, 'yyyy-MM-dd')
 	    from
 		identity collection preview p
