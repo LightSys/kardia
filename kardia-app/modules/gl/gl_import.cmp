@@ -163,6 +163,7 @@ gl_import "widget/component-decl"
 			    row_shadow_offset=1;
 			    row_shadow_color="#a0a0a0";
 			    row_shadow_angle=135;
+			    nodata_message = runclient(condition(not :file_osrc:cx__pending, "one moment...", "(no files yet)"));
 
 			    ft_selectbar "widget/table-row-detail"
 				{
