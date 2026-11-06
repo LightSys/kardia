@@ -315,6 +315,28 @@ cd_batches "widget/component-decl"
 
 	    copy_cn "widget/connector" { event=Click; target=copy_batch_form; action=Edit; }
 	    }
+	import_disb "widget/textbutton"
+	    {
+	    require_one_endorsement="kardia:disb_manage","kardia:disb_entry";
+	    endorsement_context=runserver("kardia:ledger:" + :this:ledger + ":");
+	    width = 172;
+	    height = 40;
+	    text = runclient("Import CSV Data" + isnull(" into Batch " + :disb_osrc:a_batch_number, ""));
+	    enabled = runclient(:new_batch_form:is_editable and not (:disb_form:dpost > 0) and not (:disb_form:glrec > 0) and :periods_osrc:a_status == 'O');
+
+	    import_cn "widget/connector"
+		{
+		event=Click;
+		target=cd_batches;
+		action=Launch;
+		Source = runclient("/apps/kardia/modules/disb/disb_import.app");
+		Width=1000;
+		Height=700;
+		ledger=runclient(:disb_osrc:a_ledger_number);
+		batch=runclient(:disb_osrc:a_batch_number);
+		send_refresh=cd_batches;
+		}
+	    }
 
 
 	sep_line2 "widget/pane"
