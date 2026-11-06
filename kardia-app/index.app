@@ -319,7 +319,7 @@ index "widget/page"
 		action_bar_hbox "widget/hbox"
 		    {
 		    x=10; y=0;
-		    width=1010; height=60;
+		    width=1024; height=60;
 		    spacing=10;
 		    align=right;
 
