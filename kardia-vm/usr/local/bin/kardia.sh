@@ -3,6 +3,9 @@
 # kardia.sh - manage the Kardia / Centrallix VM appliance
 # version: 1.7
 # os: rocky_8
+#
+# WARNING: This script relies on bash's dynamic scoping.  Function might read
+# and modify the local variables of their callers.
 
 # Some housekeeping stuff.  We may be running under a user account, but
 # called by the superuser.  Don't give the user account too much control.
@@ -27,6 +30,11 @@ K_GITREPO="github.com/LightSys/kardia"
 CKR_GITREPO="https://bitbucket.org/disciplemakers/check-reader.git"
 
 CKR_FROMPIP="pyftpdlib"
+
+# Number of bits to use in RSA key generation, for autossh and backup
+# key pairs.
+#
+RSABITS=4096
 
 # We need to set the umask to 002, so that we give write permission to
 # the kardia_src group for the shared repository.  This could be made
@@ -632,12 +640,12 @@ function updateUserPerms
 	AsRoot sed -i -e "/$N_USER/d" $BASEDIR/src/.cx_kardia_admins 2> /dev/null
 	AsRoot echo $N_USER >> $BASEDIR/src/.cx_kardia_admins
 	doGiveUserKardiaSysadmin $N_USER
-    else
+    elif [ "$ALLOW_KARDIA_SYSADM" != "no" ]; then
 	#make sure we do not have this username in the file
 	if [ -f "$BASEDIR/src/.cx_kardia_admins" ]; then
 	    AsRoot sed -i -e "/$N_USER/d" $BASEDIR/src/.cx_kardia_admins
-	    doRemoveUserKardiaSysadmin $N_USER
 	fi
+	doRemoveUserKardiaSysadmin $N_USER
     fi
     }
 
@@ -647,7 +655,7 @@ function manageUser
     local USER="$2"
     local REALNAME=$(sed -n "s/^$USER:[^:]*:[^:]*:[^:]*:\([^:]*\) - Kardia:.*/\1/p" < /etc/passwd)
     if [ "$1" = "existing" ]; then
-        local ALLOW_KARDIA_SYSADM=$(grep "$USER" $BASEDIR/src/.cx_kardia_admins 2>/dev/null)
+        local ALLOW_KARDIA_SYSADM=$(echo "SELECT 1 FROM s_sec_endorsement WHERE s_endorsement='kardia:sys_admin' AND s_context='kardia' AND s_subject='u:$USER';" | mysql -u root -N Kardia_DB 2>/dev/null)
 	if [ "$ALLOW_KARDIA_SYSADM" = "" ]; then
 	    local ALLOW_KARDIA_SYSADM=no
 	else
@@ -3268,7 +3276,7 @@ function setCheckScannerHost
     {
     lookupStatus
     if [ "$1" = "" ]; then
-	DSTR="dialog --backtitle '$TITLE' --title 'Check Scanner Host' --inputbox 'Host name or IP for check scanner server:' 8 72 '$CKR_HOST'"
+	DSTR="dialog --backtitle '$TITLE' --title 'Check Scanner Server Host' --inputbox 'Host name or IP for check scanner server:' 8 72 '$CKR_HOST'"
 	CKR_HOST=$(eval "$DSTR" 2>&1 >/dev/tty)
 	if [ "$?" != 0 ]; then
 	    return 1
@@ -3286,7 +3294,7 @@ function setCheckScannerPort
     {
     lookupStatus
     if [ "$1" = "" ]; then
-	DSTR="dialog --backtitle '$TITLE' --title 'Check Scanner Port' --inputbox 'Service name or port number for check scanner server:' 8 72 '$CKR_PORT'"
+	DSTR="dialog --backtitle '$TITLE' --title 'Check Scanner Server Port' --inputbox 'Service name or port number for check scanner server:' 8 72 '$CKR_PORT'"
 	CKR_PORT=$(eval "$DSTR" 2>&1 >/dev/tty)
 	if [ "$?" != 0 ]; then
 	    return 1
@@ -3395,8 +3403,8 @@ function menuCheckScanner
 	if [ "$CKR_INSTALLED" = "no" ]; then
 	    DSTR="$DSTR Install 'Install Check Scanner Server'"
 	else
-	    DSTR="$DSTR Host    'Set Scanner Host IP    (now: ${CKR_HOST})'"
-	    DSTR="$DSTR Port    'Set Scanner TCP Port   (now: ${CKR_PORT})'"
+	    DSTR="$DSTR Host    'Set Server Host IP    (now: ${CKR_HOST})'"
+	    DSTR="$DSTR Port    'Set Server TCP Port   (now: ${CKR_PORT})'"
 	fi
 	DSTR="$DSTR '---'  ''"
 	if [ "$CKR_CONFIGURED" = "yes" ]; then
@@ -3984,7 +3992,7 @@ function doRemoveUserKardiaSysadmin
 	    echo "You must specify a user to take permissions from"
 	    return
 	fi
-	echo "DELETE FROM s_sec_endorsement WHERE s_subject='u:THEUSER';" | sed "s/THEUSER/$TUSER/g" | mysql -u root Kardia_DB 2> /dev/null
+	echo "DELETE FROM s_sec_endorsement WHERE s_endorsement='kardia:sys_admin' AND s_context='kardia' AND s_subject='u:THEUSER';" | sed "s/THEUSER/$TUSER/g" | mysql -u root Kardia_DB 2> /dev/null
     }
 
 #Create a kardia unix user for use with shell scripts
@@ -4421,7 +4429,7 @@ function doStartAutossh
 	    LSSH=$(($AUTOSSH_BASE + 22))
 	    LWEB=$(($AUTOSSH_BASE + 80))
 	    LSSL=$(($AUTOSSH_BASE + 43))
-	    cmd="$autossh -f -M 0 -p $AUTOSSH_PORT $AUTOSSH_USER@$AUTOSSH_HOST -N -R $LSSH:localhost:22 -R $LWEB:localhost:843 -R $LSSL:localhost:800"
+	    cmd="env AUTOSSH_PORT= $autossh -f -M 0 -p $AUTOSSH_PORT $AUTOSSH_USER@$AUTOSSH_HOST -N -R $LSSH:localhost:22 -R $LWEB:localhost:800 -R $LSSL:localhost:843"
 	    if [ "$AUTOSSH_RUNNING" = "yes" ]; then
 		echo "Autossh already running.  Please stop it first"
 	    else
@@ -4546,7 +4554,7 @@ function menuConfigureAutossh
 		    #create an RSA key if we need one
 		    if [ ! -e ~/.ssh/id_rsa ]; then
 			# generate a ssh key for this user
-			ssh-keygen -q -t rsa -N "" -f ~/.ssh/id_rsa
+			ssh-keygen -q -t rsa -b "$RSABITS" -N "" -f ~/.ssh/id_rsa
 		    fi
 		    #we believe we can fix it by doing ssh-copy-id
 		    ssh-copy-id -p $N_PORT $target
@@ -4805,7 +4813,7 @@ function menuBackup
     #check to see if we have an ssh key, and if not, create it
     if [ ! -e ~/.ssh/id_rsa ]; then
 	# generate a ssh key for this user
-	ssh-keygen -q -t rsa -N "" -f ~/.ssh/id_rsa
+	ssh-keygen -q -t rsa -b "$RSABITS" -N "" -f ~/.ssh/id_rsa
     fi
     while true; do
 	if [ "$DUPLICITY_ENABLED" = "yes" ]; then

@@ -1,0 +1,107 @@
+$Version=2$
+disbursements "system/querytree"
+    {
+    ledgers "system/querytree"
+	{
+	sql = "	select
+		    *
+		from
+		    identity /apps/kardia/data/Kardia_DB/a_ledger/rows
+		";
+
+	periodstxt "system/querytree"
+	    {
+	    text = "Periods";
+
+	    years "system/querytree"
+		{
+		sql = "	select
+			    *
+			from
+			    identity /apps/kardia/data/Kardia_DB/a_period/rows p
+			where
+			    :p:a_ledger_number = :ledgers:a_ledger_number and
+			    :p:a_summary_only = 1
+			order by
+			    :p:a_start_date asc
+			";
+
+		months "system/querytree"
+		    {
+		    sql = " select
+				*
+			    from
+				identity /apps/kardia/data/Kardia_DB/a_period/rows p
+			    where
+				:p:a_ledger_number = :ledgers:a_ledger_number and
+				:p:a_summary_only = 0 and
+				:p:a_parent_period = :years:a_period
+			    order by
+				:p:a_start_date asc
+			    ";
+
+		    batchestxt "system/querytree"
+			{
+			text = "Batches";
+
+			batches "system/querytree"
+			    {
+			    sql = " select
+					*
+				    from
+					identity /apps/kardia/data/Kardia_DB/a_batch/rows b
+				    where
+					:b:a_ledger_number = :ledgers:a_ledger_number and
+					:b:a_period = :months:a_period
+				    order by
+					:b:a_batch_number asc
+				    ";
+
+			    trxtxt "system/querytree"
+				{
+				text = "Transactions";
+
+				trx "system/querytree"
+				    {
+				    sql = " select
+						*
+					    from
+						identity /apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows t
+					    where
+						:t:a_ledger_number = :batches:a_ledger_number and
+						:t:a_batch_number = :batches:a_batch_number
+					    ";
+				    }
+				}
+
+			    // Post a CD batch
+			    post_txt "system/querytree"
+				{
+				require_endorsements = "system:from_application";
+				text = "Post";
+				sql = "	declare object post;
+				
+					-- Post Batch to CD
+					exec /apps/kardia/modules/disb/cd_batch_post.qy a_ledger_number = :batches:a_ledger_number, a_batch_number = :batches:a_batch_number, a_period = :batches:a_period
+					;
+
+					-- Post CD Batch to GL
+					exec /apps/kardia/modules/disb/cd_batch_post_to_gl.qy a_ledger_number = :batches:a_ledger_number, a_batch_number = :batches:a_batch_number, a_period = :batches:a_period
+					;
+
+					-- Get Posted Status
+					select :post:posted = isnull(min(:t:a_posted), 0) from /apps/kardia/data/Kardia_DB/a_transaction/rows t where :t:a_batch_number = :batches:a_batch_number and :t:a_ledger_number = :batches:a_ledger_number and :t:a_period = :batches:a_period
+					;
+
+					-- Return Posted Status
+					select :post:posted, errors = null, a_ledger_number = :batches:a_ledger_number, a_batch_number = :batches:a_batch_number, a_period = :batches:a_period
+					";
+				}
+			    }
+			}
+		    }
+		}
+	    }
+	}
+    }
+

@@ -6,22 +6,22 @@ a_intent_type "application/filespec"
     header_row = yes;
     header_has_titles = no;
     two_quote_escape = yes;
-    annotation = "Obfuscated Data";
+    annotation = "CSV Data for a_intent_type";
     key_is_rowid = yes;
     new_row_padding = 8;
     
     // Column specifications.
-    a_recv_account_code "filespec/column" { type=char(16); id=1; }
-    a_ledger_number "filespec/column" { type=char(10); id=2; }
-    a_allow_daf "filespec/column" { type=bit; id=3; }
-    a_create_receivable "filespec/column" { type=bit; id=4; }
-    a_is_active "filespec/column" { type=bit; id=5; }
-    s_date_created "filespec/column" { type=datetime; id=6; }
-    s_date_modified "filespec/column" { type=datetime; id=7; }
-    __cx_osml_control "filespec/column" { type=varchar(255); id=8; }
-    s_modified_by "filespec/column" { type=varchar(20); id=9; }
-    a_intent_desc "filespec/column" { type=varchar(80); id=10; }
-    s_created_by "filespec/column" { type=varchar(20); id=11; }
-    a_comment "filespec/column" { type=varchar(255); id=12; }
-    a_intent_type "filespec/column" { type=varchar(1); id=13; }
+    a_ledger_number "filespec/column" { type=string; id=1; }
+    a_intent_type "filespec/column" { type=string; id=2; }
+    a_intent_desc "filespec/column" { type=string; id=3; }
+    a_is_active "filespec/column" { type=integer; id=4; }
+    a_create_receivable "filespec/column" { type=integer; id=5; }
+    a_recv_account_code "filespec/column" { type=string; id=6; }
+    a_allow_daf "filespec/column" { type=integer; id=7; }
+    a_comment "filespec/column" { type=string; id=8; }
+    s_date_created "filespec/column" { type=datetime; id=9; }
+    s_created_by "filespec/column" { type=string; id=10; }
+    s_date_modified "filespec/column" { type=datetime; id=11; }
+    s_modified_by "filespec/column" { type=string; id=12; }
+    __cx_osml_control "filespec/column" { type=string; id=13; }
     }

@@ -38,6 +38,8 @@ generic_copy_batch "widget/component-decl"
 
 	hide_on_nodata "widget/connector" { event=NoData; target=copy_batch_window; action=Close; }
 
+	hide_on_discard "widget/connector" { event=Discard; target=copy_batch_window; action=Close; }
+
 	on_new_set_binfo "widget/connector" { event=New; target=copy_batchno; action=SetValue; Value=runclient(:batch_osrc:batch_txt); }
 
 	before_copy_save "widget/connector"

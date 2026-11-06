@@ -40,7 +40,7 @@ plugin_base_requests_openbal "widget/component-decl"
 		target=opening_bal_cmp;
 		action=Generate;
 		ledger=runclient(:requests_osrc:s_object_key_1);
-		year=runclient(:requests_osrc:s_object_key_2);
+		yearperiod=runclient(:requests_osrc:s_object_key_2);
 		}
 	    }
 

@@ -107,14 +107,16 @@ manage_support_review "widget/component-decl"
 			status = condition(isnull(:a_amount,$0) = $0, 'Incomplete', 'Complete'),
 			review_amt =    condition(isnull(:a_amount,$0) = $0, null, :a_amount),
 			review_pct =	round(100 * convert(double, condition(:srt:a_amount = $0, null, :srt:a_amount)) / convert(double, :a_target_amount), 1),
-			percent =	round(100 * convert(double, (select
-					    sum(condition(isnull(:gp:a_interval,0) = 0, :gp:a_amount / 12, :gp:a_amount / :gp:a_interval))
-					from
-					    /apps/kardia/data/Kardia_DB/a_giving_pattern/rows gp
-					where
-					    :gp:a_fund = :srt:a_fund and
-					    :gp:a_ledger_number = :srt:a_ledger_number))
-					/ convert(double, :a_target_amount), 1),
+			percent =	condition(:a_target_amount = $0, 0.0,
+					    round(100 * convert(double, (select
+						sum(condition(isnull(:gp:a_interval,0) = 0, :gp:a_amount / 12, :gp:a_amount / :gp:a_interval))
+					    from
+						/apps/kardia/data/Kardia_DB/a_giving_pattern/rows gp
+					    where
+						:gp:a_fund = :srt:a_fund and
+						:gp:a_ledger_number = :srt:a_ledger_number))
+					    / convert(double, :a_target_amount), 1),
+					),
 			manager_list = (select sum(condition(char_length(isnull(:p:p_org_name,'')) > 1, :p:p_org_name, condition(char_length(:p:p_preferred_name) > 1, :p:p_preferred_name, :p:p_given_name) + ' ' + :p:p_surname) + '\n') - '\n' from /apps/kardia/data/Kardia_DB/a_fund_staff/rows cs, /apps/kardia/data/Kardia_DB/p_partner/rows p where :cs:a_ledger_number = :srt:a_ledger_number and :cs:a_fund = :srt:a_fund and :p:p_partner_key = :cs:p_staff_partner_key),
 			:srt:s_date_created,
 			:srt:s_created_by,

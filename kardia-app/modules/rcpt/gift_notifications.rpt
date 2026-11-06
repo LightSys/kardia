@@ -1,0 +1,169 @@
+$Version=2$
+gift_notifications "system/report"
+    {
+    title = "Gift Notifications";
+
+    document_format="application/pdf";
+    resolution = 300;
+    pagewidth=85;
+    pageheight=66;
+    marginleft=2.5;
+    marginright=2.5;
+    margintop=3;
+    marginbottom=3;
+
+    sending_key "report/parameter" { type=string; }
+
+    sending_group_qy "report/query"
+	{
+	sql = "	select
+		    *
+		from
+		    '/apps/kardia/modules/base/sending_group_create.qy?method=1&type=GIFT'
+		where
+		    :this:sending_key is null
+		;
+
+		select
+		    key = :p_sending_group_key,
+		    notification_cnt = isnull(sum(count(1)), 0),
+		    recipient_cnt = isnull(count(count(1)), 0)
+		from
+		    identity /apps/kardia/data/Kardia_DB/p_notification/rows n
+		where
+		    :p_sending_group_key = :this:sending_key and
+		    :this:sending_key is not null
+		group by
+		    :p_recip_partner_key
+		having
+		    :key is not null
+		;
+		";
+	}
+
+    summary_qy "report/query"
+	{
+	sql = "select summary=1";
+	}
+
+    recips_qy "report/query"
+	{
+	sql = "	select
+		    recip_name = condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name + ' ' + condition(char_length(:p:p_given_name + :p:p_surname) > 0, '- ', ''), '') + isnull(:p:p_given_name + ' ','') + isnull(:p:p_surname + ' ',''),
+		    :n:p_recip_partner_key,
+		    :n:p_recip_contact_data,
+		    notifications = count(1)
+		from
+		    /apps/kardia/data/Kardia_DB/p_partner/rows p,
+		    /apps/kardia/data/Kardia_DB/p_notification/rows n
+		where
+		    :n:p_sending_group_key = :sending_group_qy:key and
+		    :p:p_partner_key = :n:p_recip_partner_key
+		group by
+		    :n:p_recip_partner_key,
+		    :n:p_recip_contact_data
+		";
+	}
+
+    notifications_qy "report/query"
+	{
+	sql = "	select
+		    *
+		from
+		    /apps/kardia/data/Kardia_DB/p_notification/rows n
+		where
+		    :n:p_sending_group_key = :sending_group_qy:key and
+		    :n:p_recip_partner_key = :recips_qy:p_recip_partner_key and
+		    :n:p_recip_contact_data = :recips_qy:p_recip_contact_data
+		";
+	}
+
+    overall_form "report/form"
+	{
+	moneyformat = "-###,###,##0.00";
+	dateformat = "dd-MMM-yyyy";
+
+	source = sending_group_qy;
+
+	header_form "report/form"
+	    {
+	    ffsep = yes;
+	    source = summary_qy;
+
+	    hdrimg "report/image"
+		{
+		x=67.85;y=0;height=4;
+		width = 12.15;
+		source = /apps/kardia/data/Site.struct:site_report_logo;
+		}
+
+	    rpt_title "report/area"
+		{
+		x=0; y=0; width=80; height=4;
+		font=helvetica;
+		align=left;
+		t_d0 "report/data" { fontsize=15; style=bold; value = runserver("Gift Notifications\n"); }
+		t_d2 "report/data" { fontsize=8; value = runserver("Notifications: " + :sending_group_qy:notification_cnt + "\n"); }
+		t_d3 "report/data" { fontsize=8; value = runserver("Recipients: " + :sending_group_qy:recipient_cnt + "\n"); }
+		t_d4 "report/data" { fontsize=8; value = runserver("Printed by: " + user_name() + " on " + getdate() + "\n"); dateformat="dd-MMM-yyyy hh:mm:ss"; }
+		}
+
+	    rpt_confirm "report/area"
+		{
+		x=0; width=80; height=2;
+		font=helvetica;
+		align=left;
+		fontsize=10;
+
+		c_d0 "report/data" { style=underline; value = "Click here to confirm this report as having been sent.\n"; url=runserver("/apps/kardia/modules/rcpt/gift_notifications_sent.rpt?sending_key=" + :sending_group_qy:key); }
+		}
+	    }
+
+	notifications_form "report/form"
+	    {
+	    source = recips_qy;
+	    ffsep = yes;
+
+	    sending_to "report/data" { font=helvetica; fontsize=15; style=bold; value=runserver("Partner ID: " + :recips_qy:p_recip_partner_key + " (" + :recips_qy:recip_name + ") at " + :recips_qy:p_recip_contact_data + "\n"); }
+
+	    notifications_table "report/table"
+		{
+		x=0; width=80; height=0;
+		columns=2;
+		widths=9,70;
+		colsep=0.5;
+		nullformat="";
+		moneyformat = "-###,###,##0.00";
+		dateformat = "dd-MMM-yyyy";
+		bottomborder=0.3;
+		margintop=0;
+		source=notifications_qy;
+		nodatamsg = no;
+
+		hdr "report/table-row"
+		    {
+		    header = yes;
+		    font=helvetica;
+		    fontsize=8;
+		    topborder=0.3;
+		    bottomborder=0.05;
+
+		    h_date "report/table-cell" { value='Date'; align=center; }
+		    h_note "report/table-cell" { value='Notification'; align=center; }
+		    }
+
+		onegift "report/table-row"
+		    {
+		    allowbreak=no;
+		    fontsize=9;
+		    font=helvetica;
+		    margintop = 0.1;
+
+		    n_date "report/table-cell" { value=runserver(:notifications_qy:p_event_date); }
+		    n_note "report/table-cell" { value=runserver(:notifications_qy:p_message); }
+		    }
+		}
+	    }
+	}
+    }
+

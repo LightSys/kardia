@@ -68,7 +68,7 @@ periodmaint "widget/component-decl"
 				:p:s_modified_by,
 				:p:a_summary_only,
 				:ps:text,
-				year = datepart(year, :p:a_start_date)
+				prevyear = isnull((select :p2:a_period from /apps/kardia/data/Kardia_DB/a_period/rows p2 where :p2:a_ledger_number = :p:a_ledger_number and :p2:a_period < :p:a_period and :p2:a_summary_only = 1 order by :p2:a_period desc limit 1), '(none)')
 			from
 				IDENTITY /apps/kardia/data/Kardia_DB/a_period/rows p,
 				/apps/kardia/data/Kardia_DB/_a_period_status/rows ps
@@ -458,16 +458,83 @@ periodmaint "widget/component-decl"
 
 		    yeardata_osrc "widget/osrc"
 			{
-			year "widget/parameter" { type=integer; }
+			yearperiod "widget/parameter" { type=string; }
 			ledgernum "widget/parameter" { param_name=ledger; type=string; }
-			sql = " select
+
+			sql = " declare object init_info;
+			
+				-- Determine prior year
+				select
+				    :init_info:prioryear = first(:a_period)
+				from
+				    /apps/kardia/data/Kardia_DB/a_period/rows p
+				where
+				    :p:a_ledger_number = :parameters:ledger and
+				    :p:a_summary_only = 1 and
+				    :p:a_parent_period is null and
+				    :p:a_period < :parameters:yearperiod
+				order by
+				    :p:a_start_date desc
+				limit
+				    1
+				;
+
+				-- determine opening period for prior year
+				select
+				    :init_info:startperiod = :a_period
+				from
+				    /apps/kardia/data/Kardia_DB/a_period/rows p
+				where
+				    :p:a_ledger_number = :parameters:ledger and
+				    :p:a_summary_only = 0 and
+				    :p:a_parent_period = :init_info:prioryear
+				order by
+				    :p:a_start_date asc
+				limit
+				    1
+				;
+
+				-- determine ending period for prior year
+				select
+				    :init_info:endperiod = :a_period
+				from
+				    /apps/kardia/data/Kardia_DB/a_period/rows p
+				where
+				    :p:a_ledger_number = :parameters:ledger and
+				    :p:a_summary_only = 0 and
+				    :p:a_parent_period = :init_info:prioryear
+				order by
+				    :p:a_start_date desc
+				limit
+				    1
+				;
+
+				-- determine starting period for this year
+				select
+				    :init_info:obperiod = :a_period,
+				    :init_info:obdate = :a_start_date,
+				    :init_info:yeartxt = '' + datepart(year, :a_start_date) + condition(datepart(year, :a_start_date) = datepart(year, :a_end_date), '',  '-' + datepart(year, :a_end_date))
+				from
+				    /apps/kardia/data/Kardia_DB/a_period/rows p
+				where
+				    :p:a_ledger_number = :parameters:ledger and
+				    :p:a_summary_only = 0 and
+				    :p:a_parent_period = :parameters:yearperiod
+				order by
+				    :p:a_start_date asc
+				limit
+				    1
+				;
+
+				-- Lookup our data
+				select
 				    bal_exists = (select
 							count(1)
 						    from
 							/apps/kardia/data/Kardia_DB/a_transaction/rows t
 						    where
 							:t:a_ledger_number = :parameters:ledger and
-							datepart(year, :t:a_effective_date) = :parameters:year and
+							:t:a_period = :init_info:obperiod and
 							:t:a_transaction_type = 'B'
 						    ),
 				    prev_year_exists = isnull((select
@@ -476,19 +543,20 @@ periodmaint "widget/component-decl"
 							/apps/kardia/data/Kardia_DB/a_transaction/rows t
 						    where
 							:t:a_ledger_number = :parameters:ledger and
-							datepart(year, :t:a_effective_date) = :parameters:year - 1
+							:t:a_period >= :init_info:startperiod and
+							:t:a_period <= :init_info:endperiod
 						    limit
 							1
 						    ), 0),
 				    bal_check_al = convert(string,(select
-							sum(abs(sum(condition(datepart(year,:t:a_effective_date) = :parameters:year, :t:a_amount, $0 - :t:a_amount))))
+							sum(abs(sum(condition(:t:a_period = :init_info:obperiod, :t:a_amount, $0 - :t:a_amount))))
 						    from
 							/apps/kardia/data/Kardia_DB/a_transaction/rows t
 						    where
 							:t:a_ledger_number = :parameters:ledger and
-							datepart(year, :t:a_effective_date) >= :parameters:year - 1 and
-							datepart(year, :t:a_effective_date) <= :parameters:year and
-							(:t:a_transaction_type = 'B' or datepart(year, :t:a_effective_date) = :parameters:year - 1) and
+							:t:a_period >= :init_info:startperiod and
+							:t:a_period <= :init_info:obperiod and
+							(:t:a_transaction_type = 'B' or :t:a_period <= :init_info:endperiod) and
 							:t:a_account_code >= '1000' and
 							:t:a_account_code <= '2999' and
 							:t:a_account_code != '1900'
@@ -498,14 +566,14 @@ periodmaint "widget/component-decl"
 							:t:a_account_code
 						    )),
 				    bal_check_eq = convert(string,(select
-							sum(abs(sum(condition(datepart(year,:t:a_effective_date) = :parameters:year, :t:a_amount, $0 - :t:a_amount))))
+							sum(abs(sum(condition(:t:a_period = :init_info:obperiod, :t:a_amount, $0 - :t:a_amount))))
 						    from
 							/apps/kardia/data/Kardia_DB/a_transaction/rows t
 						    where
 							:t:a_ledger_number = :parameters:ledger and
-							datepart(year, :t:a_effective_date) >= :parameters:year - 1 and
-							datepart(year, :t:a_effective_date) <= :parameters:year and
-							(:t:a_transaction_type = 'B' or datepart(year, :t:a_effective_date) = :parameters:year - 1) and
+							:t:a_period >= :init_info:startperiod and
+							:t:a_period <= :init_info:obperiod and
+							(:t:a_transaction_type = 'B' or :t:a_period <= :init_info:endperiod) and
 							:t:a_account_code >= '3000' and
 							:t:a_account_code <= '5999'
 						    group by
@@ -524,40 +592,40 @@ periodmaint "widget/component-decl"
 			    target=year_osrc;
 			    key_1 = ledger;
 			    target_key_1 = a_ledger_number;
-			    key_2 = year;
-			    target_key_2 = year;
+			    key_2 = yearperiod;
+			    target_key_2 = a_period;
 			    }
 
 			yeardata_form "widget/form"
 			    {
 			    bal_chk_hdr "widget/label" { height=20; style=bold; value="Opening Balance Check:"; }
-			    bal_chk_label "widget/label" { height=20; value=runclient(condition(:yeardata_osrc:cx__pending, "", condition(:yeardata_osrc:bal_exists > 0, condition(:yeardata_osrc:bal_check_al is null, '', condition(:yeardata_osrc:bal_check_al != '$0.00' or :yeardata_osrc:bal_check_eq != '$0.00', condition(:yeardata_osrc:prev_year_exists > 0, 'Error: Opening Balances for ' + :year_osrc:year + ' do not match closing balances for ' + (:year_osrc:year - 1) + '.  The opening balances batch needs to be re-generated.', 'Previous year has no data'), 'Opening balances for ' + :year_osrc:year + ' match the previous year\'s closing balances.')), 'Opening Balances for ' + :year_osrc:year + ' have not been created' + condition(:yeardata_osrc:prev_year_exists = 0, ', but prior year has no data.', '.')))); }
+			    bal_chk_label "widget/label" { height=32; value=runclient(condition(:yeardata_osrc:cx__pending, "", condition(:yeardata_osrc:bal_exists > 0, condition(:yeardata_osrc:bal_check_al is null, '', condition(:yeardata_osrc:bal_check_al != '$0.00' or :yeardata_osrc:bal_check_eq != '$0.00', condition(:yeardata_osrc:prev_year_exists > 0, 'Error: Opening Balances for ' + :year_osrc:a_period + ' do not match closing balances for ' + :year_osrc:prevyear + '.  The opening balances batch needs to be re-generated.', 'Previous year ' + :year_osrc:prevyear + ' has no data'), 'Opening balances for ' + :year_osrc:a_period + ' match the previous year\'s (' + :year_osrc:prevyear + ') closing balances.')), 'Opening Balances for ' + :year_osrc:a_period + ' have not been created' + condition(:yeardata_osrc:prev_year_exists = 0, ', but prior year ' + :year_osrc:prevyear + ' has no data.', '.')))); }
 			    rerun_bal_btn "widget/textbutton"
 				{
-				width=280;
-				text = runclient(condition(:yeardata_osrc:bal_exists > 0, "Re-create", "Create") + " opening balances for " + :year_osrc:year);
+				width=350;
+				text = runclient(condition(:yeardata_osrc:bal_exists > 0, "Re-create", "Create") + " opening balances for " + :year_osrc:a_period);
 				enabled = runclient(has_endorsement("kardia:gl_manage", "kardia:ledger:" + :ledger:value) and (isnull(:yeardata_osrc:bal_check_al, "$0.00") != "$0.00" or isnull(:yeardata_osrc:bal_check_eq, "$0.00") != "$0.00") and not :yeardata_osrc:cx__pending and :yeardata_osrc:prev_year_exists > 0);
 
 				on_openbal "widget/connector"
 				    {
 				    event=Click;
 				    event_condition=runclient(:yeardata_osrc:bal_exists = 0 and not :yeardata_osrc:cx__pending);
-				    event_confirm=runclient("Really create the opening balances batch for " + :year_osrc:year + " based on all transactions for " + (:year_osrc:year - 1) + "?");
+				    event_confirm=runclient("Really create the opening balances batch for " + :year_osrc:a_period + " based on all transactions for " + :year_osrc:prevyear + "?");
 				    target=opening_bal_cmp;
 				    action=Generate;
 				    ledger=runclient(:year_osrc:a_ledger_number);
-				    year=runclient(:year_osrc:year);
+				    year=runclient(:year_osrc:a_period);
 				    }
 
 				on_re_openbal "widget/connector"
 				    {
 				    event=Click;
 				    event_condition=runclient(:yeardata_osrc:bal_exists > 0 and not :yeardata_osrc:cx__pending);
-				    event_confirm=runclient("Request re-creation of the opening balances batch for " + :year_osrc:year + " based on all transactions for " + (:year_osrc:year - 1) + "?");
+				    event_confirm=runclient("Request re-creation of the opening balances batch for " + :year_osrc:a_period + " based on all transactions for " + :year_osrc:prevyear + "?");
 				    target=opening_bal_req_cmp;
 				    action=RequestNewBalances;
 				    ledger=runclient(:year_osrc:a_ledger_number);
-				    year=runclient(:year_osrc:year);
+				    yearperiod=runclient(:year_osrc:a_period);
 				    }
 				}
 			    }

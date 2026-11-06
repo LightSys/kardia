@@ -348,7 +348,7 @@ inc_exp_matrix "system/report"
 			"Revenue & Expense by Period on [" + getdate() + " ET] requested by [" + user_name() + "]" + 
 			"\nFor ledger " + :this:ledger + condition(:this:balfund is null, "", ", fund(s) " + :this:balfund) + ", ending " + :this:end_period + 
 			condition(:this:exclude_balfund is null, "", "\nExcluding fund(s): " + :this:exclude_balfund) + 
-			condition(:this:reserve_factor is not null, "\nReserve Goal: " + :this:reserve_factor + " months; Monthly expenses: " + :expense_total_qy:amt_per_month +  " (averaged over " + :periods_qy:num_trx_periods + " periods)", "") +
+			condition(:this:reserve_factor is not null, "\nReserve Goal: " + :this:reserve_factor + " months; Monthly expenses: " + round(:expense_total_qy:amt_per_month, 2) +  " (averaged over " + :periods_qy:num_trx_periods + " periods)", "") +
 			"\n\n");
 		}
 	    }

@@ -1,0 +1,59 @@
+$Version=2$
+plugin_base_config_system "widget/component-decl"
+    {
+    width=828;
+    height=490;
+    title = "Kardia System";
+    description = "Configure options for Kardia";
+    sequence = 2;
+
+    vbox "widget/vbox"
+	{
+	x=0; y=0;
+	width=828; height=490;
+	spacing=7;
+
+	config_osrc "widget/osrc"
+	    {
+	    sql = "select * from object /apps/kardia/modules/base/config.qyp";
+	    autoquery=onload;
+
+	    config_form "widget/form"
+		{
+		allow_query=no;
+
+		def_lbl "widget/label" { height=16; style=bold; text="Kardia System:"; }
+		def_label_1 "widget/label" { height=15; text="Select this checkbox to cause Kardia to load automatically when a user browses to the root (/) URL on this server."; }
+
+		isdefault "widget/component" { path="/sys/cmp/smart_field.cmp"; height=24; field="SiteDefault"; text="Use as Default Application"; width=250; label_width=150; ctl_type=checkboxleft; def_hints "widget/hints" { style=notnull; } }
+
+		}
+	    }
+
+	ctls_hbox "widget/hbox"
+	    {
+	    height=24;
+	    align=center;
+	    spacing=10;
+
+	    save_btn "widget/textbutton"
+		{
+		height=24; width=130;
+		text = "Save";
+		enabled=runclient(:config_form:is_savable);
+
+		on_save "widget/connector" { event=Click; target=config_form; action=Save; }
+		}
+
+	    cancel_btn "widget/textbutton"
+		{
+		height=24; width=130;
+		text = "Cancel";
+		enabled=runclient(:config_form:is_discardable);
+
+		on_cancel "widget/connector" { event=Click; target=config_form; action=Discard; }
+		}
+	    }
+	}
+    }
+

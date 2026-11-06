@@ -3,7 +3,7 @@ transaction_report "widget/page"
     {
     title = "Transaction Report";
     width=580;
-    height=609;
+    height=619;
     background="/apps/kardia/images/bg/light_bgnd.jpg";
     widget_template = "/apps/kardia/tpl/kardia-system.tpl", runserver("/apps/kardia/tpl/" + user_name() + ".tpl");
     require_one_endorsement="kardia:gl_manage","kardia:gl";
@@ -37,7 +37,7 @@ transaction_report "widget/page"
 		path="/sys/cmp/smart_field.cmp"; 
 		field='year_period'; 
 		ctl_type=dropdown; 
-		text="Year (req'd):"; 
+		text="Year:"; 
 		sql = runserver("select :a_period + ' - ' + :a_period_desc, :a_period from /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = " + quote(:this:ledger) + " and :a_parent_period is null order by :a_period desc");
 		form=rpt_form;
 		label_width=120;
@@ -147,7 +147,7 @@ transaction_report "widget/page"
 
 	vb3 "widget/vbox"
 	    {
-	    x=32;y=568;width=514;height=40;
+	    x=32;y=578;width=514;height=40;
 	    align=bottom;
 
 	    spacing=4;

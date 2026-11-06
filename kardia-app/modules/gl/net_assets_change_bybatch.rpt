@@ -1,9 +1,9 @@
 $Version=2$
-inc_exp_balance_bybatch "system/report"
+net_assets_change_bybatch "system/report"
     {
     title = "Change in Net Assets - By Batch";
 
-    // Income and Expense Balance
+    // Change in Net Assets, organized by batch instead of by fund.
     //
     // This report shows opening balance, income, expense, and closing balance
     // for the organization and for all funds.  Inter-fund inc/exp is also
@@ -22,8 +22,9 @@ inc_exp_balance_bybatch "system/report"
 
     // Parameters
     ledger "report/parameter" { type=string; default=null; }
-    ref_period "report/parameter" { type=string; default=runserver( (select first(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_summary_only = 0 and datepart(year, :a_end_date) = datepart(year, getdate()) order by :a_start_date) ); }
-    end_period "report/parameter" { type=string; default=runserver( (select last(:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows where :a_summary_only = 0 and datepart(year, :a_end_date) = datepart(year, getdate()) order by :a_start_date) ); }
+    year_period "report/parameter" { type=string; default=runserver( (select :a_period from /apps/kardia/data/Kardia_DB/a_period/rows pp where :pp:a_summary_only = 1 and :pp:a_ledger_number = :this:ledger and getdate() <= :pp:a_end_date and getdate() >= :pp:a_start_date limit 1) ); }
+    ref_period "report/parameter" { type=string; default=runserver( (select :a_period from /apps/kardia/data/Kardia_DB/a_period/rows p where :p:a_summary_only = 0 and :p:a_parent_period = :this:year_period and :p:a_ledger_number = :this:ledger order by :p:a_start_date asc limit 1) ); }
+    end_period "report/parameter" { type=string; default=runserver( (select :a_period from /apps/kardia/data/Kardia_DB/a_period/rows p where :p:a_summary_only = 0 and :p:a_parent_period = :this:year_period and :p:a_ledger_number = :this:ledger order by :p:a_start_date desc limit 1) ); }
     unposted "report/parameter" { type=integer; default=0; }
     invert "report/parameter" { type=integer; default=0; }
     origin "report/parameter" { type=string; default=null; }
@@ -39,9 +40,10 @@ inc_exp_balance_bybatch "system/report"
 	sql = "select * from /apps/kardia/data/Kardia_DB/a_ledger/rows l where :l:a_ledger_number = :this:ledger";
 	}
 
+    // Find the first period of the year (may be earlier than ref_period)
     period_qy "report/query"
 	{
-	sql = "select :p:a_period_desc, first_period = min(:p2:a_period), yr = datepart(year, :p:a_start_date) from /apps/kardia/data/Kardia_DB/a_period/rows p, /apps/kardia/data/Kardia_DB/a_period/rows p2 where :p:a_period = :this:end_period and :p:a_ledger_number = :this:ledger and :p2:a_parent_period = :p:a_parent_period and :p2:a_ledger_number = :this:ledger";
+	sql = "select first_period = min(:p2:a_period) from /apps/kardia/data/Kardia_DB/a_period/rows p, /apps/kardia/data/Kardia_DB/a_period/rows p2 where :p:a_period = :this:end_period and :p:a_ledger_number = :this:ledger and :p2:a_parent_period = :p:a_parent_period and :p2:a_ledger_number = :this:ledger";
 	}
 
     accts_qy "report/query"
