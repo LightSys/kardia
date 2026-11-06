@@ -59,6 +59,14 @@ taskstpl "widget/template"
 	rowheight = null;
 	hdr_background = "/apps/kardia/images/bg/lsblue_gradient.png";
 	type_to_find = yes;
+	row_shadow_color=null;
+	row_shadow_radius=0;
+	}
+    table "widget/table"
+	{
+	widget_class = "table2";
+	hdr_background = null;
+	hdr_bgcolor = "#444444";
 	}
     pane "widget/pane"
 	{
@@ -85,5 +93,14 @@ taskstpl "widget/template"
 	{
 	replicasize=100;
 	readahead=100;
+	}
+
+    pane_label_small "widget/pane"
+	{
+	widget_class=label_small;
+	style=flat;
+	bgcolor = "#444444";
+	border_radius = 6;
+	border_color = "#444444";
 	}
     }

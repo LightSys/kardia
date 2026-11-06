@@ -1,0 +1,41 @@
+$Version=2$
+gl_batch_remove_ixa "system/query"
+    {
+    // Parameters
+    a_batch_number "query/parameter"	{ type=integer; }
+    a_ledger_number "query/parameter"	{ type=string; }
+    a_period "query/parameter"		{ type=string; }
+
+    sql = "	DECLARE object ixa;
+
+		-- Configured or default IXA account code
+		SELECT
+			:ixa:acct = isnull(nullif(:a_config_value, ''), '1900')
+		FROM 
+			/apps/kardia/data/Kardia_DB/a_config/rows 
+		WHERE
+			:a_config_name = 'GLIfaAcct' and
+			:a_ledger_number = :parameters:a_ledger_number
+		;
+
+		-- Category/control code for IXA account
+		SELECT
+			:ixa:category = isnull(nullif(:a_default_category, ''), '19')
+		FROM
+			/apps/kardia/data/Kardia_DB/a_account/rows
+		WHERE
+			:a_account_code = :ixa:acct and
+			:a_ledger_number = :parameters:a_ledger_number
+		;
+
+		-- Remove existing journal, if any
+		DELETE
+			/apps/kardia/data/Kardia_DB/a_transaction/rows t
+		WHERE
+			:t:a_batch_number = :parameters:a_batch_number and
+			:t:a_ledger_number = :parameters:a_ledger_number and
+			:t:a_period = :parameters:a_period and
+			:t:a_account_code = :ixa:acct
+		";
+    }
+

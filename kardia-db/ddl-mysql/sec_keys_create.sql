@@ -64,6 +64,9 @@ alter table p_notification
 alter table p_notification
 	add constraint p_notify_type_idx unique  (p_notify_type, p_object_id, p_recip_partner_key, p_notify_method, p_notify_method_item, p_notify_id);
 
+alter table p_notification
+	add constraint p_notify_send_idx unique  (p_sending_group_key, p_notify_id);
+
 alter table e_contact_history
 	add constraint e_cnt_hist_type_idx unique  (e_contact_history_type, p_partner_key, e_contact_history_id);
 

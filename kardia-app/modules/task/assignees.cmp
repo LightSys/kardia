@@ -1,0 +1,294 @@
+$Version=2$
+assignees "widget/component-decl"
+    {
+    width=380;
+    height=136;
+
+    // Parameters
+    task_osrc "widget/parameter" { type=object; find_container="widget/osrc"; }
+    me "widget/parameter" { type=string; default = runserver( (select :p_partner_key from /apps/kardia/data/Kardia_DB/p_staff/rows s where :s:p_kardia_login = user_name()) ); deploy_to_client=yes; }
+    enabled "widget/parameter" { type=integer; default = 1; deploy_to_client=yes; }
+
+    // Events
+    Updated "widget/component-decl-event" { }
+
+    // ObjectSource for changing assignments
+    mkassign_osrc "widget/osrc"
+	{
+	is_assigned "widget/parameter" { type=integer; default=0; }
+	ma_task "widget/parameter" { param_name=t_task_id; type=integer; }
+	ma_partner "widget/parameter" { param_name=p_partner_key; type=string; }
+	sql = "	delete
+		    /apps/kardia/data/Kardia_DB/t_assignee/rows
+		where
+		    :t_task_id = :parameters:t_task_id and
+		    :p_partner_key = :parameters:p_partner_key and
+		    :parameters:is_assigned = 0
+		;
+
+		insert
+		    /apps/kardia/data/Kardia_DB/t_assignee/rows
+		select
+		    p_partner_key = :parameters:p_partner_key,
+		    t_task_id = :parameters:t_task_id,
+		    s_date_created = getdate(),
+		    s_created_by = user_name(),
+		    s_date_modified = getdate(),
+		    s_modified_by = user_name()
+		where
+		    :parameters:is_assigned = 1
+		";
+	autoquery=never;
+	readahead=2;
+	replicasize=2;
+
+	onMkAssign1 "widget/connector" { event=EndQuery; target=assignee_osrc; action=Refresh; }
+	onMkAssign2 "widget/connector" { event=EndQuery; target=assignees; action=Updated; }
+	}
+
+    assignee_vbox "widget/vbox"
+	{
+	x=0; y=0;
+	width=380;
+	height=136;
+	spacing=10;
+
+	assignee_osrc "widget/osrc"
+	    {
+	    t_task_id "widget/parameter" { type=integer; }
+	    sql = " declare object info;
+	    
+		    select
+			:info:sprint = :t_sprint_id,
+			:info:project = :t_project_id
+		    from
+			/apps/kardia/data/Kardia_DB/t_task/rows t
+		    where
+			:t:t_task_id = :parameters:t_task_id
+		    ;
+			
+		    select
+			*,
+			is_assigned = condition(:ta:p_partner_key is not null, 1, 0),
+			nametxt = :p:p_given_name + ' ' + :p:p_surname
+		    from
+			identity /apps/kardia/data/Kardia_DB/t_sprint_participant/rows sp,
+			/apps/kardia/data/Kardia_DB/t_assignee/rows ta,
+			/apps/kardia/data/Kardia_DB/p_partner/rows p
+		    where
+			:sp:t_project_id = :info:project and
+			:sp:t_sprint_id = :info:sprint and
+			:ta:p_partner_key =* :sp:p_partner_key and
+			:ta:t_task_id = :parameters:t_task_id and
+			:p:p_partner_key = :sp:p_partner_key
+		    ";
+	    baseobj="/apps/kardia/data/Kardia_DB/t_assignee/rows";
+
+	    onAssigneeCreate "widget/connector" { event=Created; target=assignees; action=Updated; }
+
+	    assignee_task_link "widget/rule"
+		{
+		ruletype=osrc_relationship;
+		target=task_osrc;
+		//key_objname=ta;
+		key_1=t_task_id;
+		target_key_1=t_task_id;
+		}
+
+	    asn_table "widget/table"
+		{
+		widget_class = "table2";
+		//height=118;
+		height=152;
+		rowheight=20;
+		show_selection = no;
+		nodata_message="No task assignees yet.";
+
+		asn_detail "widget/table-row-detail"
+		    {
+		    condition=0;
+		    width=260;
+		    height=34;
+		    
+		    asn_ctls_hbox "widget/hbox"
+			{
+			x=10; y=10;
+			width=240;
+			height=24;
+			spacing=10;
+			align=center;
+
+			assignee_form "widget/form"
+			    {
+			    onAssigneeDelete "widget/connector" { event=DataDeleted; target=assignees; action=Updated; }
+
+			    rm_asn_btn "widget/textbutton"
+				{
+				height=24;
+				width=170;
+				fl_width=0;
+				text="Remove Assignee";
+				enabled=runclient(not :assignee_form:is_discardable);
+
+				on_rm_asn "widget/connector" { event=Click; target=assignee_form; action=Delete; }
+				}
+			    }
+			}
+		    }
+
+		t_check "widget/table-column" { title=""; fieldname=is_assigned; style=bold; type=checkbox; width=40; }
+		t_taname "widget/table-column" { title="Task Assignees"; fieldname=nametxt; style=bold; width=340; }
+
+		t_on_check "widget/connector"
+		    {
+		    event=Check;
+		    target=mkassign_osrc;
+		    action=QueryParam;
+		    is_assigned=1;
+		    t_task_id=runclient(:assignee_osrc:t_task_id);
+		    p_partner_key=runclient(:assignee_osrc:p_partner_key);
+		    }
+		t_on_uncheck "widget/connector"
+		    {
+		    event=Uncheck;
+		    target=mkassign_osrc;
+		    action=QueryParam;
+		    is_assigned=0;
+		    t_task_id=runclient(:assignee_osrc:t_task_id);
+		    p_partner_key=runclient(:assignee_osrc:p_partner_key);
+		    }
+		}
+	    }
+
+	newassign_hbox "widget/hbox"
+	    {
+	    condition=0;
+	    height=24;
+	    align=center;
+	    spacing=10;
+
+	    newassign_btn "widget/textbutton"
+		{
+		height=24;
+		width=170;
+		fl_width=0;
+		text="Add an Assignee...";
+		enabled=runclient(:enabled:value and not :assignee_form:is_discardable);
+
+		on_newassign "widget/connector"
+		    {
+		    event=Click;
+		    target=add_assign;
+		    action=Open;
+		    IsModal=1;
+		    }
+		}
+
+	    addme_btn "widget/textbutton"
+		{
+		height=24;
+		width=170;
+		fl_width=0;
+		text="Assign to Me";
+		enabled=runclient(isnull(:task_osrc:assigned_me, 0) == 0 and :enabled:value and not :assignee_form:is_discardable);
+
+		on_addme "widget/connector"
+		    {
+		    event=Click;
+		    target=assignee_osrc;
+		    action=Create;
+		    t_task_id=runclient(:task_osrc:t_task_id);
+		    p_partner_key=runclient(:me:value);
+		    s_date_created=runclient(getdate());
+		    s_created_by=runclient(user_name());
+		    s_date_modified=runclient(getdate());
+		    s_modified_by=runclient(user_name());
+		    }
+		}
+	    }
+	}
+
+    // Add task assignee popover window
+    add_assign "widget/childwindow"
+	{
+	condition=0;
+	width=400;
+	height=125;
+	x=300;
+	y=327;
+	toplevel = yes;
+
+	load_a_dd_on_open "widget/connector"
+	    {
+	    event=Open;
+	    target=add_assign_dd;
+	    action=SetItems;
+	    SQL=runclient(" select
+				label = :p:p_given_name + ' ' + :p:p_surname,
+				value = :p:p_partner_key,
+				selected = 0
+			    from
+				/apps/kardia/data/Kardia_DB/t_sprint_participant/rows sp,
+				/apps/kardia/data/Kardia_DB/p_partner/rows p
+			    where
+				:p:p_partner_key = :sp:p_partner_key and
+				:sp:t_project_id = " + :task_osrc:t_project_id + " and
+				:sp:t_sprint_id = " + :task_osrc:t_sprint_id
+			    );
+	    }
+
+	add_assign_vbox "widget/vbox"
+	    {
+	    x=10; y=10;
+	    width=378;
+	    height=103;
+	    spacing=20;
+
+	    add_assign_title "widget/label" { height=16; font_size=16; style=bold; align=center; text="Add Task Assignee"; fgcolor=black; }
+
+	    add_assign_dd "widget/dropdown"
+		{
+		width=200;
+		numdisplay=12;
+		mode=dynamic_server;
+		sql = " select label='', value='' where 0 = 1";
+		}
+
+	    add_assign_actions_hbox "widget/hbox"
+		{
+		height=24;
+		align=center;
+		spacing=10;
+
+		add_assign_ok "widget/textbutton"
+		    {
+		    width=150;
+		    enabled=runclient(:add_assign_dd:value is not null);
+		    text=runclient(isnull('Add Assignee', '-'));
+
+		    on_aa_ok_1 "widget/connector" { event=Click; target=add_assign; action=Close; }
+		    on_aa_ok_2 "widget/connector"
+			{
+			event=Click;
+			target=assignee_osrc;
+			action=Create;
+			t_task_id=runclient(:task_osrc:t_task_id);
+			p_partner_key=runclient(:add_assign_dd:value);
+			s_date_created=runclient(getdate());
+			s_created_by=runclient(user_name());
+			s_date_modified=runclient(getdate());
+			s_modified_by=runclient(user_name());
+			}
+		    }
+
+		add_assign_cancel "widget/textbutton"
+		    {
+		    width=150;
+		    text="Cancel";
+
+		    on_aa_cancel "widget/connector" { event=Click; target=add_assign; action=Close; }
+		    }
+		}
+	    }
+	}
+    }

@@ -17,7 +17,11 @@ plugin_base_config_site "widget/component-decl"
 
 	config_osrc "widget/osrc"
 	    {
-	    sql = "select * from object /apps/kardia/data/Site.struct";
+	    sql = " select
+			*
+		    from
+			object /apps/kardia/data/Site.struct
+		    ";
 
 	    config_form "widget/form"
 		{

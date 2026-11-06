@@ -41,8 +41,19 @@ gift_import_report "widget/page"
 		path="/sys/cmp/smart_field.cmp"; 
 		field='user_document_format'; 
 		ctl_type=dropdown; 
-		text='Format:'; 
-		sql = runserver("select :t:type_description + ' (' + :t:type_name + ')', :t:type_name from /sys/cx.sysinfo/osml/types t, /sys/cx.sysinfo/prtmgmt/output_types ot where :t:type_name = :ot:type order by :t:type_description");
+		text='Format:';
+		sql = runserver("
+		    select
+			label = :t:type_description + ' (' + :t:type_name + ')',
+			value = :t:type_name
+		    from
+			/sys/cx.sysinfo/osml/types t,
+			/sys/cx.sysinfo/prtmgmt/output_types ot
+		    where
+			:t:type_name = :ot:type
+		    order by
+			:t:type_description
+		");
 		form=rpt_form;
 		label_width=120;
 		}

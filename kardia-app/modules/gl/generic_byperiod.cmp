@@ -1,8 +1,8 @@
 $Version=2$
 generic_byperiod "widget/component-decl"
     {
-    width=780;
-    height=580;
+    width=980;
+    height=680;
 
     ledger "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
     title "widget/parameter" { type=string; default=''; }
@@ -23,13 +23,13 @@ generic_byperiod "widget/component-decl"
 			:p:a_summary_only = 0 and :p:a_ledger_number = :parameters:ledger
 		ORDER BY
 			:p:a_period desc");
-	replicasize=256;
-	readahead=256;
+	replicasize=320;
+	readahead=320;
 	autoquery=onload;
 
 	auto_select_current "widget/connector"
 	    {
-	    event=EndQuery;
+	    event=Results;
 	    event_condition=runclient(:periods_osrc:a_period != :generic_byperiod:period and not (:generic_byperiod:period is null));
 	    target = periods_osrc;
 	    action = FindObject;
@@ -40,12 +40,12 @@ generic_byperiod "widget/component-decl"
 
 	ctls_hbox "widget/hbox"
 	    {
-	    x=0; y=0; width=780;height=22;
+	    x=0; y=0; width=980;height=22;
 	    spacing=4;
 
 	    rcpt_label "widget/label"
 		{
-		width=295;
+		width=495;
 		text = runserver(:this:title); 
 		style=bold;
 		font_size=16;
@@ -125,14 +125,14 @@ generic_byperiod "widget/component-decl"
 		}
 	    }
 
-	sep_line "widget/pane" { x=0;y=28; width=780; height=2; style=lowered; }
+	sep_line "widget/pane" { x=0;y=28; width=980; height=2; style=lowered; }
 
 	embed_cmp "widget/component"
 	    {
 	    condition=runserver(char_length(:this:embed) > 0);
 
 	    use_toplevel_params = yes;
-	    x=0;y=38; width=780;height=542;
+	    x=0;y=38; width=980;height=642;
 	    path=runserver(:this:embed);
 	    ledger=runserver(:this:ledger);
 	    periods_osrc=periods_osrc;

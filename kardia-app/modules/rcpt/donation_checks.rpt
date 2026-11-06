@@ -60,27 +60,24 @@ donation_checks "system/report"
 			cktotal = sum(:i:a_amount),
 			batch = :i:a_batch_number,
 			period = :i:a_period,
-			date = isnull(:g:a_gift_postmark_date, :g:a_gift_received_date),
+			date = isnull(:i:a_dn_gift_postmark_date, :i:a_dn_gift_received_date),
 			check = :i:a_recv_document_id,
-			extname = rtrim(:g:p_donor_partner_id + ' ' + condition(:p:p_partner_key is null, '**INVALID**', condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name, rtrim(:p:p_given_name) + ' ' + :p:p_surname))),
-			:g:a_gift_number,
+			extname = rtrim(:i:p_dn_donor_partner_id + ' ' + condition(:p:p_partner_key is null, '**INVALID**', condition(char_length(rtrim(:p:p_org_name)) > 0, :p:p_org_name, rtrim(:p:p_given_name) + ' ' + :p:p_surname))),
+			:i:a_gift_number,
 			dcnt = count(:i:a_split_number)
 		from
-			/apps/kardia/data/Kardia_DB/a_subtrx_gift_group/rows g,
 			/apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows i,
 			/apps/kardia/data/Kardia_DB/p_partner/rows p
 		where
-			:g:a_ledger_number = :batch_qy:a_ledger_number and
-			:g:a_batch_number = :batch_qy:batch and
-			:p:p_partner_key =* :g:p_donor_partner_id and
-			:i:a_ledger_number = :g:a_ledger_number and
-			:i:a_batch_number = :g:a_batch_number and
-			:i:a_gift_number = :g:a_gift_number
+			:i:a_ledger_number = :batch_qy:a_ledger_number and
+			:i:a_batch_number = :batch_qy:batch and
+			:p:p_partner_key =* :i:p_dn_donor_partner_id
 		group by
-			:g:a_ledger_number,
-			:g:a_batch_number,
-			:g:a_gift_number,
-			:i:a_recv_document_id
+			:i:a_ledger_number,
+			:i:a_batch_number,
+			:i:p_dn_donor_partner_id,
+			-- Below: for checks, group by ckno.  For electronic, group by transaction id (last part of source key).
+			condition(:i:a_dn_gift_type = 'E' or :i:a_dn_gift_type = 'D', 'E' + substring(:i:i_eg_source_key, char_length(:i:i_eg_source_key) - charindex('|', reverse(:i:i_eg_source_key)) + 2), 'C' + :i:a_recv_document_id)
 		");
 	total "report/aggregate" { compute="sum(:cktotal)"; }
 	cnt "report/aggregate" { compute="count(:cktotal)"; }

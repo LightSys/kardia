@@ -1,0 +1,8 @@
+$Version=2$
+api_linksign "system/query"
+    {
+    link "query/parameter" { type=string; }
+    require_endorsements = "system:from_application";
+    sql = "select name = 'Link', link = :parameters:link, signed_link = linksign(:parameters:link)";
+    name_expression = "'Link'";
+    }

@@ -39,6 +39,11 @@ $jsonID=1;
 #################################
 # Backend: sybase or mysql - can be specified with -b command line option
 $glob_backend="sybase";
+if ($ARGV[0] eq "-b") {
+    shift;
+    $glob_backend = $ARGV[0];
+    shift;
+}
 
 #################################
 # The default users we will add to the sql
@@ -64,6 +69,7 @@ $keys_out="keys";
 $sec_keys_out="sec_keys";
 $wiki_out="wiki";
 $component_directory="ddl-${glob_backend}/components";
+$spec_directory="ddl-${glob_backend}/specs";
 $order=0;
 
 ###############################
@@ -1410,6 +1416,7 @@ sub print_table() {
      
     ####################################### 
     &make_kardia_component($table);    
+    &make_kardia_specs($table);
 }
 
 #############
@@ -1558,6 +1565,60 @@ sub printIndices(){
     }
 }
 
+
+sub make_kardia_specs()
+{
+    my ($table) = @_;
+    $sp4="    ";
+    $sp8="$sp4$sp4";
+    $sp12="$sp8$sp4";
+    $sp16="$sp8$sp8";
+    if ( not -e "$spec_directory" ) {
+        #make the directory
+        mkdir ("$spec_directory") or die "could not make directory: $spec_directory";
+    }
+    open (SPEC, ">$spec_directory/${table}.spec");
+    print SPEC "\$Version=2\$\n";
+
+    print SPEC "${table} \"application/filespec\"\n${sp4}\{\n";
+    print SPEC "${sp4}// General parameters.\n";
+    print SPEC "${sp4}filetype = csv;\n";
+    print SPEC "${sp4}header_row = yes;\n";
+    print SPEC "${sp4}header_has_titles = no;\n";
+    print SPEC "${sp4}two_quote_escape = yes;\n";
+    print SPEC "${sp4}annotation = \"CSV Data for ${table}\";\n";
+    print SPEC "${sp4}key_is_rowid = yes;\n";
+    print SPEC "${sp4}new_row_padding = 8;\n";
+    print SPEC "${sp4}\n";
+    print SPEC "${sp4}// Column specifications.\n";
+
+    my $count=0;
+    foreach $field (sort { $glob_field{$table}{$a}{'order'} <=> $glob_field{$table}{$b}{'order'} } (keys(%{$glob_field{$table}}))) {
+        $count++;
+	my $datatype = $glob_field{$table}{$field}{'type'};
+	if ($datatype =~ /char/) {
+	    $datatype = 'string';
+	}
+	if ($datatype =~ /int/) {
+	    $datatype = 'integer';
+	}
+	if ($datatype eq 'bit') {
+	    $datatype = 'integer';
+	}
+	if ($datatype eq 'float') {
+	    $datatype = 'double';
+	}
+	if ($datatype =~ /decimal/) {
+	    $datatype = 'money';
+	}
+	print SPEC "${sp4}${field} \"filespec/column\" { type=${datatype}; id=${count}; }\n";
+    }
+
+    print SPEC "${sp4}\}\n";
+    close (SPEC);
+}
+
+
 sub make_kardia_component()
 {
     my ($table) = @_;
@@ -1691,11 +1752,6 @@ sub make_kardia_component()
 
 $glob_table="Kardia_DB" if ($glob_table eq "");
 
-if ($ARGV[0] eq "-b") {
-    shift;
-    $glob_backend = $ARGV[0];
-    shift;
-}
 if ($glob_backend eq "sybase") {
     $cmd_terminator = "\ngo\n";
 } elsif ($glob_backend eq "mysql") {

@@ -3,7 +3,7 @@ TableMaintenance "widget/page"
     {
     height=680; width=1080;
     title = "Kardia - Table Maintenance";
-    widget_template = "/apps/kardia/tpl/kardia-system.tpl";
+    widget_template = "/apps/kardia/tpl/kardia-system.tpl","/apps/kardia/modules/system/TableMaintenance.tpl";
     bgcolor = "#e0e0e0";
     background = "/apps/kardia/images/bg/light_bgnd3.jpg";
     require_endorsements="kardia:sys_admin";

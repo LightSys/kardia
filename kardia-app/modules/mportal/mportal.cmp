@@ -74,7 +74,7 @@ mportal "widget/component-decl"
 
 		    bar_title "widget/label"
 			{
-			width=350;
+			width=300;
 			y=11;
 			font_size=32;
 			style=bold;
@@ -84,7 +84,7 @@ mportal "widget/component-decl"
 
 		    tabicon_bar "widget/hbox"
 			{
-			width=754;
+			width=804;
 			align=right;
 			spacing=0;
 
@@ -169,7 +169,7 @@ mportal "widget/component-decl"
 
 		    plugin_tabs "widget/repeat"
 			{
-			sql = "select path = :cx__pathname, module = :cx__pathpart4, component = :cx__pathpart5, :title from object wildcard '/apps/kardia/modules/*/plugin_mportal_main_*.cmp' where :sequence is not null order by :sequence";
+			sql = "select path = :cx__pathname, module = :cx__pathpart4, component = :cx__pathpart5, :title from object wildcard '/apps/kardia/modules/*/plugin_mportal_main_*.cmp' where :sequence is not null and isnull(:enabled,1) = 1 order by :sequence";
 
 			plugin_tab "widget/tabpage"
 			    {

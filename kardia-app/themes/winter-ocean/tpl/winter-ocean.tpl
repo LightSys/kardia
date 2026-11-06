@@ -145,6 +145,11 @@ kardia "widget/template"
 	click_fgcolor = "#a8c1d8";
 	//point_fgcolor = "#335a78";
 	}
+    tplRowDetailLabel "widget/label"
+	{
+	widget_class = "row-detail";
+	fgcolor = white;
+	}
     tplLabelPaneLabel "widget/label"
 	{
 	widget_class = "label";

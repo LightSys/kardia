@@ -715,8 +715,20 @@ drop table a_subtrx_deposit;
 drop table a_subtrx_cashxfer;
 
 
+/* i_association */
+drop table i_association;
+
+
+/* i_acct_association */
+drop table i_acct_association;
+
+
 /* i_eg_gift_import */
 drop table i_eg_gift_import;
+
+
+/* i_eg_deposit_config */
+drop table i_eg_deposit_config;
 
 
 /* i_eg_gift_trx_fees */

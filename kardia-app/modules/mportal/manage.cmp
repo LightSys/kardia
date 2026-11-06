@@ -44,7 +44,7 @@ manage "widget/component-decl"
 		    event=TabSelected;
 		    target=list_tab;
 		    action=SetTab;
-		    TabIndex=runserver(:TabIndex);
+		    TabIndex=runclient(:TabIndex);
 		    }
 		}
 
