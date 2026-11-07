@@ -38,6 +38,48 @@ gift_import "widget/component-decl"
 	mode=dynamic;
 	path="/apps/kardia/modules/rcpt/imp_qa_popup_menu.cmp";
 
+	on_ign_addr "widget/connector"
+	    {
+	    event=Ignore;
+	    event_condition=runclient(:type = 'Address');
+	    target=ign_osrc;
+	    action=Create;
+	    p_partner_key=runclient(:partner);
+	    i_eg_info=runclient(isnull(:gift_import_osrc:i_eg_donor_addr1,'') + isnull(:gift_import_osrc:i_eg_donor_city,'') + isnull(:gift_import_osrc:i_eg_donor_state,''));
+	    s_date_created=runclient(getdate());
+	    s_created_by=runclient(user_name());
+	    s_date_modified=runclient(getdate());
+	    s_modified_by=runclient(user_name());
+	    }
+
+	on_ign_email "widget/connector"
+	    {
+	    event=Ignore;
+	    event_condition=runclient(:type = 'Email');
+	    target=ign_osrc;
+	    action=Create;
+	    p_partner_key=runclient(:partner);
+	    i_eg_info=runclient(isnull(:gift_import_osrc:i_eg_donor_email,''));
+	    s_date_created=runclient(getdate());
+	    s_created_by=runclient(user_name());
+	    s_date_modified=runclient(getdate());
+	    s_modified_by=runclient(user_name());
+	    }
+
+	on_ign_phone "widget/connector"
+	    {
+	    event=Ignore;
+	    event_condition=runclient(:type = 'Phone');
+	    target=ign_osrc;
+	    action=Create;
+	    p_partner_key=runclient(:partner);
+	    i_eg_info=runclient(isnull(:gift_import_osrc:i_eg_donor_phone,''));
+	    s_date_created=runclient(getdate());
+	    s_created_by=runclient(user_name());
+	    s_date_modified=runclient(getdate());
+	    s_modified_by=runclient(user_name());
+	    }
+
 	on_new_addr "widget/connector"
 	    {
 	    event=Add;
@@ -125,6 +167,15 @@ gift_import "widget/component-decl"
 	    p_contact_type=runclient('P');
 	    p_contact_comments=runclient('Giving data import via ' + :gift_import_osrc:gs_code);
 	    }
+	}
+
+    // This is used for setting up ignored contact data
+    ign_osrc "widget/osrc"
+	{
+	sql = "select * from /apps/kardia/data/Kardia_DB/i_eg_ignored_info/rows";
+	baseobj = "/apps/kardia/data/Kardia_DB/i_eg_ignored_info/rows";
+	autoquery = never;
+	on_ignore_created "widget/connector" { event=Created; target=gift_import_osrc; action=Refresh; }
 	}
 
     do_import_osrc "widget/osrc"
@@ -379,17 +430,20 @@ gift_import "widget/component-decl"
 					qa_addr = condition(
 							    nullif(:eg:p_donor_partner_key,'') is not null
 							    and nullif(:eg:i_eg_donor_city,'') is not null
-							    and (select :loc:p_partner_key from /apps/kardia/data/Kardia_DB/p_location/rows loc where :loc:p_partner_key = :eg:p_donor_partner_key and :loc:p_record_status_code != 'O' and upper(:loc:p_state_province) = upper(:eg:i_eg_donor_state) having cos_compare(upper(isnull(:loc:p_address_1,'') +  isnull(:loc:p_city,'')), upper(isnull(:eg:i_eg_donor_addr1,'') + isnull(:eg:i_eg_donor_city,''))) > 0.9) is null,
+							    and (select :loc:p_partner_key from /apps/kardia/data/Kardia_DB/p_location/rows loc where :loc:p_partner_key = :eg:p_donor_partner_key and :loc:p_record_status_code != 'O' and upper(:loc:p_state_province) = upper(:eg:i_eg_donor_state) having cos_compare(upper(isnull(:loc:p_address_1,'') +  isnull(:loc:p_city,'')), upper(isnull(:eg:i_eg_donor_addr1,'') + isnull(:eg:i_eg_donor_city,''))) > 0.9) is null
+							    and (select count(1) from /apps/kardia/data/Kardia_DB/i_eg_ignored_info/rows ii where :ii:p_partner_key = :eg:p_donor_partner_key and upper(:ii:i_eg_info) = upper(isnull(:eg:i_eg_donor_addr1,'') + isnull(:eg:i_eg_donor_city,'') + isnull(:eg:i_eg_donor_state,''))) == 0,
 							    1, 0),
 					qa_email = condition(
 							    nullif(:eg:p_donor_partner_key,'') is not null
 							    and nullif(:eg:i_eg_donor_email,'') is not null
-							    and (select count(1) from /apps/kardia/data/Kardia_DB/p_contact_info/rows ci where :ci:p_partner_key = :eg:p_donor_partner_key and upper(:ci:p_contact_data) = upper(:eg:i_eg_donor_email) and :ci:p_record_status_code != 'O' and :ci:p_contact_type = 'E') == 0,
+							    and (select count(1) from /apps/kardia/data/Kardia_DB/p_contact_info/rows ci where :ci:p_partner_key = :eg:p_donor_partner_key and upper(:ci:p_contact_data) = upper(:eg:i_eg_donor_email) and :ci:p_record_status_code != 'O' and :ci:p_contact_type = 'E') == 0
+							    and (select count(1) from /apps/kardia/data/Kardia_DB/i_eg_ignored_info/rows ii where :ii:p_partner_key = :eg:p_donor_partner_key and upper(:ii:i_eg_info) = upper(isnull(:eg:i_eg_donor_email,''))) == 0,
 							    1, 0),
 					qa_phone = condition(
 							    nullif(:eg:p_donor_partner_key,'') is not null 
 							    and char_length(isnull(:eg:i_eg_donor_phone,'')) >= 7 
-							    and (select count(1) from /apps/kardia/data/Kardia_DB/p_contact_info/rows ci where :ci:p_partner_key = :eg:p_donor_partner_key and charindex(replace(replace(replace(replace(replace(:eg:i_eg_donor_phone, ' ', ''), '-', ''), '+', ''), '(', ''), ')', ''), replace(replace(replace(replace(replace(isnull(:ci:p_phone_country,'') + isnull(:ci:p_phone_area_city, '') + isnull(:ci:p_contact_data, ''), ' ', ''), '-', ''), '+', ''), '(', ''), ')', '')) > 0 and :ci:p_record_status_code != 'O' and charindex(:ci:p_contact_type, 'PC') > 0) == 0,
+							    and (select count(1) from /apps/kardia/data/Kardia_DB/p_contact_info/rows ci where :ci:p_partner_key = :eg:p_donor_partner_key and charindex(replace(replace(replace(replace(replace(:eg:i_eg_donor_phone, ' ', ''), '-', ''), '+', ''), '(', ''), ')', ''), replace(replace(replace(replace(replace(isnull(:ci:p_phone_country,'') + isnull(:ci:p_phone_area_city, '') + isnull(:ci:p_contact_data, ''), ' ', ''), '-', ''), '+', ''), '(', ''), ')', '')) > 0 and :ci:p_record_status_code != 'O' and charindex(:ci:p_contact_type, 'PC') > 0) == 0
+							    and (select count(1) from /apps/kardia/data/Kardia_DB/i_eg_ignored_info/rows ii where :ii:p_partner_key = :eg:p_donor_partner_key and upper(:ii:i_eg_info) = upper(isnull(:eg:i_eg_donor_phone,''))) == 0,
 							    1, 0),
 					trx_date = substring(convert(string,:eg:i_eg_gift_trx_date),1,11),
 					gs_donor_info = :eg:i_eg_donor_name + isnull(' (' + :eg:i_eg_donor_city + ', ' + :eg:i_eg_donor_state + ')', ''),
