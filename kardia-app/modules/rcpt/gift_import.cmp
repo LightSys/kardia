@@ -574,7 +574,7 @@ gift_import "widget/component-decl"
 			    st_gsdon "widget/table-column" { width=246; fieldname=gs_donor_info; title="Giving Service Donor/Designation"; caption_fieldname=gs_desig_info; }
 			    st_gscode "widget/table-column" { width=48; fieldname=gs_code; title="Serv."; }
 			    st_qadon "widget/table-column" { width=24; fieldname=qa_status; title="QA"; type=image; align=center; }
-			    st_qaplus "widget/table-column" { width=24; value=runclient(condition(:gift_import_osrc:qa_email or :gift_import_osrc:qa_phone or :gift_import_osrc:qa_addr, '/apps/kardia/images/icons/ionicons-person-add.svg', '/sys/images/trans_1.gif')); title="+"; type=image; image_maxwidth=16; image_maxheight=16; align=center; }
+			    st_qaplus "widget/table-column" { width=24; value=runclient(condition(:gift_import_osrc:qa_email or :gift_import_osrc:qa_phone or :gift_import_osrc:qa_addr, '/apps/kardia/images/icons/ionicons-archive.svg', '/sys/images/trans_1.gif')); title="+"; type=image; image_maxwidth=20; image_maxheight=20; align=center; }
 			    //st_kdon "widget/table-column" { width=170; fieldname=kardia_donor_info; title="Kardia Donor"; }
 			    //st_qades "widget/table-column" { width=24; fieldname=desig_qa_status; title="QA"; type=image; }
 			    st_gsdes "widget/table-column" { width=246; value=runclient(isnull(:gift_import_osrc:kardia_donor_info, ' ')); title="Kardia Donor/Designation"; caption_fieldname=kardia_desig_info; }
@@ -624,7 +624,7 @@ gift_import "widget/component-decl"
 
 						    disp_pane "widget/pane"
 							{
-							width=(271 - 5 - 16);
+							width=(271 - 5 - 20);
 							style=bordered;
 							border_color = black;
 							bgcolor = white;
@@ -632,7 +632,7 @@ gift_import "widget/component-decl"
 							    {
 							    x = 2;
 							    height = 102;
-							    width = 267 - 5 - 16;
+							    width = 267 - 5 - 20;
 							    fl_height = 1;
 							    style = bold;
 							    value = runclient(substitute("[:i_eg_donor_name]\n[:i_eg_donor_addr1]\n[:i_eg_donor_addr2]\n[:i_eg_donor_city] [:i_eg_donor_state] [:i_eg_donor_postal]\n[:eg_donor_country_txt]", "e=gift_import_osrc"));
@@ -641,9 +641,10 @@ gift_import "widget/component-decl"
 
 						    gsa_add "widget/imagebutton"
 							{
-							width=16;
+							width=20;
+							height=20;
 							disabledimage='/sys/images/trans_1.gif';
-							image='/apps/kardia/images/icons/ionicons-person-add.svg';
+							image='/apps/kardia/images/icons/ionicons-archive.svg';
 							tooltip='Add or Update This Address';
 							enabled=runclient(:gift_import_osrc:qa_addr);
 
@@ -666,12 +667,13 @@ gift_import "widget/component-decl"
 						gse_hbox "widget/hbox"
 						    {
 						    height=16; spacing=5;
-						    gs_email "widget/component" { width=(271 - 5 - 16); path="/sys/cmp/smart_field.cmp"; field=i_eg_donor_email; ctl_type=label; text="Email:"; label_width=60; label_valign=top; }
+						    gs_email "widget/component" { width=(271 - 5 - 20); path="/sys/cmp/smart_field.cmp"; field=i_eg_donor_email; ctl_type=label; text="Email:"; label_width=60; label_valign=top; }
 						    gse_add "widget/imagebutton"
 							{
-							width=16;
+							width=20;
+							height=20;
 							disabledimage='/sys/images/trans_1.gif';
-							image='/apps/kardia/images/icons/ionicons-person-add.svg';
+							image='/apps/kardia/images/icons/ionicons-archive.svg';
 							tooltip='Add or Update This Email';
 							enabled=runclient(:gift_import_osrc:qa_email);
 
@@ -692,12 +694,13 @@ gift_import "widget/component-decl"
 						gsp_hbox "widget/hbox"
 						    {
 						    height=16; spacing=5;
-						    gs_phone "widget/component" { width=(271 - 5 - 16); path="/sys/cmp/smart_field.cmp"; field=i_eg_donor_phone; ctl_type=label; text="Phone:"; label_width=60; label_valign=top; }
+						    gs_phone "widget/component" { width=(271 - 5 - 20); path="/sys/cmp/smart_field.cmp"; field=i_eg_donor_phone; ctl_type=label; text="Phone:"; label_width=60; label_valign=top; }
 						    gsp_add "widget/imagebutton"
 							{
-							width=16;
+							width=20;
+							height=20;
 							disabledimage='/sys/images/trans_1.gif';
-							image='/apps/kardia/images/icons/ionicons-person-add.svg';
+							image='/apps/kardia/images/icons/ionicons-archive.svg';
 							tooltip='Add or Update This Phone';
 							enabled=runclient(:gift_import_osrc:qa_phone);
 
