@@ -1156,6 +1156,11 @@ create  index i_eg_stats_idx on i_eg_gift_import (i_eg_gift_trx_date, i_eg_statu
 /* go */
 
 
+/* i_eg_ignored_info */
+/* create  index i_eg_ignored_pk on i_eg_ignored_info (p_partner_key, i_eg_info)*/ 
+/* go */
+
+
 /* i_eg_gift_trx_fees */
 /* create  index i_eg_gift_trx_fees_pk on i_eg_gift_trx_fees (a_ledger_number, i_eg_fees_id)*/ 
 /* go */
