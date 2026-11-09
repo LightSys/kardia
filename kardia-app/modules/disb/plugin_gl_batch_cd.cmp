@@ -1,7 +1,7 @@
 $Version=2$
 plugin_gl_batch_cd "widget/component-decl"
     {
-    width=780;height=542;
+    width=980;height=642;
     title = "Disbursements";
 
     ledger "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
@@ -9,7 +9,7 @@ plugin_gl_batch_cd "widget/component-decl"
 
     cd_batch_cmp "widget/component"
 	{
-	x=0;y=0; width=780;height=542;
+	x=0;y=0; width=980;height=642;
 	path="/apps/kardia/modules/disb/cd_batches.cmp";
 	ledger=runserver(:this:ledger);
 	periods_osrc=periods_osrc;

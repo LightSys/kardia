@@ -571,6 +571,9 @@ alter table i_eg_gift_import
 alter table i_eg_deposit_config
 	add constraint i_eg_deposit_config_pk primary key  (a_ledger_number, i_eg_depfee_id);
 
+alter table i_eg_ignored_info
+	add constraint i_eg_ignored_pk primary key  (p_partner_key, i_eg_info);
+
 alter table i_eg_gift_trx_fees
 	add constraint i_eg_gift_trx_fees_pk primary key  (a_ledger_number, i_eg_fees_id);
 
