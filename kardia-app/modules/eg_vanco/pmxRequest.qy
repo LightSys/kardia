@@ -124,7 +124,7 @@ myquery "system/query"
 			  isnull(:data:PayerFirstName,'') + isnull(:data:PayerMidName,'') + isnull(:data:PayerLastName, '')
 			+ isnull(:data:PayerAddress1,'') + isnull(:data:PayerAddress2,'') + isnull(:data:PayerCity,'')
 			+ isnull(:data:PayerState,'') + isnull(:data:PayerZip,'') + 'US'),  
-		i_eg_donor_alt_id = :data:AssignedAccount,   -- NOTE:data: if do vanco auto, this likely wouldn't be set
+		i_eg_donor_alt_id = :data:AssignedAccount,   -- NOTE: if using vanco auto, this likely wouldn't be set
 		i_eg_account_uuid = NULL,
 		i_eg_status = condition(:data:Status == 'A' OR :data:Status IS NULL OR :data:SettlementDate IS NULL, 
 			condition((getdate() >= :data:SettlementDate), 'paid', 'pending'),
