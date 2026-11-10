@@ -23,6 +23,100 @@ donor_sidebar "widget/component-decl"
 	    }
 	}
 
+    NewAddress "widget/component-decl-action"
+	{
+	on_newaddress1 "widget/connector"
+	    {
+	    target=address_form;
+	    action=New;
+	    }
+	on_newaddress2 "widget/connector"
+	    {
+	    target=address_form;
+	    action=SetValue;
+	    event_all_params=1;
+	    event_delay=0.4;
+	    }
+	on_newaddress3 "widget/connector"
+	    {
+	    target=popover_address;
+	    action=Open;
+	    PointAt=runclient(:point_at);
+	    IsModal=1;
+	    }
+	}
+
+    EditAddress "widget/component-decl-action"
+	{
+	on_editaddress1 "widget/connector"
+	    {
+	    target=manage_osrc;
+	    action=FindObject;
+	    key=runclient(:manage_osrc:partner + '|' + :location + '|0');
+	    }
+	on_editaddress2 "widget/connector"
+	    {
+	    target=address_form;
+	    action=SetValue;
+	    event_all_params=1;
+	    event_delay=0.4;
+	    }
+	on_editaddress3 "widget/connector"
+	    {
+	    target=popover_address;
+	    action=Open;
+	    PointAt=runclient(:point_at);
+	    IsModal=1;
+	    }
+	}
+
+    NewContact "widget/component-decl-action"
+	{
+	on_newcontactinfo1 "widget/connector"
+	    {
+	    target=contact_form;
+	    action=New;
+	    }
+	on_newcontactinfo2 "widget/connector"
+	    {
+	    target=contact_form;
+	    action=SetValue;
+	    event_all_params=1;
+	    event_delay=0.4;
+	    }
+	on_newcontactinfo3 "widget/connector"
+	    {
+	    target=popover_contact;
+	    action=Open;
+	    PointAt=runclient(:point_at);
+	    IsModal=1;
+	    }
+	}
+
+    EditContact "widget/component-decl-action"
+	{
+	on_editcontactinfo1 "widget/connector"
+	    {
+	    target=manage_osrc;
+	    action=FindObject;
+	    key=runclient(:manage_osrc:partner + '|' + :contact);
+	    }
+	on_editcontactinfo2 "widget/connector"
+	    {
+	    target=contact_form;
+	    action=SetValue;
+	    event_all_params=1;
+	    event_delay=0.4;
+	    }
+	on_editcontactinfo3 "widget/connector"
+	    {
+	    target=popover_contact;
+	    action=Open;
+	    PointAt=runclient(:point_at);
+	    IsModal=1;
+	    }
+	}
+
     dinfo_vbox "widget/vbox"
 	{
 	x=0; y=0;
@@ -328,7 +422,7 @@ donor_sidebar "widget/component-decl"
 		    x=20; y=15; width=560; height=248;
 		    spacing=15;
 
-		    address_title "widget/label" { height=16; font_size=16; style=bold; align=center; text="Update Address"; }
+		    address_title "widget/label" { height=16; font_size=16; style=bold; align=center; value=runclient(condition(:address_form:form_mode == "New", "New", "Update") + " Address"); }
 
 		    address_fields "widget/component" { height=188; path="/apps/kardia/modules/base/p_location_fields.cmp"; }
 
@@ -419,7 +513,7 @@ donor_sidebar "widget/component-decl"
 		    x=20; y=15; width=560; height=133;
 		    spacing=15;
 
-		    contact_title "widget/label" { height=16; font_size=16; style=bold; align=center; text="Update Contact Info"; }
+		    contact_title "widget/label" { height=16; font_size=16; style=bold; align=center; value=runclient(condition(:contact_form:form_mode == "New", "New", "Update") + " Contact Info"); }
 
 		    contact_fields "widget/component" { height=73; path="/apps/kardia/modules/base/p_contact_info_fields.cmp"; }
 

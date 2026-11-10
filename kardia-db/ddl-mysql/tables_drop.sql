@@ -731,6 +731,10 @@ drop table i_eg_gift_import;
 drop table i_eg_deposit_config;
 
 
+/* i_eg_ignored_info */
+drop table i_eg_ignored_info;
+
+
 /* i_eg_gift_trx_fees */
 drop table i_eg_gift_trx_fees;
 

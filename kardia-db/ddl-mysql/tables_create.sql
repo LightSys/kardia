@@ -4023,9 +4023,23 @@ create table i_eg_deposit_config (
         i_eg_fees_fund                        char(20)  null,          /* Fund for the transaction fees payable --  */
         i_eg_fees_account_code                char(16)  null,          /* GL Account for the transaction fees payable --  */
         i_eg_calc_method                      char(1)  not null,       /* Fee calculation method: (I) for fees data provided by online giving import module, or (M) for manually calculated fees using data in this record. --  */
-        i_eg_calc_rounding                    char(1)  not null,       /* Rounding method for manually calculated fees that aren't whole cent amounts: (R) round normally, (D) always round down to the cent, or (U) always round up to the cent --  */
+        i_eg_calc_rounding                    char(1)  null,           /* Rounding method for manually calculated fees that aren't whole cent amounts: (R) round normally, (D) always round down to the cent, or (U) always round up to the cent --  */
         i_eg_fee_flat_amt                     decimal(14,4)  null,     /* Flat part of fee, if using manual calculation. --  */
         i_eg_fee_pct_amt                      float  null,             /* Percentage part of fee, if using manual calculation. --  */
+        s_date_created                        datetime  not null,      /*  --  */
+        s_created_by                          varchar(20)  not null,   /*  --  */
+        s_date_modified                       datetime  not null,      /*  --  */
+        s_modified_by                         varchar(20)  not null,   /*  --  */
+        __cx_osml_control                     varchar(255)  null       /*  --  */
+
+);
+
+
+/* i_eg_ignored_info */
+
+create table i_eg_ignored_info (
+        p_partner_key                         char(10)  not null,      /* partner key --  */
+        i_eg_info                             varchar(255)  not null,  /* data to be ignored --  */
         s_date_created                        datetime  not null,      /*  --  */
         s_created_by                          varchar(20)  not null,   /*  --  */
         s_date_modified                       datetime  not null,      /*  --  */
@@ -4717,6 +4731,14 @@ create table s_request_type (
         __cx_osml_control                     varchar(255)  null       /*  --  */
 
 );
+insert into s_request_type (s_request_type,s_request_type_desc,s_request_sec_endorsement,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'UNPOSTGL' as s_request_type, 'Unpost Batch from GL' as s_request_type_desc, 'kardia:gl_manage' as s_request_sec_endorsement, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_request_type (s_request_type,s_request_type_desc,s_request_sec_endorsement,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'UNPOSTCR' as s_request_type, 'Unpost Batch from CR' as s_request_type_desc, 'kardia:gift_manage' as s_request_sec_endorsement, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_request_type (s_request_type,s_request_type_desc,s_request_sec_endorsement,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'UNPOSTCD' as s_request_type, 'Unpost Batch from CD' as s_request_type_desc, 'kardia:disb_manage' as s_request_sec_endorsement, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_request_type (s_request_type,s_request_type_desc,s_request_sec_endorsement,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'UNPOSTCRGL' as s_request_type, 'Unpost CR Batch from GL' as s_request_type_desc, 'kardia:gl_manage' as s_request_sec_endorsement, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_request_type (s_request_type,s_request_type_desc,s_request_sec_endorsement,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'UNPOSTCDGL' as s_request_type, 'Unpost CD Batch from GL' as s_request_type_desc, 'kardia:gl_manage' as s_request_sec_endorsement, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_request_type (s_request_type,s_request_type_desc,s_request_sec_endorsement,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'REOPENBAL' as s_request_type, 'Re-run Opening Balances' as s_request_type_desc, 'kardia:gl_manage' as s_request_sec_endorsement, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_request_type (s_request_type,s_request_type_desc,s_request_sec_endorsement,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'UNPOSTDE' as s_request_type, 'Unpost Batch from Deposits' as s_request_type_desc, 'kardia:dep_manage' as s_request_sec_endorsement, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
+insert into s_request_type (s_request_type,s_request_type_desc,s_request_sec_endorsement,s_date_created,s_created_by,s_date_modified,s_modified_by,__cx_osml_control) select 'UNPOSTDEGL' as s_request_type, 'Unpost Deposits Batch from GL' as s_request_type_desc, 'kardia:gl_manage' as s_request_sec_endorsement, '2008-03-14 10:10:10' as s_date_created, 'IMPORT' as s_created_by,'2008-03-14 10:10:10' as s_date_modified, 'IMPORT' as s_modified_by, null as __cx_osml_control;
 
 
 /* s_audit */
