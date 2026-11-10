@@ -1,0 +1,133 @@
+$Version=2$
+imp_qa_popup_menu "widget/component-decl"
+    {
+    width=640;
+    height=480;
+
+    X "widget/parameter" { type=integer; default=0; deploy_to_client=yes; }
+    Y "widget/parameter" { type=integer; default=0; deploy_to_client=yes; }
+    partner "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
+    type "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
+    key "widget/parameter" { type=string; default=null; deploy_to_client=yes; }
+
+    // The button that was clicked.
+    button "widget/parameter" { type=object; deploy_to_client=yes; }
+
+    // Here's how we communicate what got clicked...
+    Ignore "widget/component-decl-event" { }
+    Add "widget/component-decl-event" { }
+    Update "widget/component-decl-event" { }
+
+    LoadComplete_cn "widget/connector"
+	{
+	event = "LoadComplete";
+	target=menu;
+	action="Popup";
+	X = runclient(:imp_qa_popup_menu:X);
+	Y = runclient(:imp_qa_popup_menu:Y);
+	}
+
+    menu "widget/menu"
+	{
+	widget_class = "popup";
+
+	menutitle "widget/menutitle" { label = runserver("Import or Update " + :this:type); }
+	sep0 "widget/menusep" { }
+
+	ign_item "widget/menuitem"
+	    {
+	    label = runserver("Ignore this " + :this:type);
+	    on_ign "widget/connector" { event=Select; target=imp_qa_popup_menu; action=Ignore; type=runclient(:type:value); key=runclient(:key:value); partner=runclient(:partner:value); button=runserver(:this:button); }
+	    }
+
+	add_addr_item "widget/menuitem"
+	    {
+	    condition = runserver(:this:type == 'Address');
+	    label = 'Add a New Address';
+	    on_addaddr "widget/connector" { event=Select; target=imp_qa_popup_menu; action=Add; type=runclient(:type:value); key=runclient(:key:value); partner=runclient(:partner:value); button=runserver(:this:button); }
+	    }
+	add_email_item "widget/menuitem"
+	    {
+	    condition = runserver(:this:type == 'Email');
+	    label = 'Add a New Email';
+	    on_addemail "widget/connector" { event=Select; target=imp_qa_popup_menu; action=Add; type=runclient(:type:value); key=runclient(:key:value); partner=runclient(:partner:value); button=runserver(:this:button); }
+	    }
+	add_phone_item "widget/menuitem"
+	    {
+	    condition = runserver(:this:type == 'Phone');
+	    label = 'Add a New Phone';
+	    on_addphone "widget/connector" { event=Select; target=imp_qa_popup_menu; action=Add; type=runclient(:type:value); key=runclient(:key:value); partner=runclient(:partner:value); button=runserver(:this:button); }
+	    }
+	
+	//sep1 "widget/menusep" { }
+
+	upd_addrs "widget/repeat"
+	    {
+	    condition = runserver(:this:type == 'Address');
+	    sql = runserver("	select
+				    addr_txt = substitute(isnull(:af:p_format, '[:p_in_care_of]\n[:p_address_1]\n[:p_address_2]\n[:p_address_3]\n[:p_city], [:p_state_province] [:p_postal_code]\n[:p_country_name]'), 'l=pl,p=pl,ctry') + condition(:pl:p_record_status_code = 'I', '\n(inactive)', '') + condition(:pl:p_record_status_code = 'O', '\n(obsolete)', '') + ' (updated ' + dateformat(:pl:s_date_modified, 'dd-MMM-yyyy') + ')',
+				    :pl:p_partner_key,
+				    :pl:p_location_id
+				from
+				    identity /apps/kardia/data/Kardia_DB/p_location/rows pl,
+				    /apps/kardia/data/Kardia_DB/p_country/rows ctry,
+				    /apps/kardia/data/Kardia_DB/p_address_format/rows af
+				where
+				    (:pl:p_partner_key = " + quote(:this:partner) + ") and
+				    :pl:p_revision_id = 0 and
+				    (:pl:p_record_status_code = 'A' or :pl:p_record_status_code = 'I') and
+				    :pl:p_country_code *= :ctry:p_country_code and
+				    :af:p_country_code =* :ctry:p_country_code and
+				    :af:p_address_set = 'STANDARD'
+				");
+	    one_addr_item "widget/menuitem"
+		{
+		label = runserver("Replace " + :upd_addrs:addr_txt);
+		on_updaddr "widget/connector" { event=Select; target=imp_qa_popup_menu; action=Update; type=runclient(:type:value); key=runclient(:key:value); partner=runclient(:partner:value); location=runserver(:upd_addrs:p_location_id); button=runserver(:this:button); }
+		}
+	    }
+
+	upd_emails "widget/repeat"
+	    {
+	    condition = runserver(:this:type == 'Email');
+	    sql = runserver("	select
+				    email_txt = :p_contact_data,
+				    :p_partner_key,
+				    :p_contact_id
+				from
+				    /apps/kardia/data/Kardia_DB/p_contact_info/rows
+				where
+				    :p_partner_key = " + quote(:this:partner) + "
+				    and :p_record_status_code != 'O'
+				    and :p_contact_type = 'E'
+				");
+	    one_em_item "widget/menuitem"
+		{
+		label = runserver("Replace " + :upd_emails:email_txt);
+		on_updemail "widget/connector" { event=Select; target=imp_qa_popup_menu; action=Update; type=runclient(:type:value); key=runclient(:key:value); partner=runclient(:partner:value); contact=runserver(:upd_emails:p_contact_id); button=runserver(:this:button); }
+		}
+	    }
+
+	upd_phones "widget/repeat"
+	    {
+	    condition = runserver(:this:type == 'Phone');
+	    sql = runserver("	select
+				    phone_txt = isnull('+' + nullif(:p_phone_country,'') + ' ', '') + isnull('(' + nullif(:p_phone_area_city,'') + ') ', '') + isnull(:p_contact_data,''),
+				    :p_partner_key,
+				    :p_contact_id
+				from
+				    /apps/kardia/data/Kardia_DB/p_contact_info/rows
+				where
+				    :p_partner_key = " + quote(:this:partner) + "
+				    and :p_record_status_code != 'O'
+				    and charindex(:p_contact_type, 'PC') > 0
+				");
+	    one_ph_item "widget/menuitem"
+		{
+		label = runserver("Replace " + :upd_phones:phone_txt);
+		on_updphone "widget/connector" { event=Select; target=imp_qa_popup_menu; action=Update; type=runclient(:type:value); key=runclient(:key:value); partner=runclient(:partner:value); contact=runserver(:upd_phones:p_contact_id); button=runserver(:this:button); }
+		}
+	    }
+	}
+    }
+

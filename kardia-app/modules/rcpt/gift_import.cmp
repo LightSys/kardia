@@ -32,6 +32,152 @@ gift_import "widget/component-decl"
 	    }
 	}
 
+    // Popup menu for adding/modifying donor data
+    popup_cmp "widget/component"
+	{
+	mode=dynamic;
+	path="/apps/kardia/modules/rcpt/imp_qa_popup_menu.cmp";
+
+	on_ign_addr "widget/connector"
+	    {
+	    event=Ignore;
+	    event_condition=runclient(:type = 'Address');
+	    target=ign_osrc;
+	    action=Create;
+	    p_partner_key=runclient(:partner);
+	    i_eg_info=runclient(isnull(:gift_import_osrc:i_eg_donor_addr1,'') + isnull(:gift_import_osrc:i_eg_donor_city,'') + isnull(:gift_import_osrc:i_eg_donor_state,''));
+	    s_date_created=runclient(getdate());
+	    s_created_by=runclient(user_name());
+	    s_date_modified=runclient(getdate());
+	    s_modified_by=runclient(user_name());
+	    }
+
+	on_ign_email "widget/connector"
+	    {
+	    event=Ignore;
+	    event_condition=runclient(:type = 'Email');
+	    target=ign_osrc;
+	    action=Create;
+	    p_partner_key=runclient(:partner);
+	    i_eg_info=runclient(isnull(:gift_import_osrc:i_eg_donor_email,''));
+	    s_date_created=runclient(getdate());
+	    s_created_by=runclient(user_name());
+	    s_date_modified=runclient(getdate());
+	    s_modified_by=runclient(user_name());
+	    }
+
+	on_ign_phone "widget/connector"
+	    {
+	    event=Ignore;
+	    event_condition=runclient(:type = 'Phone');
+	    target=ign_osrc;
+	    action=Create;
+	    p_partner_key=runclient(:partner);
+	    i_eg_info=runclient(isnull(:gift_import_osrc:i_eg_donor_phone,''));
+	    s_date_created=runclient(getdate());
+	    s_created_by=runclient(user_name());
+	    s_date_modified=runclient(getdate());
+	    s_modified_by=runclient(user_name());
+	    }
+
+	on_new_addr "widget/connector"
+	    {
+	    event=Add;
+	    event_condition=runclient(:type = 'Address');
+	    target=manage_cmp;
+	    action=NewAddress;
+	    point_at=gsa_add;
+	    p_address_1=runclient(:gift_import_osrc:i_eg_donor_addr1);
+	    p_address_2=runclient(:gift_import_osrc:i_eg_donor_addr2);
+	    p_address_3=runclient(:gift_import_osrc:i_eg_donor_addr3);
+	    p_city=runclient(:gift_import_osrc:i_eg_donor_city);
+	    p_state_province=runclient(:gift_import_osrc:i_eg_donor_state);
+	    p_postal_code=runclient(:gift_import_osrc:i_eg_donor_postal);
+	    p_country_code=runclient(:gift_import_osrc:i_eg_donor_country);
+	    p_location_comments=runclient('Giving data import via ' + :gift_import_osrc:gs_code);
+	    }
+
+	on_edit_addr "widget/connector"
+	    {
+	    event=Update;
+	    event_condition=runclient(:type = 'Address');
+	    target=manage_cmp;
+	    action=EditAddress;
+	    point_at=gsa_add;
+	    location=runclient(:location);
+	    p_in_care_of=runclient(null);
+	    p_address_1=runclient(:gift_import_osrc:i_eg_donor_addr1);
+	    p_address_2=runclient(:gift_import_osrc:i_eg_donor_addr2);
+	    p_address_3=runclient(:gift_import_osrc:i_eg_donor_addr3);
+	    p_city=runclient(:gift_import_osrc:i_eg_donor_city);
+	    p_state_province=runclient(:gift_import_osrc:i_eg_donor_state);
+	    p_postal_code=runclient(:gift_import_osrc:i_eg_donor_postal);
+	    p_country_code=runclient(:gift_import_osrc:i_eg_donor_country);
+	    p_location_comments=runclient('Giving data import via ' + :gift_import_osrc:gs_code);
+	    }
+
+	on_new_email "widget/connector"
+	    {
+	    event=Add;
+	    event_condition=runclient(:type = 'Email');
+	    target=manage_cmp;
+	    action=NewContact;
+	    point_at=gse_add;
+	    p_contact_data=runclient(:gift_import_osrc:i_eg_donor_email);
+	    p_contact_type=runclient('E');
+	    p_contact_comments=runclient('Giving data import via ' + :gift_import_osrc:gs_code);
+	    }
+
+	on_edit_email "widget/connector"
+	    {
+	    event=Update;
+	    event_condition=runclient(:type = 'Email');
+	    target=manage_cmp;
+	    action=EditContact;
+	    contact=runclient(:contact);
+	    point_at=gse_add;
+	    p_contact_data=runclient(:gift_import_osrc:i_eg_donor_email);
+	    p_contact_type=runclient('E');
+	    p_contact_comments=runclient('Giving data import via ' + :gift_import_osrc:gs_code);
+	    }
+
+	on_new_phone "widget/connector"
+	    {
+	    event=Add;
+	    event_condition=runclient(:type = 'Phone');
+	    target=manage_cmp;
+	    action=NewContact;
+	    point_at=gsp_add;
+	    p_contact_data=runclient(:gift_import_osrc:i_eg_donor_phone);
+	    p_contact_type=runclient('P');
+	    p_contact_comments=runclient('Giving data import via ' + :gift_import_osrc:gs_code);
+	    }
+
+	on_edit_phone "widget/connector"
+	    {
+	    event=Update;
+	    event_condition=runclient(:type = 'Phone');
+	    target=manage_cmp;
+	    action=EditContact;
+	    contact=runclient(:contact);
+	    point_at=gsp_add;
+	    p_phone_country=runclient(null);
+	    p_phone_area_city=runclient(null);
+	    p_contact_data=runclient(:gift_import_osrc:i_eg_donor_phone);
+	    p_contact_type=runclient('P');
+	    p_contact_comments=runclient('Giving data import via ' + :gift_import_osrc:gs_code);
+	    }
+	}
+
+    // This is used for setting up ignored contact data
+    ign_osrc "widget/osrc"
+	{
+	sql = "select * from /apps/kardia/data/Kardia_DB/i_eg_ignored_info/rows";
+	baseobj = "/apps/kardia/data/Kardia_DB/i_eg_ignored_info/rows";
+	autoquery = never;
+	on_ignore_created "widget/connector" { event=Created; target=gift_import_osrc; action=Refresh; }
+	}
+
     do_import_osrc "widget/osrc"
 	{
 	imp_ledger "widget/parameter" { type=string; param_name=ledger; default=runclient(:ledger:value); }
@@ -281,6 +427,24 @@ gift_import "widget/component-decl"
 								'/sys/images/yellow_exclam.gif'
 								)
 							    ),
+					qa_addr = condition(
+							    nullif(:eg:p_donor_partner_key,'') is not null
+							    and nullif(:eg:i_eg_donor_city,'') is not null
+							    and (select :loc:p_partner_key from /apps/kardia/data/Kardia_DB/p_location/rows loc where :loc:p_partner_key = :eg:p_donor_partner_key and :loc:p_record_status_code != 'O' and upper(:loc:p_state_province) = upper(:eg:i_eg_donor_state) having cos_compare(upper(isnull(:loc:p_address_1,'') +  isnull(:loc:p_city,'')), upper(isnull(:eg:i_eg_donor_addr1,'') + isnull(:eg:i_eg_donor_city,''))) > 0.9) is null
+							    and (select count(1) from /apps/kardia/data/Kardia_DB/i_eg_ignored_info/rows ii where :ii:p_partner_key = :eg:p_donor_partner_key and upper(:ii:i_eg_info) = upper(isnull(:eg:i_eg_donor_addr1,'') + isnull(:eg:i_eg_donor_city,'') + isnull(:eg:i_eg_donor_state,''))) == 0,
+							    1, 0),
+					qa_email = condition(
+							    nullif(:eg:p_donor_partner_key,'') is not null
+							    and nullif(:eg:i_eg_donor_email,'') is not null
+							    and (select count(1) from /apps/kardia/data/Kardia_DB/p_contact_info/rows ci where :ci:p_partner_key = :eg:p_donor_partner_key and upper(:ci:p_contact_data) = upper(:eg:i_eg_donor_email) and :ci:p_record_status_code != 'O' and :ci:p_contact_type = 'E') == 0
+							    and (select count(1) from /apps/kardia/data/Kardia_DB/i_eg_ignored_info/rows ii where :ii:p_partner_key = :eg:p_donor_partner_key and upper(:ii:i_eg_info) = upper(isnull(:eg:i_eg_donor_email,''))) == 0,
+							    1, 0),
+					qa_phone = condition(
+							    nullif(:eg:p_donor_partner_key,'') is not null 
+							    and char_length(isnull(:eg:i_eg_donor_phone,'')) >= 7 
+							    and (select count(1) from /apps/kardia/data/Kardia_DB/p_contact_info/rows ci where :ci:p_partner_key = :eg:p_donor_partner_key and charindex(replace(replace(replace(replace(replace(:eg:i_eg_donor_phone, ' ', ''), '-', ''), '+', ''), '(', ''), ')', ''), replace(replace(replace(replace(replace(isnull(:ci:p_phone_country,'') + isnull(:ci:p_phone_area_city, '') + isnull(:ci:p_contact_data, ''), ' ', ''), '-', ''), '+', ''), '(', ''), ')', '')) > 0 and :ci:p_record_status_code != 'O' and charindex(:ci:p_contact_type, 'PC') > 0) == 0
+							    and (select count(1) from /apps/kardia/data/Kardia_DB/i_eg_ignored_info/rows ii where :ii:p_partner_key = :eg:p_donor_partner_key and upper(:ii:i_eg_info) = upper(isnull(:eg:i_eg_donor_phone,''))) == 0,
+							    1, 0),
 					trx_date = substring(convert(string,:eg:i_eg_gift_trx_date),1,11),
 					gs_donor_info = :eg:i_eg_donor_name + isnull(' (' + :eg:i_eg_donor_city + ', ' + :eg:i_eg_donor_state + ')', ''),
 					kardia_donor_info = :eg:p_donor_partner_key + isnull(' ' + :p:p_org_name, '') + isnull(' ' + :p:p_given_name,'') + isnull(' ' + :p:p_surname,'') + isnull(' (' + :l:p_city + isnull(', ' + :l:p_state_province, '') + ')', ''),
@@ -354,7 +518,7 @@ gift_import "widget/component-decl"
 				FROM
 					identity /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows eg,
 					/apps/kardia/data/Kardia_DB/p_partner/rows p,
-					/apps/kardia/data/Kardia_DB/p_location/rows l,
+					onerow /apps/kardia/data/Kardia_DB/p_location/rows l,
 					/apps/kardia/data/Kardia_DB/a_fund/rows c,
 					/apps/kardia/data/Kardia_DB/a_account/rows a,
 					/apps/kardia/data/Kardia_DB/p_country/rows co,
@@ -389,7 +553,9 @@ gift_import "widget/component-decl"
 				ORDER BY
 					:eg:i_eg_gift_trx_date desc,
 					:eg:i_eg_trx_uuid asc,
-					:eg:i_eg_line_item asc
+					:eg:i_eg_desig_uuid asc,
+					:eg:i_eg_line_item asc,
+					:l:s_date_created desc
 				");
 			replicasize=400;
 			readahead=400;
@@ -413,11 +579,12 @@ gift_import "widget/component-decl"
 			    allow_deselection = yes;
 			    nodata_message="No gifts to display";
 
-			    st_stat "widget/table-column" { width=48; fieldname=import_status; title="Status"; type=image; }
+			    st_stat "widget/table-column" { width=48; fieldname=import_status; title="Status"; type=image; align=center; }
 			    st_date "widget/table-column" { width=96; fieldname=trx_date; title="Date"; }
 			    st_gsdon "widget/table-column" { width=246; fieldname=gs_donor_info; title="Giving Service Donor/Designation"; caption_fieldname=gs_desig_info; }
 			    st_gscode "widget/table-column" { width=48; fieldname=gs_code; title="Serv."; }
-			    st_qadon "widget/table-column" { width=24; fieldname=qa_status; title="QA"; type=image; }
+			    st_qadon "widget/table-column" { width=24; fieldname=qa_status; title="QA"; type=image; align=center; }
+			    st_qaplus "widget/table-column" { width=24; value=runclient(condition(:gift_import_osrc:qa_email or :gift_import_osrc:qa_phone or :gift_import_osrc:qa_addr, '/apps/kardia/images/icons/ionicons-archive.svg', '/sys/images/trans_1.gif')); title="+"; type=image; image_maxwidth=20; image_maxheight=20; align=center; }
 			    //st_kdon "widget/table-column" { width=170; fieldname=kardia_donor_info; title="Kardia Donor"; }
 			    //st_qades "widget/table-column" { width=24; fieldname=desig_qa_status; title="QA"; type=image; }
 			    st_gsdes "widget/table-column" { width=246; value=runclient(isnull(:gift_import_osrc:kardia_donor_info, ' ')); title="Kardia Donor/Designation"; caption_fieldname=kardia_desig_info; }
@@ -462,27 +629,107 @@ gift_import "widget/component-decl"
 						spacing=4;
 
 						import_desc "widget/label" { height=16; style=bold; fieldname=gs_detail_label; align=center; }
-						disp_pane "widget/pane"
+
+						gsa_hbox "widget/hbox"
 						    {
-						    height=72;
-						    style=bordered;
-						    border_color = black;
-						    bgcolor = white;
-						    disp_addr "widget/label"
+						    height=72; spacing=5;
+
+						    disp_pane "widget/pane"
 							{
-							x = 2;
-							height = 102;
-							width = 279;
-							fl_height = 1;
-							style = bold;
-							value = runclient(substitute("[:i_eg_donor_name]\n[:i_eg_donor_addr1]\n[:i_eg_donor_addr2]\n[:i_eg_donor_city] [:i_eg_donor_state] [:i_eg_donor_postal]\n[:eg_donor_country_txt]", "e=gift_import_osrc"));
+							width=(271 - 5 - 20);
+							style=bordered;
+							border_color = black;
+							bgcolor = white;
+							disp_addr "widget/label"
+							    {
+							    x = 2;
+							    height = 102;
+							    width = 267 - 5 - 20;
+							    fl_height = 1;
+							    style = bold;
+							    value = runclient(substitute("[:i_eg_donor_name]\n[:i_eg_donor_addr1]\n[:i_eg_donor_addr2]\n[:i_eg_donor_city] [:i_eg_donor_state] [:i_eg_donor_postal]\n[:eg_donor_country_txt]", "e=gift_import_osrc"));
+							    }
+							}
+
+						    gsa_add "widget/imagebutton"
+							{
+							width=20;
+							height=20;
+							disabledimage='/sys/images/trans_1.gif';
+							image='/apps/kardia/images/icons/ionicons-archive.svg';
+							tooltip='Add or Update This Address';
+							enabled=runclient(:gift_import_osrc:qa_addr);
+
+							gsa_click "widget/connector"
+							    {
+							    event=Click;
+							    target=popup_cmp;
+							    action=Instantiate;
+							    X=runclient(:X);
+							    Y=runclient(:Y);
+							    type=runclient('Address');
+							    button=gsa_add;
+							    partner=runclient(:gift_import_osrc:p_donor_partner_key);
+							    }
 							}
 						    }
 
 						qa_donor_sep "widget/autolayoutspacer" { height=4; }
 
-						gs_email "widget/component" { height=16; path="/sys/cmp/smart_field.cmp"; field=i_eg_donor_email; ctl_type=label; text="Email:"; label_width=60; label_valign=top; }
-						gs_phone "widget/component" { height=16; path="/sys/cmp/smart_field.cmp"; field=i_eg_donor_phone; ctl_type=label; text="Phone:"; label_width=60; label_valign=top; }
+						gse_hbox "widget/hbox"
+						    {
+						    height=16; spacing=5;
+						    gs_email "widget/component" { width=(271 - 5 - 20); path="/sys/cmp/smart_field.cmp"; field=i_eg_donor_email; ctl_type=label; text="Email:"; label_width=60; label_valign=top; }
+						    gse_add "widget/imagebutton"
+							{
+							width=20;
+							height=20;
+							disabledimage='/sys/images/trans_1.gif';
+							image='/apps/kardia/images/icons/ionicons-archive.svg';
+							tooltip='Add or Update This Email';
+							enabled=runclient(:gift_import_osrc:qa_email);
+
+							gse_click "widget/connector"
+							    {
+							    event=Click;
+							    target=popup_cmp;
+							    action=Instantiate;
+							    X=runclient(:X);
+							    Y=runclient(:Y);
+							    type=runclient('Email');
+							    button=gse_add;
+							    partner=runclient(:gift_import_osrc:p_donor_partner_key);
+							    }
+							}
+						    }
+
+						gsp_hbox "widget/hbox"
+						    {
+						    height=16; spacing=5;
+						    gs_phone "widget/component" { width=(271 - 5 - 20); path="/sys/cmp/smart_field.cmp"; field=i_eg_donor_phone; ctl_type=label; text="Phone:"; label_width=60; label_valign=top; }
+						    gsp_add "widget/imagebutton"
+							{
+							width=20;
+							height=20;
+							disabledimage='/sys/images/trans_1.gif';
+							image='/apps/kardia/images/icons/ionicons-archive.svg';
+							tooltip='Add or Update This Phone';
+							enabled=runclient(:gift_import_osrc:qa_phone);
+
+							gsp_click "widget/connector"
+							    {
+							    event=Click;
+							    target=popup_cmp;
+							    action=Instantiate;
+							    X=runclient(:X);
+							    Y=runclient(:Y);
+							    type=runclient('Phone');
+							    button=gsp_add;
+							    partner=runclient(:gift_import_osrc:p_donor_partner_key);
+							    }
+							}
+						    }
+
 						gs_desig "widget/component" { height=22; path="/sys/cmp/smart_field.cmp"; field=i_eg_desig_name; ctl_type=label; text="Desig.:"; label_width=60; label_valign=top; }
 						gs_notes "widget/component" { height=70; path="/sys/cmp/smart_field.cmp"; field=i_eg_desig_notes; ctl_type=label; text="Notes:"; label_width=60; label_valign=top; }
 						}
