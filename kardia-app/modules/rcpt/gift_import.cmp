@@ -1084,8 +1084,8 @@ gift_import "widget/component-decl"
 							event=Click;
 							target=gift_import;
 							action=Launch; 
-							Width=800;
-							Height=600;
+							Width=1000;
+							Height=700;
 							Source="/apps/kardia/modules/rcpt/cr_batches.app";
 							ledger=runclient(:gift_import:ledger);
 							period=runclient(:gift_import:period);
@@ -1297,7 +1297,7 @@ gift_import "widget/component-decl"
 			dep_refresh_on_time_chg "widget/connector" { event=DataChange; target=dep_import_osrc; action=QueryParam; }
 			numdisplay=8;
 
-			dep_t_all "widget/dropdownitem" { label="All"; value="0"; }
+			//dep_t_all "widget/dropdownitem" { label="All"; value="0"; }
 			dep_t_year "widget/dropdownitem" { label="Last 12 Months"; value="8784"; }
 			dep_t_month "widget/dropdownitem" { label="Last 31 Days"; value="744"; selected=yes; }
 			dep_t_week "widget/dropdownitem" { label="Last 7 Days"; value="168"; }
@@ -1315,50 +1315,64 @@ gift_import "widget/component-decl"
 		    sql=runserver("
 			    SELECT
 				    dep_import_status = condition(
-							:eg:a_batch_number_deposit is not null,
+							:eg:dep_posted,
 							'/sys/images/green_check.gif',
 							condition(
-							    -- :eg:i_eg_deposit_uuid is not null and :eg:a_batch_number is not null and sum(:i_eg_gift_amount) = first(:i_eg_deposit_gross_amt),
-							    :eg:i_eg_deposit_uuid is not null and :eg:i_eg_deposit_date <= getdate() and sum(:i_eg_gift_amount) = first(:i_eg_deposit_gross_amt),
+							    (not :eg:is_pending),
 							    '/sys/images/dotted_check.gif',
 							    condition(
-								:eg:i_eg_deposit_uuid is not null and :eg:i_eg_deposit_date <= getdate() and :eg:a_batch_number is null and sum(:i_eg_gift_amount) = first(:i_eg_deposit_gross_amt),
+								(not :eg:is_pending) and :eg:is_unimp_gifts,
 								'/sys/images/yellow_exclam.gif',
 								'/sys/images/red_x.gif')
 							    )
 							),
 				    fee_import_status = condition(
-							:eg:a_batch_number_fees is not null,
+							:eg:fees_posted,
 							'/sys/images/green_check.gif',
 							condition(
-							    -- :eg:i_eg_deposit_uuid is not null and :eg:a_batch_number is not null,
-							    :eg:i_eg_deposit_uuid is not null and :eg:i_eg_deposit_date <= getdate(),
+							    not :eg:is_pending,
 							    '/sys/images/dotted_check.gif',
 							    condition(
-								:eg:i_eg_deposit_uuid is not null and :eg:i_eg_deposit_date <= getdate() and :eg:a_batch_number is null,
+								(not :eg:is_pending) and :eg:is_unimp_gifts,
 								'/sys/images/yellow_exclam.gif',
 								'/sys/images/red_x.gif')
 							    )
 							),
 				    gs_code = isnull(:eg:i_eg_service, ''),
-				    deposit_date = substring(convert(string,:eg:i_eg_deposit_date),1,11) + condition(:eg:i_eg_deposit_date > :per:a_end_date or :eg:i_eg_deposit_date < :per:a_start_date, ' *', ''),
+				    deposit_date = substring(convert(string,:eg:deposit_date),1,11) + condition(:eg:deposit_date > :per:a_end_date or :eg:deposit_date < :per:a_start_date, ' *', ''),
 				    :eg:i_eg_service,
-				    :eg:i_eg_deposit_date,
+				    :eg:deposit_date,
 				    :eg:i_eg_deposit_uuid,
-				    gift_date_range = substring(convert(string,min(:eg:i_eg_gift_trx_date)),1,11) + ' - ' + substring(convert(string,max(:eg:i_eg_gift_trx_date)),1,11),
-				    gift_cnt = count(1),
-				    gross_amt = sum(:i_eg_gift_amount),
-				    fees_amt = sum(:i_eg_gift_amount) - sum(:i_eg_net_amount),
-				    net_amt = sum(:i_eg_net_amount),
-				    gross_cmp_amt = first(:i_eg_deposit_gross_amt),
-				    fees_cmp_amt = first(:i_eg_deposit_gross_amt) - first(:i_eg_deposit_amt),
-				    net_cmp_amt = first(:i_eg_deposit_amt),
-				    fees_batch_number = first(:a_batch_number_fees),
-				    dep_batch_number = first(:a_batch_number_deposit),
+				    gift_date_range = substring(convert(string,:eg:min_date_trx),1,11) + ' - ' + substring(convert(string,:eg:max_date_trx),1,11),
+				    gift_cnt = :cnt,
+				    gross_amt = :eg:deposit_gross_amt,
+				    fees_amt = :eg:fees_anymethod_amt,
+				    net_amt = :eg:deposit_net_amt,
+				    :eg:fees_batch,
+				    :eg:dep_batch,
 				    fees_period = :fb:a_period,
 				    dep_period = :db:a_period,
-				    is_unimp_gifts = max(:a_batch_number is null),
-				    is_pending = max(:i_eg_deposit_uuid is null or :i_eg_deposit_date > getdate())
+				    :eg:is_unimp_gifts,
+				    :eg:is_pending,
+				    :eg:fee_method,
+				    :eg:dep_method,
+				    :eg:calc_method,
+				    :eg:deposit_amt
+			    from
+				    identity expression('/apps/kardia/modules/rcpt/deposits_import_method.qy?ledger=" + :this:ledger + "&pstat=' + :parameters:pstat + '&ptime=' + :parameters:ptime + '&period=" + :this:period + "&batchtype=deposits') eg,
+				    /apps/kardia/data/Kardia_DB/a_batch/rows fb,
+				    /apps/kardia/data/Kardia_DB/a_batch/rows db,
+				    /apps/kardia/data/Kardia_DB/a_period/rows per
+			    where
+				    :per:a_ledger_number = " + quote(:this:ledger) + " and
+				    :per:a_period = " + quote(:this:period) + " and
+				    :db:a_ledger_number = " + quote(:this:ledger) + " and
+				    :db:a_batch_number =* :eg:dep_batch and
+				    :fb:a_ledger_number = " + quote(:this:ledger) + " and
+				    :fb:a_batch_number =* :eg:fees_batch
+			    ");
+
+		    sql2=runserver("
 			    FROM
 				    /apps/kardia/data/Kardia_DB/a_period/rows per,
 				    identity /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows eg,
@@ -1414,11 +1428,15 @@ gift_import "widget/component-decl"
 			dep_st_feestat "widget/table-column" { width=34; fieldname=fee_import_status; title="Fees"; type=image; }
 			dep_st_gscode "widget/table-column" { width=48; fieldname=gs_code; title="Serv."; }
 			dep_st_date "widget/table-column" { width=94; fieldname=deposit_date; title="Deposited"; }
-			dep_st_giftdates "widget/table-column" { width=238; fieldname=gift_date_range; title="Gift Dates"; }
+			dep_st_giftdates "widget/table-column" { width=210; fieldname=gift_date_range; title="Gift Dates"; }
 			dep_st_numgift "widget/table-column" { width=64; fieldname=gift_cnt; title="#Gifts"; }
+			dep_st_depmethod "widget/table-column" { width=64; value=runclient(condition(:dep_import_osrc:dep_method = 'G', 'Gross', condition(:dep_import_osrc:dep_method = 'N', 'Net', condition(:dep_import_osrc:dep_method = 'X', 'None', '??')))); title="Deposit?"; }
+			dep_st_feemethod "widget/table-column" { width=64; value=runclient(condition(:dep_import_osrc:fee_method = 'N', 'Net', condition(:dep_import_osrc:fee_method = 'D', 'Disburse', condition(:dep_import_osrc:fee_method = 'P', 'Payable', condition(:dep_import_osrc:fee_method = 'X', 'None', '??'))))); title="Fees?"; }
+			dep_st_calcmethod "widget/table-column" { width=64; value=runclient(condition(:dep_import_osrc:calc_method = 'I', 'Import', condition(:dep_import_osrc:fee_method = 'M', 'Manual', '??'))); title="Calc?"; }
 			dep_st_gross "widget/table-column" { width=104; fieldname=gross_amt; title="Amt Given"; align=right; }
 			dep_st_fees "widget/table-column" { width=104; fieldname=fees_amt; title="- Fees"; align=right; }
 			dep_st_net "widget/table-column" { width=104; fieldname=net_amt; title="= Net Amt"; align=right; }
+			dep_st_deposit "widget/table-column" { width=104; fieldname=deposit_amt; title="Deposit Amt"; align=right; }
 			}
 
 		    dep_import_comment "widget/label" { height=14; style=italic; value=runclient("* asterisked deposits above will be posted to a different period than the current one (" + :gift_import:period + ")."); }
@@ -1539,61 +1557,61 @@ gift_import "widget/component-decl"
 
 			    create_dep_batch_btn "widget/textbutton"
 				{
-				//enabled = runclient((not :dep_import_osrc:is_pending) and (:dep_status_dd:value = 'R' or :dep_import_osrc:dep_batch_number is not null));
+				//enabled = runclient((not :dep_import_osrc:is_pending) and (:dep_status_dd:value = 'R' or :dep_import_osrc:dep_batch is not null));
 				enabled = runclient(not :dep_import_osrc:is_pending);
 				width = 162;
 				height = 24;
-				text = runclient(condition(:dep_import_osrc:dep_batch_number is null, "Create Deposit Batches", "View Dep Batch " + :dep_import_osrc:dep_batch_number));
+				text = runclient(condition(:dep_import_osrc:dep_batch is null, "Create Deposit Batches", "View Dep Batch " + :dep_import_osrc:dep_batch));
 
 				create_dep_batch_cn "widget/connector"
 				    {
-				    event_condition = runclient(:dep_import_osrc:dep_batch_number is null);
+				    event_condition = runclient(:dep_import_osrc:dep_batch is null);
 				    event=Click;
 				    target=create_dep_batch_window;
 				    action=Open;
 				    }
 				view_dep_batch_cn "widget/connector"
 				    {
-				    event_condition = runclient(:dep_import_osrc:dep_batch_number is not null);
+				    event_condition = runclient(:dep_import_osrc:dep_batch is not null);
 				    event=Click;
 				    target=gift_import;
 				    action=Launch;
-				    Width=800;
-				    Height=600;
+				    Width=1000;
+				    Height=700;
 				    Source="/apps/kardia/modules/rcpt/de_batches.app";
 				    ledger=runclient(:gift_import:ledger);
 				    period=runclient(:dep_import_osrc:dep_period);
-				    gotobatch=runclient(:dep_import_osrc:dep_batch_number);
+				    gotobatch=runclient(:dep_import_osrc:dep_batch);
 				    }
 				}
 			    create_fee_batch_btn "widget/textbutton"
 				{
-				//enabled = runclient((not :dep_import_osrc:is_pending) and (:dep_status_dd:value = 'R' or :dep_import_osrc:fees_batch_number is not null));
+				//enabled = runclient((not :dep_import_osrc:is_pending) and (:dep_status_dd:value = 'R' or :dep_import_osrc:fees_batch is not null));
 				enabled = runclient(not :dep_import_osrc:is_pending);
 				width = 162;
 				height = 24;
-				text = runclient(condition(:dep_import_osrc:fees_batch_number is null, "Create Fees Batches", "View Fee Batch " + :dep_import_osrc:fees_batch_number));
+				text = runclient(condition(:dep_import_osrc:fees_batch is null, "Create Fees Batches", "View Fee Batch " + :dep_import_osrc:fees_batch));
 
 				create_fee_batch_cn "widget/connector"
 				    {
-				    event_condition = runclient(:dep_import_osrc:fees_batch_number is null);
+				    event_condition = runclient(:dep_import_osrc:fees_batch is null);
 				    event=Click;
 				    target=create_fee_batch_window;
 				    action=Open;
 				    }
 				view_fee_batch_cn "widget/connector"
 				    {
-				    event_condition = runclient(:dep_import_osrc:fees_batch_number is not null);
+				    event_condition = runclient(:dep_import_osrc:fees_batch is not null);
 				    event=Click;
 				    target=gift_import;
 				    action=Launch;
-				    Width=800;
-				    Height=600;
+				    Width=1000;
+				    Height=700;
 				    Source="/apps/kardia/modules/gl/transaction_report.rpt";
 				    ledger=runclient(:gift_import:ledger);
 				    startperiod=runclient(:dep_import_osrc:fees_period);
 				    endperiod=runclient(:dep_import_osrc:fees_period);
-				    batch=runclient(:dep_import_osrc:fees_batch_number);
+				    batch=runclient(:dep_import_osrc:fees_batch);
 				    }
 				}
 			    }
@@ -1687,8 +1705,8 @@ gift_import "widget/component-decl"
 	titlebar=no;
 	modal=yes;
 	toplevel=yes;
-	width=500; height=324;
-	x=240; y=178;
+	width=500; height=340;
+	x=240; y=170;
 	visible=no;
 	border_radius=12;
 	shadow_radius=4;
@@ -1698,7 +1716,7 @@ gift_import "widget/component-decl"
 
 	create_dep_batch_vbox "widget/vbox"
 	    {
-	    x=10; y=10; width=478; height=302;
+	    x=10; y=10; width=478; height=318;
 	    spacing=4;
 	    cellsize=20;
 
@@ -1713,32 +1731,24 @@ gift_import "widget/component-decl"
 		cdb_sp3 "widget/parameter" { param_name=period; type=string; default=runclient(:gift_import:period); }
 		cdb_sp4 "widget/parameter" { param_name=ledger; type=string; default=runclient(:gift_import:ledger); }
 
-		sql = runserver("
-			select
-				cnt = count(count(1)),
-				sumcnt = sum(count(1)),
-				mindate = substring(convert(string,min(min(:i_eg_deposit_date))),1,11),
-				maxdate = substring(convert(string,max(max(:i_eg_deposit_date))),1,11),
-				totalamt = isnull(sum(first(:i_eg_deposit_amt)),$0),
+		sql = " select
+				cnt = count(1),
+				sumcnt = sum(:cnt),
+				mindate = substring(convert(string,min(:deposit_date)),1,11),
+				maxdate = substring(convert(string,max(:deposit_date)),1,11),
+				totalamt = isnull(sum(:deposit_amt),$0),
 				period = :parameters:period,
 				ledger = :parameters:ledger,
 				startbatchno = '',
 				endbatchno = '',
-				batchname = 'Electronic Giving Deposit'
+				batchname = 'Electronic Giving Deposit',
+				errors = sum(:errors + ', ') - ', '
 			from
-				/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows eg
+				expression('/apps/kardia/modules/rcpt/deposits_import_method.qy?ledger=' + :parameters:ledger + '&pstat=' + :parameters:pstat + '&ptime=' + :parameters:ptime + '&period=' + :parameters:period + '&pstat=RG')
 			where
-				:eg:a_ledger_number = " + quote(:this:ledger) + " and
-				(:parameters:ptime is null or :parameters:ptime = '0' or substring(:parameters:ptime,7,1) = 'M' or (dateadd(hour, convert(integer, substring(:parameters:ptime,1,6)), :eg:i_eg_gift_trx_date) > getdate())) and
-				(char_length(:parameters:ptime) < 8 or (datepart(year,dateadd(month, convert(integer,substring(:parameters:ptime,8,1)), :eg:i_eg_gift_trx_date)) == datepart(year,getdate()) and datepart(month,dateadd(month, convert(integer,substring(:parameters:ptime,8,1)), :eg:i_eg_gift_trx_date)) == datepart(month,getdate()))) and
-				:eg:i_eg_deposit_uuid is not null and
-				:eg:i_eg_deposit_date <= getdate() and
-				-- :eg:a_batch_number is not null and
-				:eg:a_batch_number_deposit is null
-			group by
-				:i_eg_service,
-				:i_eg_deposit_uuid
-			");
+				:deposit_amt is not null and
+				:dep_posted = 0
+			";
 
 		autoquery = oneachreveal;
 		replicasize=2;
@@ -1790,6 +1800,23 @@ gift_import "widget/component-decl"
 			    action=GetFocus;
 			    }
 			}
+		    cdb_errors "widget/label"
+			{
+			height=12;
+			align=center;
+			fgcolor="#A00000";
+			click_fgcolor="#FF0000";
+			value=runclient(condition(:create_dep_batch_info_osrc:errors is null, '', 'There were errors, click here for details.'));
+
+			on_cdb_err_click "widget/connector"
+			    {
+			    event=Click;
+			    event_condition=runclient(:create_dep_batch_info_osrc:errors is not null);
+			    target=gift_import;
+			    action=Alert;
+			    Message=runclient(:create_dep_batch_info_osrc:errors);
+			    }
+			}
 		    }
 		}
 
@@ -1805,7 +1832,7 @@ gift_import "widget/component-decl"
 		    {
 		    width=170;
 		    text = runclient(condition(:create_dep_batch_info_osrc:cnt > 1, "Create Deposit Batches", "Create Deposit Batch"));
-		    enabled=runclient(:create_dep_batch_info_osrc:cnt > 0);
+		    enabled=runclient(:create_dep_batch_info_osrc:cnt > 0 and :create_dep_batch_info_osrc:errors is null);
 
 		    cdb_doit_1 "widget/connector"
 			{
@@ -1851,92 +1878,12 @@ gift_import "widget/component-decl"
 	    replicasize=2;
 	    readahead=2;
 
-	    sql = " update
-			    /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows eg
-		    set
-			    :a_batch_number_deposit = convert(integer,:parameters:batchno) +
-				( select
-					count(count(1))
-				  from
-				        /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows eg2
-				  where 
-					:a_ledger_number = :parameters:ledger and
-					(:parameters:ptime is null or :parameters:ptime = '0' or substring(:parameters:ptime,7,1) = 'M' or (dateadd(hour, convert(integer, substring(:parameters:ptime,1,6)), :i_eg_gift_trx_date) > getdate())) and
-					(char_length(:parameters:ptime) < 8 or (datepart(year,dateadd(month, convert(integer,substring(:parameters:ptime,8,1)), :i_eg_gift_trx_date)) == datepart(year,getdate()) and datepart(month,dateadd(month, convert(integer,substring(:parameters:ptime,8,1)), :i_eg_gift_trx_date)) == datepart(month,getdate()))) and
-					:eg2:i_eg_deposit_uuid is not null and
-					:eg2:i_eg_deposit_date <= getdate() and
-					(:a_batch_number_deposit is null or
-					    (:a_batch_number_deposit >= convert(integer,:parameters:batchno) and :a_batch_number_deposit <= convert(integer,:parameters:endbatchno))) and
-					--:a_batch_number is not null and
-					(:eg2:i_eg_deposit_date < :eg:i_eg_deposit_date or
-					    (:eg2:i_eg_deposit_date = :eg:i_eg_deposit_date and :eg2:i_eg_deposit_uuid < :eg:i_eg_deposit_uuid))
-				  group by
-					:eg2:i_eg_service,
-					:eg2:i_eg_deposit_uuid
-				)
-					
-		    where
-			    :a_ledger_number = :parameters:ledger and
-			    (:parameters:ptime is null or :parameters:ptime = '0' or substring(:parameters:ptime,7,1) = 'M' or (dateadd(hour, convert(integer, substring(:parameters:ptime,1,6)), :i_eg_gift_trx_date) > getdate())) and
-			    (char_length(:parameters:ptime) < 8 or (datepart(year,dateadd(month, convert(integer,substring(:parameters:ptime,8,1)), :i_eg_gift_trx_date)) == datepart(year,getdate()) and datepart(month,dateadd(month, convert(integer,substring(:parameters:ptime,8,1)), :i_eg_gift_trx_date)) == datepart(month,getdate()))) and
-			    :eg:i_eg_deposit_uuid is not null and
-			    :eg:i_eg_deposit_date <= getdate() and
-			    :a_batch_number_deposit is null -- and
-			    -- :a_batch_number is not null
-		    ;
-
-		    insert into
-			    /apps/kardia/data/Kardia_DB/a_batch/rows
-		    select
-			    a_ledger_number = :parameters:ledger,
-			    a_batch_number = :eg:a_batch_number_deposit,
-			    a_period = (select :a_period from /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = :parameters:ledger and :a_start_date <= :eg:i_eg_deposit_date and :a_end_date >= :eg:i_eg_deposit_date and :a_summary_only = 0),
-			    a_batch_desc = :parameters:batchname,
-			    a_next_journal_number = 0,
-			    a_next_transaction_number = 0,
-			    a_default_effective_date = :eg:i_eg_deposit_date,
-			    a_origin = 'DE',
-			    s_date_created = getdate(),
-			    s_created_by = user_name(),
-			    s_date_modified = getdate(),
-			    s_modified_by = user_name()
-		    from
-			    /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows eg
-		    where
-			    :a_ledger_number = :parameters:ledger and
-			    :a_batch_number_deposit >= convert(integer,:parameters:batchno) and
-			    :a_batch_number_deposit <= convert(integer,:parameters:endbatchno)
-		    group by
-			    :a_batch_number_deposit
-		    ;
-
-		    insert into
-			    /apps/kardia/data/Kardia_DB/a_subtrx_deposit/rows
-		    select
-			    a_ledger_number = :parameters:ledger,
-			    a_batch_number = :eg:a_batch_number_deposit,
-			    a_period = (select :a_period from /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = :parameters:ledger and :a_start_date <= :eg:i_eg_deposit_date and :a_end_date >= :eg:i_eg_deposit_date and :a_summary_only = 0),
-			    a_batch_desc = :parameters:batchname,
-			    a_effective_date = :eg:i_eg_deposit_date,
-			    a_amount = :eg:i_eg_deposit_amt,
-			    a_cash_amount = $0,
-			    a_account_code = (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :parameters:ledger and :a_config_name = 'RcptDepTo'),
-			    a_num_checks = count(1),
-			    a_posted = 1,
-			    a_posted_to_gl = 0,
-			    a_comment = 'Electronic giving deposit',
-			    s_date_created = getdate(),
-			    s_created_by = user_name(),
-			    s_date_modified = getdate(),
-			    s_modified_by = user_name()
-		    from
-			    /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows eg
-		    where
-			    :a_ledger_number = :parameters:ledger and
-			    :a_batch_number_deposit >= convert(integer,:parameters:batchno) and
-			    :a_batch_number_deposit <= convert(integer,:parameters:endbatchno)
-		    group by
-			    :a_batch_number_deposit
+	    sql = " exec /apps/kardia/modules/rcpt/deposits_import.qy
+				ledger=:parameters:ledger,
+				ptime=:parameters:ptime,
+				batchno=:parameters:batchno, 
+				endbatchno=:parameters:endbatchno, 
+				batchname=:parameters:batchname
 		    ";
 
 	    close_win_on_new_dbatch1 "widget/connector" { event=EndQuery; target=create_dep_batch_info_form; action=Discard; }
@@ -1951,8 +1898,8 @@ gift_import "widget/component-decl"
 	titlebar=no;
 	modal=yes;
 	toplevel=yes;
-	width=500; height=324;
-	x=240; y=178;
+	width=500; height=340;
+	x=240; y=170;
 	visible=no;
 	border_radius=12;
 	shadow_radius=4;
@@ -1962,7 +1909,7 @@ gift_import "widget/component-decl"
 
 	create_fee_batch_vbox "widget/vbox"
 	    {
-	    x=10; y=10; width=478; height=302;
+	    x=10; y=10; width=478; height=318;
 	    spacing=4;
 	    cellsize=20;
 
@@ -1977,32 +1924,24 @@ gift_import "widget/component-decl"
 		cfb_sp3 "widget/parameter" { param_name=period; type=string; default=runclient(:gift_import:period); }
 		cfb_sp4 "widget/parameter" { param_name=ledger; type=string; default=runclient(:gift_import:ledger); }
 
-		sql = runserver("
-			select
-				cnt = count(count(1)),
-				sumcnt = sum(count(1)),
-				mindate = substring(convert(string,min(min(:i_eg_deposit_date))),1,11),
-				maxdate = substring(convert(string,max(max(:i_eg_deposit_date))),1,11),
-				totalamt = isnull(sum(first(:i_eg_deposit_gross_amt)) - sum(first(:i_eg_deposit_amt)),$0),
+		sql = " select
+				cnt = count(1),
+				sumcnt = sum(:cnt),
+				mindate = substring(convert(string,min(:deposit_date)),1,11),
+				maxdate = substring(convert(string,max(:deposit_date)),1,11),
+				totalamt = isnull(sum(:fees_amt),$0),
 				period = :parameters:period,
 				ledger = :parameters:ledger,
 				startbatchno = '',
 				endbatchno = '',
-				batchname = 'Electronic Giving Fees'
+				batchname = 'Electronic Giving Fees',
+				errors = sum(:errors + ', ') - ', '
 			from
-				/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows eg
+				expression('/apps/kardia/modules/rcpt/deposits_import_method.qy?ledger=' + :parameters:ledger + '&pstat=' + :parameters:pstat + '&ptime=' + :parameters:ptime + '&period=' + :parameters:period + '&pstat=RG')
 			where
-				:eg:a_ledger_number = " + quote(:this:ledger) + " and
-				(:parameters:ptime is null or :parameters:ptime = '0' or substring(:parameters:ptime,7,1) = 'M' or (dateadd(hour, convert(integer, substring(:parameters:ptime,1,6)), :eg:i_eg_gift_trx_date) > getdate())) and
-				(char_length(:parameters:ptime) < 8 or (datepart(year,dateadd(month, convert(integer,substring(:parameters:ptime,8,1)), :eg:i_eg_gift_trx_date)) == datepart(year,getdate()) and datepart(month,dateadd(month, convert(integer,substring(:parameters:ptime,8,1)), :eg:i_eg_gift_trx_date)) == datepart(month,getdate()))) and
-				:eg:i_eg_deposit_uuid is not null and
-				:eg:i_eg_deposit_date <= getdate() and
-				-- :eg:a_batch_number is not null and
-				:eg:a_batch_number_fees is null
-			group by
-				:i_eg_service,
-				:i_eg_deposit_uuid
-			");
+				:fees_anymethod_amt is not null and
+				:fees_posted = 0
+			";
 
 		autoquery = oneachreveal;
 		replicasize=2;
@@ -2054,6 +1993,23 @@ gift_import "widget/component-decl"
 			    action=GetFocus;
 			    }
 			}
+		    cfb_errors "widget/label"
+			{
+			height=12;
+			align=center;
+			fgcolor="#A00000";
+			click_fgcolor="#FF0000";
+			value=runclient(condition(:create_fee_batch_info_osrc:errors is null, '', 'There were errors, click here for details.'));
+
+			on_cfb_err_click "widget/connector"
+			    {
+			    event=Click;
+			    event_condition=runclient(:create_fee_batch_info_osrc:errors is not null);
+			    target=gift_import;
+			    action=Alert;
+			    Message=runclient(:create_fee_batch_info_osrc:errors);
+			    }
+			}
 		    }
 		}
 
@@ -2069,7 +2025,7 @@ gift_import "widget/component-decl"
 		    {
 		    width=170;
 		    text = runclient(condition(:create_fee_batch_info_osrc:cnt > 1, "Create Fees Batches", "Create Fees Batch"));
-		    enabled=runclient(:create_fee_batch_info_osrc:cnt > 0);
+		    enabled=runclient(:create_fee_batch_info_osrc:cnt > 0 and :create_fee_batch_info_osrc:errors is null);
 
 		    cfb_doit_1 "widget/connector"
 			{
@@ -2115,146 +2071,12 @@ gift_import "widget/component-decl"
 	    replicasize=2;
 	    readahead=2;
 
-	    sql = " update
-			    /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows eg
-		    set
-			    :a_batch_number_fees = convert(integer,:parameters:batchno) +
-				( select
-					count(count(1))
-				  from
-				        /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows eg2
-				  where 
-					:a_ledger_number = :parameters:ledger and
-					(:parameters:ptime is null or :parameters:ptime = '0' or substring(:parameters:ptime,7,1) = 'M' or (dateadd(hour, convert(integer, substring(:parameters:ptime,1,6)), :i_eg_gift_trx_date) > getdate())) and
-					(char_length(:parameters:ptime) < 8 or (datepart(year,dateadd(month, convert(integer,substring(:parameters:ptime,8,1)), :i_eg_gift_trx_date)) == datepart(year,getdate()) and datepart(month,dateadd(month, convert(integer,substring(:parameters:ptime,8,1)), :i_eg_gift_trx_date)) == datepart(month,getdate()))) and
-					:eg2:i_eg_deposit_uuid is not null and
-					:eg2:i_eg_deposit_date <= getdate() and
-					(:a_batch_number_fees is null or
-					    (:a_batch_number_fees >= convert(integer,:parameters:batchno) and :a_batch_number_fees <= convert(integer,:parameters:endbatchno))) and
-					--:a_batch_number is not null and
-					(:eg2:i_eg_deposit_date < :eg:i_eg_deposit_date or
-					    (:eg2:i_eg_deposit_date = :eg:i_eg_deposit_date and :eg2:i_eg_deposit_uuid < :eg:i_eg_deposit_uuid))
-				  group by
-					:eg2:i_eg_service,
-					:eg2:i_eg_deposit_uuid
-				)
-					
-		    where
-			    :a_ledger_number = :parameters:ledger and
-			    (:parameters:ptime is null or :parameters:ptime = '0' or substring(:parameters:ptime,7,1) = 'M' or (dateadd(hour, convert(integer, substring(:parameters:ptime,1,6)), :i_eg_gift_trx_date) > getdate())) and
-			    (char_length(:parameters:ptime) < 8 or (datepart(year,dateadd(month, convert(integer,substring(:parameters:ptime,8,1)), :i_eg_gift_trx_date)) == datepart(year,getdate()) and datepart(month,dateadd(month, convert(integer,substring(:parameters:ptime,8,1)), :i_eg_gift_trx_date)) == datepart(month,getdate()))) and
-			    :eg:i_eg_deposit_uuid is not null and
-			    :eg:i_eg_deposit_date <= getdate() and
-			    :a_batch_number_fees is null -- and
-			    -- :a_batch_number is not null
-		    ;
-
-		    insert into
-			    /apps/kardia/data/Kardia_DB/a_batch/rows
-		    select
-			    a_ledger_number = :parameters:ledger,
-			    a_batch_number = :eg:a_batch_number_fees,
-			    a_period = (select :a_period from /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = :parameters:ledger and :a_start_date <= :eg:i_eg_deposit_date and :a_end_date >= :eg:i_eg_deposit_date and :a_summary_only = 0),
-			    a_batch_desc = :parameters:batchname,
-			    a_next_journal_number = 0,
-			    a_next_transaction_number = 0,
-			    a_default_effective_date = :eg:i_eg_deposit_date,
-			    a_origin = 'EG',
-			    s_date_created = getdate(),
-			    s_created_by = user_name(),
-			    s_date_modified = getdate(),
-			    s_modified_by = user_name()
-		    from
-			    /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows eg
-		    where
-			    :a_ledger_number = :parameters:ledger and
-			    :a_batch_number_fees >= convert(integer,:parameters:batchno) and
-			    :a_batch_number_fees <= convert(integer,:parameters:endbatchno)
-		    group by
-			    :a_batch_number_fees
-		    ;
-
-		    insert into
-			    /apps/kardia/data/Kardia_DB/a_transaction/rows
-		    select
-			    a_ledger_number = :parameters:ledger,
-			    a_batch_number = :eg:a_batch_number_fees,
-			    a_journal_number = 1,
-			    a_period = (select :a_period from /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = :parameters:ledger and :a_start_date <= :eg:i_eg_deposit_date and :a_end_date >= :eg:i_eg_deposit_date and :a_summary_only = 0),
-			    a_effective_date = :eg:i_eg_deposit_date,
-			    a_transaction_type = 'T',
-			    a_fund = (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :parameters:ledger and :a_config_name = 'RcptCashFund'),
-			    a_account_code = (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :parameters:ledger and :a_config_name = 'RcptCashAcct'),
-			    a_account_category = (select :a:a_default_category from /apps/kardia/data/Kardia_DB/a_config/rows conf, /apps/kardia/data/Kardia_DB/a_account/rows a where :conf:a_ledger_number = :parameters:ledger and :conf:a_config_name = 'RcptCashAcct' and :a:a_ledger_number = :conf:a_ledger_number and :a:a_account_code = :conf:a_config_value),
-			    a_amount = $0 - (:eg:i_eg_deposit_gross_amt - :eg:i_eg_deposit_amt),
-			    a_posted = 1,
-			    a_modified = 0,
-			    a_corrected = 0,
-			    a_correcting = 0,
-			    a_reconciled = 0,
-			    a_postprocessed = 0,
-			    a_postprocess_type = 'XX',
-			    a_origin = 'EG',
-			    a_recv_document_id = :eg:i_eg_deposit_uuid,
-			    a_receipt_sent = 0,
-			    a_receipt_desired = 0,
-			    a_first_gift = 0,
-			    a_goods_provided = $0,
-			    a_comment = 'Electronic giving fees',
-			    s_date_created = getdate(),
-			    s_created_by = user_name(),
-			    s_date_modified = getdate(),
-			    s_modified_by = user_name()
-		    from
-			    /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows eg
-		    where
-			    :a_ledger_number = :parameters:ledger and
-			    :a_batch_number_fees >= convert(integer,:parameters:batchno) and
-			    :a_batch_number_fees <= convert(integer,:parameters:endbatchno)
-		    group by
-			    :a_batch_number_fees
-		    ;
-
-		    insert into
-			    /apps/kardia/data/Kardia_DB/a_transaction/rows
-		    select
-			    a_ledger_number = :parameters:ledger,
-			    a_batch_number = :eg:a_batch_number_fees,
-			    a_journal_number = 1,
-			    a_period = (select :a_period from /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = :parameters:ledger and :a_start_date <= :eg:i_eg_deposit_date and :a_end_date >= :eg:i_eg_deposit_date and :a_summary_only = 0),
-			    a_effective_date = :eg:i_eg_deposit_date,
-			    a_transaction_type = 'T',
-			    a_fund = condition( isnull((select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :parameters:ledger and :a_config_name = 'EgFeesFund'),'*') == '*', :eg:a_fund, (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :parameters:ledger and :a_config_name = 'EgFeesFund')),
-			    a_account_code = (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :parameters:ledger and :a_config_name = 'EgFeesAcct'),
-			    a_account_category = (select :a:a_default_category from /apps/kardia/data/Kardia_DB/a_config/rows conf, /apps/kardia/data/Kardia_DB/a_account/rows a where :conf:a_ledger_number = :parameters:ledger and :conf:a_config_name = 'EgFeesAcct' and :a:a_ledger_number = :conf:a_ledger_number and :a:a_account_code = :conf:a_config_value),
-			    a_amount = isnull(sum(:eg:i_eg_gift_amount - :eg:i_eg_net_amount),$0),
-			    a_posted = 0,
-			    a_modified = 0,
-			    a_corrected = 0,
-			    a_correcting = 0,
-			    a_reconciled = 0,
-			    a_postprocessed = 0,
-			    a_postprocess_type = 'XX',
-			    a_origin = 'EG',
-			    a_recv_document_id = :eg:i_eg_deposit_uuid,
-			    a_receipt_sent = 0,
-			    a_receipt_desired = 0,
-			    a_first_gift = 0,
-			    a_goods_provided = $0,
-			    a_comment = 'Electronic giving fees - ' + :eg:a_fund,
-			    s_date_created = getdate(),
-			    s_created_by = user_name(),
-			    s_date_modified = getdate(),
-			    s_modified_by = user_name()
-		    from
-			    /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows eg
-		    where
-			    :a_ledger_number = :parameters:ledger and
-			    :a_batch_number_fees >= convert(integer,:parameters:batchno) and
-			    :a_batch_number_fees <= convert(integer,:parameters:endbatchno)
-		    group by
-			    :eg:a_fund,
-			    :eg:a_batch_number_fees
+	    sql = " exec /apps/kardia/modules/rcpt/fees_import.qy
+				ledger=:parameters:ledger,
+				ptime=:parameters:ptime,
+				batchno=:parameters:batchno, 
+				endbatchno=:parameters:endbatchno, 
+				batchname=:parameters:batchname
 		    ";
 
 	    close_win_on_new_fbatch1 "widget/connector" { event=EndQuery; target=create_fee_batch_info_form; action=Discard; }
@@ -2679,8 +2501,8 @@ gift_import "widget/component-decl"
 		event=EndQuery;
 		target=gift_import;
 		action=Launch;
-		Width=800;
-		Height=600;
+		Width=1000;
+		Height=700;
 		Source="/apps/kardia/modules/rcpt/cr_batches.app";
 		ledger=runclient(:gift_import:ledger);
 		period=runclient(:gift_import:period);

@@ -1,0 +1,49 @@
+$Version=2$
+deposits_import_calc "system/query"
+    {
+    ledger "query/parameter" { type=string; style=notnull,strnull; }
+    ptime "query/parameter" { type=string; style=strnull; }
+    pstat "query/parameter" { type=string; style=strnull; }
+    period "query/parameter" { type=string; style=strnull; }
+    deposit_batch "query/parameter" { type=integer; style=strnull; }
+    batchtype "query/parameter" { type=string; default="deposits"; }
+    byfund "query/parameter" { type=integer; default=0; }
+
+    sql = " select
+		    :cnt,
+
+		    -- Deposit gross amount needs no calcuation
+		    :deposit_gross_amt,
+
+		    -- Fees amount depends on fee calculation type
+		    fees_amt = condition(isnull(:calc_method, 'I') == 'M', :fees_calc_amt, :fees_amt),
+		    deposit_net_amt = condition(isnull(:calc_method, 'I') == 'M', :deposit_gross_amt - :fees_calc_amt, :deposit_net_amt),
+
+		    -- Misc data
+		    :fee_fund,
+		    :fee_acct,
+		    :fee_payee,
+		    :fee_method,
+		    :calc_method,
+		    :deposit_date,
+		    :dep_method,
+		    :i_eg_deposit_uuid,
+		    :i_eg_service,
+		    :deposit_date,
+		    :period,
+		    :ledger,
+		    :fund,
+		    :processor,
+		    :min_date_trx,
+		    :max_date_trx,
+		    :dep_posted,
+		    :dep_batch,
+		    :fees_posted,
+		    :fees_batch,
+		    :is_pending,
+		    :is_unimp_gifts,
+		    :errors
+	    from
+		    expression('/apps/kardia/modules/rcpt/deposits_import_list.qy?ledger=' + :parameters:ledger + '&ptime=' + :parameters:ptime + '&period=' + isnull(:parameters:period, '') + '&deposit_batch=' + isnull(:parameters:deposit_batch, '') + '&batchtype=' + isnull(:parameters:batchtype, 'deposits') + '&byfund=' + isnull(:parameters:byfund, '0') + '&pstat=' + isnull(:parameters:pstat, '')) dl
+	    ";
+    }
