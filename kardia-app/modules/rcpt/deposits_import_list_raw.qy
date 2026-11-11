@@ -1,0 +1,101 @@
+$Version=2$
+deposits_import_list_raw "system/query"
+    {
+    ledger "query/parameter" { type=string; style=notnull,strnull; }
+    ptime "query/parameter" { type=string; style=strnull; }
+    pstat "query/parameter" { type=string; style=strnull; }
+    period "query/parameter" { type=string; style=strnull; }
+    deposit_batch "query/parameter" { type=integer; style=strnull; }
+    batchtype "query/parameter" { type=string; default="deposits"; }
+
+    sql = " select
+		    cnt = count(1),
+		    :eg:i_eg_deposit_uuid,
+		    :eg:i_eg_service,
+		    min_date = substring(convert(string, min(:eg:i_eg_deposit_date)), 1, 11),
+		    max_date = substring(convert(string, max(:eg:i_eg_deposit_date)), 1, 11),
+		    min_date_raw = min(:eg:i_eg_deposit_date),
+		    max_date_raw = max(:eg:i_eg_deposit_date),
+		    min_gift_type = min(condition(:eg:i_eg_gift_pmt_type == 'ACH', 'E', condition(:eg:i_eg_gift_pmt_type == 'Paypal', 'P', 'D'))),
+		    max_gift_type = max(condition(:eg:i_eg_gift_pmt_type == 'ACH', 'E', condition(:eg:i_eg_gift_pmt_type == 'Paypal', 'P', 'D'))),
+		    min_processor = min(:eg:i_eg_processor),
+		    max_processor = max(:eg:i_eg_processor),
+		    min_currency = min(:eg:i_eg_gift_currency),
+		    max_currency = max(:eg:i_eg_gift_currency),
+		    deposit_net_amt = isnull(sum(:eg:i_eg_net_amount), $0),
+		    deposit_gross_amt = isnull(sum(:eg:i_eg_gift_amount), $0),
+		    fees_amt = isnull(sum(:eg:i_eg_gift_amount) - sum(:eg:i_eg_net_amount), $0),
+
+		    -- Synthetic fees calculation, but fall back to data from import
+		    fees_calc_amt = sum(
+			    isnull(:dc:i_eg_fee_flat_amt + 
+					convert(money, condition(:dc:i_eg_calc_rounding == 'D', truncate(:eg:i_eg_gift_amount * :dc:i_eg_fee_pct_amt, 2),
+					condition(:dc:i_eg_calc_rounding == 'U', truncate(:eg:i_eg_gift_amount * :dc:i_eg_fee_pct_amt + 0.9999, 2),
+					round(:eg:i_eg_gift_amount * :dc:i_eg_fee_pct_amt, 2)))),
+			    isnull(:eg:i_eg_gift_amount - :eg:i_eg_net_amount, $0)
+			    )
+		    ),
+		    period = :parameters:period,
+		    ledger = :parameters:ledger,
+		    fund = :eg:a_fund,
+		    min_config_id = min(:dc:i_eg_depfee_id),
+		    max_config_id = max(:dc:i_eg_depfee_id),
+		    min_dep_method = min(:dc:i_eg_deposit_method),
+		    max_dep_method = max(:dc:i_eg_deposit_method),
+		    min_fee_method = min(:dc:i_eg_fees_method),
+		    max_fee_method = max(:dc:i_eg_fees_method),
+		    min_fee_fund = min(:dc:i_eg_fees_fund),
+		    max_fee_fund = max(:dc:i_eg_fees_fund),
+		    min_fee_acct = min(:dc:i_eg_fees_account_code),
+		    max_fee_acct = max(:dc:i_eg_fees_account_code),
+		    min_fee_payee = min(:dc:i_eg_fees_payee),
+		    max_fee_payee = max(:dc:i_eg_fees_payee),
+		    min_calc_method = min(:dc:i_eg_calc_method),
+		    max_calc_method = max(:dc:i_eg_calc_method),
+		    min_calc_rounding = min(:dc:i_eg_calc_rounding),
+		    max_calc_rounding = max(:dc:i_eg_calc_rounding),
+		    min_fee_flat_amt = min(:dc:i_eg_fee_flat_amt),
+		    max_fee_flat_amt = max(:dc:i_eg_fee_flat_amt),
+		    min_fee_pct_amt = min(:dc:i_eg_fee_pct_amt),
+		    max_fee_pct_amt = max(:dc:i_eg_fee_pct_amt),
+		    min_date_trx = min(:eg:i_eg_gift_trx_date),
+		    max_date_trx = max(:eg:i_eg_gift_trx_date),
+		    fees_posted = min(condition(:eg:a_batch_number_fees is null, 0, 1)),
+		    fees_batch = min(:eg:a_batch_number_fees),
+		    dep_posted = min(condition(:eg:a_batch_number_deposit is null, 0, 1)),
+		    dep_batch = min(:eg:a_batch_number_deposit),
+		    is_pending = max(condition(:eg:i_eg_deposit_uuid is null or :eg:i_eg_deposit_date > getdate(), 1, 0)),
+		    is_unimp_gifts = max(condition(:eg:a_batch_number is null, 1, 0))
+	    from
+		    identity /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows eg,
+		    expression('/apps/kardia/modules/rcpt/deposits_config.qy?ledger=' + :eg:a_ledger_number + '&service=' + :eg:i_eg_service + '&processor=' + isnull(:eg:i_eg_processor, '') + '&currency=' + isnull(:eg:i_eg_gift_currency, '') + '&pmt_type=' + isnull(:eg:i_eg_gift_pmt_type, '')) dc
+	    where
+		    :eg:a_ledger_number = :parameters:ledger and
+		    (:parameters:pstat is null or :parameters:pstat = '*' or :parameters:pstat = 'N' or :eg:i_eg_deposit_uuid is not null) and
+		    (:parameters:pstat is null or :parameters:pstat = '*' or :parameters:pstat = 'N' or :eg:i_eg_deposit_date <= getdate()) and
+		    (:parameters:ptime is null or :parameters:ptime = '0' or :eg:i_eg_deposit_date is null or :eg:i_eg_deposit_uuid is null or substring(:parameters:ptime,7,1) = 'M' or (dateadd(hour, convert(integer, substring(:parameters:ptime,1,6)), :eg:i_eg_deposit_date) > getdate())) and
+		    (char_length(isnull(:parameters:ptime,'')) < 8 or :eg:i_eg_deposit_date is null or :eg:i_eg_deposit_uuid is null or (datepart(year,dateadd(month, convert(integer,substring(:parameters:ptime,8,1)), :eg:i_eg_deposit_date)) == datepart(year,getdate()) and datepart(month,dateadd(month, convert(integer,substring(:parameters:ptime,8,1)), :eg:i_eg_deposit_date)) == datepart(month,getdate()))) 
+		    --and
+		    --:eg:i_eg_deposit_uuid is not null and
+		    --:eg:i_eg_deposit_date <= getdate() and
+		    --(:eg:a_batch_number_deposit is null or :eg:a_batch_number_deposit = :parameters:deposit_batch or :parameters:batchtype != 'deposits') and
+		    --(:parameters:deposit_batch is null or :eg:a_batch_number_deposit = :parameters:deposit_batch) and
+		    --(:eg:a_batch_number_fees is null or :eg:a_batch_number_deposit = :parameters:deposit_batch or :parameters:batchtype != 'fees') and
+		    --(:parameters:deposit_batch is null or :eg:a_batch_number_deposit = :parameters:deposit_batch)
+	    group by
+		    :eg:i_eg_service,
+		    :eg:i_eg_deposit_uuid,
+		    :eg:a_fund
+	    having
+		    (:parameters:pstat is null or :parameters:pstat = '*' or
+		      (:parameters:pstat = 'I' and :fees_posted and :dep_posted and not :is_pending) or
+		      ((:parameters:pstat = 'R' or :parameters:pstat = 'RG') and (not :fees_posted or not :dep_posted) and not :is_unimp_gifts and not :is_pending) or
+		      ((:parameters:pstat = 'G' or :parameters:pstat = 'RG') and (not :fees_posted or not :dep_posted) and :is_unimp_gifts and not :is_pending) or
+		      (:parameters:pstat = 'N' and :is_pending)
+		    )
+	    order by
+		    :eg:i_eg_service,
+		    :eg:i_eg_deposit_uuid,
+		    :eg:a_fund
+	    ";
+    }

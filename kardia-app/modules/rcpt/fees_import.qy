@@ -1,0 +1,249 @@
+$Version=2$
+fees_import "system/query"
+    {
+    ledger "query/parameter" { type=string; style=strnull,notnull; }
+    batchno "query/parameter" { type=integer; style=strnull,notnull; }
+    endbatchno "query/parameter" { type=integer; style=strnull,notnull; }
+    ptime "query/parameter" { type=string; style=strnull; }
+    batchname "query/parameter" { type=string; style=strnull; default="Electronic Giving Fees Import"; }
+
+    sql = " declare collection deps;
+	    declare collection depfunds;
+
+	    insert into
+		    collection deps
+	    select
+		    *,
+		    batch = dense_rank(:item) + :parameters:batchno - 1
+	    from
+		    expression('/apps/kardia/modules/rcpt/deposits_import_method.qy?ledger=' + :parameters:ledger + '&ptime=' + :parameters:ptime + '&pstat=RG') d
+	    where
+		    :d:fees_anymethod_amt is not null and
+		    :d:fees_posted = 0
+	    ;
+
+	    insert into
+		    collection depfunds
+	    select
+		    *,
+		    batch = dense_rank(:item) + :parameters:batchno - 1
+	    from
+		    expression('/apps/kardia/modules/rcpt/deposits_import_method.qy?ledger=' + :parameters:ledger + '&ptime=' + :parameters:ptime + '&pstat=RG&byfund=1') d
+	    where
+		    :d:fees_anymethod_amt is not null and
+		    :d:fees_posted = 0
+	    ;
+
+	    -- Create the batches.
+	    insert into
+		    /apps/kardia/data/Kardia_DB/a_batch/rows
+	    select
+		    a_ledger_number = :parameters:ledger,
+		    a_batch_number = :d:batch,
+		    a_period = (select :a_period from /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = :parameters:ledger and :a_start_date <= :d:deposit_date and :a_end_date >= :d:deposit_date and :a_summary_only = 0),
+		    a_batch_desc = :parameters:batchname,
+		    a_next_journal_number = 0,
+		    a_next_transaction_number = 0,
+		    a_default_effective_date = :d:deposit_date,
+		    a_origin = condition(:d:fees_amt is not null, 'EG', condition(:d:fees_disbursed_amt is not null, 'CD', condition(:d:fees_payable_amt is not null, 'EG', 'EG'))),
+		    s_date_created = getdate(),
+		    s_created_by = user_name(),
+		    s_date_modified = getdate(),
+		    s_modified_by = user_name()
+	    from
+		    collection deps d
+	    ;
+
+	    -- Net Fees Method (N), part 1
+	    insert into
+		    /apps/kardia/data/Kardia_DB/a_transaction/rows
+	    select
+		    a_ledger_number = :parameters:ledger,
+		    a_batch_number = :d:batch,
+		    a_journal_number = 1,
+		    a_period = (select :a_period from /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = :parameters:ledger and :a_start_date <= :d:deposit_date and :a_end_date >= :d:deposit_date and :a_summary_only = 0),
+		    a_effective_date = :d:deposit_date,
+		    a_transaction_type = 'T',
+		    a_fund = (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :parameters:ledger and :a_config_name = 'RcptCashFund'),
+		    a_account_code = (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :parameters:ledger and :a_config_name = 'RcptCashAcct'),
+		    a_account_category = (select :a:a_default_category from /apps/kardia/data/Kardia_DB/a_config/rows conf, /apps/kardia/data/Kardia_DB/a_account/rows a where :conf:a_ledger_number = :parameters:ledger and :conf:a_config_name = 'RcptCashAcct' and :a:a_ledger_number = :conf:a_ledger_number and :a:a_account_code = :conf:a_config_value),
+		    a_amount = $0 - :d:fees_amt,
+		    a_posted = 1,
+		    a_modified = 0,
+		    a_corrected = 0,
+		    a_correcting = 0,
+		    a_reconciled = 0,
+		    a_postprocessed = 0,
+		    a_postprocess_type = 'XX',
+		    a_origin = 'EG',
+		    a_recv_document_id = :d:i_eg_deposit_uuid,
+		    a_receipt_sent = 0,
+		    a_receipt_desired = 0,
+		    a_first_gift = 0,
+		    a_goods_provided = $0,
+		    a_comment = 'Electronic giving fees for ' + :d:cnt + ' gifts',
+		    s_date_created = getdate(),
+		    s_created_by = user_name(),
+		    s_date_modified = getdate(),
+		    s_modified_by = user_name()
+	    from
+		    collection deps d
+	    where
+		    :d:fees_amt is not null
+	    ;
+
+	    -- Net Fees Method (N), part 2
+	    insert into
+		    /apps/kardia/data/Kardia_DB/a_transaction/rows
+	    select
+		    a_ledger_number = :parameters:ledger,
+		    a_batch_number = :d:batch,
+		    a_journal_number = 1,
+		    a_period = (select :a_period from /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = :parameters:ledger and :a_start_date <= :d:deposit_date and :a_end_date >= :d:deposit_date and :a_summary_only = 0),
+		    a_effective_date = :d:deposit_date,
+		    a_transaction_type = 'T',
+		    a_fund = condition( isnull((select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :parameters:ledger and :a_config_name = 'EgFeesFund'),'*') == '*', :d:fund, (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :parameters:ledger and :a_config_name = 'EgFeesFund')),
+		    a_account_code = (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :parameters:ledger and :a_config_name = 'EgFeesAcct'),
+		    a_account_category = (select :a:a_default_category from /apps/kardia/data/Kardia_DB/a_config/rows conf, /apps/kardia/data/Kardia_DB/a_account/rows a where :conf:a_ledger_number = :parameters:ledger and :conf:a_config_name = 'EgFeesAcct' and :a:a_ledger_number = :conf:a_ledger_number and :a:a_account_code = :conf:a_config_value),
+		    a_amount = :d:fees_amt,
+		    a_posted = 1,
+		    a_modified = 0,
+		    a_corrected = 0,
+		    a_correcting = 0,
+		    a_reconciled = 0,
+		    a_postprocessed = 0,
+		    a_postprocess_type = 'XX',
+		    a_origin = 'EG',
+		    a_recv_document_id = :d:i_eg_deposit_uuid,
+		    a_receipt_sent = 0,
+		    a_receipt_desired = 0,
+		    a_first_gift = 0,
+		    a_goods_provided = $0,
+		    a_comment = 'Electronic giving fees - fund ' + :d:fund,
+		    s_date_created = getdate(),
+		    s_created_by = user_name(),
+		    s_date_modified = getdate(),
+		    s_modified_by = user_name()
+	    from
+		    collection depfunds d
+	    where
+		    :d:fees_amt is not null
+	    ;
+
+	    -- Payable Fees Method (P), part 1
+	    insert into
+		    /apps/kardia/data/Kardia_DB/a_transaction/rows
+	    select
+		    a_ledger_number = :parameters:ledger,
+		    a_batch_number = :d:batch,
+		    a_journal_number = 1,
+		    a_period = (select :a_period from /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = :parameters:ledger and :a_start_date <= :d:deposit_date and :a_end_date >= :d:deposit_date and :a_summary_only = 0),
+		    a_effective_date = :d:deposit_date,
+		    a_transaction_type = 'T',
+		    a_fund = isnull(:d:fees_payable_fund, (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :parameters:ledger and :a_config_name = 'RcptCashFund')),
+		    a_account_code = isnull(:d:fees_payable_acct, 'X'),
+		    a_account_category = (select :a:a_default_category from /apps/kardia/data/Kardia_DB/a_account/rows a where :a:a_ledger_number = :parameters:ledger and :a:a_account_code = isnull(:d:fees_payable_acct, 'X')),
+		    a_amount = $0 - :d:fees_payable_amt,
+		    a_posted = 1,
+		    a_modified = 0,
+		    a_corrected = 0,
+		    a_correcting = 0,
+		    a_reconciled = 0,
+		    a_postprocessed = 0,
+		    a_postprocess_type = 'XX',
+		    a_origin = 'EG',
+		    a_recv_document_id = :d:i_eg_deposit_uuid,
+		    a_receipt_sent = 0,
+		    a_receipt_desired = 0,
+		    a_first_gift = 0,
+		    a_goods_provided = $0,
+		    a_comment = 'Electronic giving fees payable for ' + :d:cnt + ' gifts',
+		    s_date_created = getdate(),
+		    s_created_by = user_name(),
+		    s_date_modified = getdate(),
+		    s_modified_by = user_name()
+	    from
+		    collection deps d
+	    where
+		    :d:fees_payable_amt is not null
+	    ;
+
+	    -- Payable Fees Method (P), part 2
+	    insert into
+		    /apps/kardia/data/Kardia_DB/a_transaction/rows
+	    select
+		    a_ledger_number = :parameters:ledger,
+		    a_batch_number = :d:batch,
+		    a_journal_number = 1,
+		    a_period = (select :a_period from /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = :parameters:ledger and :a_start_date <= :d:deposit_date and :a_end_date >= :d:deposit_date and :a_summary_only = 0),
+		    a_effective_date = :d:deposit_date,
+		    a_transaction_type = 'T',
+		    a_fund = condition( isnull((select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :parameters:ledger and :a_config_name = 'EgFeesFund'),'*') == '*', :d:fund, (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :parameters:ledger and :a_config_name = 'EgFeesFund')),
+		    a_account_code = (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :parameters:ledger and :a_config_name = 'EgFeesAcct'),
+		    a_account_category = (select :a:a_default_category from /apps/kardia/data/Kardia_DB/a_config/rows conf, /apps/kardia/data/Kardia_DB/a_account/rows a where :conf:a_ledger_number = :parameters:ledger and :conf:a_config_name = 'EgFeesAcct' and :a:a_ledger_number = :conf:a_ledger_number and :a:a_account_code = :conf:a_config_value),
+		    a_amount = :d:fees_payable_amt,
+		    a_posted = 1,
+		    a_modified = 0,
+		    a_corrected = 0,
+		    a_correcting = 0,
+		    a_reconciled = 0,
+		    a_postprocessed = 0,
+		    a_postprocess_type = 'XX',
+		    a_origin = 'EG',
+		    a_recv_document_id = :d:i_eg_deposit_uuid,
+		    a_receipt_sent = 0,
+		    a_receipt_desired = 0,
+		    a_first_gift = 0,
+		    a_goods_provided = $0,
+		    a_comment = 'Electronic giving fees payable - fund ' + :d:fund,
+		    s_date_created = getdate(),
+		    s_created_by = user_name(),
+		    s_date_modified = getdate(),
+		    s_modified_by = user_name()
+	    from
+		    collection depfunds d
+	    where
+		    :d:fees_payable_amt is not null
+	    ;
+
+	    -- Disbursements Fees Method (D)
+	    insert into
+		    /apps/kardia/data/Kardia_DB/a_subtrx_cashdisb/rows
+	    select
+		    a_ledger_number = :parameters:ledger,
+		    a_batch_number = :d:batch,
+		    a_disbursement_id = 1,
+		    a_period = (select :a_period from /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = :parameters:ledger and :a_start_date <= :d:deposit_date and :a_end_date >= :d:deposit_date and :a_summary_only = 0),
+		    a_effective_date = :d:deposit_date,
+		    a_cash_account_code = isnull((select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :parameters:ledger and :a_config_name = 'RcptCashAcct'), 'X'),
+		    a_fund = condition( isnull((select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :parameters:ledger and :a_config_name = 'EgFeesFund'),'*') == '*', :d:fund, (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :parameters:ledger and :a_config_name = 'EgFeesFund')),
+		    a_account_code = (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :parameters:ledger and :a_config_name = 'EgFeesAcct'),
+		    a_payee_partner_key = :d:fees_disbursed_payee,
+		    a_amount = :d:fees_disbursed_amt,
+		    a_posted = 0,
+		    a_posted_to_gl = 0,
+		    a_voided = 0,
+		    a_reconciled = 0,
+		    a_memo = 'Fees with deposit ' + :d:i_eg_deposit_uuid,
+		    a_comment = 'Electronic giving fees, fund ' + :d:fund + ', deposit #' + :d:i_eg_deposit_uuid,
+		    s_date_created = getdate(),
+		    s_created_by = user_name(),
+		    s_date_modified = getdate(),
+		    s_modified_by = user_name()
+	    from
+		    collection depfunds d
+	    where
+		    :d:fees_disbursed_amt is not null
+	    ;
+
+	    -- Mark the gift import data as fees-posted.
+	    update
+		    identity /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows eg,
+		    collection deps d
+	    set
+		    :eg:a_batch_number_fees = :d:batch
+	    where
+		    :eg:i_eg_deposit_uuid = :d:i_eg_deposit_uuid and
+		    :eg:a_batch_number_fees is null
+	    ";
+    }

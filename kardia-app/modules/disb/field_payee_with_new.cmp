@@ -48,6 +48,7 @@ field_payee_with_new "widget/component-decl"
 	    height=20;
 	    y=2;
 	    text="New";
+	    enabled = runclient(:partner_key:enabled == 'full');
 
 	    addnew_cn "widget/connector"
 		{
