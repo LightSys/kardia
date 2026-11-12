@@ -1038,6 +1038,7 @@ cashdisb_subform "widget/component-decl"
 				{
 					x=0;y=0;width=876;height=154;
 					mode=dynamicrow;
+					overlap_scrollbar=no;
 
 					dd_a_check_number "widget/table-column" { title="Check#"; fieldname="a_check_number"; width=43; }
 					dd_a_line_item "widget/table-column" { title="Line"; fieldname="a_line_item"; width=27; }
