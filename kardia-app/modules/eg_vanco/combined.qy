@@ -55,10 +55,10 @@ myquery "system/query"
 		CCAuthDesc = convert('string', convert(:CCAuthDesc, 'CP1252', 'vanco')),
 		FundName = convert('string', convert(:FundName, 'CP1252', 'vanco')),
 		FundNote = convert('string', convert(:FundNote, 'CP1252', 'vanco')),
-		ReturnDate = condition(char_length(:ReturnDate) > 1, :ReturnDate, NULL), 
-		DepositDate =  condition(char_length(:DepositDate) > 1, :DepositDate, NULL),
-		ProcessDate =  condition(char_length(:ProcessDate) > 1, :ProcessDate, NULL),
-		SettlementDate =  condition(char_length(:SettlementDate) > 1, :SettlementDate, NULL),
+		ReturnDate = convert('datetime', condition(char_length(:ReturnDate) > 1, :ReturnDate, NULL)), 
+		DepositDate =  convert('datetime', condition(char_length(:DepositDate) > 1, :DepositDate, NULL)),
+		ProcessDate =  convert('datetime', condition(char_length(:ProcessDate) > 1, :ProcessDate, NULL)),
+		SettlementDate =  convert('datetime', condition(char_length(:SettlementDate) > 1, :SettlementDate, NULL)),
 		:TransactionRef, :CustomerID, :CustomerRef, :PaymentMethodRef,
 		:CCStatus, :TransactionFee, :FundID, :FundAmount, :Amount,
 		:FundTransactionFee, :Credit, :AccountType,
@@ -89,16 +89,14 @@ myquery "system/query"
 		FundAmount = condition(:f:FundAmount == '', $0, convert('money', :f:FundAmount)),
 		FundTransactionFee = condition(:f:FundTransactionFee == '', $0, convert('money', :f:FundTransactionFee)),
 		-- Get strings with the proper date format
-		ReturnDateStr = dateformat(convert(datetime, :ReturnDate), 'yyyy-MM-dd'),
-		ProcessDateStr = dateformat(convert(datetime, :ProcessDate), 'yyyy-MM-dd'),
-		DepositDateStr = dateformat(convert(datetime, :DepositDate), 'yyyy-MM-dd'),
+		ReturnDateStr = dateformat(:ReturnDate, 'yyyy-MM-dd'),
+		ProcessDateStr = dateformat(:ProcessDate, 'yyyy-MM-dd'),
+		DepositDateStr = dateformat(:DepositDate, 'yyyy-MM-dd'),
 		-- leave space for values to calculate once we know the payment method
 		gift_sign = convert('integer', NULL),
 		gift_amount = convert('money', NULL),
 		net_fee = convert('money', NULL),
 		net_amount = convert('money', NULL),
-		deposit_gross_amt = convert('money', NULL),
-		deposit_amt = convert('money', NULL),
 		deposit_uuid = convert('string', NULL)
 	    FROM
 		IDENTITY COLLECTION dataQuery t,
@@ -225,6 +223,7 @@ myquery "system/query"
 		Credit = 'C',
 		ReturnReason = NULL,
 		ReturnDate = NULL,
+		i_eg_status = 'P',
 		*
 	    FROM 
 		COLLECTION transactions t
@@ -251,7 +250,7 @@ myquery "system/query"
 		:t:net_fee = condition(:t:AccountType == 'CC' AND :t:ReturnReason == 'Refunded',
 			:config_values:flat_fee + :t:FundAmount * condition(upper(:p:CardType) == 'AMERICAN EXPRESS', :config_values:amex_fee, :config_values:default_fee),
 			:t:FundTransactionFee),
-		:t:deposit_uuid = condition(char_length(:t:DepositDate) < 1, NULL,
+		:t:deposit_uuid = condition(:t:DepositDate IS NULL, NULL,
 		    condition(:t:Credit == 'D' OR ((:t:AccountType == 'C' OR :t:AccountType == 'S') AND :t:ReturnDate IS NOT NULL),
 			replace(:t:DepositDateStr, '-', NULL) + '-' + replace(:t:ProcessDateStr, '-', NULL) + '-ACH-Return',
 			condition(:t:AccountType == 'C' OR :t:AccountType == 'S',
@@ -262,30 +261,32 @@ myquery "system/query"
 		AND :t:PaymentMethodRef *= :p:PaymentMethodRef
 	    ;
  
-	    -- calculate the deposit amounts
-	    DECLARE COLLECTION deposit_amts;
-	    INSERT into
-		COLLECTION deposit_amts
+	    -- Store deposit UUIDs to be used in the post sql
+	    DECLARE COLLECTION vp_deposit_update SCOPE APPLICATION ;
+	    -- Clear out previous runs
+	    DELETE FROM COLLECTION vp_deposit_update ;
+	    -- Now store the deposit IDs
+	    INSERT INTO
+		COLLECTION vp_deposit_update
 	    SELECT
-		:t:deposit_uuid,
-		deposit_gross_amt= sum(:t:gift_sign * :t:FundAmount),
-		deposit_amt = sum(:t:gift_sign *(:t:FundAmount - :t:net_fee))
+		i_eg_deposit_uuid = :t:deposit_uuid
 	    FROM
-		COLLECTION transactions t
+		IDENTITY COLLECTION transactions t 
+	    WHERE
+		:t:TransactionRef IS NOT NULL
+		AND :t:deposit_uuid IS NOT NULL
 	    GROUP BY
 		:t:deposit_uuid
-	    ; 
-	    -- Now update transactions with the deposit amounts
+	    ;
+
+	
+	    -- Now update transactions with the correct fee amounts
+	    -- Deposit amounts are left NULL - have to calculate after the insert
 	    UPDATE
-		IDENTITY COLLECTION transactions t, 
-		COLLECTION deposit_amts d
+		IDENTITY COLLECTION transactions t
 	    SET
 		:t:gift_amount = :t:gift_sign * :t:FundAmount,
-		:t:net_amount = :t:gift_sign * (:t:FundAmount - :t:net_fee), 
-		:t:deposit_gross_amt = :d:deposit_gross_amt,
-		:t:deposit_amt = :d:deposit_amt
-	    WHERE
-		:t:deposit_uuid *= :d:deposit_uuid
+		:t:net_amount = :t:gift_sign * (:t:FundAmount - :t:net_fee)
 	    ;
 
 	    -- finally, join all of the data together 
@@ -301,27 +302,22 @@ myquery "system/query"
 		-- actual values
 		i_eg_gift_uuid = condition(:o:Frequency IS NOT NULL, :o:TransactionRef, :t:TransactionRef), -- TODO: currently, :t:TransactionRef = :o:TransactionRef. Simplify if this doesn't change
 		i_eg_desig_uuid = :t:FundID,
-		i_eg_trx_uuid = :t:TransactionRef+'-'+dateformat(convert('datetime', :t:ProcessDate), 'yyyy-MM-dd') + 
+		i_eg_trx_uuid = :t:TransactionRef+'-'+:t:ProcessDateStr+ 
 			condition((:t:AccountType == 'C' OR :t:AccountType == 'S') AND (:t:Credit == 'D' OR :t:ReturnDate IS NOT NULL), '-ACH-Return', ''),
 		i_eg_donor_uuid = :t:CustomerID,  
 		i_eg_donor_alt_id = :t:CustomerRef,
 		i_eg_account_uuid = :t:PaymentMethodRef,
 		-- set status to pending if the deposit date is in the future
 		i_eg_status = condition((:t:CCStatus == 'P' AND char_length(:t:ReturnReason) <= 0) OR (char_length(:t:CCStatus) <= 0), 
-				condition(datediff('day', getdate(), convert('datetime', 
-					condition(:config_values:use_depo == '1',
-					:t:DepositDate, :t:SettlementDate)
-				)) <= 0, 'paid', 'pending'),
+			condition(getdate() > condition(:config_values:use_depo == '1', :t:DepositDate, :t:SettlementDate), 
+				'paid', 
+				'pending'),
 			'returned'), -- either ReturnReason exists or CCStatus was E or F. Either way, mark as a return 
-		i_eg_returned_status = condition(:t:CCStatus == 'E', 
-		    'Error', 
-		    condition(:t:CCStatus == 'F', 
-			'Failed', 
-			condition(:t:ReturnReason == 'Refunded',
-			'REFUND',
-			condition(char_length(:t:ReturnCode) > 0,
-			    :t:ReturnCode, 
-			    NULL)))),
+		i_eg_returned_status = condition(:t:CCStatus == 'E', 'Error', 
+					condition(:t:CCStatus == 'F', 'Failed', 
+					condition(:t:ReturnReason == 'Refunded', 'REFUND',
+					condition(char_length(:t:ReturnCode) > 0, :t:ReturnCode, 
+					NULL)))),
 		-- convert from 'LNAME, FNAME(and FNAME)?( MI)?' to 'FNAME(and FNAME)?( MI)? LNAME'
 		i_eg_donor_name = condition(charindex(',', :c:CustomerName) == 0, :c:CustomerName, -- if no comma, likely an org.
 			substring(:c:CustomerName, charindex(',', :c:CustomerName) + 2)+' '+
@@ -352,9 +348,9 @@ myquery "system/query"
 		i_eg_donor_email = condition(char_length(:c:CustomerEmail) < 1, NULL, :c:CustomerEmail),
 		i_eg_gift_amount = :t:gift_amount,
 		i_eg_net_amount = :t:net_amount,
-		i_eg_deposit_gross_amt = :t:deposit_gross_amt,
-		i_eg_deposit_amt = :t:deposit_amt,
-		i_eg_deposit_date = condition(char_length(:t:DepositDate)<1, convert('datetime', NULL), convert('datetime', :t:DepositDate)),
+		i_eg_deposit_gross_amt = NULL,
+		i_eg_deposit_amt = NULL,
+		i_eg_deposit_date = :t:DepositDate,
 		i_eg_deposit_status = NULL, -- TODO: what is this the status of
 		i_eg_deposit_uuid = :t:deposit_uuid,
 		i_eg_gift_pmt_type = condition(:t:AccountType == 'C' OR :t:AccountType == 'S', 'ACH', 
@@ -367,8 +363,8 @@ myquery "system/query"
 		i_eg_gift_start_date = condition(char_length(:o:StartDate) > 1, convert('datetime', :o:StartDate), convert('datetime', NULL)),
 		i_eg_gift_end_date = condition(char_length(:o:EndDate) > 1, convert('datetime', :o:EndDate), convert('datetime', NULL)),
 		i_eg_gift_count = NULL,
-		i_eg_gift_date = convert('datetime', condition(:t:ReturnDate IS NOT NULL, :t:ReturnDate, :t:ProcessDate)),
-		i_eg_gift_trx_date = convert('datetime', :t:ProcessDate),
+		i_eg_gift_date = condition(:t:ReturnDate IS NOT NULL, :t:ReturnDate, :t:ProcessDate),
+		i_eg_gift_trx_date = :t:ProcessDate,
 		i_eg_gift_settlement_date = convert('datetime', :t:SettlementDate), 
 		i_eg_gift_lastfour = substring(:p:AccountNumber, char_length(:p:AccountNumber) - 3),
 		i_eg_desig_name = :t:FundName,

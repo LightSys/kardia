@@ -88,7 +88,47 @@ plugin_rcpt_giftimport_EGS "widget/component-decl"
 		";
 
     postprocess_sql="
-		print 'Done!'
+		-- Calculate deposit amounts for groups pulled today
+		DECLARE COLLECTION vp_deposit_update SCOPE APPLICATION ;
+		DECLARE COLLECTION deposit_sums ;
+
+		-- collect the deposit amounts
+		INSERT INTO 
+			COLLECTION deposit_sums
+		SELECT
+			a_ledger_number = :sums:a_ledger_number,
+			i_eg_deposit_uuid = :sums:i_eg_deposit_uuid,
+			gross_sum = sum(:sums:i_eg_gift_amount),
+			net_sum = sum(:sums:i_eg_net_amount)
+		FROM
+			IDENTITY COLLECTION vp_deposit_update ids, 
+			/apps/kardia/data/Kardia_DB/i_eg_gift_import/rows sums
+		WHERE
+			:sums:i_eg_deposit_uuid = :ids:i_eg_deposit_uuid
+			AND :sums:i_eg_service = 'VP'
+		GROUP BY
+			:sums:a_ledger_number, 
+			:sums:i_eg_deposit_uuid
+		;
+
+		UPDATE
+			IDENTITY /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows rows,
+			COLLECTION deposit_sums sums
+		SET
+			:i_eg_deposit_gross_amt = :sums:gross_sum,
+			:i_eg_deposit_amt = :sums:net_sum, 
+			:s_date_modified = getdate() IF MODIFIED, 
+			:s_modified_by = user_name() IF MODIFIED
+		WHERE
+			:sums:i_eg_deposit_uuid = :rows:i_eg_deposit_uuid
+			AND :rows:i_eg_service = 'VP'
+			AND :sums:a_ledger_number = :rows:a_ledger_number
+		;
+
+		-- now clear out the global collection
+		DELETE FROM COLLECTION vp_deposit_update ;
+
+		print '\n---------------- Vanco import complete ----------------\n'
 		";
 			
     }
