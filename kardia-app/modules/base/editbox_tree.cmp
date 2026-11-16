@@ -46,6 +46,7 @@ editbox_tree "widget/component-decl"
 	    x=195; y=2; width=19; height=20;
 	    text="?";
 	    fl_height = 0;
+	    enabled = runclient(:eb:enabled == 'full');
 
 	    btn_cn "widget/connector" { event=Click; target=win; action=Toggle; }
 	    }

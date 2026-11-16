@@ -1,0 +1,86 @@
+$Version=2$
+deposits_import_list "system/query"
+    {
+    ledger "query/parameter" { type=string; style=notnull,strnull; }
+    ptime "query/parameter" { type=string; style=strnull; }
+    pstat "query/parameter" { type=string; style=strnull; }
+    period "query/parameter" { type=string; style=strnull; }
+    deposit_batch "query/parameter" { type=integer; style=strnull; }
+    batchtype "query/parameter" { type=string; default="deposits"; }
+    byfund "query/parameter" { type=integer; default=0; }
+
+    // TODO: fix issue where group by aggregates end up being null/$0 if the
+    // below two statements are combined together without using a collection
+    //
+    sql = " declare collection items;
+    
+	    insert
+		    collection items
+	    select
+		    :dl:cnt,
+		    :dl:i_eg_deposit_uuid,
+		    :dl:i_eg_service,
+		    deposit_date = :dl:min_date_raw,
+		    :min_gift_type,
+		    :max_gift_type,
+		    deposit_net_amt = :deposit_net_amt,
+		    deposit_gross_amt = :deposit_gross_amt,
+		    fees_amt = :fees_amt,
+		    fees_calc_amt = :fees_calc_amt,
+		    :period,
+		    :ledger,
+		    fund = condition(:parameters:byfund = 1, :fund, null),
+		    processor = :min_processor,
+		    dep_method = :min_dep_method,
+		    fee_method = :min_fee_method,
+		    fee_fund = :min_fee_fund,
+		    fee_acct = :min_fee_acct,
+		    fee_payee = :min_fee_payee,
+		    calc_method = :min_calc_method,
+		    calc_rounding = :min_calc_rounding,
+		    fee_flat_amt = :min_fee_flat_amt,
+		    fee_pct_amt = :min_fee_pct_amt,
+		    :min_date_trx,
+		    :max_date_trx,
+		    :fees_posted,
+		    :fees_batch,
+		    :dep_posted,
+		    :dep_batch,
+		    :is_pending,
+		    :is_unimp_gifts,
+		    errors = nullif(condition(:dl:min_date != :dl:max_date, 'Deposit ' + :dl:i_eg_deposit_uuid + ' is split across dates.', '')
+			    + condition(:dl:min_dep_method != :dl:max_dep_method, 'Deposit ' + :dl:i_eg_deposit_uuid + ' uses more than one deposits posting method.', '')
+			    + condition(:dl:min_fee_method != :dl:max_fee_method, 'Deposit ' + :dl:i_eg_deposit_uuid + ' uses more than one fees posting method.', '')
+			    + condition(:dl:min_calc_method != :dl:max_calc_method, 'Deposit ' + :dl:i_eg_deposit_uuid + ' uses more than one fees calculation method.', '')
+			    + condition(:dl:min_dep_method != 'N' and :dl:min_dep_method != 'X' and :dl:min_fee_method == 'N', 'Deposit ' + :dl:i_eg_deposit_uuid + ' mixes net and gross deposits/fees posting.', '')
+			    + condition(:dl:min_dep_method == 'N' and :dl:min_fee_method != 'N' and :dl:min_fee_method != 'X', 'Deposit ' + :dl:i_eg_deposit_uuid + ' mixes net and gross deposits/fees posting.', '')
+		    , '')
+	    from
+		    expression('/apps/kardia/modules/rcpt/deposits_import_list_raw.qy?ledger=' + :parameters:ledger + '&ptime=' + :parameters:ptime + '&period=' + isnull(:parameters:period, '') + '&deposit_batch=' + isnull(:parameters:deposit_batch, '') + '&batchtype=' + isnull(:parameters:batchtype, 'deposits') + '&pstat=' + isnull(:parameters:pstat,'')) dl
+	    ;
+
+	    select
+		    *,
+		    cnt = sum(:cnt),
+		    deposit_net_amt = sum(:deposit_net_amt),
+		    deposit_gross_amt = sum(:deposit_gross_amt),
+		    fees_amt = sum(:fees_amt),
+		    fees_calc_amt = sum(:fees_calc_amt),
+		    errors = sum(:errors),
+		    min_date_trx = min(:min_date_trx),
+		    max_date_trx = max(:max_date_trx),
+		    fees_posted = min(:fees_posted),
+		    dep_posted = min(:dep_posted),
+		    fees_batch = min(:fees_batch),
+		    dep_batch = min(:dep_batch),
+		    is_pending = max(:is_pending),
+		    is_unimp_gifts = max(:is_unimp_gifts)
+	    from
+		    collection items
+	    group by
+		    :i_eg_deposit_uuid,
+		    condition(:parameters:byfund = 1, :fund, 1)
+	    order by
+		    :deposit_date desc
+	    ";
+    }

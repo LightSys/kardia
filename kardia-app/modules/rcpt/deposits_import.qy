@@ -1,0 +1,79 @@
+$Version=2$
+deposits_import "system/query"
+    {
+    ledger "query/parameter" { type=string; style=strnull,notnull; }
+    batchno "query/parameter" { type=integer; style=strnull,notnull; }
+    endbatchno "query/parameter" { type=integer; style=strnull,notnull; }
+    ptime "query/parameter" { type=string; style=strnull; }
+    batchname "query/parameter" { type=string; style=strnull; default="Electronic Deposits Import"; }
+
+    sql = " declare collection deps;
+
+	    insert into
+		    collection deps
+	    select
+		    *,
+		    batch = dense_rank(:item) + :parameters:batchno - 1
+	    from
+		    expression('/apps/kardia/modules/rcpt/deposits_import_method.qy?ledger=' + :parameters:ledger + '&ptime=' + :parameters:ptime + '&pstat=RG') d
+	    where
+		    :d:deposit_amt is not null and
+		    :d:dep_posted = 0
+	    ;
+
+	    -- Create the batches
+	    insert into
+		    /apps/kardia/data/Kardia_DB/a_batch/rows
+	    select
+		    a_ledger_number = :parameters:ledger,
+		    a_batch_number = :d:batch,
+		    a_period = (select :a_period from /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = :parameters:ledger and :a_start_date <= :d:deposit_date and :a_end_date >= :d:deposit_date and :a_summary_only = 0),
+		    a_batch_desc = :parameters:batchname,
+		    a_next_journal_number = 0,
+		    a_next_transaction_number = 0,
+		    a_default_effective_date = :d:deposit_date,
+		    a_origin = 'DE',
+		    s_date_created = getdate(),
+		    s_created_by = user_name(),
+		    s_date_modified = getdate(),
+		    s_modified_by = user_name()
+	    from
+		    collection deps d
+	    ;
+
+	    -- Create the deposits entries
+	    insert into
+		    /apps/kardia/data/Kardia_DB/a_subtrx_deposit/rows
+	    select
+		    a_ledger_number = :parameters:ledger,
+		    a_batch_number = :d:batch,
+		    a_period = (select :a_period from /apps/kardia/data/Kardia_DB/a_period/rows where :a_ledger_number = :parameters:ledger and :a_start_date <= :d:deposit_date and :a_end_date >= :d:deposit_date and :a_summary_only = 0),
+		    a_batch_desc = :parameters:batchname,
+		    a_effective_date = :d:deposit_date,
+		    a_amount = :d:deposit_amt,
+		    a_cash_amount = $0,
+		    a_account_code = (select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows where :a_ledger_number = :parameters:ledger and :a_config_name = 'RcptDepTo'),
+		    a_num_checks = :cnt,
+		    a_posted = 1,
+		    a_posted_to_gl = 0,
+		    a_comment = 'Electronic giving deposit' + condition(:dep_method = 'G', ' (Gross)', condition(:dep_method = 'N', ' (Net)', '')),
+		    s_date_created = getdate(),
+		    s_created_by = user_name(),
+		    s_date_modified = getdate(),
+		    s_modified_by = user_name()
+	    from
+		    collection deps d
+	    ;
+
+	    -- Mark the gift import data as deposited.
+	    update
+		    identity /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows eg,
+		    collection deps d
+	    set
+		    :eg:a_batch_number_deposit = :d:batch
+	    where
+		    :eg:i_eg_deposit_uuid = :d:i_eg_deposit_uuid and
+		    :eg:a_batch_number_deposit is null
+	    ";
+    }
+
