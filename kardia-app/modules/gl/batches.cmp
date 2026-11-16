@@ -309,8 +309,8 @@ batches "widget/component-decl"
 			    action= Launch;
 			    Source = runclient("/apps/kardia/modules/gl/transaction_report.rpt");
 			    Multi = 1;
-			    Width = 800;
-			    Height = 600;
+			    Width = 1000;
+			    Height = 700;
 			    ledger = runclient(:batch_osrc:a_ledger_number);
 			    batch = runclient(:batch_osrc:a_batch_number);
 			    year_period = runclient(:periods_osrc:a_parent_period);
@@ -331,8 +331,8 @@ batches "widget/component-decl"
 			    action= Launch;
 			    Multi = 1;
 			    Source = runclient("/apps/kardia/modules/gl/batch_balance.rpt");
-			    Width = 800;
-			    Height = 600;
+			    Width = 1000;
+			    Height = 700;
 			    ledger = runclient(:batch_osrc:a_ledger_number);
 			    batch = runclient(:batch_osrc:a_batch_number);
 			    }
@@ -350,8 +350,8 @@ batches "widget/component-decl"
 			    action= Launch;
 			    Multi = 1;
 			    Source = runclient("/apps/kardia/modules/gl/trial_balance.rpt");
-			    Width = 800;
-			    Height = 600;
+			    Width = 1000;
+			    Height = 700;
 			    ledger = runclient(:batch_osrc:a_ledger_number);
 			    year_period = runclient(:periods_osrc:a_parent_period);
 			    ref_period = runclient(:periods_osrc:a_period);
