@@ -4022,6 +4022,7 @@ create table i_eg_deposit_config (
         i_eg_fees_method                      char(1)  not null,       /* Fees method: (N) for net fees subtracted from the deposit and posted as a GL batch, (D) for daily disbursements fees batches, (P) for using a payable GL account, or (X) for no automatic fees import. --  */
         i_eg_fees_fund                        char(20)  null,          /* Fund for the transaction fees payable --  */
         i_eg_fees_account_code                char(16)  null,          /* GL Account for the transaction fees payable --  */
+        i_eg_fees_payee                       char(10)  null,          /* Partner key for payee receiving electronic giving fees --  */
         i_eg_calc_method                      char(1)  not null,       /* Fee calculation method: (I) for fees data provided by online giving import module, or (M) for manually calculated fees using data in this record. --  */
         i_eg_calc_rounding                    char(1)  null,           /* Rounding method for manually calculated fees that aren't whole cent amounts: (R) round normally, (D) always round down to the cent, or (U) always round up to the cent --  */
         i_eg_fee_flat_amt                     decimal(14,4)  null,     /* Flat part of fee, if using manual calculation. --  */
