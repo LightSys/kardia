@@ -68,20 +68,13 @@ deposits_import_list_raw "system/query"
 		    is_unimp_gifts = max(condition(:eg:a_batch_number is null, 1, 0))
 	    from
 		    identity /apps/kardia/data/Kardia_DB/i_eg_gift_import/rows eg,
-		    expression('/apps/kardia/modules/rcpt/deposits_config.qy?ledger=' + :eg:a_ledger_number + '&service=' + :eg:i_eg_service + '&processor=' + isnull(:eg:i_eg_processor, '') + '&currency=' + isnull(:eg:i_eg_gift_currency, '') + '&pmt_type=' + isnull(:eg:i_eg_gift_pmt_type, '')) dc
+		    /apps/kardia/modules/rcpt/deposits_config.qy ( ledger=:eg:a_ledger_number, service=:eg:i_eg_service, processor=isnull(:eg:i_eg_processor, ''), currency=isnull(:eg:i_eg_gift_currency, ''), pmt_type=isnull(:eg:i_eg_gift_pmt_type, '') ) dc
 	    where
 		    :eg:a_ledger_number = :parameters:ledger and
 		    (:parameters:pstat is null or :parameters:pstat = '*' or :parameters:pstat = 'N' or :eg:i_eg_deposit_uuid is not null) and
 		    (:parameters:pstat is null or :parameters:pstat = '*' or :parameters:pstat = 'N' or :eg:i_eg_deposit_date <= getdate()) and
-		    (:parameters:ptime is null or :parameters:ptime = '0' or :eg:i_eg_deposit_date is null or :eg:i_eg_deposit_uuid is null or substring(:parameters:ptime,7,1) = 'M' or (dateadd(hour, convert(integer, substring(:parameters:ptime,1,6)), :eg:i_eg_deposit_date) > getdate())) and
-		    (char_length(isnull(:parameters:ptime,'')) < 8 or :eg:i_eg_deposit_date is null or :eg:i_eg_deposit_uuid is null or (datepart(year,dateadd(month, convert(integer,substring(:parameters:ptime,8,1)), :eg:i_eg_deposit_date)) == datepart(year,getdate()) and datepart(month,dateadd(month, convert(integer,substring(:parameters:ptime,8,1)), :eg:i_eg_deposit_date)) == datepart(month,getdate()))) 
-		    --and
-		    --:eg:i_eg_deposit_uuid is not null and
-		    --:eg:i_eg_deposit_date <= getdate() and
-		    --(:eg:a_batch_number_deposit is null or :eg:a_batch_number_deposit = :parameters:deposit_batch or :parameters:batchtype != 'deposits') and
-		    --(:parameters:deposit_batch is null or :eg:a_batch_number_deposit = :parameters:deposit_batch) and
-		    --(:eg:a_batch_number_fees is null or :eg:a_batch_number_deposit = :parameters:deposit_batch or :parameters:batchtype != 'fees') and
-		    --(:parameters:deposit_batch is null or :eg:a_batch_number_deposit = :parameters:deposit_batch)
+		    (:parameters:ptime is null or :parameters:ptime = '0' or substring(:parameters:ptime,7,1) = 'M' or (dateadd(hour, convert(integer, substring(:parameters:ptime,1,6)), isnull(:eg:i_eg_deposit_date, :eg:i_eg_gift_trx_date)) > getdate())) and
+		    (char_length(isnull(:parameters:ptime,'')) < 8 or (datepart(year,dateadd(month, convert(integer,substring(:parameters:ptime,8,1)), isnull(:eg:i_eg_deposit_date, :eg:i_eg_gift_trx_date))) == datepart(year,getdate()) and datepart(month,dateadd(month, convert(integer,substring(:parameters:ptime,8,1)), isnull(:eg:i_eg_deposit_date, :eg:i_eg_gift_trx_date))) == datepart(month,getdate()))) 
 	    group by
 		    :eg:i_eg_service,
 		    :eg:i_eg_deposit_uuid,
