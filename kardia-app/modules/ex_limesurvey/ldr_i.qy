@@ -1,0 +1,29 @@
+$Version=2$
+myquery "system/query"
+    {
+    id "query/parameter" { type=integer; }
+
+    sql = "INSERT INTO /apps/kardia/data/Kardia_DB/i_crm_import_type/rows
+            select i_crm_import_type_id=2,
+                 i_crm_import_type_desc='email', 
+                 i_crm_import_type_subsys='LSAP', 
+                 i_crm_import_type_path='/test/path', 
+                 i_crm_field_pk='', 
+                 i_crm_field_surname='Rinehart', 
+                 i_crm_field_given_name='Randall', 
+                 i_crm_field_middle_name='Stoddard', 
+                 i_crm_field_date='2023-03-16 10:09:00', 
+                 i_crm_field_org_name='LeTourneau University', 
+                 i_crm_field_phone='903-503-1531', 
+                 i_crm_field_email='randallrinehart@letu.edu', 
+                 i_crm_field_addr1='2100 S. Mobberly Ave', 
+                 i_crm_field_city='Longview', 
+                 i_crm_field_stateprov='TX',
+                 i_crm_field_postal_code='75602', 
+                 i_crm_field_country='USA', 
+                 s_date_created=convert(datetime,'2023-03-14 10:48:00'), 
+                 s_created_by='rrinehart', 
+                 s_date_modified=convert(datetime,'2023-03-14 10:48:00'), 
+                 s_modified_by= 'rrinehart'
+            ";
+    }

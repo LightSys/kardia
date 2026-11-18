@@ -1,0 +1,9 @@
+$Version=2$
+testprogram "system/query"
+{
+sql = " select
+    i_crm_field_city = 'Longview'
+    from 
+    /apps/kardia/data/kardia_DB/ldr.qy/rows
+    ";
+    }
