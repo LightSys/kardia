@@ -1,7 +1,7 @@
 $Version=2$
 periodmaint "widget/component-decl"
     {
-    width=780; height=580;
+    width=980; height=680;
     ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; deploy_to_client=yes; }
 
     opening_bal_cmp "widget/component"
@@ -28,24 +28,24 @@ periodmaint "widget/component-decl"
 
     periods_vbox "widget/vbox"
 	{
-	width=780; height=580; x=0; y=0; spacing=8;
+	width=980; height=680; x=0; y=0; spacing=10;
 
 	yearlbl "widget/component"
 	    {
 	    path="/apps/kardia/modules/base/section_label.cmp";
-	    height=20; width=780;
+	    height=26;
 	    text = runserver("Accounting Years - Ledger " + :this:ledger);
 	    }
 
 	year_hbox "widget/hbox"
 	    {
-	    x=11; width=760;
-	    height=192;
+	    x=11; width=960;
+	    height=272;
 	    spacing=30;
 
 	    searchlistpane "widget/pane"
 		{
-		width=250;
+		width=450;
 		//widget_class=table_bgnd;
 		style=flat;
 
@@ -87,7 +87,7 @@ periodmaint "widget/component-decl"
 
 		    searchlisttbl "widget/table"
 			{
-			height=190; width=248; x=0; y=0;
+			height=270; width=448; x=0; y=0;
 			overlap_scrollbar = yes;
 			demand_scrollbar = yes;
 			max_rowheight=36;
@@ -104,7 +104,8 @@ periodmaint "widget/component-decl"
 			nodata_message = "No years configured yet - click New Year to add one.";
 
 			t_ico "widget/table-column" { title=""; value=runclient("/apps/kardia/images/icons/year.gif"); width=20; type=image; align=center; }
-			t_yr "widget/table-column" { title="Year"; fieldname="a_period_desc"; width=115; style=bold; }
+			t_yrp "widget/table-column" { title=""; fieldname="a_period"; width=80; style=bold; }
+			t_yr "widget/table-column" { title="Year"; fieldname="a_period_desc"; width=150; style=bold; }
 			t_stat "widget/table-column" { title="Status"; fieldname="text"; width=95; }
 			}
 		    }
@@ -117,9 +118,10 @@ periodmaint "widget/component-decl"
 		yearedit_vbox "widget/vbox"
 		    {
 		    width=280;
-		    spacing=7;
+		    spacing=8;
 
-		    //yeardisp_lbl "widget/label" { height=24; font_size=16; style=bold; fgcolor="#153f5f"; value=runclient(:year_osrc:a_period + ' - ' + :year_osrc:a_period_desc); }
+		    yeardisp_lbl "widget/label" { height=24; font_size=16; style=bold; width=460; align=center; fgcolor="#153f5f"; value=runclient(condition(:yearedit_form:form_mode == 'New', 'New Year', :year_osrc:a_period + ' - ' + :year_osrc:a_period_desc)); }
+		    yeardisp_line "widget/pane" { height=2; style=lowered; width=460; }
 		    f_ledger "widget/component" { height=16; path="/sys/cmp/smart_field.cmp"; field='a_ledger_number'; ctl_type=label; text='Ledger:'; label_width=100; ledger_hints "widget/hints" { default=runserver(:this:ledger); } }
 		    f_period "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_period'; ctl_type=editbox; text='Period:'; label_width=100; f_period_hnt "widget/hints" { style=createonly; } }
 		    f_perioddesc "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_period_desc'; ctl_type=editbox; text='Description:'; label_width=100; }
@@ -134,7 +136,9 @@ periodmaint "widget/component-decl"
 	    year_ctls "widget/vbox"
 		{
 		width=150;
-		spacing=5;
+		spacing=6;
+
+		ysep "widget/autolayoutspacer" { height=36; }
 
 		y_stat "widget/component" { form=yearedit_form; height=20; path="/sys/cmp/smart_field.cmp"; field='text'; ctl_type=label; text='Status:'; label_width=50; }
 		newyr_btn "widget/textbutton"
@@ -158,14 +162,19 @@ periodmaint "widget/component-decl"
 			action=Modify;
 			a_status=runclient('O');
 			a_first_opened=runclient(condition(char_length(:year_osrc:a_first_opened) > 0, :year_osrc:a_first_opened, getdate()));
+			s_date_modified=runclient(getdate());
+			s_modified_by=runclient(user_name());
 			}
 		    openyr_cn_2 "widget/connector"
 			{
 			event=Click;
+			event_condition=runclient(:period_osrc:a_status = 'N');
 			target=period_osrc;
 			action=Modify;
 			a_status=runclient('O');
 			a_first_opened=runclient(condition(char_length(:period_osrc:a_first_opened) > 0, :period_osrc:a_first_opened, getdate()));
+			s_date_modified=runclient(getdate());
+			s_modified_by=runclient(user_name());
 			}
 		    }
 		closeyr_btn "widget/textbutton"
@@ -176,12 +185,15 @@ periodmaint "widget/component-decl"
 
 		    closeyr_cn "widget/connector"
 			{
-			condition = 0; // disable for now
 			event=Click;
-			target=year_osrc;
-			action=Modify;
-			a_status=runclient('C');
-			a_last_closed=runclient(getdate());
+			target=popover_verify;
+			action=Open;
+			IsModal=1;
+			title=runclient('Verify and Close Year - ' + :year_osrc:a_period);
+			verify_type=runclient('glyear');
+			ledger=runclient(:ledger:value);
+			period=runclient(:year_osrc:a_period);
+			is_year=1;
 			}
 		    }
 		archiveyr_btn "widget/textbutton"
@@ -198,6 +210,8 @@ periodmaint "widget/component-decl"
 			action=Modify;
 			a_status=runclient('A');
 			a_archived=runclient(getdate());
+			s_date_modified=runclient(getdate());
+			s_modified_by=runclient(user_name());
 			}
 		    }
 		yr_sep "widget/autolayoutspacer"
@@ -232,7 +246,7 @@ periodmaint "widget/component-decl"
 
 	year_tc "widget/tab"
 	    {
-	    height=308;
+	    height=320;
 	    border_radius=6;
 	    background="/apps/kardia/images/bg/light_bgnd2.jpg";
 	    inactive_background="/apps/kardia/images/bg/light_bgnd3.jpg";
@@ -244,12 +258,12 @@ periodmaint "widget/component-decl"
 		period_hbox "widget/hbox"
 		    {
 		    x=10; y=10;
-		    height=290;
+		    height=302;
 		    spacing=30;
 
 		    periodlistpane "widget/pane"
 			{
-			width=250;
+			width=450;
 			//widget_class=table_bgnd;
 			style=flat;
 
@@ -299,7 +313,7 @@ periodmaint "widget/component-decl"
 
 			    periodlisttbl "widget/table"
 				{
-				height=289; width=248; x=0; y=0;
+				height=301; width=448; x=0; y=0;
 				overlap_scrollbar = yes;
 				demand_scrollbar = yes;
 				max_rowheight=36;
@@ -316,7 +330,8 @@ periodmaint "widget/component-decl"
 				nodata_message = "No periods in this year yet.";
 
 				t_monthico "widget/table-column" { title=""; value=runclient("/apps/kardia/images/icons/month.gif"); width=20; type=image; align=center; }
-				t_per "widget/table-column" { title="Period"; fieldname="a_period_desc"; width=115; style=bold; }
+				t_per "widget/table-column" { title=""; fieldname="a_period"; width=80; style=bold; }
+				t_perd "widget/table-column" { title="Period"; fieldname="a_period_desc"; width=150; style=bold; }
 				t_perstat "widget/table-column" { title="Status"; fieldname="text"; width=95; }
 				}
 			    }
@@ -330,9 +345,9 @@ periodmaint "widget/component-decl"
 			    {
 			    width=280;
 			    spacing=8;
-			    y=30;
 
-			    //perdisp_lbl "widget/label" { height=24; font_size=16; style=bold; fgcolor="#153f5f"; value=runclient(:period_osrc:a_period + ' - ' + :period_osrc:a_period_desc); }
+			    perdisp_lbl "widget/label" { height=24; font_size=16; style=bold; width=460; align=center; fgcolor="#153f5f"; value=runclient(condition(:peredit_form:form_mode == 'New', 'New Period', :period_osrc:a_period + ' - ' + :period_osrc:a_period_desc)); }
+			    perdisp_line "widget/pane" { height=2; style=lowered; width=460; }
 			    p_ledger "widget/component" { height=16; path="/sys/cmp/smart_field.cmp"; field='a_ledger_number'; ctl_type=label; text='Ledger:'; label_width=100; }
 			    p_period "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_period'; ctl_type=editbox; text='Period:'; label_width=100; p_period_hnt "widget/hints" { style=createonly; } }
 			    p_perioddesc "widget/component" { height=20; path="/sys/cmp/smart_field.cmp"; field='a_period_desc'; ctl_type=editbox; text='Description:'; label_width=100; }
@@ -346,7 +361,9 @@ periodmaint "widget/component-decl"
 
 		    period_ctls_vbox "widget/vbox"
 			{
-			width=150; spacing=6; y=30;
+			width=150; spacing=6;
+
+			psep "widget/autolayoutspacer" { height=36; }
 
 			p_stat "widget/component" { form=peredit_form; height=20; path="/sys/cmp/smart_field.cmp"; field='text'; ctl_type=label; text='Status:'; label_width=50; }
 			newper_btn "widget/textbutton"
@@ -370,6 +387,8 @@ periodmaint "widget/component-decl"
 				action=Modify;
 				a_status=runclient('O');
 				a_first_opened=runclient(condition(char_length(:period_osrc:a_first_opened) > 0, :period_osrc:a_first_opened, getdate()));
+				s_date_modified=runclient(getdate());
+				s_modified_by=runclient(user_name());
 				}
 			    }
 			provper_btn "widget/textbutton"
@@ -378,12 +397,14 @@ periodmaint "widget/component-decl"
 			    text = "Mark Provisional";
 			    enabled = runclient((:period_osrc:a_status = 'O') and :peredit_form:form_mode == 'View');
 
-			    closeper_cn "widget/connector"
+			    provper_cn "widget/connector"
 				{
 				event=Click;
 				target=period_osrc;
 				action=Modify;
 				a_status=runclient('P');
+				s_date_modified=runclient(getdate());
+				s_modified_by=runclient(user_name());
 				}
 			    }
 			closeper_btn "widget/textbutton"
@@ -394,28 +415,32 @@ periodmaint "widget/component-decl"
 
 			    closeper_cn "widget/connector"
 				{
-				condition = 0; // disable for now
 				event=Click;
-				target=period_osrc;
-				action=Modify;
-				a_status=runclient('C');
-				a_last_closed=runclient(getdate());
+				target=popover_verify;
+				action=Open;
+				IsModal=1;
+				title=runclient('Verify and Close Period - ' + :period_osrc:a_period);
+				verify_type=runclient('glperiod');
+				ledger=runclient(:ledger:value);
+				period=runclient(:period_osrc:a_period);
+				is_year=0;
 				}
 			    }
 			archiveper_btn "widget/textbutton"
 			    {
 			    height=24; width=150;
 			    text = "Archive Period";
-			    enabled = runclient(:period_osrc:a_status = 'C' and :peredit_form:form_mode == 'View');
+			    enabled = runclient(0 and :period_osrc:a_status = 'C' and :peredit_form:form_mode == 'View');
 
 			    archiveper_cn "widget/connector"
 				{
-				condition = 0; // disable for now
 				event=Click;
 				target=period_osrc;
 				action=Modify;
 				a_status=runclient('A');
 				a_archived=runclient(getdate());
+				s_date_modified=runclient(getdate());
+				s_modified_by=runclient(user_name());
 				}
 			    }
 			per_sep "widget/autolayoutspacer"
@@ -454,7 +479,7 @@ periodmaint "widget/component-decl"
 		yeardata_vbox "widget/vbox"
 		    {
 		    x=10; y=10;
-		    width=758; height=290;
+		    width=958; height=302;
 
 		    yeardata_osrc "widget/osrc"
 			{
@@ -629,6 +654,102 @@ periodmaint "widget/component-decl"
 				    }
 				}
 			    }
+			}
+		    }
+		}
+	    }
+	}
+
+    popover_verify "widget/childwindow"
+	{
+	style=dialog;
+	titlebar=no;
+	toplevel=yes;
+	width=720; height=388;
+	x=130; y=146;
+	visible=no;
+	border_radius=8;
+
+	is_year "widget/variable" { type=integer; value=0; }
+
+	on_open_1 "widget/connector" { event=Open; target=pv_verifier; action=Verify; event_all_params=1; }
+	on_open_2 "widget/connector" { event=Open; target=pv_title; action=SetValue; Value=runclient(isnull(:title, 'Verify and Close Period')); }
+	on_open_3 "widget/connector" { event=Open; target=is_year; action=SetValue; Value=runclient(condition(:is_year = 0, 0, 1)); }
+
+	pv_vbox "widget/vbox"
+	    {
+	    x=10; y=10; width=700; height=368; spacing=10;
+
+	    pv_title "widget/label"
+		{
+		height=24;
+		align=center;
+		font_size=16;
+		style=bold;
+		text = "";
+		//value=runclient('Verify and Close Period - ' + :period_osrc:a_period);
+		}
+
+	    pv_verifier "widget/component"
+		{
+		height=300;
+		path="/apps/kardia/modules/gl/gl_verify.cmp";
+		}
+
+	    pv_ctls "widget/hbox"
+		{
+		height=24; spacing=10; align=center;
+
+		pv_closeper "widget/textbutton"
+		    {
+		    height=24;
+		    width=130;
+		    text = runclient(condition(:is_year:value = 0, "Close Period", "Close Year"));
+		    enabled = runclient(not :pv_verifier:cx__pending and :pv_verifier:msg is null);
+
+		    pv_closeper_cn_1a "widget/connector"
+			{
+			event=Click;
+			event_condition=runclient(:is_year:value = 0);
+			target=period_osrc;
+			action=Modify;
+			a_status=runclient('C');
+			a_last_closed=runclient(getdate());
+			s_date_modified=runclient(getdate());
+			s_modified_by=runclient(user_name());
+			}
+
+		    pv_closeper_cn_1b "widget/connector"
+			{
+			event=Click;
+			event_condition=runclient(:is_year:value != 0);
+			target=year_osrc;
+			action=Modify;
+			a_status=runclient('C');
+			a_last_closed=runclient(getdate());
+			s_date_modified=runclient(getdate());
+			s_modified_by=runclient(user_name());
+			}
+
+		    pv_closeper_cn_2 "widget/connector"
+			{
+			event=Click;
+			target=popover_verify;
+			action=Close;
+			}
+		    }
+
+		pv_cancel "widget/textbutton"
+		    {
+		    height=24;
+		    width=130;
+		    text = "Cancel";
+
+		    on_pv_cancel "widget/connector"
+			{
+			event=Click;
+			target=popover_verify;
+			action=Close;
 			}
 		    }
 		}

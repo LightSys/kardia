@@ -1,0 +1,36 @@
+$Version=2$
+plugin_base_verify_glyear "system/query"
+    {
+    // This module is used before GL year period closing; its main purpose
+    // is to check the periods within the year to ensure they are all
+    // in a closed state.
+
+    // Metadata
+    verify_types = "glyear";
+
+    // Parameters
+    ledger "query/parameter" { type=string; }
+    period "query/parameter" { type=string; }
+
+    sql = " DECLARE OBJECT conf;
+
+	    -- No open subperiods
+	    SELECT
+		    name = :per:a_ledger_number + '|' + :per:a_period,
+		    type = 'GL Year',
+		    context = 'Ledger ' + :per:a_ledger_number + ', Year ' + :per:a_period,
+		    msg = condition(count(:child_per:a_period) = 0, 'Has no accounting periods', 'Has unclosed accounting periods')
+	    FROM
+		    identity /apps/kardia/data/Kardia_DB/a_period/rows per,
+		    /apps/kardia/data/Kardia_DB/a_period/rows child_per
+	    WHERE
+		    :per:a_ledger_number = :parameters:ledger and
+		    :per:a_period = :parameters:period and
+		    :per:a_summary_only = 1 and
+		    :child_per:a_ledger_number =* :per:a_ledger_number and
+		    :child_per:a_parent_period =* :per:a_period
+	    HAVING
+		    count(:child_per:a_period) = 0 or count(condition(:child_per:a_status = 'C', 1, null)) != count(:child_per:a_period)
+	    ;
+	    ";
+    }

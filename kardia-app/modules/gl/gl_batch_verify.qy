@@ -3,10 +3,14 @@ gl_batch_verify "system/query"
     {
     ledger "query/parameter" { type=string; style=notnull; }
     batch "query/parameter" { type=integer; style=notnull; }
+    transactions "query/parameter" { type=collection; style=notnull; }
 
-    sql = " declare collection transactions scope application;
-    
+    sql = " DECLARE OBJECT conf;
+
+	    SELECT :conf:ixa = isnull(nullif((select :a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows c where :c:a_config_name = 'GLIfaAcct' and :c:a_ledger_number = :parameters:ledger), ''), '1900');
+
 	    SELECT
+		    name = :t:a_ledger_number + '|' + :t:a_batch_number + '|' + :t:a_journal_number + '|' + :t:a_transaction_number,
 		    a_journal_number = 'Jnl ' + :t:a_journal_number,
 		    a_transaction_number = 'Trx ' + :t:a_transaction_number,
 		    msg =
@@ -40,5 +44,71 @@ gl_batch_verify "system/query"
 		    :ac:a_account_category =* :t:a_account_category
 	    HAVING
 		    :msg != 'OK'
+	    ;
+
+	    SELECT
+		    name = :t:a_ledger_number + '|' + :t:a_batch_number + '|' + :t:a_journal_number + '|',
+		    a_journal_number = 'Jnl ' + :t:a_journal_number,
+		    a_transaction_number = null,
+		    msg = 'Batch ' + :t:a_batch_number + ', Journal ' + :t:a_journal_number + ' does not balance (' + sum(:t:a_amount) + ')'
+	    FROM
+		    collection transactions t
+	    WHERE
+		    :t:a_ledger_number = :parameters:ledger and
+		    :t:a_batch_number = :parameters:batch
+	    HAVING
+		    sum(:t:a_amount) != $0
+	    GROUP BY
+		    :t:a_journal_number
+	    ;
+
+	    SELECT
+		    name = :t:a_ledger_number + '|' + :t:a_batch_number,
+		    a_journal_number = null,
+		    a_transaction_number = null,
+		    msg = 'Batch ' + :t:a_batch_number + ' does not balance (' + sum(:t:a_amount) + ')'
+	    FROM
+		    collection transactions t
+	    WHERE
+		    :t:a_ledger_number = :parameters:ledger and
+		    :t:a_batch_number = :parameters:batch
+	    HAVING
+		    sum(:t:a_amount) != $0
+	    ;
+
+	    SELECT
+		    name = :t:a_ledger_number + '|' + :t:a_batch_number + '|' + :c:a_bal_fund,
+		    a_journal_number = null,
+		    a_transaction_number = null,
+		    msg = condition(sum(:t:a_amount) = $0, convert(string,null), 'Batch ' + :t:a_batch_number + ', Fund ' + :c:a_bal_fund + ' (' + sum(:t:a_amount) + ') does not balance (need IXA?)')
+	    FROM
+		    identity collection transactions t,
+		    /apps/kardia/data/Kardia_DB/a_fund/rows c
+	    WHERE
+		    :t:a_ledger_number = :parameters:ledger and
+		    :t:a_batch_number = :parameters:batch and
+		    :t:a_ledger_number = :c:a_ledger_number and
+		    :t:a_fund = :c:a_fund
+	    GROUP BY
+		    :t:a_ledger_number,
+		    :t:a_batch_number,
+		    :c:a_bal_fund
+	    HAVING
+		    sum(:t:a_amount) != $0
+	    ;
+
+	    SELECT
+		    name = :t:a_ledger_number + '|' + :t:a_batch_number,
+		    a_journal_number = null,
+		    a_transaction_number = null,
+		    msg = 'Batch ' + :t:a_batch_number + ' has an imbalanced IXA account ' + (:conf:ixa) + ' total (' + sum(:t:a_amount) + ')'
+	    FROM
+		    collection transactions t
+	    WHERE
+		    :t:a_ledger_number = :parameters:ledger and
+		    :t:a_batch_number = :parameters:batch and
+		    :t:a_account_code = :conf:ixa
+	    HAVING
+		    sum(:t:a_amount) != $0
 	    ";
     }
