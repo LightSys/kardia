@@ -1156,6 +1156,11 @@ alter table i_eg_gift_import drop index i_eg_stats_idx;
 /* go */
 
 
+/* i_eg_ignored_info */
+/* drop index i_eg_ignored_info.i_eg_ignored_pk */ 
+/* go */
+
+
 /* i_eg_gift_trx_fees */
 /* drop index i_eg_gift_trx_fees.i_eg_gift_trx_fees_pk */ 
 /* go */

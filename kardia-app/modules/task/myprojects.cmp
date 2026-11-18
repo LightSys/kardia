@@ -1230,7 +1230,7 @@ myprojects "widget/component-decl"
 				    isnull(:s:t_sprint_start, convert(datetime, '1970-01-01 00:00:00')) desc
 				having
 				    (:parameters:t_project_id = 0 or :projcnt = 1) and
-				    (:activecnt >= 1 or :t_sprint_end is null or :t_sprint_end > getdate())
+				    (:activecnt >= 1 or :t_sprint_end is null or :t_sprint_end > getdate() or dateadd(day, 1, :t:s_date_created) > getdate())
 				";
 			baseobj="/apps/kardia/data/Kardia_DB/t_sprint/rows";
 			sprint_proj_link "widget/rule"

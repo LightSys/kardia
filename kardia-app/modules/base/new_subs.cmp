@@ -279,7 +279,7 @@ new_subs "widget/component-decl"
 			sql = " SELECT
 				    :i:a_amount,
 				    date = substring(convert(string,isnull(:g:a_gift_postmark_date, :g:a_gift_received_date)), 1, 11),
-				    stat = condition(:i:a_amount = $0, 'Voided', condition(:i:a_receipt_sent_date is null, 'Processing', 'Receipted')),
+				    stat = condition(:i:a_amount = $0, 'Voided', condition(:g:a_receipt_sent_date is null, 'Processing', 'Receipted')),
 				    :g:a_period,
 				    :g:a_receipt_number,
 				    :i:a_comment,

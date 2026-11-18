@@ -178,6 +178,7 @@ giving_history_sidebar "widget/component-decl"
 		    width=107;
 		    style=bold;
 		    caption_value=runclient(:hist_osrc:itemdesig);
+		    wrap=newline;
 		    }
 		hist_t_amt "widget/table-column"
 		    {
@@ -188,7 +189,7 @@ giving_history_sidebar "widget/component-decl"
 		    width=70;
 		    align=right; 
 		    style=bold;
-		    wrap=yes;
+		    wrap=newline;
 		    caption_value=runclient(:hist_osrc:itemamt);
 		    caption_align=right;
 		    }

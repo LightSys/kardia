@@ -1,0 +1,37 @@
+$Version=2$
+deposits_config "system/query"
+    {
+    ledger "query/parameter" { type=string; style=notnull,strnull; }
+    service "query/parameter" { type=string; style=notnull,strnull; }
+    processor "query/parameter" { type=string; style=strnull; }
+    currency "query/parameter" { type=string; style=strnull; }
+    pmt_type "query/parameter" { type=string; style=notnull,strnull; }
+
+    sql = " select
+		    name = isnull(first(convert(string,:dc:i_eg_depfee_id)), 'X'),
+		    matched = count(1),
+		    i_eg_depfee_id = first(:i_eg_depfee_id),
+		    i_eg_deposit_method = first(:i_eg_deposit_method),
+		    i_eg_fees_method = first(:i_eg_fees_method),
+		    i_eg_fees_fund = first(:i_eg_fees_fund),
+		    i_eg_fees_payee = first(:i_eg_fees_payee),
+		    i_eg_fees_account_code = first(:i_eg_fees_account_code),
+		    i_eg_calc_method = first(:i_eg_calc_method),
+		    i_eg_calc_rounding = first(:i_eg_calc_rounding),
+		    i_eg_fee_flat_amt = first(:i_eg_fee_flat_amt),
+		    i_eg_fee_pct_amt = first(:i_eg_fee_pct_amt)
+	    from
+		    identity /apps/kardia/data/Kardia_DB/i_eg_deposit_config/rows dc
+	    where
+		    :dc:a_ledger_number = :parameters:ledger and
+		    (:dc:i_eg_service is null or :dc:i_eg_service = :parameters:service) and
+		    (:dc:i_eg_processor is null or :parameters:processor is null or :dc:i_eg_processor = :parameters:processor) and
+		    (:dc:i_eg_gift_currency is null or :parameters:currency is null or :dc:i_eg_gift_currency = :parameters:currency) and
+		    (nullif(:dc:i_eg_gift_pmt_type, '') is null or :dc:i_eg_gift_pmt_type = :parameters:pmt_type)
+	    order by
+		    condition(:dc:i_eg_service is null, 1, 0),
+		    condition(:dc:i_eg_processor is null, 1, 0),
+		    condition(:dc:i_eg_gift_currency is null, 1, 0),
+		    condition(nullif(:dc:i_eg_gift_pmt_type, '') is null, 1, 0)
+	    ";
+    }

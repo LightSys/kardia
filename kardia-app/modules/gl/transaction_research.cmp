@@ -566,9 +566,8 @@ transaction_research "widget/component-decl"
 					FROM
 					    /apps/kardia/data/Kardia_DB/a_fund/rows c
 					WHERE
-					    :a_ledger_number = " + quote(:this:ledger) + " and
-					    :a_bal_fund = :a_fund
-					");
+					    :a_ledger_number = " + quote(:this:ledger)
+					);
 				search_field_list="a_fund,*a_fund_desc*,a_legacy_code";
 				key_name="a_fund";
 				object_name="Funds";

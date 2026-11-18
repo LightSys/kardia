@@ -1,0 +1,78 @@
+$Version=2$
+disb_import_verify "system/query"
+    {
+    ledger "query/parameter" { type=string; style=notnull; }
+    batch "query/parameter" { type=integer; style=notnull; }
+
+    // Checks the disbursement line items in the 'disb_import' collection
+    // (built from disb_import_preview.qy by disb_import.cmp) for problems
+    // that would prevent a successful import.  Only lines with problems are
+    // returned; the first problem found on each line is reported.
+    //
+    // Disbursement-level checks (payee, cash account, check number, and memo
+    // must be the same on all lines of a disbursement, and the total of the
+    // disbursement must not be negative) are reported on the first line item
+    // of the disbursement.
+    //
+    sql = " declare collection disb_import scope application;
+
+	    declare object info;
+	    select
+		:info:cashaccts = (select :c:a_config_value from /apps/kardia/data/Kardia_DB/a_config/rows c where :c:a_ledger_number = :parameters:ledger and :c:a_config_name = 'DisbCashAccts')
+	    ;
+
+	    SELECT
+		    line_txt = 'Line ' + :t:line_no,
+		    disb_txt = 'Disb ' + :t:a_disbursement_id,
+		    :t:line_no,
+		    msg =
+			  condition(:t:a_payee_partner_key is null or :t:a_payee_partner_key = '', 'Missing Payee ID',
+			   condition(:pp:p_partner_key is null, 'Invalid Payee ID ' + :t:a_payee_partner_key,
+			    condition(:pp:p_status_code = 'O', 'Payee ' + :t:a_payee_partner_key + ' is marked as obsolete',
+			     condition(:t:a_amount is null, 'Missing or invalid Amount',
+			      condition(:t:a_fund is null or :t:a_fund = '', 'Missing Fund',
+			       condition(:c:a_fund is null, 'Invalid Fund ' + :t:a_fund,
+			        condition(isnull(:c:a_is_posting, 0) = 0, 'Fund ' + :t:a_fund + ' is not a posting fund',
+			         condition(:t:a_account_code is null or :t:a_account_code = '', 'Missing GL Account',
+			          condition(char_length(:t:a_account_code) > 10, 'GL Account ' + :t:a_account_code + ' is too long for a disbursement',
+			           condition(:a:a_account_code is null, 'Invalid GL Account ' + :t:a_account_code,
+			            condition(isnull(:a:a_is_posting, 0) = 0, 'GL Account ' + :t:a_account_code + ' is not a posting account',
+			             condition(:t:a_cash_account_code is null or :t:a_cash_account_code = '', 'Missing Cash Account (and no DisbCashAcct default configured)',
+			              condition(char_length(:t:a_cash_account_code) > 10, 'Cash Account ' + :t:a_cash_account_code + ' is too long for a disbursement',
+			               condition(:ca:a_account_code is null, 'Invalid Cash Account ' + :t:a_cash_account_code,
+			                condition(:info:cashaccts is not null and charindex(',' + rtrim(:t:a_cash_account_code) + ',', ',' + :info:cashaccts + ',') = 0, 'Cash Account ' + :t:a_cash_account_code + ' is not one of the allowed disbursement cash accounts (' + :info:cashaccts + ')',
+			                 condition(:t:a_effective_date > :per:a_end_date or :t:a_effective_date < :per:a_start_date, 'Date ' + dateformat(:t:a_effective_date, 'yyyy-MM-dd') + ' is not in batch period ' + :b:a_period,
+			                  condition(:t:a_line_item = 1 and (select count(1) from collection disb_import t2 where :t2:a_disbursement_id = :t:a_disbursement_id and isnull(:t2:a_payee_partner_key, '') != isnull(:t:a_payee_partner_key, '')) > 0, 'Disbursement ' + :t:a_disbursement_id + ' has lines with different Payee IDs',
+			                   condition(:t:a_line_item = 1 and (select count(1) from collection disb_import t2 where :t2:a_disbursement_id = :t:a_disbursement_id and isnull(:t2:a_cash_account_code, '') != isnull(:t:a_cash_account_code, '')) > 0, 'Disbursement ' + :t:a_disbursement_id + ' has lines with different Cash Accounts',
+			                    condition(:t:a_line_item = 1 and (select count(1) from collection disb_import t2 where :t2:a_disbursement_id = :t:a_disbursement_id and isnull(:t2:a_check_number, '') != isnull(:t:a_check_number, '')) > 0, 'Disbursement ' + :t:a_disbursement_id + ' has lines with different Check Numbers',
+			                     condition(:t:a_line_item = 1 and (select count(1) from collection disb_import t2 where :t2:a_disbursement_id = :t:a_disbursement_id and isnull(:t2:a_memo, '') != isnull(:t:a_memo, '')) > 0, 'Disbursement ' + :t:a_disbursement_id + ' has lines with different Memos',
+			                      condition(:t:a_line_item = 1 and (select isnull(sum(:t2:a_amount), $0) from collection disb_import t2 where :t2:a_disbursement_id = :t:a_disbursement_id) < $0, 'Disbursement ' + :t:a_disbursement_id + ' has a negative total',
+				'OK')))))))))))))))))))))
+	    FROM
+		    /apps/kardia/data/Kardia_DB/a_batch/rows b,
+		    /apps/kardia/data/Kardia_DB/a_period/rows per,
+		    identity collection disb_import t,
+		    /apps/kardia/data/Kardia_DB/p_partner/rows pp,
+		    /apps/kardia/data/Kardia_DB/a_fund/rows c,
+		    /apps/kardia/data/Kardia_DB/a_account/rows a,
+		    /apps/kardia/data/Kardia_DB/a_account/rows ca
+	    WHERE
+		    :b:a_ledger_number = :parameters:ledger and
+		    :b:a_batch_number = :parameters:batch and
+		    :t:a_ledger_number = :b:a_ledger_number and
+		    :t:a_batch_number = :b:a_batch_number and
+		    :per:a_ledger_number = :b:a_ledger_number and
+		    :per:a_period = :b:a_period and
+		    :pp:p_partner_key =* :t:a_payee_partner_key and
+		    :c:a_ledger_number =* :t:a_ledger_number and
+		    :c:a_fund =* :t:a_fund and
+		    :a:a_ledger_number =* :t:a_ledger_number and
+		    :a:a_account_code =* :t:a_account_code and
+		    :ca:a_ledger_number =* :t:a_ledger_number and
+		    :ca:a_account_code =* :t:a_cash_account_code
+	    HAVING
+		    :msg != 'OK'
+	    ORDER BY
+		    :t:line_no
+	    ";
+    }

@@ -1246,6 +1246,10 @@ alter table i_eg_deposit_config
 	drop primary key;
 
 
+alter table i_eg_ignored_info
+	drop primary key;
+
+
 alter table i_eg_gift_trx_fees
 	drop primary key;
 
