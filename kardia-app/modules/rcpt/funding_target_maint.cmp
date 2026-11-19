@@ -1,0 +1,324 @@
+$Version=2$
+funding_target_maint "widget/component-decl"
+    {
+    // Maintain funding targets (a_funding_target) for funds, and show the
+    // funding status of the selected target.
+    width=958; height=633;
+    ledger "widget/parameter" { type=string; default=null; allowchars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; deploy_to_client=yes; }
+
+    main_hbox "widget/hbox"
+	{
+	x=0; y=0; width=958; height=633;
+	spacing=16;
+
+	// Fund list, with each fund's current (or most recent) target.
+	fundlist_vbox "widget/vbox"
+	    {
+	    width=330;
+	    spacing=8;
+
+	    fundlist_hdr "widget/component"
+		{
+		path = "/apps/kardia/modules/base/section_label.cmp";
+		height=24;
+		text = "Funds:";
+		}
+
+	    fund_search_eb "widget/editbox"
+		{
+		height=24;
+		empty_description = "type here to search for funds";
+
+		fund_search_cn "widget/connector"
+		    {
+		    event=ReturnPressed;
+		    target=funds_osrc;
+		    action=QueryText;
+		    field_list="a_fund*,*a_fund_desc*";
+		    query=runclient(:fund_search_eb:content);
+		    cx__case_insensitive = 1;
+		    }
+		}
+
+	    fundlist_pane "widget/pane"
+		{
+		height=569;
+		widget_class=table_bgnd;
+
+		funds_osrc "widget/osrc"
+		    {
+		    fl_ledger "widget/parameter" { param_name=ledger; type=string; default=runclient(:ledger:value); }
+
+		    sql = " select
+				:c:a_ledger_number,
+				:c:a_fund,
+				:c:a_fund_desc,
+				:c:a_fund_class,
+				target_txt = (
+				    select
+					'' + :ft:a_amount + condition(:ft:a_interval = 0, ' total', condition(:ft:a_interval = 1, '/mo', condition(:ft:a_interval = 3, '/qtr', condition(:ft:a_interval = 12, '/yr', ' per ' + :ft:a_interval + ' mo')))) +
+					condition(:ft:a_start_date > getdate(), ' (future)', condition(dateadd(day, 1, :ft:a_end_date) <= getdate(), ' (ended)', ''))
+				    from
+					/apps/kardia/data/Kardia_DB/a_funding_target/rows ft
+				    where
+					:ft:a_ledger_number = :c:a_ledger_number and
+					:ft:a_fund = :c:a_fund
+				    order by
+					condition(:ft:a_start_date <= getdate() and (:ft:a_end_date is null or dateadd(day, 1, :ft:a_end_date) > getdate()), 0, condition(:ft:a_start_date <= getdate(), 1, 2)) asc,
+					:ft:a_start_date desc
+				    limit
+					1
+				    )
+			    from
+				identity /apps/kardia/data/Kardia_DB/a_fund/rows c
+			    where
+				:c:a_ledger_number = :parameters:ledger
+			    order by
+				:c:a_fund
+			    ";
+		    baseobj = "/apps/kardia/data/Kardia_DB/a_fund/rows";
+		    replicasize=100;
+		    readahead=100;
+		    autoquery=onfirstreveal;
+
+		    // Targets are queried only when the selected fund changes, so that
+		    // refreshing a fund's target summary keeps the target being edited.
+		    fund_chg_cn "widget/connector"
+			{
+			event=DataFocusChanged;
+			event_condition=runclient(:Refresh == 0);
+			target=targets_osrc;
+			action=QueryParam;
+			}
+
+		    funds_table "widget/table"
+			{
+			x=0; y=0; width=328; height=567;
+			overlap_scrollbar=yes;
+			demand_scrollbar=yes;
+
+			t_fund "widget/table-column" { title="Fund"; fieldname="a_fund"; width=70; }
+			t_desc "widget/table-column" { title="Description"; fieldname="a_fund_desc"; width=138; }
+			t_target "widget/table-column" { title="Current Target"; fieldname="target_txt"; width=110; }
+			}
+		    }
+		}
+	    }
+
+	// Targets for the selected fund, and the funding status of the selected target.
+	targets_vbox "widget/vbox"
+	    {
+	    width=612;
+	    spacing=8;
+
+	    targets_hdr "widget/component"
+		{
+		path = "/apps/kardia/modules/base/section_label.cmp";
+		height=24;
+		width=612;
+		text = runclient("Funding Targets" + condition(:funds_osrc:a_fund is null, "", " for " + :funds_osrc:a_fund + " - " + :funds_osrc:a_fund_desc) + ":");
+		}
+
+	    targets_osrc "widget/osrc"
+		{
+		tl_ledger "widget/parameter" { param_name=ledger; type=string; default=runclient(:ledger:value); }
+
+		sql = "	select
+			    :ft:a_ledger_number,
+			    :ft:a_fund,
+			    :ft:a_target_id,
+			    :ft:a_target_desc,
+			    :ft:a_review,
+			    :ft:a_amount,
+			    :ft:a_interval,
+			    :ft:a_start_date,
+			    :ft:a_end_date,
+			    :ft:s_date_created,
+			    :ft:s_created_by,
+			    :ft:s_date_modified,
+			    :ft:s_modified_by,
+			    interval_txt = condition(:ft:a_interval = 0, 'Total', condition(:ft:a_interval = 1, 'Monthly', condition(:ft:a_interval = 3, 'Quarterly', condition(:ft:a_interval = 6, 'Semi-Annually', condition(:ft:a_interval = 12, 'Annually', 'Every ' + :ft:a_interval + ' Months'))))),
+			    start_txt = dateformat(:ft:a_start_date, 'dd-MMM-yyyy'),
+			    end_txt = isnull(dateformat(:ft:a_end_date, 'dd-MMM-yyyy'), '(none)'),
+			    status_txt = condition(:ft:a_start_date > getdate(), 'Future', condition(dateadd(day, 1, :ft:a_end_date) <= getdate(), 'Ended', 'Current')),
+			    in_review = isnull((select 1 from /apps/kardia/data/Kardia_DB/a_support_review_target/rows srt where :srt:a_ledger_number = :ft:a_ledger_number and :srt:a_fund = :ft:a_fund and :srt:a_target_id = :ft:a_target_id limit 1), 0)
+			from
+			    identity /apps/kardia/data/Kardia_DB/a_funding_target/rows ft
+			where
+			    :ft:a_ledger_number = :parameters:ledger
+			order by
+			    :ft:a_start_date desc,
+			    :ft:a_target_id desc
+			";
+		baseobj = "/apps/kardia/data/Kardia_DB/a_funding_target/rows";
+		replicasize=50;
+		readahead=50;
+		autoquery=never;
+
+		targets_fund_link "widget/rule"
+		    {
+		    ruletype=osrc_relationship;
+		    target=funds_osrc;
+		    key_1=a_ledger_number;
+		    target_key_1=a_ledger_number;
+		    key_2=a_fund;
+		    target_key_2=a_fund;
+		    autoquery=false;
+		    }
+
+		// Keep the fund list's target summary up to date.
+		refresh_fund_on_create "widget/connector" { event=Created; target=funds_osrc; action=RefreshObject; }
+		refresh_fund_on_modify "widget/connector" { event=Modified; target=funds_osrc; action=RefreshObject; }
+		refresh_fund_on_delete "widget/connector" { event=Deleted; target=funds_osrc; action=RefreshObject; }
+
+		targets_table "widget/table"
+		    {
+		    width=612;
+		    height=270;
+		    titlebar=yes;
+		    colsep=0;
+		    overlap_scrollbar=yes;
+		    demand_scrollbar=yes;
+		    initial_selection=no;
+		    rowheight=null;
+		    cellvspacing=4;
+		    inner_padding=2;
+		    row_border_radius=6;
+		    row_shadow_radius=2;
+		    row_shadow_offset=1;
+		    row_shadow_color="#a0a0a0";
+		    row_shadow_angle=135;
+
+		    tt_desc "widget/table-column" { title="Description"; fieldname=a_target_desc; width=196; style=bold; }
+		    tt_amount "widget/table-column" { title="Amount"; fieldname=a_amount; width=90; align=right; }
+		    tt_interval "widget/table-column" { title="Interval"; fieldname=interval_txt; width=80; }
+		    tt_start "widget/table-column" { title="Start"; fieldname=start_txt; width=82; }
+		    tt_end "widget/table-column" { title="End"; fieldname=end_txt; width=82; }
+		    tt_status "widget/table-column" { title="Status"; fieldname=status_txt; width=62; }
+
+		    target_detail "widget/table-row-detail"
+			{
+			width=612; height=126;
+			show_on_new=1;
+
+			target_detail_pane "widget/pane"
+			    {
+			    x=8; y=5; width=586; height=116;
+			    style=flat;
+			    bgcolor="#f8f8f8";
+			    border_radius=4;
+
+			    target_detail_vbox "widget/vbox"
+				{
+				x=10; y=8; width=440; height=98;
+				spacing=5;
+				cellsize=20;
+
+				targets_form "widget/form"
+				    {
+				    fd_desc "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=editbox; field=a_target_desc; width=440; label_width=90; text="Description:"; empty_desc="describe this target"; }
+
+				    amount_hbox "widget/hbox"
+					{
+					height=20; spacing=10;
+
+					fd_amount "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=editbox; field=a_amount; width=200; label_width=90; text="Amount:"; }
+					fd_interval "widget/component"
+					    {
+					    path="/sys/cmp/smart_field.cmp";
+					    ctl_type=dropdown;
+					    field=a_interval;
+					    width=230;
+					    label_width=70;
+					    text="Interval:";
+					    numdisplay=6;
+					    sql="	select label='Total for Date Range', value=0;
+						select label='Monthly', value=1;
+						select label='Quarterly', value=3;
+						select label='Semi-Annually', value=6;
+						select label='Annually', value=12
+						";
+					    fi_hints "widget/hints" { style=notnull; default=runclient(1); }
+					    }
+					}
+
+				    dates_hbox "widget/hbox"
+					{
+					height=20; spacing=10;
+
+					fd_start "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=datetime; date_only=1; field=a_start_date; width=200; label_width=90; text="Start Date:"; }
+					fd_end "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=datetime; date_only=1; field=a_end_date; width=230; label_width=70; text="End Date:"; }
+					}
+
+				    fd_review "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=label; field=a_review; width=200; label_width=90; text="Review:"; }
+
+				    target_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
+				    }
+				}
+
+			    target_ctls_vbox "widget/vbox"
+				{
+				x=476; y=8; width=100; height=98;
+				spacing=8;
+
+				save_btn "widget/textbutton"
+				    {
+				    width=100; height=24;
+				    text="Save";
+				    enabled=runclient(:targets_form:is_savable and char_length(:fd_desc:content) > 0 and :fd_amount:content is not null and :fd_start:value is not null and :fd_interval:value is not null);
+				    on_save "widget/connector" { event=Click; target=targets_form; action=Save; }
+				    }
+
+				discard_btn "widget/textbutton"
+				    {
+				    width=100; height=24;
+				    text="Cancel";
+				    enabled=runclient(:targets_form:is_discardable);
+				    on_discard "widget/connector" { event=Click; target=targets_form; action=Discard; }
+				    }
+
+				delete_btn "widget/textbutton"
+				    {
+				    width=100; height=24;
+				    text="Delete";
+				    enabled=runclient(:targets_form:is_editable and :targets_osrc:in_review = 0);
+				    on_delete "widget/connector" { event=Click; target=targets_form; action=Delete; }
+				    }
+				}
+			    }
+			}
+		    }
+		}
+
+	    targets_ctls_hbox "widget/hbox"
+		{
+		height=24;
+		align=right;
+
+		new_target_btn "widget/textbutton"
+		    {
+		    width=130; height=24;
+		    text="New Target";
+		    enabled=runclient(:targets_form:is_newable and :funds_osrc:a_fund is not null);
+		    on_new "widget/connector" { event=Click; target=targets_form; action=New; }
+		    }
+		}
+
+	    status_hdr "widget/component"
+		{
+		path = "/apps/kardia/modules/base/section_label.cmp";
+		height=24;
+		width=612;
+		text = runclient("Funding Status" + condition(:targets_osrc:a_target_desc is null, "", ": " + :targets_osrc:a_target_desc + " (" + :targets_osrc:interval_txt + ")"));
+		}
+
+	    status_cmp "widget/component"
+		{
+		height=259;
+		width=612;
+		path = "/apps/kardia/modules/rcpt/funding_status.cmp";
+		target_osrc = targets_osrc;
+		}
+	    }
+	}
+    }
