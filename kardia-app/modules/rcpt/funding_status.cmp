@@ -121,6 +121,7 @@ funding_status "widget/component-decl"
 				dateformat(:b:bstart, 'MMM yy') + '-' + dateformat(dateadd(month, :info:interval - 1, :b:bstart), 'MMM yy'))))),
 		    target = condition(:info:interval = 0, :info:amount, :info:amount * :b:nmonths / condition(:info:interval > 0, :info:interval, 1)),
 		    funded = (
+			-- This catches gifts receipted
 			select
 			    isnull(sum(:g:a_amount), $0)
 			from
@@ -135,6 +136,25 @@ funding_status "widget/component-decl"
 			    isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date) >= :b:bstart and
 			    isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date) < :b:bend and
 			    (:info:end is null or isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date) < dateadd(day, 1, :info:end))
+			) + (
+			-- This catches non-receipts transactions (transfers, etc.)
+			-- Also do not include settlement transactions.
+			select
+			    $0 - isnull(sum(:t:a_amount), $0)
+			from
+			    /apps/kardia/data/Kardia_DB/a_transaction/rows t
+			where
+			    :t:a_ledger_number = :parameters:ledger and
+			    :t:a_fund = :parameters:fund and
+			    :t:a_posted = 1 and
+			    :t:a_account_code >= :info:revlo and
+			    :t:a_account_code <= :info:revhi and
+			    :t:a_effective_date >= :info:start and
+			    :t:a_effective_date >= :b:bstart and
+			    :t:a_effective_date < :b:bend and
+			    :t:a_origin != 'CR' and
+			    :t:a_origin != 'SE' and
+			    (:info:end is null or :t:a_effective_date < dateadd(day, 1, :info:end))
 			)
 		from
 		    collection buckets b
@@ -219,7 +239,7 @@ funding_status "widget/component-decl"
 		start_at_zero=yes;
 
 		funded_series "widget/chart-series" { label="Funded"; color="#3e7d38"; x_column="label"; y_column="chart_funded"; }
-		deficit_series "widget/chart-series" { label="Deficit"; color="#c9302c"; x_column="label"; y_column="chart_deficit"; }
+		deficit_series "widget/chart-series" { label="Deficit"; color="#c0c0c0"; x_column="label"; y_column="chart_deficit"; }
 		over_series "widget/chart-series" { label="Over Target"; color="#2e75b6"; x_column="label"; y_column="chart_over"; }
 
 		status_y_axis "widget/chart-axis" { axis="y"; label="Funding"; }
