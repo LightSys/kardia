@@ -11,6 +11,10 @@ funding_status "widget/component-decl"
 
     target_osrc "widget/parameter" { type=object; find_container="widget/osrc"; }
 
+    // Re-query after the target is modified; the relationship only follows record changes.
+    Refresh "widget/component-decl-action" { }
+    refresh_cn "widget/connector" { event=Refresh; target=status_osrc; action=Refresh; }
+
     status_osrc "widget/osrc"
 	{
 	fs_ledger "widget/parameter" { param_name=ledger; type=string; }

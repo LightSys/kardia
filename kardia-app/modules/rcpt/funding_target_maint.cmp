@@ -97,9 +97,9 @@ funding_target_maint "widget/component-decl"
 			overlap_scrollbar=yes;
 			demand_scrollbar=yes;
 
-			t_fund "widget/table-column" { title="Fund"; fieldname="a_fund"; width=70; }
-			t_desc "widget/table-column" { title="Description"; fieldname="a_fund_desc"; width=138; }
-			t_target "widget/table-column" { title="Current Target"; fieldname="target_txt"; width=110; }
+			t_fund "widget/table-column" { title="Fund"; fieldname="a_fund"; width=62; }
+			t_desc "widget/table-column" { title="Description"; fieldname="a_fund_desc"; width=124; }
+			t_target "widget/table-column" { title="Current Target"; fieldname="target_txt"; width=132; }
 			}
 		    }
 		}
@@ -167,8 +167,6 @@ funding_target_maint "widget/component-decl"
 		    }
 
 		// Keep the fund list's target summary up to date.
-		refresh_fund_on_create "widget/connector" { event=Created; target=funds_osrc; action=RefreshObject; }
-		refresh_fund_on_modify "widget/connector" { event=Modified; target=funds_osrc; action=RefreshObject; }
 		refresh_fund_on_delete "widget/connector" { event=Deleted; target=funds_osrc; action=RefreshObject; }
 
 		targets_table "widget/table"
@@ -246,13 +244,16 @@ funding_target_maint "widget/component-decl"
 					{
 					height=20; spacing=10;
 
-					fd_start "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=datetime; date_only=1; field=a_start_date; width=200; label_width=90; text="Start Date:"; }
-					fd_end "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=datetime; date_only=1; field=a_end_date; width=230; label_width=70; text="End Date:"; }
+					fd_start "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=datetime; date_only=1; default_time="00:00:00"; field=a_start_date; width=200; label_width=90; text="Start Date:"; }
+					fd_end "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=datetime; date_only=1; default_time="00:00:00"; field=a_end_date; width=230; label_width=70; text="End Date:"; }
 					}
 
 				    fd_review "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=label; field=a_review; width=200; label_width=90; text="Review:"; }
 
 				    target_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
+
+				    refresh_fund_on_save "widget/connector" { event=DataSaved; target=funds_osrc; action=RefreshObject; }
+				    refresh_status_on_save "widget/connector" { event=DataSaved; target=status_cmp; action=Refresh; }
 				    }
 				}
 
