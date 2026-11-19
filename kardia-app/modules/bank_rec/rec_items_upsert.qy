@@ -22,7 +22,7 @@ last_bank_rec "system/query"
 	    IDENTITY /apps/kardia/data/Kardia_DB/a_bank_recon_item/rows bi,
 	    /apps/kardia/data/Kardia_DB/a_bank_recon_accts/rows ba
 	WHERE 
-            :bi:a_item_date > :cutoff:value
+            :bi:a_item_date >= :cutoff:value
 	    AND :bi:a_origin = 'GL'
 	    AND :bi:a_is_reconciled = 0
 	    AND :bi:a_ledger_number = :parameters:cur_ledger
@@ -34,7 +34,7 @@ last_bank_rec "system/query"
 		FROM 
 		    /apps/kardia/data/Kardia_DB/a_transaction/rows t 
 		WHERE 
-		    :t:a_effective_date > :cutoff:value
+		    :t:a_effective_date >= :cutoff:value
 		    AND :bi:a_ledger_number = :t:a_ledger_number
 		    AND :bi:a_account_code = :t:a_account_code
 		    AND :bi:a_batch_key = :t:a_batch_number
@@ -69,7 +69,7 @@ last_bank_rec "system/query"
 	    /apps/kardia/data/Kardia_DB/a_transaction/rows gl,
 	    IDENTITY /apps/kardia/data/Kardia_DB/a_bank_recon_accts/rows ba
 	WHERE 
-	    :gl:a_effective_date > :cutoff:value
+	    :gl:a_effective_date >= :cutoff:value
 	    AND :gl:a_ledger_number = :parameters:cur_ledger
 	    AND :gl:a_origin = 'GL'
 	    AND :gl:a_account_code = :ba:a_account_code

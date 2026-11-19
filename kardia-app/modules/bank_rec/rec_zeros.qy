@@ -35,7 +35,7 @@ last_bank_rec "system/query"
 	WHERE 
 	    :r1:a_ledger_number = :parameters:cur_ledger
 	    AND :r1:a_account_code = :parameters:cur_account
-	    AND :r1:a_end_date > :cutoff:value
+	    AND :r1:a_end_date >= :cutoff:value
 	;
 
 	-- now find the date and calculate the zero 
