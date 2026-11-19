@@ -1,0 +1,237 @@
+$Version=2$
+funding_status "widget/component-decl"
+    {
+    // Funding status of one funding target: normal gifts (RcptGiftAccts),
+    // or if those aren't configured, all GL revenue to the fund (GLRevLow
+    // to GLRevHigh), compared with the target, as a stacked bar chart.  Periodic targets
+    // get one bar per interval (aligned to the target's start month) up to
+    // the present, showing at most the 24 most recent; partial intervals
+    // have their target prorated by month.  Absolute targets get one bar
+    // for the target's whole date range.
+    width=612; height=259;
+
+    target_osrc "widget/parameter" { type=object; find_container="widget/osrc"; }
+
+    // Re-query after the target is modified; the relationship only follows record changes.
+    Refresh "widget/component-decl-action" { }
+    refresh_cn "widget/connector" { event=Refresh; target=status_osrc; action=Refresh; }
+
+    status_osrc "widget/osrc"
+	{
+	fs_ledger "widget/parameter" { param_name=ledger; type=string; }
+	fs_fund "widget/parameter" { param_name=fund; type=string; }
+	fs_target "widget/parameter" { param_name=target_id; type=integer; }
+
+	sql = "	declare object info;
+		declare collection months;
+		declare collection buckets;
+		declare collection results;
+
+		select
+		    :info:amount = :ft:a_amount,
+		    :info:interval = :ft:a_interval,
+		    :info:start = :ft:a_start_date,
+		    :info:end = :ft:a_end_date,
+		    :info:accts = (select sum(:c:a_config_value + ',') - ',' from /apps/kardia/data/Kardia_DB/a_config/rows c where :c:a_ledger_number = :parameters:ledger and :c:a_config_name = 'RcptGiftAccts')
+		from
+		    /apps/kardia/data/Kardia_DB/a_funding_target/rows ft
+		where
+		    :ft:a_ledger_number = :parameters:ledger and
+		    :ft:a_fund = :parameters:fund and
+		    :ft:a_target_id = :parameters:target_id
+		;
+
+		select
+		    :info:revlo = :GLRevLow,
+		    :info:revhi = :GLRevHigh
+		from
+		    object expression('/apps/kardia/modules/gl/accounting_config.qyp/' + :parameters:ledger)
+		;
+
+		-- Periodic target: the months from the target's start through the present (or the target's end).
+		insert
+		    collection months
+		select
+		    idx = datediff(month, :info:start, :p:a_start_date) / :info:interval,
+		    pstart = :p:a_start_date
+		from
+		    /apps/kardia/data/Kardia_DB/a_period/rows p
+		where
+		    :info:interval > 0 and
+		    :p:a_ledger_number = :parameters:ledger and
+		    :p:a_summary_only = 0 and
+		    datediff(month, :info:start, :p:a_start_date) >= 0 and
+		    :p:a_start_date <= getdate() and
+		    (:info:end is null or :p:a_start_date <= :info:end)
+		;
+
+		-- Periodic target: group the months into the target's intervals.
+		insert
+		    collection buckets
+		select
+		    idx = :m:idx,
+		    bstart = min(:m:pstart),
+		    bend = dateadd(month, datediff(month, min(:m:pstart), max(:m:pstart)) + 1, min(:m:pstart)),
+		    nmonths = datediff(month, min(:m:pstart), max(:m:pstart)) + 1
+		from
+		    collection months m
+		group by
+		    :m:idx
+		;
+
+		-- Absolute target: one interval for the whole date range.
+		insert
+		    collection buckets
+		select
+		    idx = 0,
+		    bstart = :ft:a_start_date,
+		    bend = dateadd(day, 1, isnull(:ft:a_end_date, getdate())),
+		    nmonths = 0
+		from
+		    /apps/kardia/data/Kardia_DB/a_funding_target/rows ft
+		where
+		    :ft:a_ledger_number = :parameters:ledger and
+		    :ft:a_fund = :parameters:fund and
+		    :ft:a_target_id = :parameters:target_id and
+		    :ft:a_interval = 0
+		;
+
+		select
+		    :info:maxidx = max(:idx)
+		from
+		    collection buckets
+		;
+
+		-- Target and normal gifts (by gift date) for each of the most recent 24 intervals.
+		insert
+		    collection results
+		select
+		    idx = :b:idx,
+		    bstart = :b:bstart,
+		    bend = :b:bend,
+		    partial = condition(:info:interval > 0 and :b:nmonths < :info:interval, 1, 0),
+		    label = condition(:info:interval = 0,
+				dateformat(:b:bstart, 'MMM yyyy') + ' - ' + condition(:info:end is null, 'Present', dateformat(:info:end, 'MMM yyyy')),
+			    condition(:info:interval = 1,
+				dateformat(:b:bstart, 'MMM yyyy'),
+			    condition(:info:interval = 3 and datepart(month, :b:bstart) - 1 = (datepart(month, :b:bstart) - 1) / 3 * 3,
+				'Q' + ((datepart(month, :b:bstart) + 2) / 3) + ' ' + dateformat(:b:bstart, 'yyyy'),
+			    condition(:info:interval = 12 and datepart(month, :b:bstart) = 1,
+				dateformat(:b:bstart, 'yyyy'),
+				dateformat(:b:bstart, 'MMM yy') + '-' + dateformat(dateadd(month, :info:interval - 1, :b:bstart), 'MMM yy'))))),
+		    target = condition(:info:interval = 0, :info:amount, :info:amount * :b:nmonths / condition(:info:interval > 0, :info:interval, 1)),
+		    funded = (
+			select
+			    isnull(sum(:g:a_amount), $0)
+			from
+			    /apps/kardia/data/Kardia_DB/a_subtrx_gift_item/rows g
+			where
+			    :g:a_ledger_number = :parameters:ledger and
+			    :g:a_fund = :parameters:fund and
+			    :g:a_posted = 1 and
+			    :info:accts is not null and
+			    charindex(',' + rtrim(:g:a_account_code) + ',', ',' + :info:accts + ',') > 0 and
+			    isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date) >= :info:start and
+			    isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date) >= :b:bstart and
+			    isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date) < :b:bend and
+			    (:info:end is null or isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date) < dateadd(day, 1, :info:end))
+			)
+		from
+		    collection buckets b
+		where
+		    :b:idx > :info:maxidx - 24
+		;
+
+		-- Without normal gift accounts configured, use all GL revenue (by effective date) instead.
+		update
+		    collection results r
+		set
+		    :r:funded = (
+			select
+			    $0 - isnull(sum(:t:a_amount), $0)
+			from
+			    /apps/kardia/data/Kardia_DB/a_transaction/rows t
+			where
+			    :t:a_ledger_number = :parameters:ledger and
+			    :t:a_fund = :parameters:fund and
+			    :t:a_posted = 1 and
+			    :t:a_account_code >= :info:revlo and
+			    :t:a_account_code <= :info:revhi and
+			    :t:a_effective_date >= :info:start and
+			    :t:a_effective_date >= :r:bstart and
+			    :t:a_effective_date < :r:bend and
+			    (:info:end is null or :t:a_effective_date < dateadd(day, 1, :info:end))
+			)
+		where
+		    :info:accts is null
+		;
+
+		select
+		    label = :r:label + condition(:r:partial = 1, '*', ''),
+		    chart_funded = convert(integer, condition(:r:funded < :r:target, :r:funded, :r:target)),
+		    chart_deficit = convert(integer, condition(:r:funded < :r:target, :r:target - :r:funded, $0)),
+		    chart_over = convert(integer, condition(:r:funded > :r:target, :r:funded - :r:target, $0)),
+		    target_amt = :r:target,
+		    funded_amt = :r:funded,
+		    basis = condition(:info:accts is not null, 'gifts', condition(:info:revlo is null or :info:revhi is null, 'none', 'gl')),
+		    revlo = :info:revlo,
+		    revhi = :info:revhi,
+		    summary = :r:label + ':  target ' + :r:target + ', given ' + :r:funded +
+			condition(:r:funded >= :r:target, ', over target by ' + (:r:funded - :r:target), ', short by ' + (:r:target - :r:funded)) +
+			condition(:r:target > $0, ' (' + convert(integer, round(convert(double, :r:funded) * 100.0 / convert(double, condition(:r:target > $0, :r:target, $1)), 0)) + '% funded)', '') +
+			condition(:r:partial = 1, '.  *Partial interval; target is prorated.', '')
+		from
+		    collection results r
+		where
+		    has_endorsement('kardia:gift_amt', 'kardia:ledger:' + :parameters:ledger)
+		order by
+		    :r:idx asc
+		";
+	replicasize=30;
+	readahead=30;
+	autoquery=never;
+
+	status_target_link "widget/rule"
+	    {
+	    ruletype=osrc_relationship;
+	    target=target_osrc;
+	    key_1=ledger;
+	    target_key_1=a_ledger_number;
+	    key_2=fund;
+	    target_key_2=a_fund;
+	    key_3=target_id;
+	    target_key_3=a_target_id;
+	    master_norecs_action=norecs;
+	    }
+
+	status_vbox "widget/vbox"
+	    {
+	    x=0; y=0; width=612; height=259;
+	    spacing=4;
+
+	    status_chart "widget/chart"
+		{
+		width=612;
+		height=225;
+		chart_type="bar";
+		stacked=yes;
+		legend_position="top";
+		start_at_zero=yes;
+
+		funded_series "widget/chart-series" { label="Funded"; color="#3e7d38"; x_column="label"; y_column="chart_funded"; }
+		deficit_series "widget/chart-series" { label="Deficit"; color="#c9302c"; x_column="label"; y_column="chart_deficit"; }
+		over_series "widget/chart-series" { label="Over Target"; color="#2e75b6"; x_column="label"; y_column="chart_over"; }
+
+		status_y_axis "widget/chart-axis" { axis="y"; label="Funding"; }
+		}
+
+	    status_summary "widget/label"
+		{
+		height=30;
+		width=612;
+		style=italic;
+		value=runclient(condition(:status_osrc:basis == 'gl', "Normal gift accounts (RcptGiftAccts) are not configured, so all GL revenue (accounts " + :status_osrc:revlo + "-" + :status_osrc:revhi + ") to the fund is counted.  ", condition(:status_osrc:basis == 'none', "Neither normal gift accounts (RcptGiftAccts) nor the GL revenue account range is configured, so no revenue is counted.  ", "")) + isnull(:status_osrc:summary, condition(:target_osrc:a_target_id is null, "Select a funding target to see its funding status.", "No funding status is available yet for this target.")) + condition(:status_osrc:label is null, "", "  (Click a bar to see its details.)"));
+		}
+	    }
+	}
+    }
