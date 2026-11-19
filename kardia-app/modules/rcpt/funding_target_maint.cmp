@@ -98,8 +98,8 @@ funding_target_maint "widget/component-decl"
 			demand_scrollbar=yes;
 
 			t_fund "widget/table-column" { title="Fund"; fieldname="a_fund"; width=62; }
-			t_desc "widget/table-column" { title="Description"; fieldname="a_fund_desc"; width=124; }
-			t_target "widget/table-column" { title="Current Target"; fieldname="target_txt"; width=132; }
+			t_desc "widget/table-column" { title="Description"; fieldname="a_fund_desc"; width=128; }
+			t_target "widget/table-column" { title="Current Target"; fieldname="target_txt"; width=128; align=right; }
 			}
 		    }
 		}
@@ -151,7 +151,7 @@ funding_target_maint "widget/component-decl"
 				condition(datepart(day, :ft:a_start_date) = 1 and datepart(day, dateadd(day, 1, :ft:a_end_date)) = 1,
 				    dateadd(day, -1, dateadd(month, 2 * datediff(month, :ft:a_start_date, dateadd(day, 1, :ft:a_end_date)), :ft:a_start_date)),
 				    dateadd(day, 2 * datediff(day, :ft:a_start_date, :ft:a_end_date) + 1, :ft:a_start_date))),
-			    in_review = isnull((select 1 from /apps/kardia/data/Kardia_DB/a_support_review_target/rows srt where :srt:a_ledger_number = :ft:a_ledger_number and :srt:a_fund = :ft:a_fund and :srt:a_target_id = :ft:a_target_id limit 1), 0)
+			    in_review = (select condition(first(:srt:a_review) = last(:srt:a_review), first(:srt:a_review), first(:srt:a_review) + ' - ' + last(:srt:a_review)) from /apps/kardia/data/Kardia_DB/a_support_review_target/rows srt, /apps/kardia/data/Kardia_DB/a_support_review/rows sr where :srt:a_ledger_number = :ft:a_ledger_number and :srt:a_fund = :ft:a_fund and :srt:a_target_amount = :ft:a_amount and :sr:a_review_date >= isnull(:ft:a_start_date, convert(datetime, '1900-01-01')) and :sr:a_review_date <= isnull(:ft:a_end_date, getdate()) and :sr:a_ledger_number = :srt:a_ledger_number and :sr:a_review = :srt:a_review order by :srt:s_date_created)
 			from
 			    identity /apps/kardia/data/Kardia_DB/a_funding_target/rows ft
 			where
@@ -264,7 +264,7 @@ funding_target_maint "widget/component-decl"
 					{
 					height=20; spacing=10;
 
-					fd_review "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=label; field=a_review; width=200; label_width=90; text="Review:"; }
+					fd_review "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=label; value=runclient(condition(nullif(:targets_osrc:a_review,'') is null, :targets_osrc:in_review, :targets_osrc:a_review)); width=200; label_width=90; text="Review:"; }
 					overlap_lbl "widget/label" { width=230; style=bold; fgcolor="#c9302c"; value=runclient(condition(:targets_form:form_mode == 'New' or :targets_form:form_mode == 'Modify', :overlap_osrc:msg, '')); }
 					}
 
@@ -345,7 +345,7 @@ funding_target_maint "widget/component-decl"
 				    {
 				    width=100; height=24;
 				    text="Delete";
-				    enabled=runclient(:targets_form:is_editable and :targets_osrc:in_review = 0);
+				    enabled=runclient(:targets_form:is_editable and :targets_osrc:in_review is null);
 				    on_delete "widget/connector" { event=Click; target=targets_form; action=Delete; }
 				    }
 				}
