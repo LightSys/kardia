@@ -140,7 +140,17 @@ funding_target_maint "widget/component-decl"
 			    interval_txt = condition(:ft:a_interval = 0, 'Total', condition(:ft:a_interval = 1, 'Monthly', condition(:ft:a_interval = 3, 'Quarterly', condition(:ft:a_interval = 6, 'Semi-Annually', condition(:ft:a_interval = 12, 'Annually', 'Every ' + :ft:a_interval + ' Months'))))),
 			    start_txt = dateformat(:ft:a_start_date, 'dd-MMM-yyyy'),
 			    end_txt = isnull(dateformat(:ft:a_end_date, 'dd-MMM-yyyy'), '(none)'),
-			    status_txt = condition(:ft:a_start_date > getdate(), 'Future', condition(dateadd(day, 1, :ft:a_end_date) <= getdate(), 'Ended', 'Current')),
+			    status_txt = condition((select count(1) from /apps/kardia/data/Kardia_DB/a_funding_target/rows o where :o:a_ledger_number = :ft:a_ledger_number and :o:a_fund = :ft:a_fund and :o:a_target_id != :ft:a_target_id and (:o:a_end_date is null or :o:a_end_date >= :ft:a_start_date) and (:ft:a_end_date is null or :o:a_start_date <= :ft:a_end_date)) > 0, 'Overlap',
+				condition(:ft:a_start_date > getdate(), 'Future', condition(dateadd(day, 1, :ft:a_end_date) <= getdate(), 'Ended', 'Current'))),
+			    -- Dates for a copy: the next date range of the same length, or for an
+			    -- open-ended target, the next interval boundary after today.
+			    copy_start = condition(:ft:a_end_date is null,
+				dateadd(month, (datediff(month, :ft:a_start_date, getdate()) / condition(:ft:a_interval > 0, :ft:a_interval, 12) + 1) * condition(:ft:a_interval > 0, :ft:a_interval, 12), :ft:a_start_date),
+				dateadd(day, 1, :ft:a_end_date)),
+			    copy_end = condition(:ft:a_end_date is null, null,
+				condition(datepart(day, :ft:a_start_date) = 1 and datepart(day, dateadd(day, 1, :ft:a_end_date)) = 1,
+				    dateadd(day, -1, dateadd(month, 2 * datediff(month, :ft:a_start_date, dateadd(day, 1, :ft:a_end_date)), :ft:a_start_date)),
+				    dateadd(day, 2 * datediff(day, :ft:a_start_date, :ft:a_end_date) + 1, :ft:a_start_date))),
 			    in_review = isnull((select 1 from /apps/kardia/data/Kardia_DB/a_support_review_target/rows srt where :srt:a_ledger_number = :ft:a_ledger_number and :srt:a_fund = :ft:a_fund and :srt:a_target_id = :ft:a_target_id limit 1), 0)
 			from
 			    identity /apps/kardia/data/Kardia_DB/a_funding_target/rows ft
@@ -166,7 +176,8 @@ funding_target_maint "widget/component-decl"
 		    autoquery=false;
 		    }
 
-		// Keep the fund list's target summary up to date.
+		// Keep the fund list's target summary up to date (form saves are handled by targets_form).
+		refresh_fund_on_create "widget/connector" { event=Created; target=funds_osrc; action=RefreshObject; }
 		refresh_fund_on_delete "widget/connector" { event=Deleted; target=funds_osrc; action=RefreshObject; }
 
 		targets_table "widget/table"
@@ -177,7 +188,8 @@ funding_target_maint "widget/component-decl"
 		    colsep=0;
 		    overlap_scrollbar=yes;
 		    demand_scrollbar=yes;
-		    initial_selection=no;
+		    initial_selection=noexpand;
+		    allow_deselection=yes;
 		    rowheight=null;
 		    cellvspacing=4;
 		    inner_padding=2;
@@ -196,19 +208,19 @@ funding_target_maint "widget/component-decl"
 
 		    target_detail "widget/table-row-detail"
 			{
-			width=612; height=126;
+			width=612; height=140;
 			show_on_new=1;
 
 			target_detail_pane "widget/pane"
 			    {
-			    x=8; y=5; width=586; height=116;
+			    x=8; y=5; width=586; height=130;
 			    style=flat;
 			    bgcolor="#f8f8f8";
 			    border_radius=4;
 
 			    target_detail_vbox "widget/vbox"
 				{
-				x=10; y=8; width=440; height=98;
+				x=10; y=8; width=440; height=114;
 				spacing=5;
 				cellsize=20;
 
@@ -248,25 +260,55 @@ funding_target_maint "widget/component-decl"
 					fd_end "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=datetime; date_only=1; default_time="00:00:00"; field=a_end_date; width=230; label_width=70; text="End Date:"; }
 					}
 
-				    fd_review "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=label; field=a_review; width=200; label_width=90; text="Review:"; }
+				    review_hbox "widget/hbox"
+					{
+					height=20; spacing=10;
+
+					fd_review "widget/component" { path="/sys/cmp/smart_field.cmp"; ctl_type=label; field=a_review; width=200; label_width=90; text="Review:"; }
+					overlap_lbl "widget/label" { width=230; style=bold; fgcolor="#c9302c"; value=runclient(condition(:targets_form:form_mode == 'New' or :targets_form:form_mode == 'Modify', :overlap_osrc:msg, '')); }
+					}
 
 				    target_meta "widget/component" { path="/apps/kardia/modules/base/record_metadata_hidden.cmp"; }
 
 				    refresh_fund_on_save "widget/connector" { event=DataSaved; target=funds_osrc; action=RefreshObject; }
 				    refresh_status_on_save "widget/connector" { event=DataSaved; target=status_cmp; action=Refresh; }
+
+				    // Check the edited dates against the fund's other targets.
+				    overlap_on_change "widget/connector"
+					{
+					event=DataChange;
+					target=overlap_osrc;
+					action=QueryParam;
+					ledger=runclient(:funds_osrc:a_ledger_number);
+					fund=runclient(:funds_osrc:a_fund);
+					target_id=runclient(condition(:targets_form:form_mode == 'New', null, :targets_osrc:a_target_id));
+					start_date=runclient(:fd_start:value);
+					end_date=runclient(:fd_end:value);
+					}
+				    overlap_on_mode "widget/connector"
+					{
+					event=ModeChange;
+					target=overlap_osrc;
+					action=QueryParam;
+					ledger=runclient(:funds_osrc:a_ledger_number);
+					fund=runclient(:funds_osrc:a_fund);
+					target_id=runclient(condition(:targets_form:form_mode == 'New', null, :targets_osrc:a_target_id));
+					start_date=runclient(:fd_start:value);
+					end_date=runclient(:fd_end:value);
+					}
 				    }
 				}
 
 			    target_ctls_vbox "widget/vbox"
 				{
-				x=476; y=8; width=100; height=98;
-				spacing=8;
+				x=476; y=8; width=100; height=114;
+				spacing=6;
 
 				save_btn "widget/textbutton"
 				    {
 				    width=100; height=24;
 				    text="Save";
-				    enabled=runclient(:targets_form:is_savable and char_length(:fd_desc:content) > 0 and :fd_amount:content is not null and :fd_start:value is not null and :fd_interval:value is not null);
+				    enabled=runclient(:targets_form:is_savable and char_length(:fd_desc:content) > 0 and :fd_amount:content is not null and :fd_start:value is not null and :fd_interval:value is not null and isnull(:overlap_osrc:cnt, 0) = 0);
 				    on_save "widget/connector" { event=Click; target=targets_form; action=Save; }
 				    }
 
@@ -276,6 +318,27 @@ funding_target_maint "widget/component-decl"
 				    text="Cancel";
 				    enabled=runclient(:targets_form:is_discardable);
 				    on_discard "widget/connector" { event=Click; target=targets_form; action=Discard; }
+				    }
+
+				copy_btn "widget/textbutton"
+				    {
+				    width=100; height=24;
+				    text="Copy";
+				    enabled=runclient(:targets_form:is_editable and :targets_form:form_mode != 'New');
+				    on_copy "widget/connector"
+					{
+					event=Click;
+					target=targets_osrc;
+					action=Copy;
+					a_target_id=runclient(null);
+					a_review=runclient(null);
+					a_start_date=runclient(:targets_osrc:copy_start);
+					a_end_date=runclient(:targets_osrc:copy_end);
+					s_date_created=runclient(getdate());
+					s_created_by=runclient(user_name());
+					s_date_modified=runclient(getdate());
+					s_modified_by=runclient(user_name());
+					}
 				    }
 
 				delete_btn "widget/textbutton"
@@ -289,6 +352,41 @@ funding_target_maint "widget/component-decl"
 			    }
 			}
 		    }
+		}
+
+	    // Other targets of the fund whose dates overlap the target being edited.
+	    overlap_osrc "widget/osrc"
+		{
+		ov_ledger "widget/parameter" { param_name=ledger; type=string; }
+		ov_fund "widget/parameter" { param_name=fund; type=string; }
+		ov_target "widget/parameter" { param_name=target_id; type=integer; }
+		ov_start "widget/parameter" { param_name=start_date; type=string; }
+		ov_end "widget/parameter" { param_name=end_date; type=string; }
+
+		// Converted first: a convert() compared directly against a table column is passed to MySQL unparsed.
+		sql = "	declare object ov;
+
+			select
+			    :ov:start = convert(datetime, :parameters:start_date),
+			    :ov:end = convert(datetime, :parameters:end_date)
+			;
+
+			select
+			    cnt = count(1),
+			    msg = condition(count(1) = 0, null, 'Overlaps the ' + dateformat(min(:ft:a_start_date), 'dd-MMM-yyyy') + ' target' + condition(count(1) > 1, ' and ' + (count(1) - 1) + ' more', ''))
+			from
+			    /apps/kardia/data/Kardia_DB/a_funding_target/rows ft
+			where
+			    :ft:a_ledger_number = :parameters:ledger and
+			    :ft:a_fund = :parameters:fund and
+			    (:parameters:target_id is null or :ft:a_target_id != :parameters:target_id) and
+			    :ov:start is not null and
+			    (:ft:a_end_date is null or :ft:a_end_date >= :ov:start) and
+			    (:ov:end is null or :ft:a_start_date <= :ov:end)
+			";
+		replicasize=2;
+		readahead=2;
+		autoquery=never;
 		}
 
 	    targets_ctls_hbox "widget/hbox"

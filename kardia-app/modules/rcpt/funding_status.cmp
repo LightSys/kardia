@@ -1,8 +1,9 @@
 $Version=2$
 funding_status "widget/component-decl"
     {
-    // Funding status of one funding target: normal gifts (RcptGiftAccts)
-    // compared with the target, as a stacked bar chart.  Periodic targets
+    // Funding status of one funding target: normal gifts (RcptGiftAccts),
+    // or if those aren't configured, all GL revenue to the fund (GLRevLow
+    // to GLRevHigh), compared with the target, as a stacked bar chart.  Periodic targets
     // get one bar per interval (aligned to the target's start month) up to
     // the present, showing at most the 24 most recent; partial intervals
     // have their target prorated by month.  Absolute targets get one bar
@@ -38,6 +39,13 @@ funding_status "widget/component-decl"
 		    :ft:a_ledger_number = :parameters:ledger and
 		    :ft:a_fund = :parameters:fund and
 		    :ft:a_target_id = :parameters:target_id
+		;
+
+		select
+		    :info:revlo = :GLRevLow,
+		    :info:revhi = :GLRevHigh
+		from
+		    object expression('/apps/kardia/modules/gl/accounting_config.qyp/' + :parameters:ledger)
 		;
 
 		-- Periodic target: the months from the target's start through the present (or the target's end).
@@ -99,6 +107,8 @@ funding_status "widget/component-decl"
 		    collection results
 		select
 		    idx = :b:idx,
+		    bstart = :b:bstart,
+		    bend = :b:bend,
 		    partial = condition(:info:interval > 0 and :b:nmonths < :info:interval, 1, 0),
 		    label = condition(:info:interval = 0,
 				dateformat(:b:bstart, 'MMM yyyy') + ' - ' + condition(:info:end is null, 'Present', dateformat(:info:end, 'MMM yyyy')),
@@ -119,6 +129,7 @@ funding_status "widget/component-decl"
 			    :g:a_ledger_number = :parameters:ledger and
 			    :g:a_fund = :parameters:fund and
 			    :g:a_posted = 1 and
+			    :info:accts is not null and
 			    charindex(',' + rtrim(:g:a_account_code) + ',', ',' + :info:accts + ',') > 0 and
 			    isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date) >= :info:start and
 			    isnull(:g:a_dn_gift_postmark_date, :g:a_dn_gift_received_date) >= :b:bstart and
@@ -131,6 +142,30 @@ funding_status "widget/component-decl"
 		    :b:idx > :info:maxidx - 24
 		;
 
+		-- Without normal gift accounts configured, use all GL revenue (by effective date) instead.
+		update
+		    collection results r
+		set
+		    :r:funded = (
+			select
+			    $0 - isnull(sum(:t:a_amount), $0)
+			from
+			    /apps/kardia/data/Kardia_DB/a_transaction/rows t
+			where
+			    :t:a_ledger_number = :parameters:ledger and
+			    :t:a_fund = :parameters:fund and
+			    :t:a_posted = 1 and
+			    :t:a_account_code >= :info:revlo and
+			    :t:a_account_code <= :info:revhi and
+			    :t:a_effective_date >= :info:start and
+			    :t:a_effective_date >= :r:bstart and
+			    :t:a_effective_date < :r:bend and
+			    (:info:end is null or :t:a_effective_date < dateadd(day, 1, :info:end))
+			)
+		where
+		    :info:accts is null
+		;
+
 		select
 		    label = :r:label + condition(:r:partial = 1, '*', ''),
 		    chart_funded = convert(integer, condition(:r:funded < :r:target, :r:funded, :r:target)),
@@ -138,7 +173,9 @@ funding_status "widget/component-decl"
 		    chart_over = convert(integer, condition(:r:funded > :r:target, :r:funded - :r:target, $0)),
 		    target_amt = :r:target,
 		    funded_amt = :r:funded,
-		    no_accts = condition(:info:accts is null, 1, 0),
+		    basis = condition(:info:accts is not null, 'gifts', condition(:info:revlo is null or :info:revhi is null, 'none', 'gl')),
+		    revlo = :info:revlo,
+		    revhi = :info:revhi,
 		    summary = :r:label + ':  target ' + :r:target + ', given ' + :r:funded +
 			condition(:r:funded >= :r:target, ', over target by ' + (:r:funded - :r:target), ', short by ' + (:r:target - :r:funded)) +
 			condition(:r:target > $0, ' (' + convert(integer, round(convert(double, :r:funded) * 100.0 / convert(double, condition(:r:target > $0, :r:target, $1)), 0)) + '% funded)', '') +
@@ -185,7 +222,7 @@ funding_status "widget/component-decl"
 		deficit_series "widget/chart-series" { label="Deficit"; color="#c9302c"; x_column="label"; y_column="chart_deficit"; }
 		over_series "widget/chart-series" { label="Over Target"; color="#2e75b6"; x_column="label"; y_column="chart_over"; }
 
-		status_y_axis "widget/chart-axis" { axis="y"; label="Normal Gifts"; }
+		status_y_axis "widget/chart-axis" { axis="y"; label="Funding"; }
 		}
 
 	    status_summary "widget/label"
@@ -193,7 +230,7 @@ funding_status "widget/component-decl"
 		height=30;
 		width=612;
 		style=italic;
-		value=runclient(condition(:status_osrc:no_accts = 1, "Normal gift accounts (RcptGiftAccts) are not configured for this ledger, so no gifts are counted.  ", "") + isnull(:status_osrc:summary, condition(:target_osrc:a_target_id is null, "Select a funding target to see its funding status.", "No funding status is available yet for this target.")) + condition(:status_osrc:label is null, "", "  (Click a bar to see its details.)"));
+		value=runclient(condition(:status_osrc:basis == 'gl', "Normal gift accounts (RcptGiftAccts) are not configured, so all GL revenue (accounts " + :status_osrc:revlo + "-" + :status_osrc:revhi + ") to the fund is counted.  ", condition(:status_osrc:basis == 'none', "Neither normal gift accounts (RcptGiftAccts) nor the GL revenue account range is configured, so no revenue is counted.  ", "")) + isnull(:status_osrc:summary, condition(:target_osrc:a_target_id is null, "Select a funding target to see its funding status.", "No funding status is available yet for this target.")) + condition(:status_osrc:label is null, "", "  (Click a bar to see its details.)"));
 		}
 	    }
 	}
