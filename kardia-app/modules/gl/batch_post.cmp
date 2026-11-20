@@ -175,6 +175,7 @@ batch_post "widget/component-decl"
 		    x=8;y=140;width=588;height=300;
 		    rowheight = 18;
 		    mode=dynamicrow;
+		    overlap_scrollbar=no;
 
 		    t2_jnl "widget/table-column" { title="Jnl"; fieldname="a_journal_number"; width=40; }
 		    t2_cc "widget/table-column" { title="Funds"; fieldname="ccs"; width=440; }
@@ -218,6 +219,7 @@ batch_post "widget/component-decl"
 		    x=8;y=140;width=588;height=300;
 		    rowheight = 18;
 		    mode=dynamicrow;
+		    overlap_scrollbar=no;
 
 		    t3_cc "widget/table-column" { title="Fund"; fieldname="a_bal_fund"; width=80; }
 		    t3_accts "widget/table-column" { title="Accounts"; fieldname="accts"; width=400; }

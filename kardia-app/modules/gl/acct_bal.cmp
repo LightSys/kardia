@@ -99,6 +99,7 @@ acct_bal_cmp "widget/component-decl"
 			//rowheight = 20;
 			rowheight = 18;
 			mode=dynamicrow;
+			overlap_scrollbar=no;
 
 			tbl_2_rclick "widget/connector"
 			    {
@@ -160,6 +161,7 @@ acct_bal_cmp "widget/component-decl"
 			//rowheight = 20;
 			rowheight = 18;
 			mode=dynamicrow;
+			overlap_scrollbar=no;
 
 			tbl_rclick "widget/connector"
 			    {
