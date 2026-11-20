@@ -430,7 +430,7 @@ gift_import "widget/component-decl"
 					qa_addr = condition(
 							    nullif(:eg:p_donor_partner_key,'') is not null
 							    and nullif(:eg:i_eg_donor_city,'') is not null
-							    and (select :loc:p_partner_key from /apps/kardia/data/Kardia_DB/p_location/rows loc where :loc:p_partner_key = :eg:p_donor_partner_key and :loc:p_record_status_code != 'O' and upper(:loc:p_state_province) = upper(:eg:i_eg_donor_state) having cos_compare(upper(isnull(:loc:p_address_1,'') +  isnull(:loc:p_city,'')), upper(isnull(:eg:i_eg_donor_addr1,'') + isnull(:eg:i_eg_donor_city,''))) > 0.9) is null
+							    and (select :loc:p_partner_key from /apps/kardia/data/Kardia_DB/p_location/rows loc where :loc:p_partner_key = :eg:p_donor_partner_key and :loc:p_record_status_code != 'O' and upper(:loc:p_state_province) = upper(:eg:i_eg_donor_state) having cos_compare(upper(isnull(:loc:p_address_1,'') +  isnull(:loc:p_city,'')), upper(isnull(:eg:i_eg_donor_addr1,'') + isnull(:eg:i_eg_donor_city,''))) > 0.85) is null
 							    and (select count(1) from /apps/kardia/data/Kardia_DB/i_eg_ignored_info/rows ii where :ii:p_partner_key = :eg:p_donor_partner_key and upper(:ii:i_eg_info) = upper(isnull(:eg:i_eg_donor_addr1,'') + isnull(:eg:i_eg_donor_city,'') + isnull(:eg:i_eg_donor_state,''))) == 0,
 							    1, 0),
 					qa_email = condition(
@@ -554,8 +554,8 @@ gift_import "widget/component-decl"
 					:eg:i_eg_gift_trx_date desc,
 					:eg:i_eg_trx_uuid asc,
 					:eg:i_eg_desig_uuid asc,
-					:eg:i_eg_line_item asc,
-					:l:s_date_created desc
+					:eg:i_eg_line_item asc --,
+					--:l:s_date_created desc
 				");
 			replicasize=400;
 			readahead=400;
