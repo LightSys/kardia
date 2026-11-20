@@ -29,7 +29,8 @@ plugin_rcpt_giftimport_EGS "widget/component-decl"
 			:c:i_eg_status,
 			:c:i_eg_returned_status,
 
-			:c:i_eg_donor_name,
+			-- Ideally, if donor name was wrong we would flag it, but the error would likely be less noticeable than this
+			i_eg_donor_name = isnull(:c:i_eg_donor_name, 'Unknown donor name'),
 			:c:i_eg_donor_given_name,
 			:c:i_eg_donor_surname, 
 			:c:i_eg_donor_middle_name,
