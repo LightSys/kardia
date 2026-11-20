@@ -1,0 +1,87 @@
+$Version=2$
+plugin_base_verify_glperiod "system/query"
+    {
+    // This module is used before GL period closing, in addition to the
+    // various other checks for transactions and batches.
+
+    // Metadata
+    verify_types = "glperiod,glledger,gl";
+
+    // Parameters
+    ledger "query/parameter" { type=string; }
+    period "query/parameter" { type=string; }
+    transactions "query/parameter" { type=collection; style=notnull; }
+
+    sql = " DECLARE OBJECT conf;
+
+	    -- No unposted batches
+	    SELECT
+		    name = :t:a_ledger_number + '|' + :t:a_batch_number,
+		    type = 'GL Batch',
+		    context = 'Ledger ' + :t:a_ledger_number + ', Batch ' + :t:a_batch_number,
+		    msg = 'Has ' + count(1) + ' unposted entries'
+	    FROM
+		    identity collection transactions t
+	    WHERE
+		    (:t:a_ledger_number = :parameters:ledger or :parameters:ledger is null) and
+		    (:t:a_period = :parameters:period or :parameters:period is null) and
+		    :t:a_posted = 0
+	    GROUP BY
+		    :t:a_ledger_number,
+		    :t:a_period,
+		    :t:a_batch_number
+	    ;
+
+	    -- No empty batches (may be unposted from subjournal / etc)
+	    SELECT
+		    name = :b:a_ledger_number + '|' + :b:a_batch_number,
+		    type = 'GL Batch',
+		    context = 'Ledger ' + :b:a_ledger_number + ', Batch ' + :b:a_batch_number,
+		    msg = 'Has no entries'
+	    FROM
+		    identity /apps/kardia/data/Kardia_DB/a_batch/rows b,
+		    collection transactions t
+	    WHERE
+		    (:b:a_ledger_number = :parameters:ledger or :parameters:ledger is null) and
+		    (:b:a_period = :parameters:period or :parameters:period is null) and
+		    :t:a_ledger_number =* :b:a_ledger_number and
+		    :t:a_batch_number =* :b:a_batch_number
+	    GROUP BY
+		    :b:a_ledger_number,
+		    :b:a_period,
+		    :b:a_batch_number
+	    HAVING
+		    count(:t:a_ledger_number) = 0
+	    ;
+
+	    -- Start/End dates in correct sequence
+	    SELECT
+		    name = :per:a_ledger_number + '|' + :per:a_period,
+		    type = 'GL Period',
+		    context = 'Ledger ' + :per:a_ledger_number + ', Period ' + :per:a_period,
+		    msg = 'Start date ' + dateformat(:per:a_start_date, 'yyyy-MM-dd') + ' is not before end date ' + dateformat(:per:a_end_date, 'yyyy-MM-dd')
+	    FROM
+		    /apps/kardia/data/Kardia_DB/a_period/rows per
+	    WHERE
+		    (:per:a_ledger_number = :parameters:ledger or :parameters:ledger is null) and
+		    (:per:a_period = :parameters:period or :parameters:period is null) and
+		    (:per:a_start_date >= :per:a_end_date)
+	    ;
+
+	    -- Start/End dates within parent (year)
+	    SELECT
+		    name = :per:a_ledger_number + '|' + :per:a_period,
+		    type = 'GL Period',
+		    context = 'Ledger ' + :per:a_ledger_number + ', Period ' + :per:a_period,
+		    msg = 'Start/End dates ' + dateformat(:per:a_start_date, 'yyyy-MM-dd') + ' - ' + dateformat(:per:a_end_date, 'yyyy-MM-dd') + ' not within year period dates ' + dateformat(:parent_per:a_start_date, 'yyyy-MM-dd') + ' - ' + dateformat(:parent_per:a_end_date, 'yyyy-MM-dd')
+	    FROM
+		    identity /apps/kardia/data/Kardia_DB/a_period/rows per,
+		    /apps/kardia/data/Kardia_DB/a_period/rows parent_per
+	    WHERE
+		    (:per:a_ledger_number = :parameters:ledger or :parameters:ledger is null) and
+		    (:per:a_period = :parameters:period or :parameters:period is null) and
+		    :parent_per:a_ledger_number = :per:a_ledger_number and 
+		    :parent_per:a_period = :per:a_parent_period and
+		    (:per:a_start_date < :parent_per:a_start_date or :per:a_end_date < :parent_per:a_start_date or :per:a_start_date > :parent_per:a_end_date or :per:a_end_date > :parent_per:a_end_date)
+	    ";
+    }
