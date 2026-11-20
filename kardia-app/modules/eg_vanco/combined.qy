@@ -59,10 +59,15 @@ myquery "system/query"
 		DepositDate =  convert('datetime', condition(char_length(:DepositDate) > 1, :DepositDate, NULL)),
 		ProcessDate =  convert('datetime', condition(char_length(:ProcessDate) > 1, :ProcessDate, NULL)),
 		SettlementDate =  convert('datetime', condition(char_length(:SettlementDate) > 1, :SettlementDate, NULL)),
-		:TransactionRef, :CustomerID, :CustomerRef, :PaymentMethodRef,
-		:CCStatus, :TransactionFee, :FundID, :FundAmount, :Amount,
-		:FundTransactionFee, :Credit, :AccountType,
-		:ReturnCode, :ReturnReason
+		-- Make sure IDs are not empty strings
+		CustomerID = convert('string', condition(char_length(:CustomerID) > 0, :CustomerID, NULL)),
+		CustomerRef = convert('string', condition(char_length(:CustomerRef) > 0, :CustomerRef, NULL)),
+		PaymentMethodRef = convert('string', condition(char_length(:PaymentMethodRef) > 0, :PaymentMethodRef, NULL)),
+		-- these stay the same
+		:TransactionRef,     :CCStatus,   :TransactionFee,
+		:FundID,             :FundAmount, :Amount,
+		:FundTransactionFee, :Credit,     :AccountType,
+		:ReturnCode,         :ReturnReason
 	    FROM 
 		IDENTITY SUBTREE PAGED EXPRESSION(
 		    '/apps/kardia/modules/eg_vanco/egvapi_transFundHist.http?VancoWS.Auth.SessionID='
@@ -119,6 +124,8 @@ myquery "system/query"
 		:CustomerRef
 	    FROM
 		COLLECTION transactions
+	    WHERE 
+		:CustomerRef is NOT NULL
 	    GROUP BY
 		:CustomerRef
 	    ;
@@ -375,7 +382,7 @@ myquery "system/query"
 		COLLECTION payMethods p,
 		COLLECTION ongoingTransactions o
 	    WHERE
-		:t:CustomerRef = :c:CustomerRef 
+		:t:CustomerRef *= :c:CustomerRef 
 		AND :t:CustomerRef *= :p:CustomerRef 
 		AND :t:PaymentMethodRef *= :p:PaymentMethodRef
 		AND :t:TransactionRef *= :o:TransactionRef
