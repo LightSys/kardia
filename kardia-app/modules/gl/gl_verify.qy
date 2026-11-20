@@ -1,0 +1,24 @@
+$Version=2$
+gl_verify "system/query"
+    {
+    verify_type "query/parameter" { type=string; style=strnull,notnull; }
+    ledger "query/parameter" { type=string; style=strnull,notnull; }
+    period "query/parameter" { type=string; style=strnull; }
+    batch "query/parameter" { type=integer; style=strnull; }
+    transactions "query/parameter" { type=collection; }
+
+    sql = " select
+		name = :v:name + '|' + :qy:cx__pathname,
+		--name = 'result',
+		:v:type,
+		:v:context,
+		:v:msg
+	    from
+		object wildcard '/apps/kardia/modules/*/plugin_base_verify_*.qy?ls__type=system%2fstructure' qy,
+		expression (:qy:cx__pathname) (ledger=:parameters:ledger, period=:parameters:period, batch=:parameters:batch, transactions=collection transactions) v
+	    where
+		charindex(',' + :parameters:verify_type + ',', ',' + :qy:verify_types + ',') > 0
+	    having
+		:v:type is not null
+	    ";
+    }

@@ -1,0 +1,79 @@
+$Version=2$
+plugin_base_verify_gljnl "system/query"
+    {
+    // Metadata
+    verify_types = "gljnl,glbatch,glperiod,glledger,gl";
+
+    // Parameter
+    ledger "query/parameter" { type=string; }
+    batch "query/parameter" { type=integer; }
+    period "query/parameter" { type=string; }
+    transactions "query/parameter" { type=collection; style=notnull; }
+
+    sql = " DECLARE OBJECT conf;
+
+	    -- Overall journal balance
+	    SELECT
+		    name = :t:a_ledger_number + '|' + :t:a_batch_number + '|' + :t:a_journal_number,
+		    type = 'GL Journal',
+		    context = 'Ledger ' + :t:a_ledger_number + ', Batch ' + :t:a_batch_number + ', Journal ' + :t:a_journal_number,
+		    msg = 'Does not balance (' + sum(:t:a_amount) + ')'
+	    FROM
+		    collection transactions t
+	    WHERE
+		    (:t:a_ledger_number = :parameters:ledger or :parameters:ledger is null) and
+		    (:t:a_batch_number = :parameters:batch or :parameters:batch is null) and
+		    (:t:a_period = :parameters:period or :parameters:period is null)
+	    HAVING
+		    sum(:t:a_amount) != $0
+	    GROUP BY
+		    :t:a_ledger_number,
+		    :t:a_batch_number,
+		    :t:a_journal_number
+	    ;
+
+	    -- Interfund Xfer balance
+	    SELECT
+		    name = :t:a_ledger_number + '|' + :t:a_batch_number + '|' + :t:a_journal_number,
+		    type = 'GL Journal',
+		    context = 'Ledger ' + :t:a_ledger_number + ', Batch ' + :t:a_batch_number + ', Journal ' + :t:a_journal_number,
+		    msg = 'Interfund Imbalance (Revenue ' + isnull(sum(condition(:t:a_account_category = '42', :t:a_amount, $0)),$0) + ' vs. Expense ' + isnull(sum(condition(:t:a_account_category = '52', :t:a_amount, $0)),$0) + ')'
+	    FROM
+		    collection transactions t
+	    WHERE
+		    (:t:a_ledger_number = :parameters:ledger or :parameters:ledger is null) and
+		    (:t:a_batch_number = :parameters:batch or :parameters:batch is null) and
+		    (:t:a_period = :parameters:period or :parameters:period is null)
+	    HAVING
+		    sum(:t:a_amount) != $0
+	    GROUP BY
+		    :t:a_ledger_number,
+		    :t:a_batch_number,
+		    :t:a_journal_number
+	    HAVING
+		    isnull(sum(condition(:t:a_account_category = '42', :t:a_amount, $0)),$0) != isnull(sum(condition(:t:a_account_category = '52', :t:a_amount, $0)),$0)
+	    ;
+
+	    -- Within-fund Xfer balance
+	    SELECT
+		    name = :t:a_ledger_number + '|' + :t:a_batch_number + '|' + :t:a_journal_number,
+		    type = 'GL Journal',
+		    context = 'Ledger ' + :t:a_ledger_number + ', Batch ' + :t:a_batch_number + ', Journal ' + :t:a_journal_number,
+		    msg = 'Within-fund Imbalance (Revenue ' + isnull(sum(condition(:t:a_account_category = '41', :t:a_amount, $0)),$0) + ' vs. Expense ' + isnull(sum(condition(:t:a_account_category = '51', :t:a_amount, $0)),$0) + ')'
+	    FROM
+		    collection transactions t
+	    WHERE
+		    (:t:a_ledger_number = :parameters:ledger or :parameters:ledger is null) and
+		    (:t:a_batch_number = :parameters:batch or :parameters:batch is null) and
+		    (:t:a_period = :parameters:period or :parameters:period is null)
+	    HAVING
+		    sum(:t:a_amount) != $0
+	    GROUP BY
+		    :t:a_ledger_number,
+		    :t:a_batch_number,
+		    :t:a_journal_number
+	    HAVING
+		    isnull(sum(condition(:t:a_account_category = '41', :t:a_amount, $0)),$0) != isnull(sum(condition(:t:a_account_category = '51', :t:a_amount, $0)),$0)
+	    ;
+	    ";
+    }

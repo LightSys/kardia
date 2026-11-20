@@ -1,0 +1,77 @@
+$Version=2$
+gl_verify "widget/component-decl"
+    {
+    width=700;
+    height=300;
+
+    expose_properties_for = glv_osrc;
+
+    Verify "widget/component-decl-action"
+	{
+	on_verify_1 "widget/connector"
+	    {
+	    target=glv_osrc;
+	    action=Clear;
+	    }
+	on_verify_2 "widget/connector"
+	    {
+	    target=glv_osrc;
+	    action=QueryParam;
+	    verify_type=runclient(:verify_type);
+	    ledger=runclient(:ledger);
+	    period=runclient(:period);
+	    batch=runclient(:batch);
+	    }
+	}
+
+    glv_vbox "widget/vbox"
+	{
+	x=0; y=0; width=700; height=300;
+	spacing=10;
+
+	glv_osrc "widget/osrc"
+	    {
+	    glv_ledger "widget/parameter" { type=string; param_name=ledger; }
+	    glv_period "widget/parameter" { type=string; param_name=period; }
+	    glv_batch "widget/parameter" { type=string; param_name=batch; }
+	    glv_verify_type "widget/parameter" { type=string; param_name=verify_type; }
+
+	    sql = " select
+			*
+		    from
+			/apps/kardia/modules/gl/gl_verify.qy (
+			    verify_type=:parameters:verify_type,
+			    ledger=:parameters:ledger,
+			    period=:parameters:period,
+			    batch=:parameters:batch,
+			    transactions=path /apps/kardia/data/Kardia_DB/a_transaction/rows
+			)
+		    ";
+	    autoquery=never;
+	    replicasize=100;
+	    readahead=100;
+
+	    glv_table "widget/table"
+		{
+		height=300;
+		titlebar=no;
+		overlap_scrollbar=yes;
+		demand_scrollbar=yes;
+		rowheight=null;
+		cellvspacing=4;
+		inner_padding=2;
+		colsep=0;
+		row_border_radius=6;
+		row_shadow_radius=2;
+		row_shadow_offset=1;
+		row_shadow_color="#a0a0a0";
+		row_shadow_angle=135;
+		nodata_message = runclient(condition(not :glv_osrc:cx__pending, "one moment...", "(no verification errors found)"));
+
+		gt_ctx "widget/table-column" { title="Context"; fieldname=context; width=300; }
+		gt_msg "widget/table-column" { title="Message"; fieldname=msg; width=400; }
+		}
+	    }
+	}
+    }
+

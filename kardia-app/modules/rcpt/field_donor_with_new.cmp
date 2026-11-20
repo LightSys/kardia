@@ -50,6 +50,7 @@ field_donor_with_new "widget/component-decl"
 	    height=20;
 	    y=2;
 	    text="New";
+	    enabled=runclient(:partner_key:enabled == 'full' and :form:is_focusable);
 
 	    addnew_cn_1 "widget/connector"
 		{
