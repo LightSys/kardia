@@ -50,7 +50,7 @@ last_bank_rec "system/query"
 	    AND :parameters:cur_account = :br:a_account_code
 	    AND :parameters:cur_account = :gl:a_account_code
 	    -- Need to make sure that if it's been reconciled it shows up here
-	    AND ((:cutoff:value < :br:a_item_date AND :cutoff:value < :gl:a_effective_date) 
+	    AND ((:cutoff:value <= :br:a_item_date AND :cutoff:value <= :gl:a_effective_date) 
 		OR (:br:a_is_reconciled = 1))
 	    AND :br:a_origin = 'GL'
 	    AND (:parameters:cur_recon = :br:a_statement_id OR :br:a_is_reconciled = 0)
@@ -90,7 +90,7 @@ last_bank_rec "system/query"
 	    :parameters:cur_ledger = :br:a_ledger_number
 	    AND :parameters:cur_account = :br:a_account_code
 	    -- Need to make sure that if it's been reconciled it shows up here
-	    AND ((:cutoff:value < :br:a_item_date) OR (:br:a_is_reconciled = 1))
+	    AND ((:cutoff:value <= :br:a_item_date) OR (:br:a_is_reconciled = 1))
 	    AND :br:a_origin IS NULL
 	    AND (:parameters:cur_recon = :br:a_statement_id OR :br:a_is_reconciled = 0)
 	;

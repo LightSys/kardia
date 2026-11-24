@@ -1,0 +1,18 @@
+$Version=2$
+plugin_base_on_disable "system/query"
+    {
+    cur_ledger "query/parameter" { type=string; }
+    cur_account "query/parameter" { type=string; }
+
+    sql = "
+	-- The user just disabled a fund. Remove all unreconciled rows
+	-- delete from gl
+	DELETE FROM 
+	    IDENTITY /apps/kardia/data/Kardia_DB/a_bank_recon_item/rows bi
+	WHERE 
+	    :bi:a_origin = 'GL' -- TODO: see if this is needed in the long run 
+	    AND :bi:a_is_reconciled = 0
+	    AND :bi:a_ledger_number = :parameters:cur_ledger
+	    AND :bi:a_account_code = :parameters:cur_account
+	";
+    }

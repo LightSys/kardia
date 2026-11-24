@@ -31,7 +31,7 @@ last_bank_rec "system/query"
 	    IDENTITY /apps/kardia/data/Kardia_DB/a_bank_recon_item/rows bi,
 	    /apps/kardia/data/Kardia_DB/a_bank_recon_accts/rows ba
 	WHERE 
-            :bi:a_item_date > :cutoff:value
+            :bi:a_item_date >= :cutoff:value
 	    AND :bi:a_origin = 'GL'
 	    AND :bi:a_ledger_number = :parameters:cur_ledger
 	    AND :ba:a_ledger_number = :parameters:cur_ledger

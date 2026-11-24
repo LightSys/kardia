@@ -3,7 +3,7 @@ plugin_base_config_rec "widget/component-decl"
     {
     width=828;
     height=490;
-    title = "Bank Rec. Accounts";
+    title = "Bank Reconciliation";
     description = "Configure which accounts can be reconciled within the Bank Reconciliation app";
     sequence = 1300;
 
@@ -56,15 +56,15 @@ plugin_base_config_rec "widget/component-decl"
 		    align=left;
 		    spacing=10;
 		    
-		    // date cuttoff for queries
+		    // date cut toff for queries
 		    config_cutoff_date "widget/component" 
 			{ 
 			path="/sys/cmp/smart_field.cmp"; 
 			x=24; height=24; 
 			form=config_form;
 			field="ReconCutOff"; 
-			text="Update reconciliation records after:"; 
-			width=350; label_width=190; 
+			text="Update records on and after:"; 
+			width=325; label_width=190; 
 			ctl_type=datetime; 
 			date_only=1; 
 			default_time='00:00:00'; 
@@ -243,9 +243,61 @@ plugin_base_config_rec "widget/component-decl"
 		acct_tbl_desc "widget/table-column" { title="Account Description"; fieldname="a_acct_desc"; width=50; }
 		acct_tbl_isrec "widget/table-column" { type="checkbox"; title="rec?"; fieldname="a_is_reconcilable";   width=5; } 
 		acct_tbl_isCust "widget/table-column" { type="checkbox"; title="cust?"; fieldname="a_is_customizable"; width=5; }
+		update_rec "widget/connector"
+		    {
+		    source=account_table;
+		    target=account_osrc;
+		    event=Click;
+		    action=Modify;
+		    a_is_reconcilable=runclient(condition(:a_is_reconcilable == 0, 1, 0));
+		    event_condition=runclient(:Column == 'a_is_reconcilable'); 
+		    }
+		update_cust "widget/connector"
+		    {
+		    source=account_table;
+		    target=account_osrc;
+		    event=Click;
+		    action=Modify;
+		    a_is_customizable=runclient(condition(:a_is_customizable == 0, 1, 0));
+		    event_condition=runclient(:Column == 'a_is_customizable'); 
+		    }
 
-		update_rec "widget/connector" { source= account_table; target=account_osrc; event=Click; action=Modify; a_is_reconcilable=runclient(condition(:a_is_reconcilable == 0, 1, 0)); event_condition=runclient(:Column == 'a_is_reconcilable'); }
-		update_cust "widget/connector" { source= account_table; target=account_osrc; event=Click; action=Modify; a_is_customizable=runclient(condition(:a_is_customizable == 0, 1, 0)); event_condition=runclient(:Column == 'a_is_customizable'); }
+		// When the user clicks to enable reconciliation, import gifts from that account into the recon item table
+		enable_osrc "widget/osrc"
+		    {
+		    enable_ledger_number "widget/parameter" { type=string; param_name=a_ledger_number; }
+		    enable_account_code "widget/parameter" { type=string; param_name=a_account_code; }
+		    sql="exec /apps/kardia/modules/bank_rec/plugin_base_on_enable.qy cur_ledger=:parameters:a_ledger_number, cur_account=:parameters:a_account_code";
+		    autoquery=never;
+		    }
+		run_enable_rec "widget/connector"
+		    {
+		    source= account_table;
+		    target=enable_osrc;
+		    event=Click;
+		    action=QueryParam;
+		    a_ledger_number=runclient(:a_ledger_number);
+		    a_account_code=runclient(:a_account_code);
+		    event_condition=runclient(:Column == 'a_is_reconcilable' AND :a_is_reconcilable == 0);
+		    }
+		// When the user clicks to disable reconciliation, remove unreconciled gifts from that account already in the recon item table
+		disable_osrc "widget/osrc"
+		    {
+		    disable_ledger_number "widget/parameter" { type=string; param_name=a_ledger_number; }
+		    disable_account_code "widget/parameter" { type=string; param_name=a_account_code; }
+		    sql="exec /apps/kardia/modules/bank_rec/plugin_base_on_disable.qy cur_ledger=:parameters:a_ledger_number, cur_account=:parameters:a_account_code";
+		    autoquery=never;
+		    }
+		run_disable_rec "widget/connector"
+		    {
+		    source= account_table;
+		    target=disable_osrc;
+		    event=Click;
+		    action=QueryParam;
+		    a_ledger_number=runclient(:a_ledger_number);
+		    a_account_code=runclient(:a_account_code);
+		    event_condition=runclient(:Column == 'a_is_reconcilable' AND :a_is_reconcilable == 1);
+		    }
 		}
 	    }
 	}
