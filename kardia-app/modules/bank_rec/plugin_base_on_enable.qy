@@ -1,0 +1,55 @@
+$Version=2$
+plugin_base_on_enable "system/query"
+    {
+    cur_ledger "query/parameter" { type=string; }
+    cur_account "query/parameter" { type=string; }
+
+    sql = "
+
+	DECLARE OBJECT cutoff;
+	SELECT 
+	    :cutoff:value = convert('datetime', isnull(first(:a_config_value), '1900-01-01'))
+	FROM
+	    /apps/kardia/data/Kardia_DB/a_config/rows
+	WHERE 
+	    :a_config_name = 'ReconCutOff'
+	    AND :a_ledger_number = :parameters:cur_ledger
+	;
+
+	-- The user just enabled a fund. Pull in all available posted data going back to the history date
+	-- upsert from gl
+	INSERT INTO
+	    /apps/kardia/data/Kardia_DB/a_bank_recon_item/rows
+	SELECT
+	    a_ledger_number = :parameters:cur_ledger,
+	    a_account_code = :gl:a_account_code,
+	    a_origin = :gl:a_origin,
+	    a_batch_key = :gl:a_batch_number,
+	    a_group_key = :gl:a_journal_number,
+	    a_item_key = :gl:a_transaction_number,
+	    a_amount = :gl:a_amount,
+	    a_item_date = :gl:a_effective_date,
+	    s_date_created = getdate(),
+	    s_created_by = user_name(),
+	    s_date_modified = getdate(),
+	    s_modified_by = user_name()
+	FROM
+	    /apps/kardia/data/Kardia_DB/a_transaction/rows gl
+	WHERE 
+	    :gl:a_ledger_number = :parameters:cur_ledger
+	    AND :gl:a_origin = 'GL' -- FIXME: this may not matter eventually?
+	    AND :gl:a_account_code = :parameters:cur_account
+	    AND :gl:a_posted = 1
+	    AND :gl:a_effective_date >= :cutoff:value
+	-- Because reconciled items aren't deleted on an unpost/disable, need to check for duplicates
+	ON DUPLICATE
+	    :a_ledger_number, :a_batch_key, :a_group_key, :a_item_key, :a_origin
+	UPDATE SET
+	    :a_amount = :gl:a_amount,
+	    :a_item_date = :gl:a_effective_date,
+	    :s_date_modified = getdate() IF MODIFIED,
+	    :s_modified_by = user_name() IF MODIFIED
+	;
+
+	";
+    }
