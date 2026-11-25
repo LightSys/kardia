@@ -1716,46 +1716,82 @@ function menuIndRepo
     done
     }
 
+# Set lkey to the link signing key, creating its key file if needed.
 function verifyLinksigningKey
     {
     lookupStatus
-    if [ -z "`grep link_signing_key $CXCONF`" ]; then
-	linksigningfile="$(dirname $CXCONF)/linksigningkey.txt"
-	if [ -f $linksigningfile ]; then
-	    #echo found link signing $linksigningfile
-	    lkey=`cat $linksigningfile`
+    linksigningfile="$(dirname $CXCONF)/linksigningkey.txt"
+    if [ -f $linksigningfile ]; then
+	#echo found link signing $linksigningfile
+	lkey=`cat $linksigningfile`
+    else
+	#echo Making linksigning key file
+	lkey=$(dd if=/dev/urandom bs=32 count=1 2>/dev/null| sha256sum | cut -c1-32)
+	echo $lkey > $linksigningfile
+	if [ -z "echo $CXCONF | grep home" ]; then
+	    #We are doing it in the home directory - permissions for user
+	    chown $USER.$USER $linksigningfile
+	    chmod 600 $linksigningfile
 	else
-	    #echo Making linksigning key file
-	    lkey=$(dd if=/dev/urandom bs=32 count=1 2>/dev/null| sha256sum | cut -c1-32)
-	    echo $lkey > $linksigningfile
-	    if [ -z "echo $CXCONF | grep home" ]; then
-		#We are doing it in the home directory - permissions for user
-		chown $USER.$USER $linksigningfile
-		chmod 600 $linksigningfile
-	    else
-		chown root.root $linksigningfile
-		#it is going to be /usr/local/etc.  chown to root
-		chmod 600 $linksigningfile
-	    fi
+	    chown root.root $linksigningfile
+	    #it is going to be /usr/local/etc.  chown to root
+	    chmod 600 $linksigningfile
 	fi
-	#echo not found
-	lineno=$(grep -n "upload_tmpdir" $CXCONF | sed 's/:.*//')
-	if [ $lineno -lt 10 ]; then #Use a backup location for inserting the link-signing key
-	    lineno=$(grep -n "accept_localhost_only" $CXCONF | sed 's/:.*//')
-	fi
-	if [ $lineno -gt 10 ]; then #only install it if we have found a spot in the config
-	    lineno=$((lineno + 1))
+    fi
+    }
 
-	    sed -i "${lineno}i\/\/" $CXCONF
-	    sed -i "${lineno}ilink_signing_sites = \"http:\/\/localhost:800\/\", \"http:\/\/localhost:1800\/\", \"\/\";" $CXCONF
-	    sed -i "${lineno}ilink_signing_key = \"$lkey\";" $CXCONF
-	    sed -i "${lineno}i\/\/ Signed links..." $CXCONF
-	    sed -i "${lineno}i\/\/" $CXCONF
-	else
-	    #We cannot install the link-signing key yet.
-	    #delete the file so it will try to regen it later
-	    rm $linksigningfile
-	fi
+
+# Write Kardia's Centrallix settings to config files in conf.d,
+# replacing the ones from the last build.  A per-user install also gets
+# its own port, auth realm, and password file.
+function writeKardiaConfig
+    {
+    lookupStatus
+    verifyLinksigningKey
+    mkdir -p "$CXETC/conf.d"
+    cat > "$CXETC/conf.d/50-kardia.conf" <<EOF
+\$Version=2\$
+// Written by kardia.sh on each build.  Put local changes in a later file.
+kardia "system/config"
+    {
+    enable_send_credentials = 1;
+    net_http "system/config"
+	{
+	accept_localhost_only = 0;
+	upload_extensions = "jpg","jpeg","png","gif","svg","pdf","doc","docx","odt","xls","xlsx","ods","txt";
+	upload_dirs = "/apps/kardia/files";
+	upload_tmpdir = "/var/tmp";
+	link_signing_key = "$lkey";
+	link_signing_sites = "http://localhost:800/", "http://localhost:1800/", "/";
+	}
+    }
+EOF
+    if [ "$DEVMODE" != root ]; then
+	cat > "$CXETC/conf.d/60-kardia-user.conf" <<EOF
+\$Version=2\$
+// Written by kardia.sh on each build, for $USER's own Centrallix.
+kardia_user "system/config"
+    {
+    net_http "system/config"
+	{
+	listen_port = $CXPORT;
+	auth_realm = "Centrallix - $USER";
+	}
+    mtsession "system/config"
+	{
+	auth_method = "altpasswd";
+	altpasswd_file = "$CXETC/cxpasswd";
+	}
+    }
+EOF
+    fi
+    if [ -z "`grep include_dir $CXCONF`" ]; then
+	echo "$CXCONF has no include_dir, so Centrallix ignores the Kardia settings"
+	echo "in $CXETC/conf.d.  To apply them, add this line inside the top-level"
+	echo "group in $CXCONF:"
+	echo "    include_dir = \"$CXETC/conf.d\";"
+	echo "Press ENTER to continue."
+	read ANS
     fi
     }
 
@@ -1836,10 +1872,7 @@ function doBuildAsSeparateUser
 
     # Fixup config files?
     make config
-    sed 's/accept_localhost_only = 1/accept_localhost_only = 0/' < etc/centrallix.conf | sed "s/listen_port = 800/listen_port = $CXPORT/" | sed "s/\/usr\/local\/etc\/centrallix/\/home\/$USER\/cxinst\/etc\/centrallix/" | sed "s/\/usr\/local\/lib\/centrallix/\/home\/$USER\/cxinst\/lib\/centrallix/" | sed 's/auth_method = "system"/\/\/auth_method = "system"/' | sed 's/\/\/auth_method = "altpasswd"/auth_method = "altpasswd"/' | sed 's/\/\/altpasswd_file = /altpasswd_file = /' | sed 's/auth_realm = "Centrallix"/auth_realm = "Centrallix - '$USER'"/' | sed 's/enable_send_credentials = 0/enable_send_credentials = 1/' > "$INSTDIR/etc/centrallix.conf"
-    if [ -z "`grep upload_extensions $INSTDIR/etc/centrallix.conf`" ]; then 
-	sed -i '/access_log/a\\t\/\/ File upload controls...\n\tupload_extensions = "jpg","jpeg","png","gif","svg","pdf","doc","docx","odt","xls","xlsx","ods","txt";\n\tupload_dirs = "/apps/kardia/files";\n\tupload_tmpdir = "/var/tmp";'  "$INSTDIR/etc/centrallix.conf"
-    fi
+    sed "s/\/usr\/local\/etc\/centrallix/\/home\/$USER\/cxinst\/etc\/centrallix/" < etc/centrallix.conf | sed "s/\/usr\/local\/lib\/centrallix/\/home\/$USER\/cxinst\/lib\/centrallix/" > "$INSTDIR/etc/centrallix.conf"
     if [ -z "`grep doc $INSTDIR/etc/centrallix/types.cfg`" ]; then 
 	echo -e "\"application/msword\"\t\t\"Word Doc\"\t\tdoc\t\t\"\"\t\t\"application/octet-stream\"" >> $INSTDIR/etc/centrallix/types.cfg
 	echo -e "\"application/vnd.openxmlformats-officedocument.wordprocessingml.document\"\t\t\"Word Doc\"\t\tdocx\t\t\"\"\t\t\"application/octet-stream\"" >> $INSTDIR/etc/centrallix/types.cfg
@@ -1850,7 +1883,7 @@ function doBuildAsSeparateUser
     fi
     sed "s/\/var\/centrallix\/os/\/home\/$USER\/cx-git\/centrallix-os/" < etc/rootnode > "$INSTDIR/etc/centrallix/rootnode"
 
-    verifyLinksigningKey
+    writeKardiaConfig
 
     # Create user template for Kardia?
     if [ ! -f "$KSRC/kardia-app/tpl/$USER.tpl" ]; then
@@ -1949,10 +1982,7 @@ function doBuildAsUser
     /bin/cp -a centrallix ~/cxinst/sbin/
     /bin/cp -a test_obj ~/cxinst/bin/
     make config
-    sed 's/accept_localhost_only = 1/accept_localhost_only = 0/' < etc/centrallix.conf | sed "s/listen_port = 800/listen_port = $CXPORT/" | sed "s/\/usr\/local\/etc\/centrallix/\/home\/$USER\/cxinst\/etc\/centrallix/" | sed "s/\/usr\/local\/lib\/centrallix/\/home\/$USER\/cxinst\/lib\/centrallix/" | sed 's/auth_method = "system"/\/\/auth_method = "system"/' | sed 's/\/\/auth_method = "altpasswd"/auth_method = "altpasswd"/' | sed 's/\/\/altpasswd_file = /altpasswd_file = /' | sed 's/auth_realm = "Centrallix"/auth_realm = "Centrallix - '$USER'"/' | sed 's/enable_send_credentials = 0/enable_send_credentials = 1/' > ~/cxinst/etc/centrallix.conf
-    if [ -z "`grep upload_extensions ~/cxinst/etc/centrallix.conf`" ]; then 
-	sed -i '/access_log/a\\t\/\/ File upload controls...\n\tupload_extensions = "jpg","jpeg","png","gif","svg","pdf","doc","docx","odt","xls","xlsx","ods","txt";\n\tupload_dirs = "/apps/kardia/files";\n\tupload_tmpdir = "/var/tmp";'  "~/cxinst/etc/centrallix.conf"
-    fi
+    sed "s/\/usr\/local\/etc\/centrallix/\/home\/$USER\/cxinst\/etc\/centrallix/" < etc/centrallix.conf | sed "s/\/usr\/local\/lib\/centrallix/\/home\/$USER\/cxinst\/lib\/centrallix/" > ~/cxinst/etc/centrallix.conf
     if [ -z "`grep doc ~/cxinst/etc/centrallix/types.cfg`" ]; then 
 	echo -e "\"application/msword\"\t\t\"Word Doc\"\t\tdoc\t\t\"\"\t\t\"application/octet-stream\"" >> ~/cxinst/etc/centrallix/types.cfg
 	echo -e "\"application/vnd.openxmlformats-officedocument.wordprocessingml.document\"\t\t\"Word Doc\"\t\tdocx\t\t\"\"\t\t\"application/octet-stream\"" >> ~/cxinst/etc/centrallix/types.cfg
@@ -1965,7 +1995,7 @@ function doBuildAsUser
     /bin/cp -a etc/types.cfg ~/cxinst/etc/centrallix/
     /bin/cp -a etc/useragent.cfg ~/cxinst/etc/centrallix/
 
-    verifyLinksigningKey
+    writeKardiaConfig
 
     # Create user template for Kardia?
     if [ ! -f "$KSRC/kardia-app/tpl/$USER.tpl" ]; then
@@ -2061,12 +2091,6 @@ function doBuildAsRoot
     chkconfig --add centrallix 2>/dev/null
     chkconfig centrallix off 2>/dev/null
 
-    # Set allow_localhost_only to 0, so user can access the server.
-    sed 's/accept_localhost_only = 1/accept_localhost_only = 0/' < /usr/local/etc/centrallix.conf | sed 's/enable_send_credentials = 0/enable_send_credentials = 1/' > /usr/local/etc/centrallix.conf.new
-    /bin/mv -f /usr/local/etc/centrallix.conf.new /usr/local/etc/centrallix.conf
-    if [ -z "`grep upload_extensions /usr/local/etc/centrallix.conf`" ]; then 
-	sed -i '/access_log/a\\t\/\/ File upload controls...\n\tupload_extensions = "jpg","jpeg","png","gif","svg","pdf","doc","docx","odt","xls","xlsx","ods","txt";\n\tupload_dirs = "/apps/kardia/files";\n\tupload_tmpdir = "/var/tmp";'  "/usr/local/etc/centrallix.conf"
-    fi
     if [ -z "`grep doc /usr/local/etc/centrallix/types.cfg`" ]; then 
 	echo -e "\"application/msword\"\t\t\"Word Doc\"\t\tdoc\t\t\"\"\t\t\"application/octet-stream\"" >> /usr/local/etc/centrallix/types.cfg
 	echo -e "\"application/vnd.openxmlformats-officedocument.wordprocessingml.document\"\t\t\"Word Doc\"\t\tdocx\t\t\"\"\t\t\"application/octet-stream\"" >> /usr/local/etc/centrallix/types.cfg
@@ -2076,7 +2100,7 @@ function doBuildAsRoot
 	echo -e "\"application/vnd.oasis.opendocument.text\"\t\t\"OpenDocument Text\"\t\todt\t\t\"\"\t\t\"application/octet-stream\"" >> /usr/local/etc/centrallix/types.cfg
     fi
 
-    verifyLinksigningKey
+    writeKardiaConfig
 
     # Set rootnode
     sed 's/\/var\/centrallix\/os/\/usr\/local\/src\/cx-git\/centrallix-os/' < /usr/local/etc/centrallix/rootnode > /usr/local/etc/centrallix/rootnode.new
