@@ -1,0 +1,9 @@
+$Version=2$
+myquery "system/query"
+	{
+	sql = " SELECT
+		*
+		FROM
+		/apps/kardia/modules/ex_limesurvey/Kardia_DB_test/i_crm_import_type/rows
+	";
+}
