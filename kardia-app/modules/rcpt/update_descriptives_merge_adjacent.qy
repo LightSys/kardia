@@ -9,9 +9,14 @@ update_descriptives_merge_adjacent "system/query"
 
             delete collection tmp_merge_aggregates;
 
+        
 	    -- Step One: Locate adjacent segments
             --  compare the combined segments average to the
 	    --  longer segment's average.
+
+        -- dh1 is the adjacent giving with the same amount
+        -- dh2 is the regular giving.
+
 	    update
 		identity collection a_descriptives_hist dh1,
 		collection a_descriptives_hist dh2
@@ -25,11 +30,20 @@ update_descriptives_merge_adjacent "system/query"
 		:dh2:p_donor_partner_key = :dh1:p_donor_partner_key and
 		:dh2:a_amount = :dh1:a_amount and
 		:dh1:a_hist_id < :dh2:a_hist_id and
+        --adjacent giving more recent than regular
 		(:dh1:a_total + :dh2:a_total - :dh2:a_amount) / round(datediff(day, condition(:dh1:a_first_gift < :dh2:a_first_gift, :dh1:a_first_gift, :dh2:a_first_gift), condition(:dh1:a_last_gift > :dh2:a_last_gift, :dh1:a_last_gift, :dh2:a_last_gift)) / 30.5) > 0.85 * (condition(:dh1:a_count > :dh2:a_count, isnull(:dh1:a_act_average_amount, :dh1:a_amount), isnull(:dh2:a_act_average_amount, :dh2:a_amount))) and
                 (:dh1:a_total + :dh2:a_total - :dh2:a_amount) / round(datediff(day, condition(:dh1:a_first_gift < :dh2:a_first_gift, :dh1:a_first_gift, :dh2:a_first_gift), condition(:dh1:a_last_gift > :dh2:a_last_gift, :dh1:a_last_gift, :dh2:a_last_gift)) / 30.5) < 1.15 * (condition(:dh1:a_count > :dh2:a_count, isnull(:dh1:a_act_average_amount, :dh1:a_amount), isnull(:dh2:a_act_average_amount, :dh2:a_amount)))
 	    ;
             -- Extra recurssions to ensure a merge does not occur
             -- into a history that is also getting merged away
+            
+            -- If you don't perform these redundant  merges, rows with a non-null a_merged_id will be deleted after the query runs. 
+            -- Consider a chain 1->2->3->4->5->6. After one query run, the chain updates to 1->3, 2->4, 3->5, 4->6, 5->6. 
+            -- Merges occur only if a_merged_id of the recipient (dh2) is null. In this example, only 4->6 and 5->6 merge, because 6 has a_merged_id == null.
+            -- The next step, "Delete Merged," removes all rows with a non-null a_merged_id. So, 1, 2, 3, 4, 5 are deleted. 
+            -- Though 4 and 5 are safely merged into 6, data from 1, 2, and 3 are lost as they're deleted without merging. 
+            -- This issue could have be avoided with two more merges, hence the redundant query.
+            
             update
 		identity collection a_descriptives_hist dh1,
 		collection a_descriptives_hist dh2
@@ -56,8 +70,9 @@ update_descriptives_merge_adjacent "system/query"
 		:dh2:p_donor_partner_key = :dh1:p_donor_partner_key and
 		:dh1:a_merged_id = :dh2:a_hist_id
 	    ;
-
-            -- Step Two : Aggregate fields that are going to be merged into the same history
+        
+        
+        -- Step Two : Aggregate fields that are going to be merged into the same history
             insert
                 collection tmp_merge_aggregates
             select
@@ -72,7 +87,7 @@ update_descriptives_merge_adjacent "system/query"
                 next_start_dh1 = condition(first(isnull(:dh1:a_next_start, 'null')) = 'null', null, first(:dh1:a_next_start)),
                 first_dh1_gift = min(:dh1:a_first_gift),
                 last_dh1_gift = max(:dh1:a_last_gift),
-                ntl_dh1_gift = condition(first(:dh1:a_count) >=2, first(:dh1:a_ntl_gift), nth(:dh1:a_first_gift, 2)),
+                ntl_dh1_gift = condition(first(:dh1:a_count) >=2, first(:dh1:a_ntl_gift), nth(:dh1:a_last_gift, 2)),
                 merge_next = :dh2:a_merged_id
             from
                 collection a_descriptives_hist dh1,
