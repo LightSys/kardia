@@ -1749,6 +1749,9 @@ function writeKardiaConfig
     lookupStatus
     verifyLinksigningKey
     mkdir -p "$CXETC/conf.d"
+    # Holds the link signing key, so only the owner can read it
+    touch "$CXETC/conf.d/50-kardia.conf"
+    chmod 600 "$CXETC/conf.d/50-kardia.conf"
     cat > "$CXETC/conf.d/50-kardia.conf" <<EOF
 \$Version=2\$
 // Written by kardia.sh on each build.  Put local changes in a later file.
